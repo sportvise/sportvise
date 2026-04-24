@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>SPORTVISE — Management Sportif IA · Suisse</title>
+  <script>
+  // CACHE CLEANER v21 — async, cleans SW + caches silently
+  window._cacheCleanDone = (async function(){
+    try {
+      if ('serviceWorker' in navigator) {
+        var regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map(function(r) { return r.unregister(); }));
+      }
+      if ('caches' in window) {
+        var keys = await caches.keys();
+        await Promise.all(keys.map(function(k) { return caches.delete(k); }));
+      }
+    } catch(e) { console.warn('Cache clean error:', e); }
+  })();
+  </script>
+  <meta name="description" content="SPORTVISE révolutionne le management sportif en Suisse grâce à l'intelligence artificielle. Marketing, sponsors, contrats, préparation physique & mentale — votre équipe d'agents IA disponible 24/7." />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#07091a; --bg2:#0d1127; --bg3:#111827; --border:#1e2d47;
+      --gold:#f59e0b; --gold2:#fbbf24; --green:#10b981; --purple:#6366f1;
+      --red:#ef4444; --cyan:#06b6d4; --text:#f1f5f9; --muted:#64748b; --muted2:#94a3b8;
+    }
+    html { scroll-behavior:smooth; overflow-x:hidden; }
+    body { background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; line-height:1.6; overflow-x:hidden; max-width:100vw; }
+    .container { max-width:1100px; margin:0 auto; padding:0 24px; }
+    .gradient-text { background:linear-gradient(135deg,var(--gold),var(--gold2),#fde68a); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .tag { display:inline-flex; align-items:center; gap:6px; padding:5px 14px; border-radius:20px; font-size:12px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; }
+    .tag-gold { background:#f59e0b15; color:var(--gold); border:1px solid #f59e0b30; }
+    .btn { display:inline-flex; align-items:center; gap:8px; padding:14px 28px; border-radius:10px; border:none; font-size:15px; font-weight:700; cursor:pointer; text-decoration:none; transition:all 0.25s; font-family:'Inter',sans-serif; }
+    .btn-gold { background:linear-gradient(135deg,var(--gold),#d97706); color:#07091a; box-shadow:0 4px 24px #f59e0b30; }
+    .btn-gold:hover { transform:translateY(-2px); box-shadow:0 8px 32px #f59e0b45; }
+    .btn-outline { background:transparent; color:var(--text); border:1px solid var(--border); }
+    .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+
+    /* NAV */
+    nav { position:fixed; top:0; left:0; right:0; z-index:100; padding:0 24px; backdrop-filter:blur(12px); background:rgba(7,9,26,0.85); border-bottom:1px solid var(--border); }
+    .nav-inner { max-width:1100px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; height:64px; }
+    .nav-logo { font-size:22px; font-weight:900; letter-spacing:3px; }
+    .nav-logo span { font-size:11px; font-weight:400; color:var(--muted); letter-spacing:0.5px; margin-left:8px; }
+    .nav-links { display:flex; align-items:center; gap:28px; }
+    .nav-links a { color:var(--muted2); font-size:14px; text-decoration:none; transition:color 0.2s; }
+    .nav-links a:hover { color:var(--text); }
+
+    /* HERO */
+    .hero { padding:160px 24px 100px; text-align:center; position:relative; overflow:hidden; }
+    .hero::before { content:''; position:absolute; top:0; left:50%; transform:translateX(-50%); width:800px; height:600px; background:radial-gradient(ellipse,#f59e0b12 0%,transparent 70%); pointer-events:none; }
+    .hero h1 { font-size:clamp(38px,6vw,70px); font-weight:900; line-height:1.1; letter-spacing:-1.5px; margin:20px 0 22px; }
+    .hero p { font-size:18px; color:var(--muted2); max-width:580px; margin:0 auto 40px; line-height:1.7; }
+    .hero-cta { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-bottom:48px; }
+    .hero-social { display:flex; align-items:center; justify-content:center; gap:14px; font-size:13px; color:var(--muted); }
+    .avatars { display:flex; }
+    .av { width:32px; height:32px; border-radius:50%; border:2px solid var(--bg); margin-left:-8px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; }
+
+    /* PREVIEW */
+    .preview-wrap { max-width:860px; margin:0 auto 100px; position:relative; }
+    .preview-wrap::before { content:''; position:absolute; inset:-2px; background:linear-gradient(135deg,#f59e0b40,#6366f130,#10b98120); border-radius:18px; z-index:-1; }
+    .preview-frame { background:var(--bg2); border-radius:16px; border:1px solid var(--border); overflow:hidden; box-shadow:0 32px 80px rgba(0,0,0,0.6); }
+    .preview-bar { background:#07091a; padding:12px 16px; display:flex; align-items:center; gap:8px; border-bottom:1px solid var(--border); }
+    .dot { width:10px; height:10px; border-radius:50%; }
+    .preview-body { display:flex; }
+    .preview-side { width:190px; min-width:190px; background:#07091a; border-right:1px solid var(--border); padding:14px 0; }
+    .ps-logo { padding:0 14px 10px; font-size:13px; font-weight:900; letter-spacing:2px; border-bottom:1px solid var(--border); margin-bottom:10px; }
+    .ps-item { padding:7px 14px; font-size:10px; color:var(--muted2); display:flex; align-items:center; gap:7px; }
+    .ps-item.active { background:#f59e0b15; color:var(--text); font-weight:600; border-left:2px solid var(--gold); }
+    .preview-main { flex:1; padding:18px; }
+    .pm-title { font-size:14px; font-weight:700; margin-bottom:14px; }
+    .pm-kpi { display:grid; grid-template-columns:repeat(4,1fr); gap:9px; margin-bottom:14px; }
+    .pm-card { background:#0d1427; border:1px solid var(--border); border-radius:8px; padding:11px; }
+    .pm-card .v { font-size:16px; font-weight:800; color:var(--gold); }
+    .pm-card .l { font-size:9px; color:var(--muted); margin-top:2px; }
+    .pm-agents { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; }
+    .pm-agent { background:#0d1427; border-radius:7px; padding:9px 7px; text-align:center; border:1px solid var(--border); }
+    .pm-agent .i { font-size:16px; }
+    .pm-agent .n { font-size:8px; font-weight:700; margin-top:3px; color:var(--muted2); }
+
+    /* STATS */
+    .stats-section { padding:0 24px 90px; }
+    .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--border); border-radius:16px; overflow:hidden; border:1px solid var(--border); }
+    .stat-item { background:var(--bg2); padding:36px 28px; text-align:center; }
+    .stat-num { font-size:40px; font-weight:900; margin-bottom:6px; }
+    .stat-label { font-size:13px; color:var(--muted); }
+
+    /* AGENTS */
+    .agents-section { padding:90px 24px; background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 50%,var(--bg) 100%); }
+    .section-header { text-align:center; margin-bottom:52px; }
+    .section-header h2 { font-size:clamp(26px,4vw,40px); font-weight:800; margin:12px 0 14px; letter-spacing:-0.5px; }
+    .section-header p { font-size:16px; color:var(--muted2); max-width:520px; margin:0 auto; }
+    .agents-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+    .agent-card { background:var(--bg3); border:1px solid var(--border); border-radius:14px; padding:22px 18px; transition:all 0.3s; }
+    .agent-card:hover { transform:translateY(-3px); }
+    .agent-emoji { font-size:28px; margin-bottom:12px; }
+    .agent-name { font-size:15px; font-weight:700; margin-bottom:3px; }
+    .agent-role { font-size:11px; font-weight:700; margin-bottom:8px; }
+    .agent-desc { font-size:11px; color:var(--muted2); line-height:1.5; }
+    .agent-status { display:flex; align-items:center; gap:5px; margin-top:12px; font-size:10px; color:var(--green); font-weight:600; }
+    .online-dot { width:5px; height:5px; border-radius:50%; background:var(--green); }
+
+    /* HOW */
+    .how-section { padding:90px 24px; }
+    .steps { display:grid; grid-template-columns:repeat(3,1fr); gap:36px; position:relative; }
+    .steps::before { content:''; position:absolute; top:36px; left:16%; right:16%; height:1px; background:linear-gradient(90deg,transparent,var(--border),var(--border),transparent); }
+    .step { text-align:center; padding:0 12px; }
+    .step-num { width:56px; height:56px; border-radius:50%; margin:0 auto 18px; background:linear-gradient(135deg,var(--gold),#d97706); color:#07091a; font-size:20px; font-weight:900; display:flex; align-items:center; justify-content:center; box-shadow:0 0 0 6px #f59e0b15; }
+    .step h3 { font-size:17px; font-weight:700; margin-bottom:8px; }
+    .step p { font-size:13px; color:var(--muted2); }
+
+    /* PRICING */
+    .pricing-section { padding:90px 24px; background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 100%); }
+    .pricing-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:22px; max-width:860px; margin:0 auto; }
+    .pricing-card { background:var(--bg3); border:1px solid var(--border); border-radius:16px; padding:30px 26px; }
+    .pricing-card.featured { border-color:var(--gold); background:linear-gradient(160deg,#111827,#0d1427); box-shadow:0 0 0 1px #f59e0b20,0 24px 60px #f59e0b10; transform:scale(1.03); }
+    .pricing-badge { display:inline-block; padding:4px 12px; border-radius:20px; background:linear-gradient(135deg,var(--gold),#d97706); color:#07091a; font-size:11px; font-weight:800; text-transform:uppercase; margin-bottom:14px; }
+    .pricing-name { font-size:19px; font-weight:800; margin-bottom:4px; }
+    .pricing-price { font-size:40px; font-weight:900; letter-spacing:-1px; margin:14px 0 3px; }
+    .pricing-price span { font-size:15px; font-weight:400; color:var(--muted); }
+    .pricing-sub { font-size:12px; color:var(--muted); margin-bottom:20px; }
+    .pricing-div { height:1px; background:var(--border); margin:18px 0; }
+    .pf { display:flex; align-items:flex-start; gap:9px; font-size:12px; color:var(--muted2); margin-bottom:9px; }
+    .pf .ck { color:var(--green); flex-shrink:0; margin-top:1px; }
+    .pf .cx { color:var(--muted); flex-shrink:0; margin-top:1px; opacity:0.5; }
+    .pricing-btn { width:100%; padding:12px; border-radius:10px; border:none; font-size:14px; font-weight:700; cursor:pointer; margin-top:22px; transition:all 0.25s; font-family:'Inter',sans-serif; }
+    .pb-gold { background:linear-gradient(135deg,var(--gold),#d97706); color:#07091a; }
+    .pb-gold:hover { opacity:0.9; transform:translateY(-1px); }
+    .pb-outline { background:transparent; color:var(--text); border:1px solid var(--border); }
+    .pb-outline:hover { border-color:var(--muted2); }
+
+
+    /* FAQ */
+    .faq-section { padding:90px 24px; background:var(--bg2); }
+    .faq-list { max-width:680px; margin:0 auto; }
+    .faq-item { border-bottom:1px solid var(--border); }
+    .faq-q { width:100%; background:transparent; border:none; color:var(--text); font-size:14px; font-weight:600; padding:18px 0; text-align:left; cursor:pointer; display:flex; justify-content:space-between; align-items:center; font-family:'Inter',sans-serif; }
+    .faq-q:hover { color:var(--gold); }
+    .faq-icon { font-size:16px; color:var(--gold); transition:transform 0.3s; flex-shrink:0; }
+    .faq-a { font-size:13px; color:var(--muted2); padding-bottom:18px; line-height:1.7; display:none; }
+    .faq-item.open .faq-a { display:block; }
+    .faq-item.open .faq-icon { transform:rotate(45deg); }
+
+    /* WAITLIST */
+    .waitlist-section { padding:110px 24px; text-align:center; position:relative; overflow:hidden; }
+    .waitlist-section::before { content:''; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:600px; height:600px; background:radial-gradient(ellipse,#f59e0b10 0%,transparent 70%); }
+    .waitlist-section h2 { font-size:clamp(28px,5vw,52px); font-weight:900; margin:14px 0 14px; letter-spacing:-1px; }
+    .waitlist-section p { font-size:16px; color:var(--muted2); max-width:480px; margin:0 auto 36px; }
+    .waitlist-form { display:flex; gap:11px; max-width:460px; margin:0 auto 20px; flex-wrap:wrap; justify-content:center; }
+    .waitlist-input { flex:1; min-width:230px; padding:13px 18px; background:var(--bg2); border:1px solid var(--border); border-radius:10px; color:var(--text); font-size:14px; font-family:'Inter',sans-serif; outline:none; transition:border-color 0.2s; }
+    .waitlist-input:focus { border-color:var(--gold); }
+    .waitlist-input::placeholder { color:var(--muted); }
+    .waitlist-success { display:none; padding:14px 22px; background:#10b98115; border:1px solid #10b98130; border-radius:10px; color:var(--green); font-weight:600; font-size:14px; max-width:380px; margin:0 auto; }
+    .waitlist-note { font-size:12px; color:var(--muted); }
+
+    /* FOOTER */
+    footer { padding:56px 24px 28px; border-top:1px solid var(--border); }
+    .footer-inner { max-width:1100px; margin:0 auto; display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:36px; margin-bottom:40px; }
+    .footer-logo { font-size:18px; font-weight:900; letter-spacing:3px; margin-bottom:10px; }
+    .footer-desc { font-size:12px; color:var(--muted); line-height:1.6; max-width:240px; }
+    .footer-ch { display:inline-flex; align-items:center; gap:6px; margin-top:14px; font-size:11px; color:var(--muted); background:var(--bg2); padding:4px 10px; border-radius:6px; border:1px solid var(--border); }
+    .footer-col h4 { font-size:12px; font-weight:700; color:var(--text); margin-bottom:14px; }
+    .footer-col a { display:block; font-size:12px; color:var(--muted); text-decoration:none; margin-bottom:9px; transition:color 0.2s; }
+    .footer-col a:hover { color:var(--gold); }
+    .footer-bottom { max-width:1100px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--muted); border-top:1px solid var(--border); padding-top:22px; }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+    .animate { opacity:0; }
+    .animate.visible { animation:fadeUp 0.6s ease forwards; }
+
+    @media(max-width:768px){
+      .nav-links{display:none}
+      nav{padding:0 8px}
+      .nav-logo{font-size:16px;letter-spacing:1.5px}
+      .nav-logo span{display:none}
+      .nav-inner>div:last-child{gap:4px !important}
+      .nav-inner>div:last-child .lang-group{padding:2px !important}
+      .nav-inner>div:last-child .lang-group button{font-size:12px !important;padding:1px 2px !important}
+      .nav-inner>div:last-child .btn-outline{padding:6px 10px !important;font-size:11px !important}
+      .nav-inner>div:last-child .btn-gold{padding:6px 10px !important;font-size:11px !important}
+      .agents-grid,.pm-agents{grid-template-columns:repeat(2,1fr)}
+      .stats-grid{grid-template-columns:repeat(2,1fr)}
+      .pricing-grid{grid-template-columns:1fr}
+      .pricing-card.featured{transform:none}
+      .steps{grid-template-columns:1fr;gap:28px}
+      .steps::before{display:none}
+      .testi-grid{grid-template-columns:1fr}
+      .footer-inner{grid-template-columns:1fr 1fr}
+      .preview-side{display:none}
+      .pm-kpi{grid-template-columns:repeat(2,1fr)}
+    }
+  </style>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#f59e0b" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="SPORTVISE" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <!-- SW removed v21 -->
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo gradient-text">SPORTVISE<span>🇨🇭 Suisse</span></div>
+    <div class="nav-links">
+      <a href="#agents" data-i18n="navAgents">Agents IA</a>
+      <a href="#tarifs" data-i18n="navPricing">Tarifs</a>
+      <a href="#faq" data-i18n="navFaq">FAQ</a>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div class="lang-group" style="display:flex;gap:2px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;padding:3px">
+        <button onclick="setLangPage('fr')" id="lp-fr" title="Français" style="border:none;background:transparent;cursor:pointer;font-size:15px;padding:2px 5px;border-radius:5px;opacity:1;transition:all 0.2s">🇫🇷</button>
+        <button onclick="setLangPage('de')" id="lp-de" title="Deutsch" style="border:none;background:transparent;cursor:pointer;font-size:15px;padding:2px 5px;border-radius:5px;opacity:0.35;transition:all 0.2s">🇩🇪</button>
+        <button onclick="setLangPage('en')" id="lp-en" title="English" style="border:none;background:transparent;cursor:pointer;font-size:15px;padding:2px 5px;border-radius:5px;opacity:0.35;transition:all 0.2s">🇬🇧</button>
+        <button onclick="setLangPage('it')" id="lp-it" title="Italiano" style="border:none;background:transparent;cursor:pointer;font-size:15px;padding:2px 5px;border-radius:5px;opacity:0.35;transition:all 0.2s">🇮🇹</button>
+      </div>
+      <a href="app/login.html" class="btn btn-outline" style="padding:9px 18px;font-size:13px" data-i18n="navLogin">Connexion</a>
+      <a href="app/login.html" class="btn btn-gold" style="padding:10px 18px;font-size:13px" data-i18n="navStart">Commencer →</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="animate"><span class="tag tag-gold" data-i18n="heroTag">🚀 Lancement en Suisse Romande · 2026</span></div>
+    <h1 class="animate" style="animation-delay:.1s">
+      <span data-i18n="heroTitle1">Votre agent IA de</span><br/>
+      <span class="gradient-text" data-i18n="heroTitle2">management sportif</span><br/>
+      <span data-i18n="heroTitle3">disponible 24h/24</span>
+    </h1>
+    <p class="animate" style="animation-delay:.2s" data-i18n="heroDesc">SPORTVISE révolutionne le management des athlètes suisses. Marketing, sponsors, contrats, préparation physique & mentale — une équipe d'experts IA à votre service.</p>
+    <div class="hero-cta animate" style="animation-delay:.3s">
+      <a href="app/login.html" class="btn btn-gold" data-i18n="heroCta1">Créer mon compte gratuit →</a>
+      <a href="#agents" class="btn btn-outline" data-i18n="heroCta2">Découvrir les agents IA</a>
+    </div>
+    <div class="hero-social animate" style="animation-delay:.4s">
+      <span data-i18n="heroSocial">🔒 Aucune carte de crédit requise · Données protégées LPD 🇨🇭</span>
+    </div>
+  </div>
+</section>
+
+<!-- PREVIEW -->
+<div class="container preview-wrap animate" style="animation-delay:.5s">
+  <div class="preview-frame">
+    <div class="preview-bar">
+      <div class="dot" style="background:#ef4444"></div>
+      <div class="dot" style="background:#f59e0b"></div>
+      <div class="dot" style="background:#10b981"></div>
+      <div style="flex:1;text-align:center;font-size:10px;color:#64748b">app.sportvise.ch · Dashboard</div>
+    </div>
+    <div class="preview-body">
+      <div class="preview-side">
+        <div class="ps-logo gradient-text">SPORTVISE</div>
+        <div class="ps-item active">🏠 Dashboard</div>
+        <div class="ps-item">💼 Lucas — Manager</div>
+        <div class="ps-item">🎯 Alex — Marketing</div>
+        <div class="ps-item">🤝 Marc — Sponsors</div>
+        <div class="ps-item">⚖️ Léa — Contrats</div>
+        <div class="ps-item">💶 Sophie — Finance</div>
+        <div class="ps-item">📊 Pierre — Compta</div>
+        <div class="ps-item">🏋️ David — Physique</div>
+        <div class="ps-item">🧠 Emma — Mental</div>
+      </div>
+      <div class="preview-main">
+        <div class="pm-title">Bonjour 👋 <span style="font-size:10px;color:#64748b;font-weight:400">· 🔥 Streak : 7 jours · ⭐ 3 badges</span></div>
+        <div class="pm-kpi">
+          <div class="pm-card" style="border-top:2px solid #f59e0b"><div class="v">8/10</div><div class="l">Humeur</div></div>
+          <div class="pm-card" style="border-top:2px solid #10b981"><div class="v" style="color:#10b981">7/10</div><div class="l">Énergie</div></div>
+          <div class="pm-card" style="border-top:2px solid #6366f1"><div class="v" style="color:#6366f1">7.5h</div><div class="l">Sommeil</div></div>
+          <div class="pm-card" style="border-top:2px solid #ef4444"><div class="v" style="color:#ef4444">72</div><div class="l">Fitness Score</div></div>
+        </div>
+        <div style="font-size:9px;font-weight:700;color:#64748b;margin-bottom:7px;text-transform:uppercase;letter-spacing:1px">Tes 11 Agents IA</div>
+        <div class="pm-agents">
+          <div class="pm-agent"><div class="i">💼</div><div class="n">Lucas · Manager</div></div>
+          <div class="pm-agent"><div class="i">🎯</div><div class="n">Alex · Marketing</div></div>
+          <div class="pm-agent"><div class="i">🤝</div><div class="n">Marc · Sponsors</div></div>
+          <div class="pm-agent"><div class="i">⚖️</div><div class="n">Léa · Contrats</div></div>
+          <div class="pm-agent"><div class="i">💶</div><div class="n">Sophie · Finance</div></div>
+          <div class="pm-agent"><div class="i">📊</div><div class="n">Pierre · Compta</div></div>
+          <div class="pm-agent"><div class="i">🏋️</div><div class="n">David · Physique</div></div>
+          <div class="pm-agent"><div class="i">🧠</div><div class="n">Emma · Mental</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<section class="stats-section">
+  <div class="container">
+    <div class="stats-grid animate">
+      <div class="stat-item"><div class="stat-num gradient-text">11</div><div class="stat-label" data-i18n="stat1">Agents IA spécialisés</div></div>
+      <div class="stat-item"><div class="stat-num gradient-text">24/7</div><div class="stat-label" data-i18n="stat2">Disponibilité totale</div></div>
+      <div class="stat-item"><div class="stat-num gradient-text">Gratuit</div><div class="stat-label" data-i18n="stat3">Pour commencer dès maintenant</div></div>
+      <div class="stat-item"><div class="stat-num gradient-text">🇨🇭</div><div class="stat-label" data-i18n="stat4">100% adapté Suisse</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- AGENTS -->
+<section class="agents-section" id="agents">
+  <div class="container">
+    <div class="section-header animate">
+      <span class="tag tag-gold" data-i18n="agentsTag">Votre équipe IA</span>
+      <h2 data-i18n="agentsTitle">11 agents experts<br/>à votre service</h2>
+      <p data-i18n="agentsDesc">Chaque agent connaît parfaitement le marché sportif suisse — droit, fiscalité, culture et réseaux locaux.</p>
+    </div>
+    <div class="agents-grid">
+      <!-- BUSINESS -->
+      <div class="agent-card animate" style="border-color:#fb923c25;animation-delay:.1s"><div class="agent-emoji">💼</div><div class="agent-name">Lucas</div><div class="agent-role" style="color:#fb923c">Manager Sportif</div><div class="agent-desc">Gestion de carrière, recherche de clubs, transferts et stratégie de développement.</div><div class="agent-status"><div class="online-dot"></div>En ligne · Répond en &lt;2s</div></div>
+      <div class="agent-card animate" style="border-color:#6366f125;animation-delay:.15s"><div class="agent-emoji">🎯</div><div class="agent-name">Alex</div><div class="agent-role" style="color:#6366f1">Marketing & Visibilité</div><div class="agent-desc">Réseaux sociaux, personal branding, image publique et stratégie de communication.</div><div class="agent-status"><div class="online-dot"></div>En ligne · Répond en &lt;2s</div></div>
+      <div class="agent-card animate" style="border-color:#f59e0b25;animation-delay:.2s"><div class="agent-emoji">🤝</div><div class="agent-name">Marc</div><div class="agent-role" style="color:#f59e0b">Sponsors & Partenariats</div><div class="agent-desc">Recherche de sponsors, négociations, partenariats et valorisation de votre image.</div><div class="agent-status"><div class="online-dot"></div>En ligne · Répond en &lt;2s</div></div>
+      <div class="agent-card animate" style="border-color:#8b5cf625;animation-delay:.25s"><div class="agent-emoji">⚖️</div><div class="agent-name">Léa</div><div class="agent-role" style="color:#8b5cf6">Contrats & Juridique</div><div class="agent-desc">Contrats, droits des sportifs, litiges et réglementation sportive suisse.</div><div class="agent-status"><div class="online-dot"></div>En ligne · Répond en &lt;2s</div></div>
+      <div class="agent-card animate" style="border-color:#10b98125;animation-delay:.3s"><div class="agent-emoji">💶</div><div class="agent-name">Sophie</div><div class="agent-role" style="color:#10b981">Finance & Fiscalité</div><div class="agent-desc">Budget, investissements, fiscalité sportive suisse et planification financière.</div><div class="agent-status"><div class="online-dot"></div>En ligne · Répond en &lt;2s</div></div>
+      <div class="agent-card animate" style="border-color:#94a3b825;animation-delay:.35s"><div class="agent-emoji">📊</div><div class="agent-name">Pierre</div><div class="agent-role" style="color:#94a3b8">Comptabilité</div><div class="agent-desc">Suivi comptable, factures, déclarations fiscales et gestion administrative.</div><div class="agent-status"><div class="online-dot"></div>En ligne · Répond en &lt;2s</div></div>
+      <!-- PERFORMANCE -->
+      <div class="agent-card animate" style="border-color:#ef444425;animation-delay:.4s"><div class="agent-emoji">🏋️</div><div class="agent-name">David</div><div class="agent-role" style="color:#ef4444">Préparation Physique</div><div class="agent-desc">Programmes d'entraînement sur mesure, prévention des blessures et performance.</div><div class="agent-status"><div class="online-dot"></div>En ligne · Répond en &lt;2s</div></div>
+      <div class="agent-card animate" style="border-color:#06b6d425;animation-delay:.45s"><div class="agent-emoji">🧠</div><div class="agent-name">Emma</div><div class="agent-role" style="color:#06b6d4">Préparation Mentale</div><div class="agent-desc">Psychologie du sport, gestion du stress, confiance et performance sous pression.</div><div class="agent-status"><div class="online-dot"></div>En ligne · Répond en &lt;2s</div></div>
+      <div class="agent-card animate" style="border-color:#84cc1625;animation-delay:.5s"><div class="agent-emoji">🥗</div><div class="agent-name">Clara</div><div class="agent-role" style="color:#84cc16">Nutrition Sportive</div><div class="agent-desc">Plans alimentaires personnalisés, hydratation, supplémentation et nutrition de saison.</div><div class="agent-status"><div class="online-dot"></div>En ligne · Répond en &lt;2s</div></div>
+      <div class="agent-card animate" style="border-color:#a78bfa25;animation-delay:.55s"><div class="agent-emoji">😴</div><div class="agent-name">Nora</div><div class="agent-role" style="color:#a78bfa">Sommeil & Récupération</div><div class="agent-desc">Optimisation du sommeil, routines de repos et cycles de récupération.</div><div class="agent-status"><div class="online-dot"></div>En ligne · Répond en &lt;2s</div></div>
+      <div class="agent-card animate" style="border-color:#14b8a625;animation-delay:.6s"><div class="agent-emoji">♻️</div><div class="agent-name">Julie</div><div class="agent-role" style="color:#14b8a6">Récupération & Régénération</div><div class="agent-desc">Protocoles de récupération, cryothérapie, étirements et régénération musculaire.</div><div class="agent-status"><div class="online-dot"></div>En ligne · Répond en &lt;2s</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section">
+  <div class="container">
+    <div class="section-header animate">
+      <span class="tag tag-gold" data-i18n="howTag">Simple & Rapide</span>
+      <h2 data-i18n="howTitle">Lancez-vous en 3 étapes</h2>
+      <p data-i18n="howDesc">Pas de paperasse. Votre équipe d'agents IA est opérationnelle dès votre inscription.</p>
+    </div>
+    <div class="steps">
+      <div class="step animate" style="animation-delay:.1s"><div class="step-num">1</div><h3 data-i18n="step1Title">Créez votre profil</h3><p data-i18n="step1Desc">Renseignez votre sport et vos objectifs. SPORTVISE personnalise chaque agent à votre profil.</p></div>
+      <div class="step animate" style="animation-delay:.2s"><div class="step-num">2</div><h3 data-i18n="step2Title">Chattez avec vos agents</h3><p data-i18n="step2Desc">Posez vos questions à n'importe quel agent, à toute heure. Réponses expertes en moins de 2 secondes.</p></div>
+      <div class="step animate" style="animation-delay:.3s"><div class="step-num">3</div><h3 data-i18n="step3Title">Passez à l'action</h3><p data-i18n="step3Desc">Suivez les recommandations personnalisées et mesurez vos progrès dans votre dashboard.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing-section" id="tarifs">
+  <div class="container">
+    <div class="section-header animate">
+      <span class="tag tag-gold" data-i18n="pricingTag">Tarifs transparents</span>
+      <h2 data-i18n="pricingTitle">Un investissement,<br/>une carrière boostée</h2>
+      <p data-i18n="pricingDesc">Résiliez à tout moment. Remboursement garanti 30 jours.</p>
+    </div>
+    <div class="pricing-grid" style="max-width:900px;margin:0 auto;grid-template-columns:repeat(3,1fr)">
+      <div class="pricing-card animate" style="animation-delay:.1s">
+        <div class="pricing-name">Free</div>
+        <div class="pricing-price">CHF 0<span>/mois</span></div>
+        <div class="pricing-sub" data-i18n="priceFreeDesc">Découvrez SPORTVISE sans engagement</div>
+        <div class="pricing-div"></div>
+        <div class="pf"><span class="ck">✓</span><span>3 agents IA</span></div>
+        <div class="pf"><span class="ck">✓</span><span>20 messages par jour</span></div>
+        <div class="pf"><span class="ck">✓</span><span>Journal quotidien</span></div>
+        <div class="pf"><span class="ck">✓</span><span>Dashboard de base</span></div>
+        <div class="pf"><span class="cx">–</span><span>Défis & Badges</span></div>
+        <div class="pf"><span class="cx">–</span><span>Rapports PDF</span></div>
+        <a href="app/login.html" class="pricing-btn pb-outline" style="text-decoration:none;text-align:center" data-i18n="priceFreeBtn">Créer mon compte gratuit</a>
+      </div>
+      <div class="pricing-card featured animate" style="animation-delay:.2s">
+        <div class="pricing-badge">⭐ Populaire</div>
+        <div class="pricing-name">Plus</div>
+        <div class="pricing-price gradient-text">CHF 12<span style="-webkit-text-fill-color:#64748b">/mois</span></div>
+        <div class="pricing-sub" data-i18n="pricePlusDesc">Pour les athlètes qui veulent progresser</div>
+        <div class="pricing-div"></div>
+        <div class="pf"><span class="ck">✓</span><span><strong>11 agents IA</strong></span></div>
+        <div class="pf"><span class="ck">✓</span><span>Messages illimités</span></div>
+        <div class="pf"><span class="ck">✓</span><span>Journal + Objectifs</span></div>
+        <div class="pf"><span class="ck">✓</span><span>Défis & Badges</span></div>
+        <div class="pf"><span class="ck">✓</span><span>Analytics avancés</span></div>
+        <div class="pf"><span class="cx">–</span><span>Rapports PDF mensuels</span></div>
+        <a href="app/login.html" class="pricing-btn pb-gold" style="text-decoration:none;text-align:center" data-i18n="pricePlusBtn">Choisir Plus → CHF 12/mois</a>
+      </div>
+      <div class="pricing-card animate" style="animation-delay:.3s">
+        <div class="pricing-name">Pro</div>
+        <div class="pricing-price">CHF 29<span>/mois</span></div>
+        <div class="pricing-sub" data-i18n="priceProDesc">L'expérience complète pour performer</div>
+        <div class="pricing-div"></div>
+        <div class="pf"><span class="ck">✓</span><span><strong>Tout de Plus</strong></span></div>
+        <div class="pf"><span class="ck">✓</span><span>Rapports PDF mensuels</span></div>
+        <div class="pf"><span class="ck">✓</span><span>Export CSV illimité</span></div>
+        <div class="pf"><span class="ck">✓</span><span>Intégrations (Strava...)</span></div>
+        <div class="pf"><span class="ck">✓</span><span>Support prioritaire 24/7</span></div>
+        <div class="pf"><span class="ck">✓</span><span>Accès anticipé nouveautés</span></div>
+        <a href="app/login.html" class="pricing-btn pb-outline" style="text-decoration:none;text-align:center" data-i18n="priceProBtn">Choisir Pro → CHF 29/mois</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- FAQ -->
+<section class="faq-section" id="faq">
+  <div class="container">
+    <div class="section-header animate"><span class="tag tag-gold" data-i18n="faqTag">FAQ</span><h2 data-i18n="faqTitle">Questions fréquentes</h2></div>
+    <div class="faq-list animate">
+      <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">SPORTVISE remplace-t-il un vrai agent sportif humain ?<span class="faq-icon">+</span></button><div class="faq-a">SPORTVISE ne remplace pas un agent humain, il le démocratise. Un agent pro coûte CHF 5'000–15'000/mois — inaccessible pour la majorité. SPORTVISE offre une équipe complète de 11 agents IA dès CHF 0/mois, avec des plans Plus à CHF 12 et Pro à CHF 29.</div></div>
+      <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Les conseils sont-ils adaptés à la Suisse ?<span class="faq-icon">+</span></button><div class="faq-a">Oui — droit suisse des obligations, fiscalité par canton, Swiss Football League, sponsors locaux (Helvetia, Swiss Life…) et particularités de la Suisse Romande, Alémanique et Italophone.</div></div>
+      <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Mes données sont-elles protégées ?<span class="faq-icon">+</span></button><div class="faq-a">Vos données sont hébergées en Suisse, conformément à la LPD. Chiffrement bout en bout. Suppression de compte et données à tout moment.</div></div>
+      <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Pour quels sports SPORTVISE fonctionne-t-il ?<span class="faq-icon">+</span></button><div class="faq-a">Tous les sports suisses — football, padel, hockey, ski, tennis, natation, cyclisme, athlétisme, basketball… Le padel et le football sont particulièrement bien couverts, avec des agents formés sur les spécificités de chaque sport.</div></div>
+      <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Puis-je annuler à tout moment ?<span class="faq-icon">+</span></button><div class="faq-a">Oui, sans engagement ni pénalité. Résiliez en un clic. Garantie remboursement 30 jours.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- WAITLIST/CTA -->
+<section class="waitlist-section">
+  <div class="container">
+    <div class="animate"><span class="tag tag-gold" data-i18n="ctaTag">🚀 Rejoindre</span></div>
+    <h2 class="animate" style="animation-delay:.1s"><span data-i18n="ctaTitle">Lancez votre carrière avec</span><br/><span class="gradient-text">SPORTVISE</span></h2>
+    <p class="animate" style="animation-delay:.2s"><span data-i18n='ctaDesc'>Créez votre compte gratuit et accédez à votre équipe d'agents IA dès aujourd'hui.</span></p>
+    <div class="animate" style="animation-delay:.3s">
+      <a href="app/login.html" class="btn btn-gold" style="font-size:16px;padding:16px 36px" data-i18n="ctaBtn">Créer mon compte gratuit →</a>
+    </div>
+    <div class="waitlist-note animate" style="margin-top:20px;animation-delay:.4s"><span data-i18n="ctaNote">🔒 Aucune carte de crédit requise · Résiliation à tout moment · Données protégées LPD 🇨🇭</span></div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-logo gradient-text">SPORTVISE</div>
+      <div class="footer-desc"><span data-i18n="footerDesc">Le premier service de management sportif par IA, 100% adapté au marché suisse.</span></div>
+      <div class="footer-ch">🇨🇭 Fondé en Suisse Romande · 2026</div>
+    </div>
+    <div class="footer-col"><h4>Produit</h4><a href="#agents">Agents IA</a><a href="#tarifs">Tarifs</a><a href="app/login.html">Connexion</a></div>
+    <div class="footer-col"><h4>Légal</h4><a href="#">CGU</a><a href="#">Confidentialité</a><a href="#">LPD Suisse</a></div>
+    <div class="footer-col"><h4>Contact</h4><a href="mailto:info@sportvise.ch">info@sportvise.ch</a><a href="#">Instagram</a><a href="#">LinkedIn</a></div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 SPORTVISE · Suisse 🇨🇭</span>
+    <span><span data-i18n="footerMade">Fait avec ❤️ pour les athlètes suisses</span></span>
+  </div>
+</footer>
+
+<script>
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target);} });
+  }, {threshold:0.1});
+  document.querySelectorAll('.animate').forEach(el => observer.observe(el));
+  function toggleFaq(btn) {
+    const item = btn.closest('.faq-item');
+    const open = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));
+    if(!open) item.classList.add('open');
+  }
+
+  // ── TRADUCTIONS LANDING PAGE ─────────────────────
+  const i18n = {
+    fr: {
+      navAgents:"Agents IA", navPricing:"Tarifs", navFaq:"FAQ", navLogin:"Connexion", navStart:"Commencer \u2192",
+      heroTag:"\ud83d\ude80 Lancement en Suisse Romande \u00b7 2026",
+      heroTitle1:"Votre agent IA de", heroTitle2:"management sportif", heroTitle3:"disponible 24h/24",
+      heroDesc:"SPORTVISE r\u00e9volutionne le management des athl\u00e8tes suisses. Marketing, sponsors, contrats, pr\u00e9paration physique & mentale \u2014 une \u00e9quipe d\u2019experts IA \u00e0 votre service.",
+      heroCta1:"Cr\u00e9er mon compte gratuit \u2192", heroCta2:"D\u00e9couvrir les agents IA",
+      heroSocial:"\ud83d\udd12 Aucune carte de cr\u00e9dit requise \u00b7 Donn\u00e9es prot\u00e9g\u00e9es LPD \ud83c\udde8\ud83c\udded",
+      stat1:"Agents IA sp\u00e9cialis\u00e9s", stat2:"Disponibilit\u00e9 totale", stat3:"Pour commencer d\u00e8s maintenant", stat4:"100% adapt\u00e9 Suisse",
+      agentsTag:"Votre \u00e9quipe IA", agentsTitle:"11 agents experts<br/>\u00e0 votre service", agentsDesc:"Chaque agent conna\u00eet parfaitement le march\u00e9 sportif suisse \u2014 droit, fiscalit\u00e9, culture et r\u00e9seaux locaux.",
+      howTag:"Simple & Rapide", howTitle:"Lancez-vous en 3 \u00e9tapes", howDesc:"Pas de paperasse. Votre \u00e9quipe d\u2019agents IA est op\u00e9rationnelle d\u00e8s votre inscription.",
+      step1Title:"Cr\u00e9ez votre profil", step1Desc:"Renseignez votre sport et vos objectifs. SPORTVISE personnalise chaque agent \u00e0 votre profil.",
+      step2Title:"Chattez avec vos agents", step2Desc:"Posez vos questions \u00e0 n\u2019importe quel agent, \u00e0 toute heure. R\u00e9ponses expertes en moins de 2 secondes.",
+      step3Title:"Passez \u00e0 l\u2019action", step3Desc:"Suivez les recommandations personnalis\u00e9es et mesurez vos progr\u00e8s dans votre dashboard.",
+      pricingTag:"Tarifs transparents", pricingTitle:"Un investissement,<br/>une carri\u00e8re boost\u00e9e", pricingDesc:"R\u00e9siliez \u00e0 tout moment. Remboursement garanti 30 jours.",
+      testiTag:"T\u00e9moignages", testiTitle:"Ce qu\u2019ils disent de SPORTVISE",
+      faqTag:"FAQ", faqTitle:"Questions fr\u00e9quentes",
+      ctaTag:"\ud83d\ude80 Rejoindre", ctaTitle:"Lancez votre carri\u00e8re avec", ctaDesc:"Cr\u00e9ez votre compte gratuit et acc\u00e9dez \u00e0 votre \u00e9quipe d\u2019agents IA d\u00e8s aujourd\u2019hui.", ctaBtn:"Cr\u00e9er mon compte gratuit \u2192",
+      ctaNote:"\ud83d\udd12 Aucune carte de cr\u00e9dit requise \u00b7 R\u00e9siliation \u00e0 tout moment \u00b7 Donn\u00e9es prot\u00e9g\u00e9es LPD \ud83c\udde8\ud83c\udded",
+      footerDesc:"Le premier service de management sportif par IA, 100% adapt\u00e9 au march\u00e9 suisse.",
+      footerMade:"Fait avec \u2764\ufe0f pour les athl\u00e8tes suisses"
+    },
+    de: {
+      navAgents:"KI-Agenten", navPricing:"Preise", navFaq:"FAQ", navLogin:"Anmelden", navStart:"Starten \u2192",
+      heroTag:"\ud83d\ude80 Lancierung in der Schweiz \u00b7 2026",
+      heroTitle1:"Ihr KI-Agent f\u00fcr", heroTitle2:"Sportmanagement", heroTitle3:"rund um die Uhr verf\u00fcgbar",
+      heroDesc:"SPORTVISE revolutioniert das Management von Schweizer Athleten. Marketing, Sponsoren, Vertr\u00e4ge, k\u00f6rperliche & mentale Vorbereitung \u2014 ein KI-Expertenteam zu Ihrem Dienst.",
+      heroCta1:"Kostenloses Konto erstellen \u2192", heroCta2:"KI-Agenten entdecken",
+      heroSocial:"\ud83d\udd12 Keine Kreditkarte erforderlich \u00b7 Daten gesch\u00fctzt gem\u00e4ss DSG \ud83c\udde8\ud83c\udded",
+      stat1:"Spezialisierte KI-Agenten", stat2:"Totale Verf\u00fcgbarkeit", stat3:"Sofort kostenlos starten", stat4:"100% auf die Schweiz angepasst",
+      agentsTag:"Ihr KI-Team", agentsTitle:"11 Experten-Agenten<br/>zu Ihrem Dienst", agentsDesc:"Jeder Agent kennt den Schweizer Sportmarkt perfekt \u2014 Recht, Steuern, Kultur und lokale Netzwerke.",
+      howTag:"Einfach & Schnell", howTitle:"Starten Sie in 3 Schritten", howDesc:"Kein Papierkram. Ihr KI-Agenten-Team ist sofort nach der Anmeldung einsatzbereit.",
+      step1Title:"Profil erstellen", step1Desc:"Geben Sie Ihren Sport und Ihre Ziele ein. SPORTVISE passt jeden Agenten an Ihr Profil an.",
+      step2Title:"Mit Ihren Agenten chatten", step2Desc:"Stellen Sie jederzeit Fragen an jeden Agenten. Expertenantworten in unter 2 Sekunden.",
+      step3Title:"Handeln Sie", step3Desc:"Folgen Sie den personalisierten Empfehlungen und messen Sie Ihre Fortschritte im Dashboard.",
+      pricingTag:"Transparente Preise", pricingTitle:"Eine Investition,<br/>eine gest\u00e4rkte Karriere", pricingDesc:"Jederzeit k\u00fcndbar. 30-Tage-Geld-zur\u00fcck-Garantie.",
+      testiTag:"Erfahrungsberichte", testiTitle:"Was sie \u00fcber SPORTVISE sagen",
+      faqTag:"FAQ", faqTitle:"H\u00e4ufig gestellte Fragen",
+      ctaTag:"\ud83d\ude80 Beitreten", ctaTitle:"Starten Sie Ihre Karriere mit", ctaDesc:"Erstellen Sie Ihr kostenloses Konto und greifen Sie noch heute auf Ihr KI-Agenten-Team zu.", ctaBtn:"Kostenloses Konto erstellen \u2192",
+      ctaNote:"\ud83d\udd12 Keine Kreditkarte erforderlich \u00b7 Jederzeit k\u00fcndbar \u00b7 Daten gesch\u00fctzt gem\u00e4ss DSG \ud83c\udde8\ud83c\udded",
+      footerDesc:"Der erste KI-Sportmanagement-Dienst, 100% auf den Schweizer Markt zugeschnitten.",
+      footerMade:"Mit \u2764\ufe0f f\u00fcr Schweizer Athleten gemacht"
+    },
+    en: {
+      navAgents:"AI Agents", navPricing:"Pricing", navFaq:"FAQ", navLogin:"Log in", navStart:"Get started \u2192",
+      heroTag:"\ud83d\ude80 Launching in Switzerland \u00b7 2026",
+      heroTitle1:"Your AI agent for", heroTitle2:"sports management", heroTitle3:"available 24/7",
+      heroDesc:"SPORTVISE revolutionizes athlete management in Switzerland. Marketing, sponsors, contracts, physical & mental preparation \u2014 a team of AI experts at your service.",
+      heroCta1:"Create my free account \u2192", heroCta2:"Discover our AI agents",
+      heroSocial:"\ud83d\udd12 No credit card required \u00b7 Data protected by Swiss law \ud83c\udde8\ud83c\udded",
+      stat1:"Specialized AI agents", stat2:"Total availability", stat3:"Start for free right now", stat4:"100% adapted to Switzerland",
+      agentsTag:"Your AI team", agentsTitle:"11 expert agents<br/>at your service", agentsDesc:"Each agent knows the Swiss sports market perfectly \u2014 law, taxes, culture and local networks.",
+      howTag:"Simple & Fast", howTitle:"Get started in 3 steps", howDesc:"No paperwork. Your AI agent team is operational from the moment you sign up.",
+      step1Title:"Create your profile", step1Desc:"Enter your sport and goals. SPORTVISE personalizes each agent to your profile.",
+      step2Title:"Chat with your agents", step2Desc:"Ask any agent, any time. Expert answers in under 2 seconds.",
+      step3Title:"Take action", step3Desc:"Follow personalized recommendations and track your progress in your dashboard.",
+      pricingTag:"Transparent pricing", pricingTitle:"An investment,<br/>a boosted career", pricingDesc:"Cancel anytime. 30-day money-back guarantee.",
+      testiTag:"Testimonials", testiTitle:"What they say about SPORTVISE",
+      faqTag:"FAQ", faqTitle:"Frequently asked questions",
+      ctaTag:"\ud83d\ude80 Join us", ctaTitle:"Launch your career with", ctaDesc:"Create your free account and access your AI agent team today.", ctaBtn:"Create my free account \u2192",
+      ctaNote:"\ud83d\udd12 No credit card required \u00b7 Cancel anytime \u00b7 Data protected by Swiss law \ud83c\udde8\ud83c\udded",
+      footerDesc:"The first AI-powered sports management service, 100% adapted to the Swiss market.",
+      footerMade:"Made with \u2764\ufe0f for Swiss athletes"
+    },
+    it: {
+      navAgents:"Agenti IA", navPricing:"Prezzi", navFaq:"FAQ", navLogin:"Accedi", navStart:"Inizia \u2192",
+      heroTag:"\ud83d\ude80 Lancio in Svizzera \u00b7 2026",
+      heroTitle1:"Il tuo agente IA di", heroTitle2:"gestione sportiva", heroTitle3:"disponibile 24 ore su 24",
+      heroDesc:"SPORTVISE rivoluziona la gestione degli atleti svizzeri. Marketing, sponsor, contratti, preparazione fisica e mentale \u2014 un team di esperti IA al tuo servizio.",
+      heroCta1:"Crea il mio account gratuito \u2192", heroCta2:"Scopri gli agenti IA",
+      heroSocial:"\ud83d\udd12 Nessuna carta di credito richiesta \u00b7 Dati protetti LPD \ud83c\udde8\ud83c\udded",
+      stat1:"Agenti IA specializzati", stat2:"Disponibilit\u00e0 totale", stat3:"Inizia gratis subito", stat4:"100% adattato alla Svizzera",
+      agentsTag:"Il tuo team IA", agentsTitle:"11 agenti esperti<br/>al tuo servizio", agentsDesc:"Ogni agente conosce perfettamente il mercato sportivo svizzero \u2014 diritto, fiscalit\u00e0, cultura e reti locali.",
+      howTag:"Semplice & Veloce", howTitle:"Inizia in 3 passaggi", howDesc:"Nessuna burocrazia. Il tuo team di agenti IA \u00e8 operativo dal momento della registrazione.",
+      step1Title:"Crea il tuo profilo", step1Desc:"Inserisci il tuo sport e i tuoi obiettivi. SPORTVISE personalizza ogni agente sul tuo profilo.",
+      step2Title:"Chatta con i tuoi agenti", step2Desc:"Fai domande a qualsiasi agente, in qualsiasi momento. Risposte esperte in meno di 2 secondi.",
+      step3Title:"Passa all\u2019azione", step3Desc:"Segui le raccomandazioni personalizzate e misura i tuoi progressi nella dashboard.",
+      pricingTag:"Prezzi trasparenti", pricingTitle:"Un investimento,<br/>una carriera potenziata", pricingDesc:"Cancella in qualsiasi momento. Garanzia di rimborso 30 giorni.",
+      testiTag:"Testimonianze", testiTitle:"Cosa dicono di SPORTVISE",
+      faqTag:"FAQ", faqTitle:"Domande frequenti",
+      ctaTag:"\ud83d\ude80 Unisciti", ctaTitle:"Lancia la tua carriera con", ctaDesc:"Crea il tuo account gratuito e accedi al tuo team di agenti IA oggi.", ctaBtn:"Crea il mio account gratuito \u2192",
+      ctaNote:"\ud83d\udd12 Nessuna carta di credito richiesta \u00b7 Cancellazione in qualsiasi momento \u00b7 Dati protetti LPD \ud83c\udde8\ud83c\udded",
+      footerDesc:"Il primo servizio di gestione sportiva con IA, 100% adattato al mercato svizzero.",
+      footerMade:"Fatto con \u2764\ufe0f per gli atleti svizzeri"
+    }
+  };
+
+  let currentLang = 'fr';
+
+  function setLangPage(lang) {
+    currentLang = lang;
+    const texts = i18n[lang];
+    if (!texts) return;
+
+    // Update all data-i18n elements
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (texts[key]) el.innerHTML = texts[key];
+    });
+
+    // Update flag button opacities
+    ['fr','de','en','it'].forEach(l => {
+      const btn = document.getElementById('lp-' + l);
+      if (btn) btn.style.opacity = l === lang ? '1' : '0.35';
+    });
+
+    // Update html lang attribute
+    document.documentElement.lang = lang;
+  }
+</script>
+</body>
+</html>

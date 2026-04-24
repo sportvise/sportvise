@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="80" fill="#07091a"/>
+  <rect width="512" height="512" rx="80" fill="url(#bg)"/>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0d1127"/>
+      <stop offset="100%" style="stop-color:#07091a"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#f59e0b"/>
+      <stop offset="100%" style="stop-color:#fbbf24"/>
+    </linearGradient>
+  </defs>
+  <\!-- S letter -->
+  <text x="256" y="340" font-family="Arial Black, sans-serif" font-size="280" font-weight="900" text-anchor="middle" fill="url(#gold)">S</text>
+  <\!-- Bottom bar -->
+  <rect x="80" y="420" width="352" height="12" rx="6" fill="#f59e0b" opacity="0.6"/>
+</svg>

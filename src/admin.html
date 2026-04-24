@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>SPORTVISE — Admin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#07091a;--bg2:#0d1127;--bg3:#111827;--border:#1e2d47;
+      --gold:#f59e0b;--green:#10b981;--red:#ef4444;--purple:#8b5cf6;
+      --cyan:#06b6d4;--text:#f1f5f9;--muted:#64748b;--muted2:#94a3b8;
+    }
+    body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;padding:24px}
+    .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+    .logo{font-size:22px;font-weight:900;letter-spacing:3px;background:linear-gradient(135deg,#f59e0b,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .admin-badge{padding:4px 12px;background:#ef444415;border:1px solid #ef444430;border-radius:20px;font-size:11px;font-weight:700;color:#ef4444}
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+    .grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+    .card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px}
+    .card-title{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}
+    .kpi{border-top-width:2px}
+    .kpi-val{font-size:28px;font-weight:900;margin:6px 0 4px}
+    .kpi-label{font-size:11px;color:var(--muted)}
+    .kpi-delta{font-size:11px;font-weight:600;margin-top:4px}
+    .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+    .bar-label{font-size:12px;color:var(--muted2);width:120px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .bar-track{flex:1;height:8px;background:var(--bg3);border-radius:4px;overflow:hidden}
+    .bar-fill{height:100%;border-radius:4px;transition:width 0.6s ease}
+    .bar-count{font-size:11px;color:var(--muted);width:30px;text-align:right;flex-shrink:0}
+    .table{width:100%;border-collapse:collapse}
+    .table th{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;padding:8px 12px;border-bottom:1px solid var(--border);text-align:left}
+    .table td{font-size:12px;padding:10px 12px;border-bottom:1px solid #1e2d4750;color:var(--muted2)}
+    .table tr:hover td{background:#f59e0b08;color:var(--text)}
+    .table td:first-child{color:var(--text);font-weight:600}
+    .badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700}
+    .chart-bars{display:flex;align-items:flex-end;gap:6px;height:80px}
+    .chart-bar{flex:1;border-radius:4px 4px 0 0;transition:height 0.5s ease;min-height:3px;cursor:default}
+    .chart-bar:hover{opacity:0.8}
+    .chart-labels{display:flex;gap:6px;margin-top:6px}
+    .chart-label{flex:1;font-size:9px;color:var(--muted);text-align:center}
+    .agent-rating{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+    .rating-name{font-size:12px;color:var(--muted2);width:100px;flex-shrink:0}
+    .rating-up{color:var(--green);font-size:12px;font-weight:700}
+    .rating-down{color:var(--red);font-size:12px;font-weight:700}
+    .rating-score{font-size:11px;color:var(--muted);margin-left:auto}
+    .loading{text-align:center;padding:60px;color:var(--muted);font-size:14px}
+    .error-box{background:#ef444415;border:1px solid #ef444330;border-radius:12px;padding:20px;text-align:center;color:#fca5a5}
+    .back-btn{padding:8px 16px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted2);font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;text-decoration:none;transition:all 0.2s}
+    .back-btn:hover{border-color:var(--gold);color:var(--gold)}
+    .refresh-btn{padding:8px 16px;background:linear-gradient(135deg,#f59e0b,#d97706);border:none;border-radius:8px;color:#07091a;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif}
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div style="display:flex;align-items:center;gap:14px">
+    <div class="logo">SPORTVISE</div>
+    <div class="admin-badge">🔐 ADMIN</div>
+    <div style="font-size:12px;color:var(--muted)" id="lastUpdate"></div>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center">
+    <button class="refresh-btn" onclick="loadStats()">🔄 Actualiser</button>
+    <a href="dashboard.html" class="back-btn">← Dashboard athlète</a>
+  </div>
+</div>
+
+<div id="content"><div class="loading">⏳ Chargement des données...</div></div>
+
+<script>
+const SUPABASE_URL = 'https://ckikyvokurpehavjlkbc.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNraWt5dm9rdXJwZWhhdmpsa2JjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMjE2MzgsImV4cCI6MjA5MTY5NzYzOH0.nbvRqNly8KnqlaInY62C9YOA5-32YxrFSavXyreCOYY';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const AGENT_NAMES = {
+  marketing:'🎯 Alex',finance:'💶 Sophie',sponsors:'🤝 Marc',
+  contrats:'⚖️ Léa',physique:'🏋️ David',mental:'🧠 Emma',
+  nutrition:'🥗 Clara',comptabilite:'📊 Pierre',sommeil:'😴 Nora',recuperation:'♻️ Julie',equipe:'💼 Lucas'
+};
+const LEVEL_COLORS = {
+  'Débutant':'#64748b','Amateur':'#3b82f6','Semi-Pro':'#8b5cf6',
+  'Professionnel':'#f59e0b','Elite':'#10b981'
+};
+const SPORT_EMOJIS = {
+  'Football':'⚽','Hockey sur glace':'🏒','Ski alpin':'⛷️','Tennis':'🎾',
+  'Cyclisme':'🚴','Natation':'🏊','Athlétisme':'🏃','Basketball':'🏀',
+  'Volleyball':'🏐','Unihockey':'🏑','Handball':'🤾','Autre':'🏅'
+};
+
+async function checkAuth() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { window.location.href = 'login.html'; return false; }
+  if (session.user.email !== 'sportvise.pro@gmail.com') {
+    document.getElementById('content').innerHTML = `
+      <div class="error-box">
+        <div style="font-size:32px;margin-bottom:12px">🚫</div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:8px">Accès refusé</div>
+        <div style="font-size:13px">Cette page est réservée à l'administrateur SPORTVISE.</div>
+        <a href="dashboard.html" style="display:inline-block;margin-top:16px;padding:10px 20px;background:var(--gold);color:#07091a;border-radius:8px;font-weight:700;text-decoration:none">← Retour au dashboard</a>
+      </div>`;
+    return false;
+  }
+  return session.user.email;
+}
+
+async function loadStats() {
+  const email = await checkAuth();
+  if (!email) return;
+
+  document.getElementById('content').innerHTML = '<div class="loading">⏳ Chargement des données...</div>';
+
+  try {
+    const res = await fetch('/.netlify/functions/admin-stats', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userEmail: email })
+    });
+
+    if (!res.ok) throw new Error('Erreur serveur ' + res.status);
+    const d = await res.json();
+    if (d.error) throw new Error(d.error);
+
+    document.getElementById('lastUpdate').textContent = 'Mis à jour : ' + new Date().toLocaleTimeString('fr-CH');
+    renderDashboard(d);
+
+  } catch (err) {
+    document.getElementById('content').innerHTML = `
+      <div class="error-box">
+        <div style="font-size:28px;margin-bottom:8px">⚠️</div>
+        <div style="font-weight:700;margin-bottom:4px">Erreur de chargement</div>
+        <div style="font-size:13px">${err.message}</div>
+        <div style="font-size:11px;margin-top:8px;color:#94a3b8">Vérifiez que SUPABASE_SERVICE_KEY est bien configurée dans Netlify</div>
+      </div>`;
+  }
+}
+
+function renderDashboard(d) {
+  const maxSport = d.topSports[0]?.[1] || 1;
+  const maxAgent = d.topAgents[0]?.[1] || 1;
+  const maxDay = Math.max(...Object.values(d.msgsByDay), 1);
+
+  document.getElementById('content').innerHTML = `
+
+    <!-- KPIs -->
+    <div class="grid">
+      <div class="card kpi" style="border-top-color:#f59e0b">
+        <div class="kpi-label">Athlètes inscrits</div>
+        <div class="kpi-val" style="color:#f59e0b">${d.totalAthletes}</div>
+        <div class="kpi-delta" style="color:#10b981">+${d.newThisWeek} cette semaine</div>
+      </div>
+      <div class="card kpi" style="border-top-color:#10b981">
+        <div class="kpi-label">Ce mois-ci</div>
+        <div class="kpi-val" style="color:#10b981">+${d.newThisMonth}</div>
+        <div class="kpi-delta" style="color:var(--muted)">nouveaux athlètes</div>
+      </div>
+      <div class="card kpi" style="border-top-color:#6366f1">
+        <div class="kpi-label">Messages échangés</div>
+        <div class="kpi-val" style="color:#6366f1">${d.totalMessages}</div>
+        <div class="kpi-delta" style="color:var(--muted)">total avec les agents</div>
+      </div>
+      <div class="card kpi" style="border-top-color:#06b6d4">
+        <div class="kpi-label">Notes reçues</div>
+        <div class="kpi-val" style="color:#06b6d4">${d.totalRatings}</div>
+        <div class="kpi-delta" style="color:var(--muted)">👍/👎 sur les agents</div>
+      </div>
+    </div>
+
+    <!-- Charts row -->
+    <div class="grid-3">
+
+      <!-- Messages 7 jours -->
+      <div class="card">
+        <div class="card-title">Messages / 7 derniers jours</div>
+        <div class="chart-bars">
+          ${Object.entries(d.msgsByDay).map(([day, count]) => `
+            <div class="chart-bar" style="height:${(count/maxDay*100)||3}%;background:linear-gradient(180deg,#6366f1,#4f46e5)" title="${day}: ${count} messages"></div>
+          `).join('')}
+        </div>
+        <div class="chart-labels">
+          ${Object.keys(d.msgsByDay).map(day => `<div class="chart-label">${day}</div>`).join('')}
+        </div>
+      </div>
+
+      <!-- Sports -->
+      <div class="card">
+        <div class="card-title">Sports les plus populaires</div>
+        ${d.topSports.map(([sport, count]) => `
+          <div class="bar-row">
+            <div class="bar-label">${SPORT_EMOJIS[sport]||'🏅'} ${sport}</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${count/maxSport*100}%;background:linear-gradient(90deg,#f59e0b,#d97706)"></div></div>
+            <div class="bar-count">${count}</div>
+          </div>
+        `).join('')}
+      </div>
+
+      <!-- Niveaux -->
+      <div class="card">
+        <div class="card-title">Niveaux des athlètes</div>
+        ${Object.entries(d.levelCounts).map(([level, count]) => `
+          <div class="bar-row">
+            <div class="bar-label">${level}</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${count/d.totalAthletes*100}%;background:${LEVEL_COLORS[level]||'#64748b'}"></div></div>
+            <div class="bar-count">${count}</div>
+          </div>
+        `).join('')}
+      </div>
+
+    </div>
+
+    <!-- Agents + Notes -->
+    <div class="grid-2">
+
+      <!-- Agents les plus utilisés -->
+      <div class="card">
+        <div class="card-title">🤖 Agents les plus utilisés</div>
+        ${d.topAgents.map(([id, count]) => `
+          <div class="bar-row">
+            <div class="bar-label">${AGENT_NAMES[id]||id}</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${count/maxAgent*100}%;background:linear-gradient(90deg,#8b5cf6,#6366f1)"></div></div>
+            <div class="bar-count">${count}</div>
+          </div>
+        `).join('')}
+      </div>
+
+      <!-- Notes agents -->
+      <div class="card">
+        <div class="card-title">⭐ Notes des agents (👍/👎)</div>
+        ${Object.entries(d.agentRatings).length === 0
+          ? '<div style="color:var(--muted);font-size:13px">Aucune note encore reçue</div>'
+          : Object.entries(d.agentRatings).map(([id, r]) => {
+            const total = r.up + r.down;
+            const score = total > 0 ? Math.round(r.up/total*100) : 0;
+            return `<div class="agent-rating">
+              <div class="rating-name">${AGENT_NAMES[id]||id}</div>
+              <span class="rating-up">👍 ${r.up}</span>
+              <span class="rating-down">👎 ${r.down}</span>
+              <span class="rating-score">${score}% positif</span>
+            </div>`;
+          }).join('')
+        }
+      </div>
+
+    </div>
+
+    <!-- Top Cantons + Derniers athlètes -->
+    <div class="grid-2">
+
+      <!-- Cantons -->
+      <div class="card">
+        <div class="card-title">📍 Top cantons</div>
+        ${d.topCantons.length === 0
+          ? '<div style="color:var(--muted);font-size:13px">Données de canton non renseignées</div>'
+          : d.topCantons.map(([canton, count]) => `
+            <div class="bar-row">
+              <div class="bar-label">🇨🇭 ${canton}</div>
+              <div class="bar-track"><div class="bar-fill" style="width:${count/d.totalAthletes*100}%;background:linear-gradient(90deg,#10b981,#059669)"></div></div>
+              <div class="bar-count">${count}</div>
+            </div>
+          `).join('')
+        }
+      </div>
+
+      <!-- Engagement moyen -->
+      <div class="card">
+        <div class="card-title">📊 Métriques clés</div>
+        ${[
+          ['Messages / athlète', d.totalAthletes > 0 ? (d.totalMessages / d.totalAthletes).toFixed(1) : '0', '#f59e0b'],
+          ['Taux de notation', d.totalMessages > 0 ? (d.totalRatings / d.totalMessages * 100).toFixed(1) + '%' : '0%', '#06b6d4'],
+          ['Nouveaux (7j)', d.newThisWeek, '#10b981'],
+          ['Nouveaux (30j)', d.newThisMonth, '#8b5cf6'],
+        ].map(([label, val, color]) => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+            <span style="font-size:12px;color:var(--muted2)">${label}</span>
+            <span style="font-size:16px;font-weight:800;color:${color}">${val}</span>
+          </div>
+        `).join('')}
+      </div>
+
+    </div>
+
+    <!-- Liste athlètes -->
+    <div class="card">
+      <div class="card-title">👥 Derniers athlètes inscrits</div>
+      ${d.recentAthletes.length === 0
+        ? '<div style="color:var(--muted);font-size:13px">Aucun athlète inscrit pour l\'instant</div>'
+        : `<table class="table">
+          <thead><tr>
+            <th>Nom</th><th>Sport</th><th>Niveau</th><th>Club</th><th>Canton</th><th>Inscrit le</th>
+          </tr></thead>
+          <tbody>
+            ${d.recentAthletes.map(a => `<tr>
+              <td>${a.name}</td>
+              <td>${SPORT_EMOJIS[a.sport]||''} ${a.sport}</td>
+              <td><span class="badge" style="background:${LEVEL_COLORS[a.level]||'#64748b'}20;color:${LEVEL_COLORS[a.level]||'#64748b'}">${a.level}</span></td>
+              <td>${a.club}</td>
+              <td>${a.canton}</td>
+              <td>${a.updated_at ? new Date(a.updated_at).toLocaleDateString('fr-CH') : '—'}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>`
+      }
+    </div>
+  `;
+}
+
+loadStats();
+</script>
+</body>
+</html>

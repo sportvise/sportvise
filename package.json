@@ -1,0 +1,9 @@
+{
+  "name": "sportvise",
+  "version": "26.0.0",
+  "description": "SPORTVISE — Management Sportif IA · Suisse",
+  "private": true,
+  "scripts": {
+    "build": "node build.js"
+  }
+}

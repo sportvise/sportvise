@@ -1,0 +1,38 @@
+[build]
+  command = "node build.js"
+  publish = "dist"
+  functions = "netlify/functions"
+
+# Cache headers — static HTML pages: no cache (always fresh)
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Cache-Control = "no-cache, no-store, must-revalidate, max-age=0"
+    Pragma = "no-cache"
+    Expires = "0"
+
+# Hashed assets — cache FOREVER (the hash changes when content changes)
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Service worker — no cache
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate, max-age=0"
+
+# Version file — no cache
+[[headers]]
+  for = "/version.json"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate, max-age=0"
+
+# JS files — no cache (for non-hashed ones)
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate, max-age=0"
