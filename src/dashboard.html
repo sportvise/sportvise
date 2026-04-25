@@ -4337,7 +4337,7 @@ function openImageViewer(src) {
 // ── PARRAINAGE ───────────────────────────────────────
 async function renderParrainage() {
   const t = T[currentLang];
-  const refLink = `https://sportvise.ch/app/login.html?ref=${currentUser.id}`;
+  const refLink = `https://sportvise.ch/login.html?ref=${currentUser.id}`;
 
   // Load referrals from Supabase
   const { data: refs } = await sb.from('referrals')
