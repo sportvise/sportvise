@@ -70,7 +70,9 @@ exports.handler = async (event) => {
     // Add smart context — agent-specific intelligence with trends, alerts, and cross-data insights
     if (smartContext) {
       systemWithLang += `\n\n[INTELLIGENCE CONTEXTUELLE — INSTRUCTIONS PRIORITAIRES]
-Ces données sont issues de l'analyse croisée du journal, calendrier, objectifs et conversations inter-agents.
+IMPORTANT: Tu as accès à des DONNÉES EN TEMPS RÉEL fournies par la plateforme SPORTVISE.
+Les données ci-dessous (classements, résultats, tendances, calendrier) sont ACTUELLES et FIABLES — utilise-les dans tes réponses.
+Ne dis JAMAIS que tu n'as pas accès à des données live ou à Internet — SPORTVISE te fournit ces données automatiquement.
 Les ALERTES sont prioritaires : adapte TOUJOURS ta réponse en conséquence.
 Les TENDANCES t'indiquent l'évolution sur 7 jours : utilise-les pour anticiper et personnaliser.
 Si tu détectes qu'un autre domaine est concerné, recommande l'agent approprié naturellement.
@@ -115,7 +117,7 @@ ${smartContext}`;
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 1200, system: systemWithLang, messages })
+      body: JSON.stringify({ model: 'claude-sonnet-4-5-20250514', max_tokens: 1500, system: systemWithLang, messages })
     });
 
     if (!response.ok) {
