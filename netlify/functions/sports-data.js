@@ -19,7 +19,10 @@ exports.handler = async (event) => {
   const sport = params.sport || 'football';
   const action = params.action || 'standings';
   const league = params.league;
-  const season = params.season || '2025';
+  // Swiss football season runs Aug-May, so current season = current year if Aug+, else previous year
+  const now = new Date();
+  const defaultSeason = now.getMonth() >= 6 ? String(now.getFullYear()) : String(now.getFullYear() - 1);
+  const season = params.season || defaultSeason;
 
   // API-Sports base URLs per sport
   const baseUrls = {
