@@ -628,6 +628,37 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// ── DATE HELPERS (timezone-safe, local time) ────────
+// Toujours utiliser ces helpers au lieu de toISOString().split('T')[0]
+// pour éviter les décalages UTC qui produisent des dates "d'hier".
+// dateToStr() sans argument = date locale d'aujourd'hui au format YYYY-MM-DD.
+function dateToStr(d) {
+  const x = d ? new Date(d) : new Date();
+  return x.getFullYear() + '-' +
+         String(x.getMonth() + 1).padStart(2, '0') + '-' +
+         String(x.getDate()).padStart(2, '0');
+}
+function startOfLocalDay(d) {
+  const x = d ? new Date(d) : new Date();
+  return new Date(x.getFullYear(), x.getMonth(), x.getDate());
+}
+// Parse "YYYY-MM-DD" venant de Supabase comme date LOCALE (et non UTC).
+function parseEventDate(s) {
+  if (!s) return null;
+  const [y, mo, da] = String(s).split('-').map(Number);
+  return new Date(y, mo - 1, da);
+}
+// Reload automatiquement le dashboard au passage de minuit local
+// pour que la date affichée et tous les countdowns restent corrects
+// si l'onglet reste ouvert plusieurs jours.
+(function scheduleMidnightRefresh() {
+  const now = new Date();
+  const nextMidnight = new Date(
+    now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 30
+  );
+  setTimeout(() => location.reload(), nextMidnight - now);
+})();
+
 // ── AGENTS DATA ─────────────────────────────────────
 const AGENTS = {
   marketing:  { name:'Alex', title:'Marketing & Personal Branding', emoji:'🎯', color:'#6366f1', desc:'Stratégie réseaux sociaux, media kit, visibilité', greeting:'Bonjour ! Je suis Alex, votre agent marketing. Comment puis-je booster votre visibilité aujourd\'hui ?', getResponse(m){const t=m.toLowerCase();if(t.includes('instagram')||t.includes('réseau'))return'📱 **Stratégie réseaux sociaux** : 4 posts/semaine — 40% entraînements, 30% performances, 20% lifestyle, 10% engagement. Les Reels génèrent 3× plus de portée organique. Je prépare votre calendrier éditorial ?';if(t.includes('sponsor')||t.includes('marque'))return'🤝 **Attractivité sponsors** : Pour séduire des marques suisses, nous avons besoin d\'un media kit pro. Avec 10k abonnés engagés vous pouvez prétendre à CHF 800–2\'500/mois par partenaire.';return'📊 Mes 3 priorités pour votre profil : (1) Optimiser votre bio avec mots-clés sportifs, (2) Créer un highlight "Performances", (3) Initier un partenariat local suisse. Par quoi commencer ?';} },
@@ -1717,7 +1748,7 @@ async function getGoalsContext() {
 // ── DAILY LOG CONTEXT FOR AGENTS ────────────────────
 async function getDailyLogContext() {
   try {
-    const today = new Date().toISOString().split('T')[0];
+    const today = dateToStr();
     const { data: log } = await sb.from('daily_log')
       .select('*')
       .eq('user_id', currentUser.id)
@@ -1744,7 +1775,7 @@ async function getDailyLogTrends() {
     const { data: logs } = await sb.from('daily_log')
       .select('*')
       .eq('user_id', currentUser.id)
-      .gte('log_date', sevenDaysAgo.toISOString().split('T')[0])
+      .gte('log_date', dateToStr(sevenDaysAgo))
       .order('log_date', { ascending: true });
 
     if (!logs || logs.length < 2) return null;
@@ -1808,7 +1839,7 @@ async function getPredictions() {
     const thirtyDaysAgo = new Date(today.getTime() - 30 * 86400000);
     const { data: logs } = await sb.from('daily_log')
       .select('*').eq('user_id', currentUser.id)
-      .gte('log_date', thirtyDaysAgo.toISOString().split('T')[0])
+      .gte('log_date', dateToStr(thirtyDaysAgo))
       .order('log_date', { ascending: true });
 
     if (!logs || logs.length < 5) return null; // Need minimum 5 days of data
@@ -2239,7 +2270,7 @@ function scheduleJournalReminder() {
     if (hour < 19 || hour > 21) return;
 
     // Check if already filled today
-    var todayStr = now.toISOString().split('T')[0];
+    var todayStr = dateToStr(now);
     var reminderKey = 'sv_journal_reminder_' + todayStr;
     if (localStorage.getItem(reminderKey)) return;
 
@@ -2265,7 +2296,7 @@ function scheduleMatchReminder() {
   setInterval(async function() {
     var now = new Date();
     var tomorrow = new Date(now.getTime() + 86400000);
-    var tomorrowStr = tomorrow.toISOString().split('T')[0];
+    var tomorrowStr = dateToStr(tomorrow);
     var reminderKey = 'sv_match_reminder_' + tomorrowStr;
 
     if (localStorage.getItem(reminderKey)) return;
@@ -2585,7 +2616,7 @@ function showProfileModal() {
 
       <div class="form-field">
         <label class="form-label">Date de naissance</label>
-        <input type="date" class="form-input" id="pBirth" value="${userProfile?.birth_date||''}" max="${new Date().toISOString().split('T')[0]}" />
+        <input type="date" class="form-input" id="pBirth" value="${userProfile?.birth_date||''}" max="${dateToStr()}" />
       </div>
 
       <div class="form-field">
@@ -2881,24 +2912,23 @@ async function renderDashboard() {
         .select('log_date')
         .eq('user_id', currentUser.id)
         .order('log_date', { ascending: false })
-        .limit(90);
+        .limit(365);
 
       let streak = 0;
       if (allLogs && allLogs.length > 0) {
-        // Use local date (not UTC) to avoid timezone bugs in Switzerland
-        const now = new Date();
-        const todayStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
-        const yest = new Date(now); yest.setDate(yest.getDate() - 1);
-        const yesterdayStr = yest.getFullYear() + '-' + String(yest.getMonth()+1).padStart(2,'0') + '-' + String(yest.getDate()).padStart(2,'0');
-        const dates = allLogs.map(l => l.log_date);
-        // Start from today or yesterday
-        let checkDay = dates.includes(todayStr) ? new Date(now) : dates.includes(yesterdayStr) ? new Date(yest) : null;
+        // Dédoublonnage défensif (au cas où plusieurs lignes pour le même jour)
+        const dates = new Set(allLogs.map(l => l.log_date));
+        const today = startOfLocalDay();
+        const yest = new Date(today.getTime() - 86400000);
+        // Démarre depuis aujourd'hui (si logué) ou hier (utile en début de matinée
+        // avant que l'athlète ait loggué). Sinon → 0.
+        let checkDay = dates.has(dateToStr(today)) ? new Date(today)
+                     : dates.has(dateToStr(yest))  ? new Date(yest)
+                     : null;
         if (checkDay) {
-          while (true) {
-            var ds = checkDay.getFullYear() + '-' + String(checkDay.getMonth()+1).padStart(2,'0') + '-' + String(checkDay.getDate()).padStart(2,'0');
-            if (!dates.includes(ds)) break;
+          while (dates.has(dateToStr(checkDay))) {
             streak++;
-            checkDay.setDate(checkDay.getDate() - 1);
+            checkDay = new Date(checkDay.getTime() - 86400000);
           }
         }
       }
@@ -2952,20 +2982,20 @@ async function renderDashboard() {
 
     <!-- PRÉPA MATCH WIDGET (si match dans 3 jours) -->
     ${await (async () => {
-      const todayD = new Date(); todayD.setHours(0,0,0,0);
+      const todayD = startOfLocalDay();
       const in3d = new Date(todayD.getTime() + 3 * 86400000);
       const { data: soonMatch } = await sb.from('calendar_events')
         .select('*').eq('user_id', currentUser.id)
         .in('event_type', ['match', 'competition'])
-        .gte('event_date', todayD.toISOString().split('T')[0])
-        .lte('event_date', in3d.toISOString().split('T')[0])
+        .gte('event_date', dateToStr(todayD))
+        .lte('event_date', dateToStr(in3d))
         .order('event_date', { ascending: true }).limit(1);
 
       if (!soonMatch || soonMatch.length === 0) return '';
       const m = soonMatch[0];
-      const mDate = new Date(m.event_date); mDate.setHours(0,0,0,0);
+      const mDate = parseEventDate(m.event_date);
       const dU = Math.round((mDate - todayD) / 86400000);
-      const cd = dU <= 0 ? 'JOUR J !' : dU === 1 ? 'J-1' : 'J-' + dU;
+      const cd = dU < 0 ? 'PASSÉ' : dU === 0 ? 'JOUR J !' : 'J-' + dU;
       const cdColor = dU <= 0 ? '#ef4444' : dU === 1 ? '#f59e0b' : '#06b6d4';
 
       return '<div onclick="showPage(\'prepa-match\',null)" style="background:linear-gradient(135deg,' + cdColor + '12,' + cdColor + '05);border:1px solid ' + cdColor + '35;border-radius:14px;padding:16px;margin-bottom:16px;cursor:pointer;display:flex;align-items:center;gap:14px;transition:all 0.2s" onmouseover="this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.transform=\'none\'">' +
@@ -3065,8 +3095,8 @@ async function renderDashboard() {
       const in7 = new Date(today.getTime() + 7 * 86400000);
       const { data: upcomingEvts } = await sb.from('calendar_events')
         .select('*').eq('user_id', currentUser.id)
-        .gte('event_date', today.toISOString().split('T')[0])
-        .lte('event_date', in7.toISOString().split('T')[0])
+        .gte('event_date', dateToStr(today))
+        .lte('event_date', dateToStr(in7))
         .order('event_date', { ascending: true }).limit(3);
       if (!upcomingEvts || upcomingEvts.length === 0) return `
         <div style="background:var(--bg3);border:1px dashed var(--border);border-radius:14px;padding:20px;margin-bottom:16px;text-align:center;cursor:pointer" onclick="showPage('calendrier',document.querySelector('[onclick*=calendrier]'))">
@@ -3107,7 +3137,7 @@ async function renderDashboard() {
         for (let i = 6; i >= 0; i--) {
           const d = new Date(now);
           d.setDate(d.getDate() - i);
-          const dayStr = d.toISOString().split('T')[0];
+          const dayStr = dateToStr(d);
           const count = userMsgs.filter(m => m.created_at && m.created_at.startsWith(dayStr)).length;
           days.push({ label: dayLabels[d.getDay()], date: d.getDate() + '/' + (d.getMonth()+1), count });
         }
@@ -3779,8 +3809,8 @@ async function getCalendarContext() {
     const { data: events } = await sb.from('calendar_events')
       .select('*')
       .eq('user_id', currentUser.id)
-      .gte('event_date', today.toISOString().split('T')[0])
-      .lte('event_date', in14days.toISOString().split('T')[0])
+      .gte('event_date', dateToStr(today))
+      .lte('event_date', dateToStr(in14days))
       .order('event_date', { ascending: true });
 
     if (!events || events.length === 0) return '';
@@ -4719,7 +4749,7 @@ async function renderCalendar() {
       ${calendarView === 'month' ? renderMonthView(today) : renderWeekView(today)}
 
       <!-- ADD EVENT -->
-      <button onclick="showAddEvent('${today.toISOString().split('T')[0]}')"
+      <button onclick="showAddEvent('${dateToStr(today)}')"
         style="width:100%;padding:14px;border-radius:12px;border:1px dashed var(--border);background:transparent;color:var(--gold);font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;margin-bottom:16px"
         onmouseover="this.style.background='var(--bg3)';this.style.borderColor='var(--gold)'"
         onmouseout="this.style.background='transparent';this.style.borderColor='var(--border)'">
@@ -4789,7 +4819,7 @@ function renderWeekView(today) {
   let weekDays = [];
   for (let i = 0; i < 7; i++) {
     const d = new Date(ws); d.setDate(ws.getDate() + i);
-    const dateStr = d.toISOString().split('T')[0];
+    const dateStr = dateToStr(d);
     const dayEvts = calendarEvents.filter(e => e.event_date === dateStr);
     weekDays.push({ date: d, dateStr, name: dayNames[i], dayNum: d.getDate(), events: dayEvts, isToday: d.getTime() === today.getTime() });
   }
@@ -5350,7 +5380,7 @@ async function checkPendingRecaps() {
       .select('*')
       .eq('user_id', currentUser.id)
       .eq('recap_done', false)
-      .lt('event_date', today.toISOString().split('T')[0])
+      .lt('event_date', dateToStr(today))
       .in('event_type', ['match','competition','entrainement'])
       .order('event_date', { ascending: false })
       .limit(1);
@@ -5376,7 +5406,7 @@ async function showMorningBrief() {
     // Only show once per day
     const today = new Date();
     today.setHours(0,0,0,0);
-    const todayStr = today.toISOString().split('T')[0];
+    const todayStr = dateToStr(today);
     const briefKey = `sv_morning_brief_${currentUser.id}_${todayStr}`;
     if (localStorage.getItem(briefKey)) return;
 
@@ -5394,7 +5424,7 @@ async function showMorningBrief() {
     const { data: events } = await sb.from('calendar_events')
       .select('*').eq('user_id', currentUser.id)
       .gte('event_date', todayStr)
-      .lte('event_date', in3days.toISOString().split('T')[0])
+      .lte('event_date', dateToStr(in3days))
       .order('event_date', { ascending: true }).limit(10);
 
     // Filter out past events from today
@@ -5821,8 +5851,8 @@ function closeEveningBrief() {
 /* ── checkProactiveAgents REMOVED v24 (replaced by Morning Brief) ──
     const today = new Date(); today.setHours(0,0,0,0);
     const tomorrow = new Date(today.getTime() + 86400000);
-    const tomorrowStr = tomorrow.toISOString().split('T')[0];
-    const todayStr = today.toISOString().split('T')[0];
+    const tomorrowStr = dateToStr(tomorrow);
+    const todayStr = dateToStr(today);
     const name = (userProfile?.full_name || currentUser.user_metadata?.full_name || 'Champion').split(' ')[0];
     const sport = userProfile?.sport || 'ton sport';
 
@@ -5924,7 +5954,7 @@ function closeEveningBrief() {
     // NO ACTIVITY for 3+ days
     const { data: recentEvents } = await sb.from('calendar_events')
       .select('id').eq('user_id', currentUser.id)
-      .gte('event_date', new Date(today.getTime() - 3 * 86400000).toISOString().split('T')[0])
+      .gte('event_date', dateToStr(new Date(today.getTime() - 3 * 86400000)))
       .lte('event_date', todayStr);
     if ((!recentEvents || recentEvents.length === 0) && !tomorrowMatch && !tomorrowTraining) {
       messages.push({
@@ -5974,7 +6004,7 @@ async function computeSportViseScore() {
     // Get this week's logs
     const { data: logs } = await sb.from('daily_log')
       .select('*').eq('user_id', currentUser.id)
-      .gte('log_date', weekAgo.toISOString().split('T')[0])
+      .gte('log_date', dateToStr(weekAgo))
       .order('log_date', { ascending: false });
 
     if (!logs || logs.length < 1) return null;
@@ -5982,14 +6012,14 @@ async function computeSportViseScore() {
     // Get previous week's logs for trend
     const { data: prevLogs } = await sb.from('daily_log')
       .select('*').eq('user_id', currentUser.id)
-      .gte('log_date', twoWeeksAgo.toISOString().split('T')[0])
-      .lt('log_date', weekAgo.toISOString().split('T')[0]);
+      .gte('log_date', dateToStr(twoWeeksAgo))
+      .lt('log_date', dateToStr(weekAgo));
 
     // Get recent recaps for performance data
     const { data: recaps } = await sb.from('calendar_events')
       .select('performance_note,physical_state,mood,sleep_quality,injury')
       .eq('user_id', currentUser.id).eq('recap_done', true)
-      .gte('event_date', weekAgo.toISOString().split('T')[0]);
+      .gte('event_date', dateToStr(weekAgo));
 
     // Calculate sub-scores (0-100)
     const physical = Math.round(logs.reduce((a, l) => a + Math.min(100, (l.energy || 5) * 12 + (l.training_done ? 20 : 0)), 0) / logs.length);
@@ -6193,7 +6223,7 @@ function scheduleProactiveNotifications() {
   setInterval(async function() {
     const now = new Date();
     const hour = now.getHours();
-    const todayStr = now.toISOString().split('T')[0];
+    const todayStr = dateToStr(now);
 
     // Morning motivation (7:00-8:00)
     if (hour >= 7 && hour < 8) {
@@ -6674,7 +6704,7 @@ async function setJournalField(field, value, btn) {
 
 async function saveJournal() {
   const notes = document.getElementById('journalNotes').value;
-  const today = new Date().toISOString().split('T')[0];
+  const today = dateToStr();
 
   const { data: existing } = await sb.from('daily_log')
     .select('*')
@@ -6786,7 +6816,7 @@ async function renderGoals() {
 // ── JOURNAL (Daily Log) ──────────────────────────────
 async function renderJournal() {
   const t = T[currentLang];
-  const today = new Date().toISOString().split('T')[0];
+  const today = dateToStr();
 
   const { data: todayLog } = await sb.from('daily_log')
     .select('*')
@@ -6960,7 +6990,7 @@ async function exportJournalCSV() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `sportvise_journal_${athleteName.replace(/\s/g,'_')}_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `sportvise_journal_${athleteName.replace(/\s/g,'_')}_${dateToStr()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   } catch(e) {
@@ -6983,7 +7013,7 @@ async function generateMonthlyReport() {
     const thirtyDaysAgo = new Date(today.getTime() - 30*86400000);
     const { data: logs } = await sb.from('daily_log')
       .select('*').eq('user_id', currentUser.id)
-      .gte('log_date', thirtyDaysAgo.toISOString().split('T')[0])
+      .gte('log_date', dateToStr(thirtyDaysAgo))
       .order('log_date', { ascending: true });
 
     const { data: goals } = await sb.from('goals')
@@ -6991,8 +7021,8 @@ async function generateMonthlyReport() {
 
     const { data: events } = await sb.from('calendar_events')
       .select('*').eq('user_id', currentUser.id)
-      .gte('event_date', thirtyDaysAgo.toISOString().split('T')[0])
-      .lte('event_date', today.toISOString().split('T')[0]);
+      .gte('event_date', dateToStr(thirtyDaysAgo))
+      .lte('event_date', dateToStr(today));
 
     if (!logs || logs.length === 0) { alert('Pas assez de données.'); return; }
 
@@ -7130,13 +7160,13 @@ async function renderProgression() {
   const { data: fitnessScores } = await sb.from('fitness_score')
     .select('*')
     .eq('user_id', currentUser.id)
-    .gte('score_date', thirtyDaysAgo.toISOString().split('T')[0])
+    .gte('score_date', dateToStr(thirtyDaysAgo))
     .order('score_date', { ascending: true });
 
   const { data: dailyLogs } = await sb.from('daily_log')
     .select('*')
     .eq('user_id', currentUser.id)
-    .gte('log_date', thirtyDaysAgo.toISOString().split('T')[0])
+    .gte('log_date', dateToStr(thirtyDaysAgo))
     .order('log_date', { ascending: true });
 
   const { data: allGoals } = await sb.from('goals')
@@ -7353,7 +7383,7 @@ async function renderDefis() {
 
   const { data: weekLogs } = await sb.from('daily_log')
     .select('*').eq('user_id', currentUser.id)
-    .gte('log_date', monday.toISOString().split('T')[0])
+    .gte('log_date', dateToStr(monday))
     .order('log_date', { ascending: true });
 
   const { data: weekMsgs } = await sb.from('messages')
@@ -7362,8 +7392,8 @@ async function renderDefis() {
 
   const { data: weekEvents } = await sb.from('calendar_events')
     .select('*').eq('user_id', currentUser.id)
-    .gte('event_date', monday.toISOString().split('T')[0])
-    .lte('event_date', today.toISOString().split('T')[0]);
+    .gte('event_date', dateToStr(monday))
+    .lte('event_date', dateToStr(today));
 
   const logs = weekLogs || [];
   const msgs = weekMsgs || [];
@@ -7567,14 +7597,21 @@ async function downloadShareCard() {
     });
 
     // Streak info
-    const { data: logs } = await sb.from('daily_log').select('log_date').eq('user_id', currentUser.id).order('log_date', {ascending:false}).limit(60);
+    const { data: logs } = await sb.from('daily_log').select('log_date').eq('user_id', currentUser.id).order('log_date', {ascending:false}).limit(365);
     let streak = 0;
     if (logs && logs.length > 0) {
-      const todayStr = new Date().toISOString().split('T')[0];
-      const yesterdayStr = new Date(Date.now()-86400000).toISOString().split('T')[0];
-      const dates = logs.map(l=>l.log_date);
-      let check = dates.includes(todayStr)?new Date():dates.includes(yesterdayStr)?new Date(Date.now()-86400000):null;
-      if(check){while(dates.includes(check.toISOString().split('T')[0])){streak++;check=new Date(check.getTime()-86400000);}}
+      const dates = new Set(logs.map(l => l.log_date));
+      const today = startOfLocalDay();
+      const yest = new Date(today.getTime() - 86400000);
+      let check = dates.has(dateToStr(today)) ? new Date(today)
+                : dates.has(dateToStr(yest))  ? new Date(yest)
+                : null;
+      if (check) {
+        while (dates.has(dateToStr(check))) {
+          streak++;
+          check = new Date(check.getTime() - 86400000);
+        }
+      }
     }
 
     // Streak badge
@@ -7600,7 +7637,7 @@ async function downloadShareCard() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'sportvise_' + name.toLowerCase() + '_' + new Date().toISOString().split('T')[0] + '.png';
+      a.download = 'sportvise_' + name.toLowerCase() + '_' + dateToStr() + '.png';
       a.click();
       URL.revokeObjectURL(url);
       showToast('Image téléchargée ! Partage-la en Story 📸');
@@ -7638,19 +7675,19 @@ async function renderPrepaMatch() {
   const { data: events } = await sb.from('calendar_events')
     .select('*').eq('user_id', currentUser.id)
     .in('event_type', ['match', 'competition'])
-    .gte('event_date', today.toISOString().split('T')[0])
-    .lte('event_date', in7days.toISOString().split('T')[0])
+    .gte('event_date', dateToStr(today))
+    .lte('event_date', dateToStr(in7days))
     .order('event_date', { ascending: true }).limit(5);
 
   // Also fetch all upcoming events for the "create" option
   const { data: allFuture } = await sb.from('calendar_events')
     .select('*').eq('user_id', currentUser.id)
     .in('event_type', ['match', 'competition'])
-    .gte('event_date', today.toISOString().split('T')[0])
+    .gte('event_date', dateToStr(today))
     .order('event_date', { ascending: true }).limit(10);
 
   // Get today's fitness score
-  const todayStr = today.toISOString().split('T')[0];
+  const todayStr = dateToStr(today);
   const { data: todayLog } = await sb.from('daily_log')
     .select('*').eq('user_id', currentUser.id).eq('log_date', todayStr).single();
   const fitnessScore = todayLog ? computeFitnessScore(todayLog) : null;
@@ -7672,10 +7709,9 @@ async function renderPrepaMatch() {
 
   // Pick the next upcoming match
   var targetEvent = events && events.length > 0 ? events[0] : allFuture[0];
-  var evtDate = new Date(targetEvent.event_date);
-  evtDate.setHours(0,0,0,0);
+  var evtDate = parseEventDate(targetEvent.event_date);
   var daysUntil = Math.round((evtDate - today) / 86400000);
-  var countdown = daysUntil <= 0 ? 'JOUR J' : daysUntil === 1 ? 'J-1' : 'J-' + daysUntil;
+  var countdown = daysUntil < 0 ? 'PASSÉ' : daysUntil === 0 ? 'JOUR J' : 'J-' + daysUntil;
   var countdownColor = daysUntil <= 0 ? '#ef4444' : daysUntil <= 1 ? '#f59e0b' : daysUntil <= 3 ? '#06b6d4' : '#10b981';
 
   // Generate agent-specific prep plans based on countdown
@@ -7834,8 +7870,8 @@ async function getWeeklyRecap() {
   if (dayOfWeek !== 1 && dayOfWeek !== 2) return null;
 
   var weekAgo = new Date(today.getTime() - 7 * 86400000);
-  var weekAgoStr = weekAgo.toISOString().split('T')[0];
-  var todayStr = today.toISOString().split('T')[0];
+  var weekAgoStr = dateToStr(weekAgo);
+  var todayStr = dateToStr(today);
 
   // Get last week's logs
   var result = await sb.from('daily_log')
@@ -7874,7 +7910,7 @@ async function getWeeklyRecap() {
   var twoWeeksAgo = new Date(today.getTime() - 14 * 86400000);
   var prevResult = await sb.from('daily_log')
     .select('mood, energy, sleep_quality').eq('user_id', currentUser.id)
-    .gte('log_date', twoWeeksAgo.toISOString().split('T')[0])
+    .gte('log_date', dateToStr(twoWeeksAgo))
     .lt('log_date', weekAgoStr);
   var prevLogs = prevResult.data || [];
 
@@ -7984,8 +8020,8 @@ async function generateWeeklyAIReport() {
     // Gather data
     const today = new Date();
     const weekAgo = new Date(today.getTime() - 7 * 86400000);
-    const todayStr = today.toISOString().split('T')[0];
-    const weekAgoStr = weekAgo.toISOString().split('T')[0];
+    const todayStr = dateToStr(today);
+    const weekAgoStr = dateToStr(weekAgo);
 
     const { data: logs } = await sb.from('daily_log').select('*').eq('user_id', currentUser.id)
       .gte('log_date', weekAgoStr).lt('log_date', todayStr).order('log_date', {ascending:true});
