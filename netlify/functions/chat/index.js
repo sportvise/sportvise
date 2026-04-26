@@ -39,8 +39,17 @@ exports.handler = async (event) => {
     };
     const langInstruction = langInstructions[lang] || langInstructions.fr;
 
+    // Inject today's date so agents reason on the correct timeframe
+    // (Anchored to Europe/Zurich since SPORTVISE targets Swiss athletes.)
+    const todayLabel = new Date().toLocaleDateString('fr-CH', {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+      timeZone: 'Europe/Zurich'
+    });
+    const todayIso = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Zurich' });
+    const dateInstruction = `[DATE DU JOUR : ${todayLabel} (${todayIso}). Utilise cette date pour TOUS tes raisonnements temporels (J-1, demain, semaine prochaine, etc.). Ne te fie jamais à ta date d'entraînement.]`;
+
     // Build enriched system prompt with athlete memory
-    let systemWithLang = agent.system + '\n\n' + langInstruction;
+    let systemWithLang = agent.system + '\n\n' + langInstruction + '\n\n' + dateInstruction;
 
     // Add athlete profile context
     if (profile) {
