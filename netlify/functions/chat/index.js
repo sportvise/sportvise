@@ -4,7 +4,7 @@ const { SPORTS_SUISSE, CALENDRIERS_SUISSE, AGENTS } = require("./agents-data");
 
 exports.handler = async (event) => {
   // CORS: restrict to SPORTVISE domains only
-  const allowedOrigins = ['https://sportvise.ch', 'https://www.sportvise.ch', 'https://stately-hummingbird-2ce1c2.netlify.app'];
+  const allowedOrigins = ['https://sportvise.ch', 'https://www.sportvise.ch', 'https://prismatic-lebkuchen-48a8ee.netlify.app', 'https://stately-hummingbird-2ce1c2.netlify.app'];
   const origin = event.headers?.origin || event.headers?.Origin || '';
   const corsOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
   const headers = {
@@ -117,7 +117,7 @@ ${smartContext}`;
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-5-20250514', max_tokens: 1500, system: systemWithLang, messages })
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1500, system: systemWithLang, messages })
     });
 
     if (!response.ok) {
