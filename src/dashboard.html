@@ -2885,15 +2885,20 @@ async function renderDashboard() {
 
       let streak = 0;
       if (allLogs && allLogs.length > 0) {
-        const todayStr = new Date().toISOString().split('T')[0];
-        const yesterdayStr = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+        // Use local date (not UTC) to avoid timezone bugs in Switzerland
+        const now = new Date();
+        const todayStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+        const yest = new Date(now); yest.setDate(yest.getDate() - 1);
+        const yesterdayStr = yest.getFullYear() + '-' + String(yest.getMonth()+1).padStart(2,'0') + '-' + String(yest.getDate()).padStart(2,'0');
         const dates = allLogs.map(l => l.log_date);
         // Start from today or yesterday
-        let checkDate = dates.includes(todayStr) ? new Date() : dates.includes(yesterdayStr) ? new Date(Date.now() - 86400000) : null;
-        if (checkDate) {
-          while (dates.includes(checkDate.toISOString().split('T')[0])) {
+        let checkDay = dates.includes(todayStr) ? new Date(now) : dates.includes(yesterdayStr) ? new Date(yest) : null;
+        if (checkDay) {
+          while (true) {
+            var ds = checkDay.getFullYear() + '-' + String(checkDay.getMonth()+1).padStart(2,'0') + '-' + String(checkDay.getDate()).padStart(2,'0');
+            if (!dates.includes(ds)) break;
             streak++;
-            checkDate = new Date(checkDate.getTime() - 86400000);
+            checkDay.setDate(checkDay.getDate() - 1);
           }
         }
       }
@@ -2960,8 +2965,8 @@ async function renderDashboard() {
       const m = soonMatch[0];
       const mDate = new Date(m.event_date); mDate.setHours(0,0,0,0);
       const dU = Math.round((mDate - todayD) / 86400000);
-      const cd = dU === 0 ? 'JOUR J !' : 'J-' + dU;
-      const cdColor = dU === 0 ? '#ef4444' : dU === 1 ? '#f59e0b' : '#06b6d4';
+      const cd = dU <= 0 ? 'JOUR J !' : dU === 1 ? 'J-1' : 'J-' + dU;
+      const cdColor = dU <= 0 ? '#ef4444' : dU === 1 ? '#f59e0b' : '#06b6d4';
 
       return '<div onclick="showPage(\'prepa-match\',null)" style="background:linear-gradient(135deg,' + cdColor + '12,' + cdColor + '05);border:1px solid ' + cdColor + '35;border-radius:14px;padding:16px;margin-bottom:16px;cursor:pointer;display:flex;align-items:center;gap:14px;transition:all 0.2s" onmouseover="this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.transform=\'none\'">' +
         '<div style="font-size:28px;font-weight:900;color:' + cdColor + '">' + cd + '</div>' +
