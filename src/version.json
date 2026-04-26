@@ -1,1 +1,1 @@
-{"version":"26","date":"2026-04-23","changes":"Intelligence prédictive (blessure/burnout/forme), auto-migration, Brief Matinal+Soir, images chat, feedback visuel, error handlers, optimisations code"}
+{"version":"28","date":"2026-04-26","changes":"Fix décalage de date timezone (UTC→local), countdown J-1/JOUR J corrigé, parseEventDate pour event_date, refresh auto à minuit, injection date dans les prompts d'agents, refactor streak (Set + helpers, dédup, limite 365j)"}
