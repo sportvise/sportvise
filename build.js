@@ -29,8 +29,29 @@ function hash(content) {
 
 console.log('🔨 SPORTVISE Build starting...\n');
 
+// ── 0. Sync APP_V with version.json ─────────────────
+// Évite la boucle de reload si on bumpe version.json sans toucher APP_V dans dashboard.html.
+let appVersion = null;
+try {
+  appVersion = JSON.parse(fs.readFileSync(path.join(SRC, 'version.json'), 'utf8')).version;
+  console.log(`  📌 version.json → v${appVersion}`);
+} catch (e) {
+  console.warn('  ⚠️  Could not read version.json:', e.message);
+}
+
 // ── 1. Process dashboard.html ──────────────────────
-const dashboardRaw = fs.readFileSync(path.join(SRC, 'dashboard.html'), 'utf8');
+let dashboardRaw = fs.readFileSync(path.join(SRC, 'dashboard.html'), 'utf8');
+
+// Inject APP_V from version.json (overrides the hardcoded value in source)
+if (appVersion) {
+  const appVRegex = /const APP_V\s*=\s*['"][^'"]*['"]\s*;/;
+  if (appVRegex.test(dashboardRaw)) {
+    dashboardRaw = dashboardRaw.replace(appVRegex, `const APP_V = '${appVersion}';`);
+    console.log(`  ✅ APP_V synced → '${appVersion}'`);
+  } else {
+    console.warn('  ⚠️  Could not find APP_V declaration to sync');
+  }
+}
 
 // Extract the main <style> block (the big one after the initial scripts)
 const styleMatch = dashboardRaw.match(/<style>([\s\S]*?)<\/style>/);
