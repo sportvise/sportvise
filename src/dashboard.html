@@ -7670,8 +7670,8 @@ async function renderPrepaMatch() {
   var evtDate = new Date(targetEvent.event_date);
   evtDate.setHours(0,0,0,0);
   var daysUntil = Math.round((evtDate - today) / 86400000);
-  var countdown = daysUntil === 0 ? 'JOUR J' : daysUntil === 1 ? 'J-1' : 'J-' + daysUntil;
-  var countdownColor = daysUntil === 0 ? '#ef4444' : daysUntil <= 1 ? '#f59e0b' : daysUntil <= 3 ? '#06b6d4' : '#10b981';
+  var countdown = daysUntil <= 0 ? 'JOUR J' : daysUntil === 1 ? 'J-1' : 'J-' + daysUntil;
+  var countdownColor = daysUntil <= 0 ? '#ef4444' : daysUntil <= 1 ? '#f59e0b' : daysUntil <= 3 ? '#06b6d4' : '#10b981';
 
   // Generate agent-specific prep plans based on countdown
   function getAgentPlan(agentKey, d) {
