@@ -2073,7 +2073,9 @@ async function init() {
 // ── AUTO VERSION MIGRATION (anti-loop) ──────────────
 // This system ensures users ALWAYS get the latest version after a deploy.
 // It cleans caches, reloads ONCE, and uses a retry counter to prevent infinite loops.
-const APP_V = '26';
+// ⚠️  IMPORTANT : cette constante DOIT correspondre à src/version.json (.version).
+//     Si tu bumps version.json, bump APP_V au même nombre — sinon boucle de reload.
+const APP_V = '29';
 async function checkAppVersion() {
   try {
     const res = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
