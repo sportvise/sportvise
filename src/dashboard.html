@@ -3900,13 +3900,14 @@ async function sendMsg(page) {
     ].filter(Boolean).join(', ');
 
     // Gather all context in parallel for speed
-    const [otherAgentsContext, calendarContext, goalsContext, dailyLogContext, trends, stravaContext] = await Promise.all([
+    const [otherAgentsContext, calendarContext, goalsContext, dailyLogContext, trends, stravaContext, sportsDataContext] = await Promise.all([
       getOtherAgentsSummary(page),
       getCalendarContext(),
       getGoalsContext(),
       getDailyLogContext(),
       getDailyLogTrends(),
-      Promise.resolve(getStravaContext())
+      Promise.resolve(getStravaContext()),
+      getSportsDataContext()
     ]);
 
     // Build agent-specific smart context using trends and alerts
@@ -4197,7 +4198,7 @@ L'athlète pratique : ${p.sport || 'sport non renseigné'}, niveau : ${p.level |
         calendar: calendarContext,
         goals: goalsContext,
         dailyLog: dailyLogContext,
-        smartContext: smartContext + stravaContext,
+        smartContext: smartContext + stravaContext + sportsDataContext,
         style: `${dateContext}\n\n${agentPrompt}\n\n${baseStyle}\n${referralInstruction}`
     };
     if (attachedImageData) {
@@ -8306,6 +8307,72 @@ function getStravaContext() {
   });
 
   return ctx;
+}
+
+// ── LIVE SPORTS DATA (API-Sports) ─────────────────────
+// Fetches live standings and recent results for the athlete's sport league
+// Cached in localStorage for 6 hours to save API calls (100/day limit)
+async function getSportsDataContext() {
+  try {
+    const sport = userProfile?.sport?.toLowerCase() || '';
+    // Only fetch for supported sports
+    const sportMap = {
+      'football': { sport: 'football', league: 207 },
+      'hockey': { sport: 'hockey', league: 38 },
+      'hockey sur glace': { sport: 'hockey', league: 38 }
+    };
+
+    let sportConfig = null;
+    for (const [key, config] of Object.entries(sportMap)) {
+      if (sport.includes(key)) { sportConfig = config; break; }
+    }
+    if (!sportConfig) return ''; // Sport not supported by API-Sports
+
+    // Check cache (6 hours)
+    const cacheKey = 'sv_sports_data_' + sportConfig.sport;
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        if (Date.now() - parsed.timestamp < 6 * 3600 * 1000) return parsed.context;
+      } catch(e) {}
+    }
+
+    // Fetch standings + recent results in parallel
+    const [standingsRes, resultsRes] = await Promise.all([
+      fetch('/.netlify/functions/sports-data?sport=' + sportConfig.sport + '&action=standings&league=' + sportConfig.league).then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch('/.netlify/functions/sports-data?sport=' + sportConfig.sport + '&action=results&league=' + sportConfig.league).then(r => r.ok ? r.json() : null).catch(() => null)
+    ]);
+
+    let ctx = '\n[DONNÉES SPORTIVES LIVE — ' + new Date().toLocaleDateString('fr-CH') + ']\n';
+
+    // Add standings
+    if (standingsRes?.data?.standings) {
+      ctx += 'CLASSEMENT ' + (standingsRes.data.league || 'Super League') + ' ' + (standingsRes.data.season || '2025') + ':\n';
+      standingsRes.data.standings.slice(0, 12).forEach(function(t) {
+        ctx += t.rank + '. ' + t.team + ' — ' + t.points + 'pts (' + t.win + 'V ' + t.draw + 'N ' + t.lose + 'D, diff: ' + (t.goalDiff > 0 ? '+' : '') + t.goalDiff + ') forme: ' + (t.form || '?') + '\n';
+      });
+    }
+
+    // Add recent results
+    if (resultsRes?.data?.fixtures) {
+      ctx += '\nDERNIERS RÉSULTATS:\n';
+      resultsRes.data.fixtures.slice(0, 5).forEach(function(f) {
+        var date = new Date(f.date).toLocaleDateString('fr-CH', {day:'numeric', month:'short'});
+        ctx += date + ': ' + f.home + ' ' + (f.scoreHome ?? '?') + '-' + (f.scoreAway ?? '?') + ' ' + f.away + '\n';
+      });
+    }
+
+    ctx += '\nUtilise ces données pour personnaliser tes conseils. Si l\'athlète a un match contre une équipe, utilise le classement pour évaluer l\'adversaire.\n';
+
+    // Cache for 6 hours
+    localStorage.setItem(cacheKey, JSON.stringify({ timestamp: Date.now(), context: ctx }));
+
+    return ctx;
+  } catch(e) {
+    console.warn('Sports data error:', e);
+    return '';
+  }
 }
 
 function renderConnexions() {
