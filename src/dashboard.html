@@ -2545,7 +2545,7 @@ async function init() {
 // It cleans caches, reloads ONCE, and uses a retry counter to prevent infinite loops.
 // ⚠️  IMPORTANT : cette constante DOIT correspondre à src/version.json (.version).
 //     Si tu bumps version.json, bump APP_V au même nombre — sinon boucle de reload.
-const APP_V = '39';
+const APP_V = '40';
 async function checkAppVersion() {
   try {
     const res = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
