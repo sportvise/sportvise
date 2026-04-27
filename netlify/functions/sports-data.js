@@ -82,35 +82,45 @@ exports.handler = async (event) => {
   const sport = params.sport || 'football';
   const action = params.action || 'standings';
   const league = params.league;
-  // Swiss football season runs Aug-May, so current season = current year if Aug+, else previous year
-  const now = new Date();
-  const defaultSeason = now.getMonth() >= 6 ? String(now.getFullYear()) : String(now.getFullYear() - 1);
-  const season = params.season || defaultSeason;
-
-  // API-Sports base URLs per sport
-  const baseUrls = {
-    football: 'https://v3.football.api-sports.io',
-    hockey: 'https://v1.hockey.api-sports.io',
-    basketball: 'https://v1.basketball.api-sports.io'
-  };
-
-  const baseUrl = baseUrls[sport] || baseUrls.football;
-
-  // Swiss league IDs (API-Sports)
-  const swissLeagues = {
+  // v44 — Sport-aware config: base URL, default Swiss league ID, and season format.
+  // Football/hockey use API-Sports "year" format ("2025" = season starting Aug 2025).
+  // Basketball uses "split" format ("2025-2026"). Ski/tennis (upcoming versions) will likely
+  // follow the "split" pattern too, so this structure is forward-compatible.
+  // Other Swiss league IDs for reference (not currently exposed):
+  //   football challenge_league=208, football cup=209, basketball SB League W (women)=101.
+  const sportConfigs = {
     football: {
-      super_league: 207,       // Swiss Super League
-      challenge_league: 208,    // Swiss Challenge League
-      cup: 209                  // Swiss Cup
+      baseUrl: 'https://v3.football.api-sports.io',
+      defaultLeagueId: 207,    // Swiss Super League
+      seasonFormat: 'year'     // "2025"
     },
     hockey: {
-      national_league: 38       // Swiss National League
+      baseUrl: 'https://v1.hockey.api-sports.io',
+      defaultLeagueId: 38,     // Swiss National League
+      seasonFormat: 'year'     // "2025"
+    },
+    basketball: {
+      baseUrl: 'https://v1.basketball.api-sports.io',
+      defaultLeagueId: 100,    // SB League (men's top division)
+      seasonFormat: 'split'    // "2025-2026"
     }
   };
 
+  const cfg = sportConfigs[sport] || sportConfigs.football;
+  const baseUrl = cfg.baseUrl;
+
+  // Swiss seasons run autumn → spring, so current season started this calendar year
+  // if month >= July (zero-indexed 6), otherwise it started the previous calendar year.
+  const now = new Date();
+  const seasonStartYear = now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1;
+  const defaultSeason = cfg.seasonFormat === 'split'
+    ? `${seasonStartYear}-${seasonStartYear + 1}`
+    : String(seasonStartYear);
+  const season = params.season || defaultSeason;
+
   try {
     let url = '';
-    const leagueId = league || (sport === 'football' ? swissLeagues.football.super_league : swissLeagues.hockey?.national_league);
+    const leagueId = league || cfg.defaultLeagueId;
 
     switch (action) {
       case 'standings':
