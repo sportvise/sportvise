@@ -1,1 +1,1 @@
-{"version":"29","date":"2026-04-26","changes":"HOTFIX boucle de reload (APP_V désynchronisé avec version.json), auto-sync APP_V dans build.js"}
+{"version":"30","date":"2026-04-27","changes":"Fix D1 récap: queue de tous les recaps en attente (plus de limit(1)), bouton Passer skip-pour-la-session, chaînage auto vers le suivant après save/skip. Fix D2 brief matinal: setItem déplacé APRÈS render (plus de pertes silencieuses si Supabase/predictions throw), logs [BRIEF] détaillés à chaque étape."}
