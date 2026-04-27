@@ -111,16 +111,50 @@ exports.handler = async (event) => {
         // 2-step lookup: search team by club name, then fetch its next 5 fixtures.
         // Used when the athlete has filled in their club — gives way more actionable
         // data than a league-wide fixture list.
+        //
+        // v38 — Two-tier search to be permissive on club naming:
+        //   Tier 1: search with the full name, NO league/season filter (those filter
+        //           the search endpoint too aggressively and miss valid teams).
+        //   Tier 2: if Tier 1 finds nothing, retry with a simplified name (strip
+        //           common league prefixes/suffixes like "FC", "HC", "BSC", year
+        //           suffixes like "1893"). e.g. "FC Bâle 1893" -> "Bâle".
+        // Each tier costs 1 API call; we cap at 2 search attempts max.
         if (!params.club) return { statusCode: 400, headers, body: JSON.stringify({ error: 'club parameter required' }) };
         try {
-          const searchUrl = `${baseUrl}/teams?search=${encodeURIComponent(params.club)}` + (leagueId ? `&league=${leagueId}&season=${season}` : '');
-          const searchRes = await fetch(searchUrl, { headers: { 'x-apisports-key': apiKey } });
-          if (!searchRes.ok) {
-            return { statusCode: searchRes.status, headers, body: JSON.stringify({ error: 'API-Sports search error', status: searchRes.status }) };
+          let team = null;
+          let apiCalls = 0;
+          const trySearch = async (term) => {
+            apiCalls++;
+            const u = `${baseUrl}/teams?search=${encodeURIComponent(term)}`;
+            const r = await fetch(u, { headers: { 'x-apisports-key': apiKey } });
+            if (!r.ok) return { ok: false, status: r.status, team: null };
+            const d = await r.json();
+            return { ok: true, team: (d.response && d.response.length > 0) ? d.response[0].team : null };
+          };
+
+          // Tier 1: full name
+          const r1 = await trySearch(params.club);
+          if (!r1.ok) {
+            logApiUsage({ sport, action, league: String(leagueId||''), status_code: r1.status, latency_ms: Date.now()-startTime, ok: false, api_calls: apiCalls });
+            return { statusCode: r1.status, headers, body: JSON.stringify({ error: 'API-Sports search error', status: r1.status }) };
           }
-          const searchData = await searchRes.json();
-          if (!searchData.response || searchData.response.length === 0) {
-            logApiUsage({ sport, action, league: String(leagueId||''), status_code: 200, latency_ms: Date.now()-startTime, ok: true, api_calls: 1 });
+          team = r1.team;
+
+          // Tier 2: simplified name fallback
+          if (!team) {
+            const simplified = params.club
+              .replace(/^(FC|HC|SC|FCC|BC|BSC|EHC|SCB)\s+/i, '')
+              .replace(/\s+(FC|HC|SC|FCC|BC|BSC|EHC|SCB)$/i, '')
+              .replace(/\s+\d{4}$/, '')
+              .trim();
+            if (simplified && simplified.length >= 3 && simplified.toLowerCase() !== params.club.toLowerCase()) {
+              const r2 = await trySearch(simplified);
+              if (r2.ok && r2.team) team = r2.team;
+            }
+          }
+
+          if (!team) {
+            logApiUsage({ sport, action, league: String(leagueId||''), status_code: 200, latency_ms: Date.now()-startTime, ok: true, api_calls: apiCalls });
             // Team not found — return empty fixtures so the client can degrade gracefully
             return {
               statusCode: 200,
@@ -132,11 +166,11 @@ exports.handler = async (event) => {
               })
             };
           }
-          const team = searchData.response[0].team;
           const fxUrl = `${baseUrl}/fixtures?team=${team.id}&season=${season}&next=5`;
           const fxRes = await fetch(fxUrl, { headers: { 'x-apisports-key': apiKey } });
+          apiCalls++;
           if (!fxRes.ok) {
-            logApiUsage({ sport, action, league: String(leagueId||''), status_code: fxRes.status, latency_ms: Date.now()-startTime, ok: false, api_calls: 2 });
+            logApiUsage({ sport, action, league: String(leagueId||''), status_code: fxRes.status, latency_ms: Date.now()-startTime, ok: false, api_calls: apiCalls });
             return { statusCode: fxRes.status, headers, body: JSON.stringify({ error: 'API-Sports fixtures error', status: fxRes.status }) };
           }
           const fxData = await fxRes.json();
@@ -155,13 +189,13 @@ exports.handler = async (event) => {
               venue: f.fixture.venue?.name
             }))
           };
-          logApiUsage({ sport, action, league: String(leagueId||''), status_code: 200, latency_ms: Date.now()-startTime, ok: true, api_calls: 2 });
+          logApiUsage({ sport, action, league: String(leagueId||''), status_code: 200, latency_ms: Date.now()-startTime, ok: true, api_calls: apiCalls });
           return {
             statusCode: 200,
             headers,
             body: JSON.stringify({
               sport, action, data: formatted,
-              remaining: (fxData.results ?? 0) + (searchData.results ?? 0),
+              remaining: fxData.results ?? 0,
               timestamp: new Date().toISOString()
             })
           };
