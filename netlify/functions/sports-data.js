@@ -1,6 +1,41 @@
 // SPORTVISE — Netlify Function : Sports Data API
 // Fetches live data from API-Sports (football, hockey, etc.)
 // Free tier: 100 requests/day
+//
+// USAGE LOGGING (optional but recommended):
+// Logs each call to a Supabase `api_usage_log` table for quota visibility.
+// Required Supabase schema:
+//   create table api_usage_log (
+//     id uuid primary key default gen_random_uuid(),
+//     created_at timestamptz not null default now(),
+//     sport text,
+//     action text,
+//     league text,
+//     status_code int,
+//     latency_ms int,
+//     ok boolean,
+//     api_calls int default 1  -- some actions like team-fixtures use 2 upstream calls
+//   );
+// Required env vars: SUPABASE_URL, SUPABASE_SERVICE_KEY (already in use elsewhere).
+// If env vars are missing, logging is silently skipped — never blocks the response.
+async function logApiUsage(payload) {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_KEY;
+  if (!url || !key) return; // logging disabled
+  try {
+    // Fire-and-forget — no await on the response so we never delay the user.
+    fetch(`${url}/rest/v1/api_usage_log`, {
+      method: 'POST',
+      headers: {
+        'apikey': key,
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(payload)
+    }).catch(() => { /* swallow */ });
+  } catch (_) { /* swallow */ }
+}
 
 exports.handler = async (event) => {
   const headers = {
@@ -12,6 +47,7 @@ exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' };
   if (event.httpMethod !== 'GET') return { statusCode: 405, headers, body: JSON.stringify({ error: 'GET only' }) };
 
+  const startTime = Date.now();
   const apiKey = process.env.API_SPORTS_KEY;
   if (!apiKey) return { statusCode: 500, headers, body: JSON.stringify({ error: 'API_SPORTS_KEY not configured' }) };
 
@@ -71,8 +107,71 @@ exports.handler = async (event) => {
         if (!params.player) return { statusCode: 400, headers, body: JSON.stringify({ error: 'player parameter required' }) };
         url = `${baseUrl}/players?id=${params.player}&season=${season}`;
         break;
+      case 'team-fixtures':
+        // 2-step lookup: search team by club name, then fetch its next 5 fixtures.
+        // Used when the athlete has filled in their club — gives way more actionable
+        // data than a league-wide fixture list.
+        if (!params.club) return { statusCode: 400, headers, body: JSON.stringify({ error: 'club parameter required' }) };
+        try {
+          const searchUrl = `${baseUrl}/teams?search=${encodeURIComponent(params.club)}` + (leagueId ? `&league=${leagueId}&season=${season}` : '');
+          const searchRes = await fetch(searchUrl, { headers: { 'x-apisports-key': apiKey } });
+          if (!searchRes.ok) {
+            return { statusCode: searchRes.status, headers, body: JSON.stringify({ error: 'API-Sports search error', status: searchRes.status }) };
+          }
+          const searchData = await searchRes.json();
+          if (!searchData.response || searchData.response.length === 0) {
+            logApiUsage({ sport, action, league: String(leagueId||''), status_code: 200, latency_ms: Date.now()-startTime, ok: true, api_calls: 1 });
+            // Team not found — return empty fixtures so the client can degrade gracefully
+            return {
+              statusCode: 200,
+              headers,
+              body: JSON.stringify({
+                sport, action, data: { teamFound: false, fixtures: [] },
+                searchTerm: params.club,
+                timestamp: new Date().toISOString()
+              })
+            };
+          }
+          const team = searchData.response[0].team;
+          const fxUrl = `${baseUrl}/fixtures?team=${team.id}&season=${season}&next=5`;
+          const fxRes = await fetch(fxUrl, { headers: { 'x-apisports-key': apiKey } });
+          if (!fxRes.ok) {
+            logApiUsage({ sport, action, league: String(leagueId||''), status_code: fxRes.status, latency_ms: Date.now()-startTime, ok: false, api_calls: 2 });
+            return { statusCode: fxRes.status, headers, body: JSON.stringify({ error: 'API-Sports fixtures error', status: fxRes.status }) };
+          }
+          const fxData = await fxRes.json();
+          const formatted = {
+            teamFound: true,
+            teamId: team.id,
+            teamName: team.name,
+            fixtures: (fxData.response || []).map(f => ({
+              date: f.fixture.date,
+              status: f.fixture.status?.long,
+              home: f.teams.home.name,
+              away: f.teams.away.name,
+              isHome: f.teams.home.id === team.id,
+              league: f.league?.name,
+              round: f.league?.round,
+              venue: f.fixture.venue?.name
+            }))
+          };
+          logApiUsage({ sport, action, league: String(leagueId||''), status_code: 200, latency_ms: Date.now()-startTime, ok: true, api_calls: 2 });
+          return {
+            statusCode: 200,
+            headers,
+            body: JSON.stringify({
+              sport, action, data: formatted,
+              remaining: (fxData.results ?? 0) + (searchData.results ?? 0),
+              timestamp: new Date().toISOString()
+            })
+          };
+        } catch (innerErr) {
+          console.error('team-fixtures error:', innerErr);
+          logApiUsage({ sport, action, league: String(leagueId||''), status_code: 500, latency_ms: Date.now()-startTime, ok: false, api_calls: 1 });
+          return { statusCode: 500, headers, body: JSON.stringify({ error: 'team-fixtures internal error' }) };
+        }
       default:
-        return { statusCode: 400, headers, body: JSON.stringify({ error: 'Unknown action. Use: standings, fixtures, results, team, player' }) };
+        return { statusCode: 400, headers, body: JSON.stringify({ error: 'Unknown action. Use: standings, fixtures, results, team, player, team-fixtures' }) };
     }
 
     const response = await fetch(url, {
@@ -80,6 +179,7 @@ exports.handler = async (event) => {
     });
 
     if (!response.ok) {
+      logApiUsage({ sport, action, league: String(leagueId||''), status_code: response.status, latency_ms: Date.now()-startTime, ok: false, api_calls: 1 });
       return { statusCode: response.status, headers, body: JSON.stringify({ error: 'API-Sports error', status: response.status }) };
     }
 
@@ -123,6 +223,7 @@ exports.handler = async (event) => {
       formatted = data.response;
     }
 
+    logApiUsage({ sport, action, league: String(leagueId||''), status_code: 200, latency_ms: Date.now()-startTime, ok: true, api_calls: 1 });
     return {
       statusCode: 200,
       headers,
@@ -137,6 +238,8 @@ exports.handler = async (event) => {
 
   } catch (error) {
     console.error('Sports data error:', error);
+    // We can't always know sport/action here, so log a minimal entry
+    logApiUsage({ sport: 'unknown', action: 'unknown', status_code: 500, latency_ms: Date.now()-startTime, ok: false, api_calls: 0 });
     return { statusCode: 500, headers, body: JSON.stringify({ error: 'Internal error' }) };
   }
 };
