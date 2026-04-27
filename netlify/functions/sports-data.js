@@ -75,13 +75,19 @@ exports.handler = async (event) => {
   if (event.httpMethod !== 'GET') return { statusCode: 405, headers, body: JSON.stringify({ error: 'GET only' }) };
 
   const startTime = Date.now();
-  const apiKey = process.env.API_SPORTS_KEY;
-  if (!apiKey) return { statusCode: 500, headers, body: JSON.stringify({ error: 'API_SPORTS_KEY not configured' }) };
-
   const params = event.queryStringParameters || {};
   const sport = params.sport || 'football';
   const action = params.action || 'standings';
   const league = params.league;
+
+  // v44 — Tennis uses Matchstat API (RapidAPI) with a different auth model and athlete-centric
+  // endpoints. Branch early to keep the team-sports flow (API-Sports) clean and isolated.
+  if (sport === 'tennis') {
+    return await handleTennis({ action, params, headers, startTime });
+  }
+
+  const apiKey = process.env.API_SPORTS_KEY;
+  if (!apiKey) return { statusCode: 500, headers, body: JSON.stringify({ error: 'API_SPORTS_KEY not configured' }) };
   // v44 — Sport-aware config: base URL, default Swiss league ID, and season format.
   // Football/hockey use API-Sports "year" format ("2025" = season starting Aug 2025).
   // Basketball uses "split" format ("2025-2026"). Ski/tennis (upcoming versions) will likely
@@ -314,3 +320,112 @@ exports.handler = async (event) => {
     return { statusCode: 500, headers, body: JSON.stringify({ error: 'Internal error' }) };
   }
 };
+
+// ── TENNIS HANDLER (v44 tennis-lite) ──────────────────────────────────
+// Matchstat Tennis API (Tennis API ATP WTA ITF) via RapidAPI.
+// Different auth model (X-RapidAPI-Key + X-RapidAPI-Host headers) and an entirely different
+// response shape from API-Sports — hence its own dedicated handler. Athlete-centric pattern:
+// returns the top 20 singles rankings for the tour, with Swiss flag detection
+// (countryAcr === 'SUI'). This will likely also serve as the template for ski FIS (v45)
+// and other individual-athlete sports that don't fit the league/team-fixtures model.
+async function handleTennis({ action, params, headers, startTime }) {
+  const tennisApiKey = process.env.TENNIS_API_KEY;
+  if (!tennisApiKey) {
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: 'TENNIS_API_KEY not configured' })
+    };
+  }
+
+  const baseUrl = 'https://tennis-api-atp-wta-itf.p.rapidapi.com';
+  const apiHeaders = {
+    'X-RapidAPI-Key': tennisApiKey,
+    'X-RapidAPI-Host': 'tennis-api-atp-wta-itf.p.rapidapi.com'
+  };
+
+  let url = '';
+  let tour = '';
+  switch (action) {
+    case 'atp-rankings':
+      url = `${baseUrl}/tennis/v2/atp/ranking/singles?pageSize=20`;
+      tour = 'ATP';
+      break;
+    case 'wta-rankings':
+      url = `${baseUrl}/tennis/v2/wta/ranking/singles?pageSize=20`;
+      tour = 'WTA';
+      break;
+    default:
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: 'Unknown tennis action. Use: atp-rankings, wta-rankings' })
+      };
+  }
+
+  try {
+    const response = await fetch(url, { headers: apiHeaders });
+
+    if (!response.ok) {
+      const errBody = await response.text();
+      logApiUsage({
+        sport: 'tennis', action, league: '',
+        status_code: response.status, latency_ms: Date.now() - startTime,
+        ok: false, api_calls: 1
+      });
+      return {
+        statusCode: response.status,
+        headers,
+        body: JSON.stringify({
+          error: 'Tennis API error',
+          status: response.status,
+          detail: errBody.slice(0, 200)
+        })
+      };
+    }
+
+    const data = await response.json();
+
+    // Matchstat returns either a bare array of player objects or wraps them in
+    // { data: [...] } / { response: [...] } depending on the endpoint version.
+    // Be permissive on the shape. Player schema per docs:
+    //   { id, name, countryAcr, currentRank, points, progress, hardPoints }
+    const rawPlayers = Array.isArray(data) ? data : (data?.data || data?.response || []);
+    const players = rawPlayers.slice(0, 20).map(p => ({
+      rank: p.currentRank,
+      name: p.name,
+      country: p.countryAcr,
+      points: p.points,
+      isSwiss: p.countryAcr === 'SUI'
+    }));
+
+    logApiUsage({
+      sport: 'tennis', action, league: '',
+      status_code: 200, latency_ms: Date.now() - startTime,
+      ok: true, api_calls: 1
+    });
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        sport: 'tennis',
+        action,
+        data: { tour, players },
+        timestamp: new Date().toISOString()
+      })
+    };
+  } catch (err) {
+    console.error('Tennis API error:', err);
+    logApiUsage({
+      sport: 'tennis', action, league: '',
+      status_code: 0, latency_ms: Date.now() - startTime,
+      ok: false, api_calls: 1
+    });
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: 'Tennis fetch error', detail: err.message })
+    };
+  }
+}
