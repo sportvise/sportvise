@@ -2075,7 +2075,7 @@ async function init() {
 // It cleans caches, reloads ONCE, and uses a retry counter to prevent infinite loops.
 // ⚠️  IMPORTANT : cette constante DOIT correspondre à src/version.json (.version).
 //     Si tu bumps version.json, bump APP_V au même nombre — sinon boucle de reload.
-const APP_V = '29';
+const APP_V = '30';
 async function checkAppVersion() {
   try {
     const res = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
@@ -5296,8 +5296,9 @@ function showRecapModal(eventId, eventTitle, eventType, eventDate) {
         <input type="text" class="form-input" id="recapNotes" placeholder="Autre chose à noter..." />
       </div>
 
+      ${_pendingRecapsCount > 1 ? `<div style="text-align:center;font-size:11px;color:var(--muted);margin-bottom:8px;font-weight:600">${_pendingRecapsCount} récap(s) en attente</div>` : ''}
       <div style="display:flex;gap:8px;margin-top:12px">
-        <button onclick="document.getElementById('eventModal')?.remove()"
+        <button onclick="skipRecap('${eventId}')"
           style="flex:1;padding:13px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">Passer</button>
         <button onclick="saveRecap('${eventId}')"
           style="flex:2;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">Enregistrer →</button>
@@ -5305,7 +5306,8 @@ function showRecapModal(eventId, eventTitle, eventType, eventDate) {
     </div>
   `;
   document.body.appendChild(modal);
-  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  // Click outside = skip this recap (and chain to next if any)
+  modal.addEventListener('click', e => { if (e.target === modal) skipRecap(eventId); });
 }
 
 let recapPerformance = 7;
@@ -5372,48 +5374,78 @@ async function saveRecap(eventId) {
   recapPerformance = 7; recapPhysical = 'normal'; recapMood = 'bien';
   recapSleep = 'bon'; recapNutrition = 'normal'; recapInjury = 'aucune';
   renderCalendar();
+  // Chain to next pending recap if any (the saved one is now recap_done=true so it won't reappear)
+  setTimeout(() => { try { checkPendingRecaps(); } catch(e) { console.warn('saveRecap chain error:', e); } }, 600);
 }
 
 // ── AUTO RECAP CHECK ────────────────────────────────
+// Skipped this session — IDs that the user dismissed via "Passer" during the current page load.
+// Reset on reload (so they reappear at next opening, but don't loop infinitely in the same session).
+let _skippedRecapIds = new Set();
+let _pendingRecapsCount = 0; // for the "Récap 1 sur N" indicator in the modal
+
 async function checkPendingRecaps() {
   try {
     const today = new Date(); today.setHours(0,0,0,0);
+    // No more limit(1) — we want to chain through ALL pending recaps
     const { data } = await sb.from('calendar_events')
       .select('*')
       .eq('user_id', currentUser.id)
       .eq('recap_done', false)
       .lt('event_date', dateToStr(today))
       .in('event_type', ['match','competition','entrainement'])
-      .order('event_date', { ascending: false })
-      .limit(1);
-    if (data && data.length > 0) {
-      const e = data[0];
-      const t = EVENT_TYPES[e.event_type] || EVENT_TYPES.autre;
-      // Don't show if another modal is open (profile, morning brief, etc.)
-      if (document.getElementById('profileModal')) return;
-      if (document.getElementById('morningBriefOverlay')) return;
-      if (document.getElementById('eventModal')) return;
-      showRecapModal(e.id, e.title, e.event_type, e.event_date);
-    }
+      .order('event_date', { ascending: false });
+    const pending = (data || []).filter(e => !_skippedRecapIds.has(e.id));
+    if (pending.length === 0) return;
+    // Don't show if another modal is open (profile, morning brief, recap already open)
+    if (document.getElementById('profileModal')) return;
+    if (document.getElementById('morningBriefOverlay')) return;
+    if (document.getElementById('eventModal')) return;
+    _pendingRecapsCount = pending.length;
+    const e = pending[0];
+    showRecapModal(e.id, e.title, e.event_type, e.event_date);
   } catch(err) { console.warn('Recap check error:', err); }
+}
+
+// Called from the "Passer" button — skip this one for the session, then try the next.
+function skipRecap(eventId) {
+  _skippedRecapIds.add(eventId);
+  document.getElementById('eventModal')?.remove();
+  // Chain to the next pending recap (if any) after a short delay so the modal animation finishes.
+  setTimeout(() => { try { checkPendingRecaps(); } catch(e) { console.warn('skipRecap chain error:', e); } }, 350);
 }
 
 // ── PROACTIVE AGENTS ────────────────────────────────
 // ── MORNING BRIEF — Daily intelligent briefing modal ──
+// IMPORTANT — historique du bug : avant v30 le `localStorage.setItem(briefKey, '1')` était posé
+// AVANT toute la logique async (Supabase, predictions, render). Si une étape échouait, la clé
+// restait posée → brief perdu pour la journée, sans aucun log clair. Désormais on pose la clé
+// SEULEMENT après que le DOM ait été appendChild'é avec succès. Logs préfixés [BRIEF] pour
+// faciliter le filtrage en console (Settings → Console → Filter "BRIEF").
 async function showMorningBrief() {
+  const _briefStart = performance.now();
   try {
+    console.log('[BRIEF] entry');
+
     // Only show after onboarding is completed/skipped
-    if (!localStorage.getItem(`sv_onboard_${currentUser.id}`)) return;
+    if (!localStorage.getItem(`sv_onboard_${currentUser.id}`)) {
+      console.log('[BRIEF] skipped — onboarding not done');
+      return;
+    }
 
     // Only show once per day
     const today = new Date();
     today.setHours(0,0,0,0);
     const todayStr = dateToStr(today);
     const briefKey = `sv_morning_brief_${currentUser.id}_${todayStr}`;
-    if (localStorage.getItem(briefKey)) return;
+    if (localStorage.getItem(briefKey)) {
+      console.log('[BRIEF] skipped — already shown today (' + todayStr + ')');
+      return;
+    }
+    console.log('[BRIEF] proceeding for', todayStr);
 
-    // Mark as shown immediately to prevent double-show
-    localStorage.setItem(briefKey, '1');
+    // ⚠️ Do NOT setItem here. We post-pone it to AFTER the modal is in the DOM,
+    // so a Supabase hiccup or render crash doesn't burn the user's brief for the day.
 
     const name = (userProfile?.full_name || currentUser.user_metadata?.full_name || 'Champion').split(' ')[0];
     const hour = new Date().getHours();
@@ -5423,11 +5455,13 @@ async function showMorningBrief() {
 
     // Fetch events for next 3 days
     const in3days = new Date(today.getTime() + 3 * 86400000);
-    const { data: events } = await sb.from('calendar_events')
+    const { data: events, error: evErr } = await sb.from('calendar_events')
       .select('*').eq('user_id', currentUser.id)
       .gte('event_date', todayStr)
       .lte('event_date', dateToStr(in3days))
       .order('event_date', { ascending: true }).limit(10);
+    if (evErr) console.warn('[BRIEF] events fetch error', evErr);
+    console.log('[BRIEF] events fetched:', (events||[]).length);
 
     // Filter out past events from today
     const nowTime = new Date();
@@ -5439,10 +5473,12 @@ async function showMorningBrief() {
     });
 
     // Fetch latest daily log for state awareness
-    const { data: recentLog } = await sb.from('daily_log')
+    const { data: recentLog, error: logErr } = await sb.from('daily_log')
       .select('*').eq('user_id', currentUser.id)
       .order('log_date', { ascending: false }).limit(1);
+    if (logErr) console.warn('[BRIEF] daily_log fetch error', logErr);
     const lastLog = recentLog && recentLog.length > 0 ? recentLog[0] : null;
+    console.log('[BRIEF] daily_log fetched:', !!lastLog);
 
     // Build agent suggestions based on events + state
     const suggestions = [];
@@ -5517,8 +5553,14 @@ async function showMorningBrief() {
       }
     }
 
-    // Fetch predictive intelligence
-    const predictions = await getPredictions();
+    // Fetch predictive intelligence (wrapped — must not crash the brief)
+    let predictions = null;
+    try {
+      predictions = await getPredictions();
+      console.log('[BRIEF] predictions ok', predictions ? '(' + (predictions.alerts?.length||0) + ' alerts)' : '(null)');
+    } catch(predErr) {
+      console.warn('[BRIEF] getPredictions threw — continuing without predictions', predErr);
+    }
 
     // Add prediction-based suggestions
     if (predictions) {
@@ -5640,9 +5682,15 @@ async function showMorningBrief() {
     `;
 
     document.body.appendChild(overlay);
+    // ✅ Brief is now in the DOM — safe to mark as shown for today.
+    // (If anything earlier had thrown, we'd skip this and the brief would re-attempt
+    // at the user's next app open today — much better than silently losing it.)
+    try { localStorage.setItem(briefKey, '1'); } catch(_) { /* localStorage unavailable */ }
     requestAnimationFrame(() => { overlay.style.opacity = '1'; });
+    console.log('[BRIEF] rendered in', Math.round(performance.now() - _briefStart), 'ms');
   } catch(err) {
-    console.warn('Morning Brief error:', err);
+    // Loud error log so we can grep it in Netlify / browser logs.
+    console.error('[BRIEF] FAILED — brief not shown for this user today (will retry on next open):', err);
   }
 }
 
