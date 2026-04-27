@@ -2545,7 +2545,7 @@ async function init() {
 // It cleans caches, reloads ONCE, and uses a retry counter to prevent infinite loops.
 // ⚠️  IMPORTANT : cette constante DOIT correspondre à src/version.json (.version).
 //     Si tu bumps version.json, bump APP_V au même nombre — sinon boucle de reload.
-const APP_V = '37';
+const APP_V = '38';
 async function checkAppVersion() {
   try {
     const res = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
@@ -7261,6 +7261,10 @@ async function saveJournal() {
     await sb.from('daily_log').insert({ user_id: currentUser.id, log_date: today, notes });
   }
 
+  // v38 — Persist a "saved today" flag in localStorage so navigating away and back
+  // shows the summary view even if the DB read returns partial data later.
+  try { localStorage.setItem('sv_journal_saved_' + currentUser.id + '_' + today, '1'); } catch(_) {}
+
   // Switch back to summary view + non-blocking toast
   _journalEditMode = false;
   showToast('✅ ' + (t.journalSaved || 'Journal enregistré'));
@@ -7396,9 +7400,17 @@ async function renderJournal() {
 
   const moodEmojis = t.moodEmojis || ['😫','😕','😐','🙂','😁'];
 
-  // Detect if today's entry is filled enough to show the summary view
-  const isJournalFilled = !!(todayLog && todayLog.mood && todayLog.energy && todayLog.sleep_quality);
+  // v38 — Detect if today's entry is filled enough to show the summary view.
+  // BUGFIX: previous condition required mood AND energy AND sleep simultaneously, too strict.
+  // Now: 2 of 3 main fields filled is enough. Plus a localStorage flag set on save
+  // forces the summary view for the day even if the DB read returns partial data
+  // (covers race conditions in setJournalField fire-and-forget writes + multi-device).
+  const filledCount = todayLog ? [todayLog.mood, todayLog.energy, todayLog.sleep_quality].filter(v => v != null).length : 0;
+  const journalSavedKey = 'sv_journal_saved_' + currentUser.id + '_' + today;
+  const wasSavedToday = localStorage.getItem(journalSavedKey) === '1';
+  const isJournalFilled = filledCount >= 2 || wasSavedToday;
   const showSummary = isJournalFilled && !useEditMode;
+  console.log('[JOURNAL] today=' + today + ' todayLog=' + (todayLog ? JSON.stringify({mood:todayLog.mood,energy:todayLog.energy,sleep:todayLog.sleep_quality}) : 'null') + ' filledCount=' + filledCount + ' wasSavedToday=' + wasSavedToday + ' useEditMode=' + useEditMode + ' showSummary=' + showSummary);
 
   // SUMMARY VIEW (compact card with today's values + Edit button)
   const summaryBlock = todayLog ? `
@@ -8980,7 +8992,9 @@ async function getSportsDataContext() {
     // Cache key includes the club so two athletes from different clubs can each get
     // a tailored context (the standings/fixtures are league-wide but the headline
     // emphasises their own club).
-    const cacheKey = 'sv_sports_data_' + sportConfig.sport + '_' + (club || 'noclub');
+    // v38 — cache key bumped to v2 to invalidate stale "teamFound:false" results
+    // that were cached before the team-search permissive fix landed.
+    const cacheKey = 'sv_sports_data_v2_' + sportConfig.sport + '_' + (club || 'noclub');
     const cached = localStorage.getItem(cacheKey);
     if (cached) {
       try {
