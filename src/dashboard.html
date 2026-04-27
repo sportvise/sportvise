@@ -732,7 +732,7 @@ const T = {
     // Calendar form
     eventTitle:'Titre', eventType:'Type', eventDate:'Date', eventTime:'Heure', eventLocation:'Lieu',
     eventNotes:'Notes (optionnel)', plannedIntensity:'Intensité prévue',
-    save:'Sauvegarder', cancel:'Annuler', delete:'Supprimer', skip:'Passer',
+    save:'Sauvegarder', cancel:'Annuler', delete:'Supprimer', skip:'Passer', yes:'Oui', no:'Non',
     // Event modal
     mySchedule:'Mon Calendrier', addEventTitle:'Ajouter un événement',
     // Favorites
@@ -1007,7 +1007,7 @@ const T = {
     // Calendar form
     eventTitle:'Titel', eventType:'Typ', eventDate:'Datum', eventTime:'Uhrzeit', eventLocation:'Ort',
     eventNotes:'Notizen (optional)', plannedIntensity:'Geplante Intensität',
-    save:'Speichern', cancel:'Abbrechen', delete:'Löschen', skip:'Überspringen',
+    save:'Speichern', cancel:'Abbrechen', delete:'Löschen', skip:'Überspringen', yes:'Ja', no:'Nein',
     // Event modal
     mySchedule:'Mein Kalender', addEventTitle:'Ereignis hinzufügen',
     // Favorites
@@ -1282,7 +1282,7 @@ const T = {
     // Calendar form
     eventTitle:'Title', eventType:'Type', eventDate:'Date', eventTime:'Time', eventLocation:'Location',
     eventNotes:'Notes (optional)', plannedIntensity:'Planned intensity',
-    save:'Save', cancel:'Cancel', delete:'Delete', skip:'Skip',
+    save:'Save', cancel:'Cancel', delete:'Delete', skip:'Skip', yes:'Yes', no:'No',
     // Event modal
     mySchedule:'My Calendar', addEventTitle:'Add event',
     // Favorites
@@ -1557,7 +1557,7 @@ const T = {
     // Calendar form
     eventTitle:'Titolo', eventType:'Tipo', eventDate:'Data', eventTime:'Ora', eventLocation:'Luogo',
     eventNotes:'Note (opzionale)', plannedIntensity:'Intensità pianificata',
-    save:'Salva', cancel:'Annulla', delete:'Elimina', skip:'Salta',
+    save:'Salva', cancel:'Annulla', delete:'Elimina', skip:'Salta', yes:'Sì', no:'No',
     // Event modal
     mySchedule:'Il mio Calendario', addEventTitle:'Aggiungi evento',
     // Favorites
@@ -1780,6 +1780,104 @@ const T = {
 
 let currentLang = localStorage.getItem('sv_lang') || 'fr';
 
+// ── i18n CATALOGS — Phase 1.5 (v42) ─────────────────
+// Decouples DB-stored keys from displayed labels. Storage uses {key}, display uses labels[currentLang].
+// Each catalog item also has a `legacy` array — historical FR strings stored before the migration.
+// Helpers below normalize legacy values to the canonical key on the fly so old DB rows still work
+// even if the SQL migration hasn't been run yet (forward-compat / soft cutover).
+
+const SPORTS_CATALOG = [
+  { key:'football',      icon:'⚽',  labels:{fr:'Football',         de:'Fußball',           en:'Football',          it:'Calcio'},                legacy:['Football'] },
+  { key:'hockey',        icon:'🏒',  labels:{fr:'Hockey sur glace', de:'Eishockey',         en:'Ice Hockey',        it:'Hockey su ghiaccio'},    legacy:['Hockey sur glace','Hockey'] },
+  { key:'skiing',        icon:'⛷️',  labels:{fr:'Ski alpin',        de:'Ski alpin',         en:'Alpine skiing',     it:'Sci alpino'},            legacy:['Ski alpin','Ski'] },
+  { key:'tennis',        icon:'🎾',  labels:{fr:'Tennis',           de:'Tennis',            en:'Tennis',            it:'Tennis'},                legacy:['Tennis'] },
+  { key:'padel',         icon:'🥎',  labels:{fr:'Padel',            de:'Padel',             en:'Padel',             it:'Padel'},                 legacy:['Padel'] },
+  { key:'cycling',       icon:'🚴',  labels:{fr:'Cyclisme',         de:'Radsport',          en:'Cycling',           it:'Ciclismo'},              legacy:['Cyclisme'] },
+  { key:'swimming',      icon:'🏊',  labels:{fr:'Natation',         de:'Schwimmen',         en:'Swimming',          it:'Nuoto'},                 legacy:['Natation'] },
+  { key:'athletics',     icon:'🏃',  labels:{fr:'Athlétisme',       de:'Leichtathletik',    en:'Athletics',         it:'Atletica'},              legacy:['Athlétisme'] },
+  { key:'basketball',    icon:'🏀',  labels:{fr:'Basketball',       de:'Basketball',        en:'Basketball',        it:'Pallacanestro'},         legacy:['Basketball'] },
+  { key:'volleyball',    icon:'🏐',  labels:{fr:'Volleyball',       de:'Volleyball',        en:'Volleyball',        it:'Pallavolo'},             legacy:['Volleyball'] },
+  { key:'floorball',     icon:'🏑',  labels:{fr:'Unihockey',        de:'Unihockey',         en:'Floorball',         it:'Unihockey'},             legacy:['Unihockey'] },
+  { key:'handball',      icon:'🤾',  labels:{fr:'Handball',         de:'Handball',          en:'Handball',          it:'Pallamano'},             legacy:['Handball'] },
+  { key:'gymnastics',    icon:'🤸',  labels:{fr:'Gymnastique',      de:'Turnen',            en:'Gymnastics',        it:'Ginnastica'},            legacy:['Gymnastique','Gymnastics'] },
+  { key:'rugby',         icon:'🏉',  labels:{fr:'Rugby',            de:'Rugby',             en:'Rugby',             it:'Rugby'},                 legacy:['Rugby'] },
+  { key:'golf',          icon:'⛳',  labels:{fr:'Golf',             de:'Golf',              en:'Golf',              it:'Golf'},                  legacy:['Golf'] },
+  { key:'triathlon',     icon:'🏊‍♂️',labels:{fr:'Triathlon',        de:'Triathlon',         en:'Triathlon',         it:'Triathlon'},             legacy:['Triathlon'] },
+  { key:'boxing',        icon:'🥊',  labels:{fr:'Boxe',             de:'Boxen',             en:'Boxing',            it:'Pugilato'},              legacy:['Boxe'] },
+  { key:'martial-arts',  icon:'🥋',  labels:{fr:'Arts martiaux',    de:'Kampfsport',        en:'Martial arts',      it:'Arti marziali'},         legacy:['Arts martiaux'] },
+  { key:'dance',         icon:'💃',  labels:{fr:'Danse',            de:'Tanz',              en:'Dance',             it:'Danza'},                 legacy:['Danse'] },
+  { key:'climbing',      icon:'🧗',  labels:{fr:'Escalade',         de:'Klettern',          en:'Climbing',          it:'Arrampicata'},           legacy:['Escalade'] },
+  { key:'trail-running', icon:'🏞️',  labels:{fr:'Trail / Running',  de:'Trail / Running',   en:'Trail / Running',   it:'Trail / Running'},       legacy:['Trail / Running'] },
+  { key:'other',         icon:'🏆',  labels:{fr:'Autre',            de:'Andere',            en:'Other',             it:'Altro'},                 legacy:['Autre'] },
+];
+
+// Subsets for the 2 different selectors (onboarding 16 / profile 18 — kept divergent to match existing UX)
+const ONBOARDING_SPORT_KEYS = ['football','tennis','basketball','swimming','athletics','volleyball','hockey','skiing','cycling','martial-arts','gymnastics','handball','rugby','dance','climbing','trail-running'];
+const PROFILE_SPORT_KEYS    = ['football','hockey','skiing','tennis','padel','cycling','swimming','athletics','basketball','volleyball','floorball','handball','gymnastics','rugby','golf','triathlon','boxing','other'];
+
+const LEVELS_CATALOG = [
+  { key:'beginner',     icon:'🌱', labels:{fr:'Débutant',     de:'Anfänger',  en:'Beginner',     it:'Principiante'},     legacy:['Débutant'] },
+  { key:'amateur',      icon:'⚽', labels:{fr:'Amateur',      de:'Amateur',   en:'Amateur',      it:'Amatoriale'},       legacy:['Amateur'] },
+  { key:'competition',  icon:'🏆', labels:{fr:'Compétition',  de:'Wettkampf', en:'Competition',  it:'Competizione'},     legacy:['Compétition'] },
+  { key:'semipro',      icon:'🏅', labels:{fr:'Semi-pro',     de:'Semi-Pro',  en:'Semi-pro',     it:'Semi-pro'},         legacy:['Semi-pro','Semi-Pro'] },
+  { key:'professional', icon:'💼', labels:{fr:'Professionnel',de:'Profi',     en:'Professional', it:'Professionista'},   legacy:['Professionnel'] },
+  { key:'elite',        icon:'🌟', labels:{fr:'Elite',        de:'Elite',     en:'Elite',        it:'Élite'},            legacy:['Elite'] },
+];
+const ONBOARDING_LEVEL_KEYS = ['beginner','amateur','competition','semipro','professional'];
+const PROFILE_LEVEL_KEYS    = ['beginner','amateur','semipro','professional','elite'];
+
+const CANTONS_CATALOG = [
+  { key:'VD',    labels:{fr:'Vaud',      de:'Waadt',      en:'Vaud',      it:'Vaud'},      legacy:['Vaud'] },
+  { key:'GE',    labels:{fr:'Genève',    de:'Genf',       en:'Geneva',    it:'Ginevra'},   legacy:['Genève'] },
+  { key:'ZH',    labels:{fr:'Zurich',    de:'Zürich',     en:'Zurich',    it:'Zurigo'},    legacy:['Zurich'] },
+  { key:'BE',    labels:{fr:'Berne',     de:'Bern',       en:'Berne',     it:'Berna'},     legacy:['Berne'] },
+  { key:'VS',    labels:{fr:'Valais',    de:'Wallis',     en:'Valais',    it:'Vallese'},   legacy:['Valais'] },
+  { key:'FR',    labels:{fr:'Fribourg',  de:'Freiburg',   en:'Fribourg',  it:'Friburgo'},  legacy:['Fribourg'] },
+  { key:'NE',    labels:{fr:'Neuchâtel', de:'Neuenburg',  en:'Neuchâtel', it:'Neuchâtel'}, legacy:['Neuchâtel'] },
+  { key:'JU',    labels:{fr:'Jura',      de:'Jura',       en:'Jura',      it:'Giura'},     legacy:['Jura'] },
+  { key:'LU',    labels:{fr:'Lucerne',   de:'Luzern',     en:'Lucerne',   it:'Lucerna'},   legacy:['Lucerne'] },
+  { key:'BS',    labels:{fr:'Bâle',      de:'Basel',      en:'Basel',     it:'Basilea'},   legacy:['Bâle'] },
+  { key:'SG',    labels:{fr:'St-Gall',   de:'St. Gallen', en:'St Gallen', it:'San Gallo'}, legacy:['St-Gallen','St-Gall'] },
+  { key:'AG',    labels:{fr:'Argovie',   de:'Aargau',     en:'Aargau',    it:'Argovia'},   legacy:['Argovie'] },
+  { key:'other', labels:{fr:'Autre',     de:'Andere',     en:'Other',     it:'Altro'},     legacy:['Autre'] },
+];
+
+const GOALS_CATALOG = [
+  { key:'physical-progress', icon:'💪', domain:'physique',  labels:{fr:'Progresser physiquement',   de:'Körperlich Fortschritte machen', en:'Improve physically',   it:'Progredire fisicamente'},   legacy:['Progresser physiquement'] },
+  { key:'win-competitions',  icon:'🏆', domain:'carriere',  labels:{fr:'Gagner des compétitions',   de:'Wettkämpfe gewinnen',           en:'Win competitions',     it:'Vincere competizioni'},     legacy:['Gagner des compétitions'] },
+  { key:'live-from-sport',   icon:'💰', domain:'financier', labels:{fr:'Vivre de mon sport',        de:'Vom Sport leben',                en:'Live from my sport',   it:'Vivere del mio sport'},     legacy:['Vivre de mon sport'] },
+  { key:'mental-strength',   icon:'🧠', domain:'mental',    labels:{fr:'Améliorer mon mental',      de:'Mental stärker werden',          en:'Improve my mental',    it:'Migliorare il mio mentale'},legacy:['Améliorer mon mental'] },
+  { key:'manage-career',     icon:'📈', domain:'carriere',  labels:{fr:'Gérer ma carrière',         de:'Karriere managen',               en:'Manage my career',     it:'Gestire la mia carriera'},  legacy:['Gérer ma carrière'] },
+];
+
+// ── i18n HELPERS ────────────────────────────────────
+// Soft-lookup: accepts either a canonical key or a legacy FR label, returns the catalog item.
+function _catalogFind(catalog, value) {
+  if (!value) return null;
+  return catalog.find(it => it.key === value) || catalog.find(it => (it.legacy||[]).includes(value)) || null;
+}
+function _label(catalog, value, lang) {
+  const it = _catalogFind(catalog, value);
+  if (!it) return value || '';
+  return it.labels[lang] || it.labels.fr || value;
+}
+function _key(catalog, value) {
+  const it = _catalogFind(catalog, value);
+  return it ? it.key : (value || '');
+}
+
+function sportLabel(value, lang)  { return _label(SPORTS_CATALOG,  value, lang || currentLang); }
+function sportKey(value)          { return _key(SPORTS_CATALOG,    value); }
+function sportIcon(value)         { const it = _catalogFind(SPORTS_CATALOG, value); return it ? it.icon : '🏆'; }
+function levelLabel(value, lang)  { return _label(LEVELS_CATALOG,  value, lang || currentLang); }
+function levelKey(value)          { return _key(LEVELS_CATALOG,    value); }
+function levelIcon(value)         { const it = _catalogFind(LEVELS_CATALOG, value); return it ? it.icon : ''; }
+function cantonLabel(value, lang) { return _label(CANTONS_CATALOG, value, lang || currentLang); }
+function cantonKey(value)         { return _key(CANTONS_CATALOG,   value); }
+function goalLabel(value, lang)   { return _label(GOALS_CATALOG,   value, lang || currentLang); }
+function goalKey(value)           { return _key(GOALS_CATALOG,     value); }
+function goalDomain(value)        { const it = _catalogFind(GOALS_CATALOG, value); return it ? it.domain : 'carriere'; }
+
 // ── QUICK ONBOARDING ────────────────────────────────
 async function quickOnboard(field, value, btn) {
   // Instant feedback
@@ -1791,15 +1889,17 @@ async function quickOnboard(field, value, btn) {
     btn.style.color = '#07091a';
   }
   try {
+    // v42 — buttons now pass canonical keys; helpers normalize legacy FR labels too.
     if (field === 'level') {
-      await sb.from('profiles').upsert({ id: currentUser.id, level: value }, { onConflict: 'id' });
-      if (userProfile) userProfile.level = value;
+      const lvKey = levelKey(value);
+      await sb.from('profiles').upsert({ id: currentUser.id, level: lvKey }, { onConflict: 'id' });
+      if (userProfile) userProfile.level = lvKey;
     } else if (field === 'goal') {
-      // Save as the first goal
+      const gKey = goalKey(value);
       await sb.from('goals').insert({
         user_id: currentUser.id,
-        title: value,
-        domain: value.includes('physique') ? 'physique' : value.includes('mental') ? 'mental' : value.includes('argent') || value.includes('Vivre') ? 'financier' : 'carriere',
+        title: goalLabel(gKey),       // localized label for display
+        domain: goalDomain(gKey),     // canonical domain from catalog
         status: 'active',
         target_value: 100,
         current_value: 0,
@@ -1834,15 +1934,11 @@ function showLucasWelcome() {
   let step = 0;
   const data = { sport: '', level: '', goal: '' };
 
-  const sports = ['Football','Tennis','Basketball','Natation','Athlétisme','Volleyball','Hockey','Ski','Cyclisme','Arts martiaux','Gymnastique','Handball','Rugby','Danse','Escalade','Trail / Running'];
-  const levels = ['Débutant','Amateur','Compétition','Semi-pro','Professionnel'];
-  const goals = [
-    {e:'💪',l:'Progresser physiquement'},
-    {e:'🏆',l:'Gagner des compétitions'},
-    {e:'💰',l:'Vivre de mon sport'},
-    {e:'🧠',l:'Améliorer mon mental'},
-    {e:'📈',l:'Gérer ma carrière'}
-  ];
+  // v42 — Sources of truth are SPORTS_CATALOG / LEVELS_CATALOG / GOALS_CATALOG defined globally.
+  // We keep arrays of items here for the buttons, with {key, label, icon} pre-resolved for the current language.
+  const sports = ONBOARDING_SPORT_KEYS.map(k => { const it = SPORTS_CATALOG.find(s=>s.key===k); return { key: it.key, label: it.labels[currentLang] || it.labels.fr }; });
+  const levels = ONBOARDING_LEVEL_KEYS.map(k => { const it = LEVELS_CATALOG.find(l=>l.key===k); return { key: it.key, label: it.labels[currentLang] || it.labels.fr, icon: it.icon }; });
+  const goals  = GOALS_CATALOG.map(it => ({ key: it.key, label: it.labels[currentLang] || it.labels.fr, icon: it.icon, domain: it.domain }));
 
   function renderStep() {
     const t = T[currentLang] || T.fr;
@@ -1878,7 +1974,7 @@ function showLucasWelcome() {
           <div style="font-size:20px;font-weight:800;color:#f1f5f9;margin-bottom:4px">${t.obSportTitle}</div>
           <div style="font-size:13px;color:#64748b;margin-bottom:20px">${t.obSportSub}</div>
           <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:400px;margin:0 auto 20px">
-            ${sports.map(s => `<button class="ob-sport-btn" onclick="selectOnboardSport(this,'${s}')" style="padding:10px 16px;border-radius:10px;border:1px solid #1e2d47;background:#111827;color:#f1f5f9;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s">${s}</button>`).join('')}
+            ${sports.map(s => `<button class="ob-sport-btn" onclick="selectOnboardSport(this,'${s.key}')" style="padding:10px 16px;border-radius:10px;border:1px solid #1e2d47;background:#111827;color:#f1f5f9;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s">${s.label}</button>`).join('')}
           </div>
           <div style="margin-bottom:16px">
             <input id="obCustomSport" type="text" placeholder="${t.obSportCustom}" style="padding:10px 16px;border-radius:10px;border:1px solid #1e2d47;background:#111827;color:#f1f5f9;font-size:13px;width:200px;font-family:'Inter',sans-serif;text-align:center" oninput="onboardData.sport=this.value"/>
@@ -1893,7 +1989,7 @@ function showLucasWelcome() {
           <div style="font-size:20px;font-weight:800;color:#f1f5f9;margin-bottom:4px">${(t.obLevelTitle||'').replace('{sport}', data.sport)}</div>
           <div style="font-size:13px;color:#64748b;margin-bottom:20px">${t.obLevelSub}</div>
           <div style="display:flex;flex-direction:column;gap:8px;max-width:320px;margin:0 auto 20px">
-            ${levels.map(l => `<button class="ob-level-btn" onclick="selectOnboardLevel(this,'${l}')" style="padding:14px 20px;border-radius:12px;border:1px solid #1e2d47;background:#111827;color:#f1f5f9;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;text-align:left">${l === 'Débutant' ? '🌱 ' : l === 'Amateur' ? '🏅 ' : l === 'Compétition' ? '🏆 ' : l === 'Semi-pro' ? '⭐ ' : '👑 '}${l}</button>`).join('')}
+            ${levels.map(l => `<button class="ob-level-btn" onclick="selectOnboardLevel(this,'${l.key}')" style="padding:14px 20px;border-radius:12px;border:1px solid #1e2d47;background:#111827;color:#f1f5f9;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;text-align:left">${l.icon} ${l.label}</button>`).join('')}
           </div>
         </div>
       `,
@@ -1904,20 +2000,21 @@ function showLucasWelcome() {
           <div style="font-size:20px;font-weight:800;color:#f1f5f9;margin-bottom:4px">${t.obGoalTitle}</div>
           <div style="font-size:13px;color:#64748b;margin-bottom:20px">${t.obGoalSub}</div>
           <div style="display:flex;flex-direction:column;gap:8px;max-width:360px;margin:0 auto 20px">
-            ${goals.map(g => `<button class="ob-goal-btn" onclick="selectOnboardGoal(this,'${g.l}')" style="padding:14px 20px;border-radius:12px;border:1px solid #1e2d47;background:#111827;color:#f1f5f9;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;text-align:left">${g.e} ${g.l}</button>`).join('')}
+            ${goals.map(g => `<button class="ob-goal-btn" onclick="selectOnboardGoal(this,'${g.key}')" style="padding:14px 20px;border-radius:12px;border:1px solid #1e2d47;background:#111827;color:#f1f5f9;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;text-align:left">${g.icon} ${g.label}</button>`).join('')}
           </div>
         </div>
       `,
       // Step 4: Summary + go
-      // NOTE: data.goal is matched against FR keywords because the goal labels are still in FR
-      // (Phase 1 i18n keeps the goals/levels arrays in FR — Phase 1.5 will refactor key→label).
-      // The agent description shown to the user IS localized via t.obAgentDesc*.
+      // v42 — data.{sport,level,goal} are now canonical keys. The agent recommendation is driven
+      // by GOALS_CATALOG.domain (mental / physique / financier / carriere); the summary line
+      // displays localized labels via *Label() helpers.
       () => {
-        const agentReco = data.goal.includes('physique') ? {key:'physique',name:'David',emoji:'🏋️',desc:t.obAgentDescPhysique}
-          : data.goal.includes('compétition') || data.goal.includes('Gagner') ? {key:'mental',name:'Emma',emoji:'🧠',desc:t.obAgentDescMental}
-          : data.goal.includes('argent') || data.goal.includes('Vivre') ? {key:'finance',name:'Sophie',emoji:'💶',desc:t.obAgentDescFinance}
-          : data.goal.includes('mental') || data.goal.includes('Mental') ? {key:'mental',name:'Emma',emoji:'🧠',desc:t.obAgentDescMental}
-          : data.goal.includes('carrière') || data.goal.includes('Gérer') ? {key:'equipe',name:'Lucas',emoji:'💼',desc:t.obAgentDescCareer}
+        const goalDom = goalDomain(data.goal); // 'physique' | 'mental' | 'financier' | 'carriere'
+        const agentReco =
+            goalDom === 'physique'  ? {key:'physique',name:'David', emoji:'🏋️',desc:t.obAgentDescPhysique}
+          : goalDom === 'mental'    ? {key:'mental',  name:'Emma',  emoji:'🧠',desc:t.obAgentDescMental}
+          : goalDom === 'financier' ? {key:'finance', name:'Sophie',emoji:'💶',desc:t.obAgentDescFinance}
+          : data.goal === 'win-competitions' ? {key:'mental', name:'Emma', emoji:'🧠',desc:t.obAgentDescMental}
           : {key:'equipe',name:'Lucas',emoji:'💼',desc:t.obAgentDescCareer};
 
         return `
@@ -1925,7 +2022,7 @@ function showLucasWelcome() {
             <div style="font-size:48px;margin-bottom:12px">🎉</div>
             <div style="font-size:22px;font-weight:900;color:#f1f5f9;margin-bottom:8px">${t.obSummaryTitle}</div>
             <div style="font-size:14px;color:#94a3b8;margin-bottom:20px;line-height:1.6">
-              <span style="color:#f59e0b;font-weight:700">${data.sport}</span> · ${data.level} · ${data.goal}
+              <span style="color:#f59e0b;font-weight:700">${sportLabel(data.sport)}</span> · ${levelLabel(data.level)} · ${goalLabel(data.goal)}
             </div>
             <div style="background:linear-gradient(135deg,#f59e0b12,#06b6d412);border:1px solid #f59e0b30;border-radius:14px;padding:20px;max-width:360px;margin:0 auto 24px;text-align:left">
               <div style="font-size:12px;color:#64748b;margin-bottom:8px;text-transform:uppercase;font-weight:700;letter-spacing:0.5px">${t.obSummaryRecoLabel}</div>
@@ -2006,10 +2103,12 @@ function showLucasWelcome() {
 
   window.finishOnboarding = async function(targetAgent) {
     // Save profile data to Supabase
+    // v42 — data.sport/level/goal are canonical keys; we store them as-is (sportKey() is a no-op
+    // for items already canonical, and normalises legacy/custom values otherwise).
     try {
       const updates = {};
-      if (data.sport) updates.sport = data.sport;
-      if (data.level) updates.level = data.level;
+      if (data.sport) updates.sport = sportKey(data.sport) || data.sport; // freeform custom inputs pass through
+      if (data.level) updates.level = levelKey(data.level);
       if (Object.keys(updates).length > 0) {
         await sb.from('profiles').upsert({ id: currentUser.id, ...updates }, { onConflict: 'id' });
         if (userProfile) { Object.assign(userProfile, updates); }
@@ -2017,8 +2116,8 @@ function showLucasWelcome() {
       if (data.goal) {
         await sb.from('goals').insert({
           user_id: currentUser.id,
-          title: data.goal,
-          domain: data.goal.includes('physique') ? 'physique' : data.goal.includes('mental') ? 'mental' : data.goal.includes('argent') || data.goal.includes('Vivre') ? 'financier' : 'carriere',
+          title: goalLabel(data.goal),       // localized label for display elsewhere
+          domain: goalDomain(data.goal),     // canonical domain from catalog
           status: 'active', target_value: 100, current_value: 0,
           description: 'Objectif défini lors de l\'onboarding guidé'
         });
@@ -2037,7 +2136,10 @@ function showLucasWelcome() {
           const input = document.getElementById('chatInput');
           if (input) {
             const tt = T[currentLang] || T.fr;
-            input.value = (tt.obAutoMsg||'').replace('{sport}', data.sport).replace('{level}', data.level).replace('{goal}', data.goal);
+            input.value = (tt.obAutoMsg||'')
+              .replace('{sport}', sportLabel(data.sport))
+              .replace('{level}', levelLabel(data.level))
+              .replace('{goal}',  goalLabel(data.goal));
             sendMsg(targetAgent);
           }
         }, 500);
@@ -2545,7 +2647,7 @@ async function init() {
 // It cleans caches, reloads ONCE, and uses a retry counter to prevent infinite loops.
 // ⚠️  IMPORTANT : cette constante DOIT correspondre à src/version.json (.version).
 //     Si tu bumps version.json, bump APP_V au même nombre — sinon boucle de reload.
-const APP_V = '40';
+const APP_V = '42';
 async function checkAppVersion() {
   try {
     const res = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
@@ -3069,10 +3171,19 @@ document.addEventListener('click', function(e) {
 // ── PROFILE MODAL (first time setup) ─────────────────
 function showProfileModal() {
   const t = T[currentLang] || T.fr;
-  // Sports/cantons/levels values stay in FR — they are stored in DB as canonical keys.
-  // Phase 1.5 will refactor key→label so the labels can be localized while DB stays stable.
-  const sports = ['Football','Hockey sur glace','Ski alpin','Tennis','Padel','Cyclisme','Natation','Athlétisme','Basketball','Volleyball','Unihockey','Handball','Gymnastics','Rugby','Golf','Triathlon','Boxe','Autre'];
-  const cantons = ['Vaud','Genève','Zurich','Berne','Valais','Fribourg','Neuchâtel','Jura','Lucerne','Bâle','St-Gallen','Argovie','Autre'];
+  // v42 — Sources of truth are SPORTS_CATALOG / LEVELS_CATALOG / CANTONS_CATALOG.
+  // {key} stored in DB; {label} displayed (localized via currentLang).
+  // Helpers also normalize legacy FR labels (e.g. 'Football' → 'football') so users with
+  // pre-migration data still see their selection pre-checked correctly.
+  const sports = PROFILE_SPORT_KEYS.map(k => { const it = SPORTS_CATALOG.find(s=>s.key===k); return { key: it.key, label: it.labels[currentLang] || it.labels.fr }; });
+  const cantons = CANTONS_CATALOG.map(it => ({ key: it.key, label: it.labels[currentLang] || it.labels.fr }));
+  const profileLevels = PROFILE_LEVEL_KEYS.map(k => { const it = LEVELS_CATALOG.find(l=>l.key===k); return { key: it.key, label: it.labels[currentLang] || it.labels.fr, icon: it.icon }; });
+  const levelDescs = { beginner:'< 2 ans', amateur:'Niveau régional', semipro:'National', professional:'Contrat pro', elite:'Sélection nationale' };
+
+  const currentSportKey  = sportKey(userProfile?.sport)  || 'football';
+  const currentLevelKey  = levelKey(userProfile?.level)  || '';
+  const currentCantonKey = cantonKey(userProfile?.canton)|| '';
+
   const modal = document.createElement('div');
   modal.className = 'modal-overlay';
   modal.id = 'profileModal';
@@ -3085,7 +3196,7 @@ function showProfileModal() {
       <div class="form-field">
         <label class="form-label">${t.profileMainSport}</label>
         <select class="form-select" id="pSport">
-          ${sports.map(s=>`<option value="${s}" ${(userProfile?.sport||'Football')===s?'selected':''}>${s}</option>`).join('')}
+          ${sports.map(s=>`<option value="${s.key}" ${currentSportKey===s.key?'selected':''}>${s.label}</option>`).join('')}
         </select>
       </div>
 
@@ -3097,11 +3208,11 @@ function showProfileModal() {
       <div class="form-field">
         <label class="form-label">${t.currentLevel}</label>
         <div class="level-grid">
-          ${[['🌱','Débutant','< 2 ans'],['⚽','Amateur','Niveau régional'],['🏅','Semi-Pro','National'],['💼','Professionnel','Contrat pro'],['🌟','Elite','Sélection nationale']].map(([ico,lvl,desc])=>`
-            <button class="level-btn ${(userProfile?.level||'')===lvl?'selected':''}" onclick="selectLevel(this,'${lvl}')">
-              <div style="font-size:18px">${ico}</div>
-              <div style="font-weight:700;margin-top:4px">${lvl}</div>
-              <div style="font-size:9px;color:var(--muted);margin-top:2px">${desc}</div>
+          ${profileLevels.map(l=>`
+            <button class="level-btn ${currentLevelKey===l.key?'selected':''}" onclick="selectLevel(this,'${l.key}')">
+              <div style="font-size:18px">${l.icon}</div>
+              <div style="font-weight:700;margin-top:4px">${l.label}</div>
+              <div style="font-size:9px;color:var(--muted);margin-top:2px">${levelDescs[l.key]||''}</div>
             </button>`).join('')}
         </div>
       </div>
@@ -3131,7 +3242,7 @@ function showProfileModal() {
       <div class="form-field">
         <label class="form-label">${t.canton}</label>
         <select class="form-select" id="pCanton">
-          ${cantons.map(c=>`<option value="${c}" ${(userProfile?.canton||'')===c?'selected':''}>${c}</option>`).join('')}
+          ${cantons.map(c=>`<option value="${c.key}" ${currentCantonKey===c.key?'selected':''}>${c.label}</option>`).join('')}
         </select>
       </div>
 
@@ -3141,27 +3252,30 @@ function showProfileModal() {
     </div>
   `;
   document.body.appendChild(modal);
-  selectedLevel = userProfile?.level || '';
+  selectedLevel = currentLevelKey; // store the canonical key (was previously the FR label)
 }
 
-function selectLevel(btn, level) {
+function selectLevel(btn, levelKeyArg) {
   document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
-  selectedLevel = level;
+  selectedLevel = levelKeyArg; // canonical key
 }
 
 async function saveProfile() {
-  const sport = document.getElementById('pSport').value;
+  // v42 — Form values are now canonical keys (option value="${s.key}"). We pass them through
+  // sportKey/levelKey/cantonKey as a defensive normaliser for any legacy data.
+  const sport = sportKey(document.getElementById('pSport').value) || document.getElementById('pSport').value;
   const birth_date = document.getElementById('pBirth').value || null;
   const weight = document.getElementById('pWeight').value ? parseInt(document.getElementById('pWeight').value) : null;
   const height = document.getElementById('pHeight').value ? parseInt(document.getElementById('pHeight').value) : null;
   const position = document.getElementById('pPosition').value;
   const club = document.getElementById('pClub').value;
-  const canton = document.getElementById('pCanton').value;
+  const canton = cantonKey(document.getElementById('pCanton').value);
+  const level  = levelKey(selectedLevel);
   const meta = currentUser.user_metadata || {};
   const full_name = meta.full_name || currentUser.email.split('@')[0];
 
-  const profileData = { id: currentUser.id, email: currentUser.email, full_name, sport, birth_date, weight, height, level: selectedLevel, position, club, canton };
+  const profileData = { id: currentUser.id, email: currentUser.email, full_name, sport, birth_date, weight, height, level, position, club, canton };
   await sb.from('profiles').upsert(profileData);
   userProfile = profileData;
 
@@ -3277,7 +3391,9 @@ async function showPage(page, el) {
 async function renderDashboard() {
   const meta = currentUser?.user_metadata || {};
   const name = (meta.full_name || userProfile?.full_name || 'Athlète').split(' ')[0];
-  const sport = userProfile?.sport || meta.sport || '—';
+  // v42 — display localized labels but compute existence from raw profile fields
+  const sportRaw = userProfile?.sport || meta.sport || '';
+  const sport = sportRaw ? sportLabel(sportRaw) : '—';
   const t = T[currentLang];
   const greeting = t.hello;
 
@@ -3311,9 +3427,9 @@ async function renderDashboard() {
     </div>`;
   }
 
-  // Niveau d'avancement
+  // Niveau d'avancement (renamed v42 to avoid clash with global levelLabel() helper)
   const doneCount = [step1Done,step2Done,step3Done,step4Done].filter(Boolean).length;
-  const levelLabel = doneCount <= 1 ? t.beginner : doneCount === 2 ? (t.dashLevelInter||'Intermédiaire') : doneCount === 3 ? (t.dashLevelAdvanced||'Avancé') : (t.dashLevelComplete||'⭐ Complet');
+  const progressLabel = doneCount <= 1 ? t.beginner : doneCount === 2 ? (t.dashLevelInter||'Intermédiaire') : doneCount === 3 ? (t.dashLevelAdvanced||'Avancé') : (t.dashLevelComplete||'⭐ Complet');
 
   document.getElementById('mainContent').innerHTML = `
     <div style="margin-bottom:20px">
@@ -3332,11 +3448,11 @@ async function renderDashboard() {
         ${checkItem(step1Done, t.step1)}
         ${checkItem(step2Done, step2Done ? `${t.step2} : <strong style="color:var(--gold)">${sport}</strong>` : t.step2 + ' — <a href="#" onclick="showPage(\'profil\',null)" style="color:var(--gold)">' + (t.dashCheckComplete||'Compléter →') + '</a>')}
         ${checkItem(step3Done, step3Done ? (t.dashCheckAgentDone||'Premier agent consulté ✅') : t.step3)}
-        ${checkItem(step4Done, step4Done ? `${t.dashCheckLevelDone||'Niveau renseigné :'} <strong style="color:var(--gold)">${userProfile?.level}</strong>` : (t.dashCheckLevelTodo||'Renseignez votre niveau dans votre profil'))}
+        ${checkItem(step4Done, step4Done ? `${t.dashCheckLevelDone||'Niveau renseigné :'} <strong style="color:var(--gold)">${levelLabel(userProfile?.level)}</strong>` : (t.dashCheckLevelTodo||'Renseignez votre niveau dans votre profil'))}
       </div>
       <div style="text-align:center;flex-shrink:0">
         <div style="font-size:36px">${allDone ? '🏆' : doneCount >= 2 ? '🥈' : '🥉'}</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:4px">${doneCount}/4<br/>${levelLabel}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">${doneCount}/4<br/>${progressLabel}</div>
       </div>
     </div>
 
@@ -3355,9 +3471,9 @@ async function renderDashboard() {
       <div style="margin-bottom:12px">
         <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase">${t.dashQuickLevelLabel||'Ton niveau'}</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap">
-          ${['Débutant','Amateur','Compétition','Semi-pro','Professionnel'].map(level => `
-            <button onclick="quickOnboard('level','${level}',this)" style="padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.background='#f59e0b15'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--bg)'">${level}</button>
-          `).join('')}
+          ${ONBOARDING_LEVEL_KEYS.map(k => { const it = LEVELS_CATALOG.find(l=>l.key===k); return `
+            <button onclick="quickOnboard('level','${it.key}',this)" style="padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.background='#f59e0b15'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--bg)'">${it.labels[currentLang]||it.labels.fr}</button>
+          `; }).join('')}
         </div>
       </div>
       ` : ''}
@@ -3366,8 +3482,8 @@ async function renderDashboard() {
       <div style="margin-bottom:12px">
         <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase">${t.dashQuickGoalLabel||'Ton objectif principal'}</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap">
-          ${[{e:'💪',l:'Progresser physiquement'},{e:'🏆',l:'Gagner des compétitions'},{e:'💰',l:'Vivre de mon sport'},{e:'🧠',l:'Améliorer mon mental'},{e:'📈',l:'Gérer ma carrière'}].map(o => `
-            <button onclick="quickOnboard('goal','${o.l}',this)" style="padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;display:flex;align-items:center;gap:4px;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">${o.e} ${o.l}</button>
+          ${GOALS_CATALOG.map(it => `
+            <button onclick="quickOnboard('goal','${it.key}',this)" style="padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;display:flex;align-items:center;gap:4px;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">${it.icon} ${it.labels[currentLang]||it.labels.fr}</button>
           `).join('')}
         </div>
       </div>
@@ -3546,7 +3662,7 @@ async function renderDashboard() {
       <div class="kpi-card" style="border-top-color:#ef4444">
         <div style="font-size:11px;color:var(--muted)">${t.memberSince}</div>
         <div class="kpi-val" style="color:#ef4444">${memberDays}<span style="font-size:14px;font-weight:400;color:var(--muted)">j</span></div>
-        <div class="kpi-delta" style="color:var(--muted)">${userProfile?.level || 'Niveau non renseigné'}</div>
+        <div class="kpi-delta" style="color:var(--muted)">${userProfile?.level ? levelLabel(userProfile.level) : (t.dashLevelMissing||'Niveau non renseigné')}</div>
       </div>
     </div>
 
@@ -3924,7 +4040,8 @@ function exportPDF(page) {
   const messages = chats[page] || [];
   const meta = currentUser?.user_metadata || {};
   const name = userProfile?.full_name || meta.full_name || currentUser.email;
-  const sport = userProfile?.sport || meta.sport || '';
+  const sportRaw = userProfile?.sport || meta.sport || '';
+  const sport = sportRaw ? sportLabel(sportRaw) : '';
   const date = new Date().toLocaleDateString('fr-CH', { day:'2-digit', month:'long', year:'numeric' });
 
   const msgHTML = messages.map(m => `
@@ -3964,7 +4081,7 @@ function exportPDF(page) {
     <div class="meta">
       <div><strong>${name}</strong></div>
       ${sport ? `<div>Sport : ${sport}</div>` : ''}
-      ${userProfile?.level ? `<div>Niveau : ${userProfile.level}</div>` : ''}
+      ${userProfile?.level ? `<div>Niveau : ${levelLabel(userProfile.level)}</div>` : ''}
       <div>Exporté le ${date}</div>
     </div>
   </div>
@@ -4399,14 +4516,17 @@ async function sendMsg(page) {
     const p = userProfile || {};
     const age = p.birth_date ? Math.floor((Date.now() - new Date(p.birth_date)) / 31557600000) : null;
     const bmi = (p.weight && p.height) ? (p.weight / ((p.height/100) ** 2)).toFixed(1) : null;
+    // v42 — agent context uses canonical labels in FR (the agents are Lucas/David/etc., who reply
+    // in the user's language — so we always inject the FR label which is the most stable form for
+    // model consumption regardless of currentLang).
     const profileContext = [
       p.full_name ? `Nom: ${p.full_name}` : '',
       age ? `Âge: ${age} ans` : '',
-      p.sport ? `Sport: ${p.sport}` : '',
-      p.level ? `Niveau: ${p.level}` : '',
+      p.sport ? `Sport: ${sportLabel(p.sport, 'fr')}` : '',
+      p.level ? `Niveau: ${levelLabel(p.level, 'fr')}` : '',
       p.position ? `Position: ${p.position}` : '',
       p.club ? `Club: ${p.club}` : '',
-      p.canton ? `Canton: ${p.canton}` : '',
+      p.canton ? `Canton: ${cantonLabel(p.canton, 'fr')}` : '',
       p.weight ? `Poids: ${p.weight}kg` : '',
       p.height ? `Taille: ${p.height}cm` : '',
       bmi ? `IMC: ${bmi}` : ''
@@ -5040,7 +5160,11 @@ function renderProfilePage() {
   const p = userProfile || {};
   const meta = currentUser?.user_metadata || {};
   const name = p.full_name || meta.full_name || currentUser.email;
-  const levelEmojis = {'Débutant':'🌱','Amateur':'⚽','Semi-Pro':'🏅','Professionnel':'💼','Elite':'🌟'};
+  // v42 — lookups via catalog helpers; helpers tolerate both canonical keys and legacy FR labels
+  const sportDisplay  = p.sport  ? sportLabel(p.sport)  : '';
+  const levelIco      = p.level  ? levelIcon(p.level)   : '';
+  const levelDisplay  = p.level  ? levelLabel(p.level)  : '';
+  const cantonDisplay = p.canton ? cantonLabel(p.canton): '';
 
   document.getElementById('mainContent').innerHTML = `
     <div style="max-width:580px">
@@ -5074,12 +5198,12 @@ function renderProfilePage() {
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
           ${[
-            ['⚽ ' + t.sport, p.sport || '—'],
-            ['🏅 ' + t.currentLevel, p.level ? `${levelEmojis[p.level]||''} ${p.level}` : '—'],
+            ['⚽ ' + t.sport, sportDisplay || '—'],
+            ['🏅 ' + t.currentLevel, levelDisplay ? `${levelIco} ${levelDisplay}` : '—'],
             ['🎂 ' + t.birthDate, p.birth_date ? new Date(p.birth_date).toLocaleDateString('fr-CH') : '—'],
             ['🎯 ' + t.position, p.position || '—'],
             ['🏟️ ' + t.club, p.club || '—'],
-            ['📍 ' + t.canton, p.canton || '—'],
+            ['📍 ' + t.canton, cantonDisplay || '—'],
           ].map(([label, val]) => `
             <div style="background:var(--bg2);border-radius:8px;padding:12px 14px">
               <div style="font-size:11px;color:var(--muted);margin-bottom:4px">${label}</div>
@@ -5370,7 +5494,8 @@ async function showDayDetail(dateStr) {
   const dayLabel = d.toLocaleDateString('fr-CH', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
   // Fetch weather for this day
-  const location = dayEvents.find(e => e.location)?.location || userProfile?.canton || 'Lausanne';
+  // v42 — canton is now a key (e.g. 'VD'); we resolve it to the FR label which is geocodable.
+  const location = dayEvents.find(e => e.location)?.location || (userProfile?.canton ? cantonLabel(userProfile.canton, 'fr') : 'Lausanne');
   const weather = await getWeather(location, dateStr);
 
   const modal = document.createElement('div');
@@ -6842,8 +6967,9 @@ function scheduleProactiveNotifications() {
 
 // ── MARKETPLACE (Programmes) ───────────────────────
 function getMarketplacePrograms() {
-  const sport = userProfile?.sport || 'Football';
-  const level = userProfile?.level || 'intermédiaire';
+  // v42 — marketplace strings are FR-only for now; resolve key→FR canonical label
+  const sport = userProfile?.sport ? sportLabel(userProfile.sport, 'fr') : 'Football';
+  const level = userProfile?.level ? levelLabel(userProfile.level, 'fr') : 'intermédiaire';
 
   return [
     {
@@ -7439,7 +7565,7 @@ async function renderJournal() {
         </div>
         <button onclick="editJournalEntry()" style="padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-weight:600;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">✏️ ${t.editEntry || 'Modifier'}</button>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%, 110px), 1fr));gap:10px">
         <div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:26px;margin-bottom:4px">${moodEmojis[todayLog.mood-1] || '—'}</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${t.mood}</div></div>
         <div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--gold)">${todayLog.energy||'—'}/5</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${t.energy}</div></div>
         <div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--gold)">${todayLog.motivation||'—'}/5</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${t.motivation}</div></div>
@@ -7464,39 +7590,39 @@ async function renderJournal() {
       <div style="background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;${showSummary ? 'display:none;' : ''}">
         <h3 style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:16px">📝 ${t.todayEntry}</h3>
 
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px">
+        <div class="journal-form-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%, 220px), 1fr));gap:16px">
           <div class="form-field">
             <label class="form-label">${t.mood}</label>
-            <div style="display:flex;justify-content:space-between">
+            <div class="journal-btn-row" style="display:flex;gap:4px">
               ${moodEmojis.map((emoji, i) => `
-                <button class="sv-sel${todayLog?.mood===(i+1)?' active':''}" onclick="setJournalField('mood',${i+1},this)" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:${todayLog?.mood===(i+1)?'linear-gradient(135deg,#f59e0b,#d97706)':'var(--bg)'};color:var(--text);font-size:20px;cursor:pointer;margin:0 4px">${emoji}</button>
+                <button class="sv-sel${todayLog?.mood===(i+1)?' active':''}" onclick="setJournalField('mood',${i+1},this)" style="flex:1 1 0;min-width:0;padding:8px 4px;border-radius:8px;border:1px solid var(--border);background:${todayLog?.mood===(i+1)?'linear-gradient(135deg,#f59e0b,#d97706)':'var(--bg)'};color:var(--text);font-size:18px;cursor:pointer">${emoji}</button>
               `).join('')}
             </div>
           </div>
 
           <div class="form-field">
             <label class="form-label">${t.energy}</label>
-            <div style="display:flex;gap:4px">
+            <div class="journal-btn-row" style="display:flex;gap:4px">
               ${[1,2,3,4,5].map(i => `
-                <button class="sv-sel${todayLog?.energy===i?' active':''}" onclick="setJournalField('energy',${i},this)" style="flex:1;padding:8px;border-radius:6px;border:1px solid var(--border);background:${todayLog?.energy===i?'linear-gradient(135deg,#f59e0b,#d97706)':'var(--bg)'};color:var(--text);font-weight:700;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif">${i}</button>
+                <button class="sv-sel${todayLog?.energy===i?' active':''}" onclick="setJournalField('energy',${i},this)" style="flex:1 1 0;min-width:0;padding:8px 4px;border-radius:6px;border:1px solid var(--border);background:${todayLog?.energy===i?'linear-gradient(135deg,#f59e0b,#d97706)':'var(--bg)'};color:var(--text);font-weight:700;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif">${i}</button>
               `).join('')}
             </div>
           </div>
 
           <div class="form-field">
             <label class="form-label">${t.motivation}</label>
-            <div style="display:flex;gap:4px">
+            <div class="journal-btn-row" style="display:flex;gap:4px">
               ${[1,2,3,4,5].map(i => `
-                <button class="sv-sel${todayLog?.motivation===i?' active':''}" onclick="setJournalField('motivation',${i},this)" style="flex:1;padding:8px;border-radius:6px;border:1px solid var(--border);background:${todayLog?.motivation===i?'linear-gradient(135deg,#f59e0b,#d97706)':'var(--bg)'};color:var(--text);font-weight:700;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif">${i}</button>
+                <button class="sv-sel${todayLog?.motivation===i?' active':''}" onclick="setJournalField('motivation',${i},this)" style="flex:1 1 0;min-width:0;padding:8px 4px;border-radius:6px;border:1px solid var(--border);background:${todayLog?.motivation===i?'linear-gradient(135deg,#f59e0b,#d97706)':'var(--bg)'};color:var(--text);font-weight:700;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif">${i}</button>
               `).join('')}
             </div>
           </div>
 
           <div class="form-field">
             <label class="form-label">${t.sleepQuality}</label>
-            <div style="display:flex;gap:4px">
+            <div class="journal-btn-row" style="display:flex;gap:4px">
               ${[1,2,3,4,5].map(i => `
-                <button class="sv-sel${todayLog?.sleep_quality===i?' active':''}" onclick="setJournalField('sleep_quality',${i},this)" style="flex:1;padding:8px;border-radius:6px;border:1px solid var(--border);background:${todayLog?.sleep_quality===i?'linear-gradient(135deg,#f59e0b,#d97706)':'var(--bg)'};color:var(--text);font-weight:700;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif">${i}</button>
+                <button class="sv-sel${todayLog?.sleep_quality===i?' active':''}" onclick="setJournalField('sleep_quality',${i},this)" style="flex:1 1 0;min-width:0;padding:8px 4px;border-radius:6px;border:1px solid var(--border);background:${todayLog?.sleep_quality===i?'linear-gradient(135deg,#f59e0b,#d97706)':'var(--bg)'};color:var(--text);font-weight:700;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif">${i}</button>
               `).join('')}
             </div>
           </div>
@@ -7509,18 +7635,18 @@ async function renderJournal() {
 
           <div class="form-field">
             <label class="form-label">${t.nutritionQuality}</label>
-            <div style="display:flex;gap:4px">
+            <div class="journal-btn-row" style="display:flex;gap:4px">
               ${[1,2,3,4,5].map(i => `
-                <button class="sv-sel${todayLog?.nutrition_quality===i?' active':''}" onclick="setJournalField('nutrition_quality',${i},this)" style="flex:1;padding:8px;border-radius:6px;border:1px solid var(--border);background:${todayLog?.nutrition_quality===i?'linear-gradient(135deg,#f59e0b,#d97706)':'var(--bg)'};color:var(--text);font-weight:700;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif">${i}</button>
+                <button class="sv-sel${todayLog?.nutrition_quality===i?' active':''}" onclick="setJournalField('nutrition_quality',${i},this)" style="flex:1 1 0;min-width:0;padding:8px 4px;border-radius:6px;border:1px solid var(--border);background:${todayLog?.nutrition_quality===i?'linear-gradient(135deg,#f59e0b,#d97706)':'var(--bg)'};color:var(--text);font-weight:700;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif">${i}</button>
               `).join('')}
             </div>
           </div>
 
           <div class="form-field">
             <label class="form-label">${t.training}</label>
-            <div style="display:flex;gap:8px">
-              <button class="sv-sel${todayLog?.training_done===true?' active':''}" onclick="setJournalField('training_done',true,this)" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:${todayLog?.training_done===true?'linear-gradient(135deg,#f59e0b,#d97706)':'var(--bg)'};color:var(--text);font-weight:700;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif">✓ Oui</button>
-              <button class="sv-sel${todayLog?.training_done===false?' active':''}" onclick="setJournalField('training_done',false,this)" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:${todayLog?.training_done===false?'linear-gradient(135deg,#f59e0b,#d97706)':'var(--bg)'};color:var(--text);font-weight:700;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif">✕ Non</button>
+            <div class="journal-btn-row" style="display:flex;gap:8px">
+              <button class="sv-sel${todayLog?.training_done===true?' active':''}" onclick="setJournalField('training_done',true,this)" style="flex:1 1 0;min-width:0;padding:10px 6px;border-radius:8px;border:1px solid var(--border);background:${todayLog?.training_done===true?'linear-gradient(135deg,#f59e0b,#d97706)':'var(--bg)'};color:var(--text);font-weight:700;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap">✓ ${t.yes || 'Oui'}</button>
+              <button class="sv-sel${todayLog?.training_done===false?' active':''}" onclick="setJournalField('training_done',false,this)" style="flex:1 1 0;min-width:0;padding:10px 6px;border-radius:8px;border:1px solid var(--border);background:${todayLog?.training_done===false?'linear-gradient(135deg,#f59e0b,#d97706)':'var(--bg)'};color:var(--text);font-weight:700;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap">✕ ${t.no || 'Non'}</button>
             </div>
           </div>
         </div>
@@ -7631,7 +7757,7 @@ async function generateMonthlyReport() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     const athleteName = userProfile?.full_name || 'Athlète';
-    const sport = userProfile?.sport || 'Sport';
+    const sport = userProfile?.sport ? sportLabel(userProfile.sport) : 'Sport';
     const today = new Date();
     const monthName = today.toLocaleDateString('fr-FR', {month:'long', year:'numeric'});
 
@@ -8000,7 +8126,7 @@ async function renderProgression() {
 // ── DÉFIS HEBDOMADAIRES + PARTAGE STORIES ───────────
 async function renderDefis() {
   const athleteName = userProfile?.full_name ? userProfile.full_name.split(' ')[0] : 'Athlète';
-  const sport = userProfile?.sport || 'Sport';
+  const sport = userProfile?.sport ? sportLabel(userProfile.sport) : 'Sport';
 
   // Fetch this week's data
   const today = new Date(); today.setHours(0,0,0,0);
@@ -8156,7 +8282,7 @@ async function downloadShareCard() {
   try {
     const score = await computeSportViseScore();
     const name = (userProfile?.full_name || 'Athlète').split(' ')[0];
-    const sport = userProfile?.sport || 'Sport';
+    const sport = userProfile?.sport ? sportLabel(userProfile.sport) : 'Sport';
     const W = 1080, H = 1920;
     const c = document.createElement('canvas'); c.width = W; c.height = H;
     const ctx = c.getContext('2d');
@@ -8287,7 +8413,7 @@ function roundRect(ctx, x, y, w, h, r) {
 
 function shareToWhatsApp() {
   const athleteName = userProfile?.full_name ? userProfile.full_name.split(' ')[0] : 'Athlète';
-  const text = encodeURIComponent(`🏆 Ma semaine sportive sur SPORTVISE !\n\n🔥 Rejoins-moi sur sportvise.ch et prends ta carrière en main avec 11 agents IA !\n\n#SPORTVISE #${userProfile?.sport||'Sport'} #Suisse`);
+  const text = encodeURIComponent(`🏆 Ma semaine sportive sur SPORTVISE !\n\n🔥 Rejoins-moi sur sportvise.ch et prends ta carrière en main avec 11 agents IA !\n\n#SPORTVISE #${userProfile?.sport ? sportLabel(userProfile.sport, 'fr').replace(/\s+/g,'') : 'Sport'} #Suisse`);
   window.open(`https://wa.me/?text=${text}`, '_blank');
 }
 
@@ -8661,10 +8787,10 @@ async function generateWeeklyAIReport() {
 
     const score = await computeSportViseScore();
     const name = (userProfile?.full_name || 'Athlète').split(' ')[0];
-    const sport = userProfile?.sport || 'Sport';
+    const sport = userProfile?.sport ? sportLabel(userProfile.sport) : 'Sport';
 
     // Build context for AI
-    const context = `Données de la semaine de ${name} (${sport}, ${userProfile?.level || 'niveau inconnu'}) :
+    const context = `Données de la semaine de ${name} (${sport}, ${userProfile?.level ? levelLabel(userProfile.level, 'fr') : 'niveau inconnu'}) :
 - ${(logs||[]).length} jours de journal remplis sur 7
 - Humeur moyenne : ${logs?.length ? (logs.reduce((a,l)=>a+(l.mood||0),0)/logs.length).toFixed(1) : '?'}/10
 - Énergie moyenne : ${logs?.length ? (logs.reduce((a,l)=>a+(l.energy||0),0)/logs.length).toFixed(1) : '?'}/10
@@ -8789,7 +8915,7 @@ function generateLocalReport(logs, score, name) {
 
 function shareWeeklyReport() {
   const name = (userProfile?.full_name || 'Athlète').split(' ')[0];
-  const text = encodeURIComponent(`📊 Mon rapport hebdomadaire SPORTVISE !\n\n🏆 ${name} continue sa progression avec 11 agents IA.\n\nRejoins-moi sur sportvise.ch 🇨🇭\n\n#SPORTVISE #${userProfile?.sport||'Sport'} #IA`);
+  const text = encodeURIComponent(`📊 Mon rapport hebdomadaire SPORTVISE !\n\n🏆 ${name} continue sa progression avec 11 agents IA.\n\nRejoins-moi sur sportvise.ch 🇨🇭\n\n#SPORTVISE #${userProfile?.sport ? sportLabel(userProfile.sport, 'fr').replace(/\s+/g,'') : 'Sport'} #IA`);
   window.open(`https://wa.me/?text=${text}`, '_blank');
 }
 
@@ -8983,20 +9109,19 @@ function getStravaContext() {
 // 3 endpoints × 1 cached read = 3 calls per fresh load, then 0 for 6h.
 async function getSportsDataContext() {
   try {
-    const sport = userProfile?.sport?.toLowerCase() || '';
+    // v42 — userProfile.sport is now a canonical key ('football','hockey','skiing'...).
+    // sportKey() gracefully normalises any legacy FR label still sitting in DB pre-migration.
+    const sport = sportKey(userProfile?.sport) || '';
     const club = userProfile?.club || '';
     // Only fetch for supported sports — basketball is supported backend-side but the SBL
     // league ID needs to be confirmed before mapping it here.
+    // Keys here are canonical sport keys (matches SPORTS_CATALOG.key).
     const sportMap = {
       'football': { sport: 'football', league: 207, leagueLabel: 'Super League' },
-      'hockey': { sport: 'hockey', league: 38, leagueLabel: 'National League' },
-      'hockey sur glace': { sport: 'hockey', league: 38, leagueLabel: 'National League' }
+      'hockey':   { sport: 'hockey',   league: 38,  leagueLabel: 'National League' }
     };
 
-    let sportConfig = null;
-    for (const [key, config] of Object.entries(sportMap)) {
-      if (sport.includes(key)) { sportConfig = config; break; }
-    }
+    const sportConfig = sportMap[sport] || null;
     if (!sportConfig) {
       // Visible in console for support / metrics — we know which sports get no live data.
       if (sport) console.info('[API-Sports] Sport "' + sport + '" not mapped — agent will work without live data.');
@@ -9321,10 +9446,10 @@ function generateMediaKit() {
   const doc = new jsPDF('p', 'mm', 'a4');
   const p = userProfile || {};
   const name = p.full_name || currentUser?.user_metadata?.full_name || 'Athlète';
-  const sport = p.sport || '—';
-  const level = p.level || '—';
+  const sport = p.sport ? sportLabel(p.sport) : '—';
+  const level = p.level ? levelLabel(p.level) : '—';
   const club = p.club || '—';
-  const canton = p.canton || '—';
+  const canton = p.canton ? cantonLabel(p.canton) : '—';
   const position = p.position || '—';
 
   // Background
@@ -9452,10 +9577,10 @@ function generateCVSportif() {
   const doc = new jsPDF('p', 'mm', 'a4');
   const p = userProfile || {};
   const name = p.full_name || currentUser?.user_metadata?.full_name || 'Athlète';
-  const sport = p.sport || '—';
-  const level = p.level || '—';
+  const sport = p.sport ? sportLabel(p.sport) : '—';
+  const level = p.level ? levelLabel(p.level) : '—';
   const club = p.club || '—';
-  const canton = p.canton || '—';
+  const canton = p.canton ? cantonLabel(p.canton) : '—';
   const position = p.position || '—';
 
   // Background
@@ -9588,8 +9713,8 @@ function generatePlanNutrition() {
   const doc = new jsPDF('p', 'mm', 'a4');
   const p = userProfile || {};
   const name = p.full_name || currentUser?.user_metadata?.full_name || 'Athlète';
-  const sport = p.sport || '—';
-  const level = p.level || '—';
+  const sport = p.sport ? sportLabel(p.sport) : '—';
+  const level = p.level ? levelLabel(p.level) : '—';
 
   // Background
   doc.setFillColor(255, 255, 255);

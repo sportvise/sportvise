@@ -81,14 +81,37 @@ const AGENT_NAMES = {
   contrats:'⚖️ Léa',physique:'🏋️ David',mental:'🧠 Emma',
   nutrition:'🥗 Clara',comptabilite:'📊 Pierre',sommeil:'😴 Nora',recuperation:'♻️ Julie',equipe:'💼 Lucas'
 };
+// v42 — keyed by canonical keys (matches dashboard.html SPORTS_CATALOG/LEVELS_CATALOG keys).
+// Old FR labels kept as fallback while pre-migration data still exists in some rows.
 const LEVEL_COLORS = {
-  'Débutant':'#64748b','Amateur':'#3b82f6','Semi-Pro':'#8b5cf6',
-  'Professionnel':'#f59e0b','Elite':'#10b981'
+  beginner:'#64748b', amateur:'#3b82f6', competition:'#06b6d4', semipro:'#8b5cf6',
+  professional:'#f59e0b', elite:'#10b981',
+  // legacy fallbacks
+  'Débutant':'#64748b','Amateur':'#3b82f6','Compétition':'#06b6d4','Semi-pro':'#8b5cf6',
+  'Semi-Pro':'#8b5cf6','Professionnel':'#f59e0b','Elite':'#10b981'
+};
+const LEVEL_LABELS = {
+  beginner:'Débutant', amateur:'Amateur', competition:'Compétition',
+  semipro:'Semi-pro', professional:'Professionnel', elite:'Elite'
 };
 const SPORT_EMOJIS = {
-  'Football':'⚽','Hockey sur glace':'🏒','Ski alpin':'⛷️','Tennis':'🎾',
-  'Cyclisme':'🚴','Natation':'🏊','Athlétisme':'🏃','Basketball':'🏀',
+  football:'⚽', hockey:'🏒', skiing:'⛷️', tennis:'🎾', padel:'🥎',
+  cycling:'🚴', swimming:'🏊', athletics:'🏃', basketball:'🏀',
+  volleyball:'🏐', floorball:'🏑', handball:'🤾', gymnastics:'🤸',
+  rugby:'🏉', golf:'⛳', triathlon:'🏊‍♂️', boxing:'🥊',
+  'martial-arts':'🥋', dance:'💃', climbing:'🧗', 'trail-running':'🏞️', other:'🏅',
+  // legacy fallbacks
+  'Football':'⚽','Hockey sur glace':'🏒','Hockey':'🏒','Ski alpin':'⛷️','Ski':'⛷️',
+  'Tennis':'🎾','Cyclisme':'🚴','Natation':'🏊','Athlétisme':'🏃','Basketball':'🏀',
   'Volleyball':'🏐','Unihockey':'🏑','Handball':'🤾','Autre':'🏅'
+};
+const SPORT_LABELS = {
+  football:'Football', hockey:'Hockey sur glace', skiing:'Ski alpin', tennis:'Tennis',
+  padel:'Padel', cycling:'Cyclisme', swimming:'Natation', athletics:'Athlétisme',
+  basketball:'Basketball', volleyball:'Volleyball', floorball:'Unihockey',
+  handball:'Handball', gymnastics:'Gymnastique', rugby:'Rugby', golf:'Golf',
+  triathlon:'Triathlon', boxing:'Boxe', 'martial-arts':'Arts martiaux',
+  dance:'Danse', climbing:'Escalade', 'trail-running':'Trail / Running', other:'Autre'
 };
 
 async function checkAuth() {
@@ -190,7 +213,7 @@ function renderDashboard(d) {
         <div class="card-title">Sports les plus populaires</div>
         ${d.topSports.map(([sport, count]) => `
           <div class="bar-row">
-            <div class="bar-label">${SPORT_EMOJIS[sport]||'🏅'} ${sport}</div>
+            <div class="bar-label">${SPORT_EMOJIS[sport]||'🏅'} ${SPORT_LABELS[sport]||sport}</div>
             <div class="bar-track"><div class="bar-fill" style="width:${count/maxSport*100}%;background:linear-gradient(90deg,#f59e0b,#d97706)"></div></div>
             <div class="bar-count">${count}</div>
           </div>
@@ -202,7 +225,7 @@ function renderDashboard(d) {
         <div class="card-title">Niveaux des athlètes</div>
         ${Object.entries(d.levelCounts).map(([level, count]) => `
           <div class="bar-row">
-            <div class="bar-label">${level}</div>
+            <div class="bar-label">${LEVEL_LABELS[level]||level}</div>
             <div class="bar-track"><div class="bar-fill" style="width:${count/d.totalAthletes*100}%;background:${LEVEL_COLORS[level]||'#64748b'}"></div></div>
             <div class="bar-count">${count}</div>
           </div>
@@ -294,8 +317,8 @@ function renderDashboard(d) {
           <tbody>
             ${d.recentAthletes.map(a => `<tr>
               <td>${a.name}</td>
-              <td>${SPORT_EMOJIS[a.sport]||''} ${a.sport}</td>
-              <td><span class="badge" style="background:${LEVEL_COLORS[a.level]||'#64748b'}20;color:${LEVEL_COLORS[a.level]||'#64748b'}">${a.level}</span></td>
+              <td>${SPORT_EMOJIS[a.sport]||''} ${SPORT_LABELS[a.sport]||a.sport||''}</td>
+              <td><span class="badge" style="background:${LEVEL_COLORS[a.level]||'#64748b'}20;color:${LEVEL_COLORS[a.level]||'#64748b'}">${LEVEL_LABELS[a.level]||a.level||''}</span></td>
               <td>${a.club}</td>
               <td>${a.canton}</td>
               <td>${a.updated_at ? new Date(a.updated_at).toLocaleDateString('fr-CH') : '—'}</td>
