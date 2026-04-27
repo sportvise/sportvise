@@ -114,6 +114,18 @@
     .sport-btn.selected { border-color: var(--gold); background: #f59e0b15; color: var(--gold); font-weight: 700; }
     .loading { display: inline-block; width: 14px; height: 14px; border: 2px solid #07091a; border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; margin-right: 8px; vertical-align: middle; }
     @keyframes spin { to { transform: rotate(360deg); } }
+    .lang-group {
+      position: fixed; top: 20px; right: 20px;
+      display: flex; gap: 2px;
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      border-radius: 8px; padding: 3px; z-index: 10;
+    }
+    .lang-group button {
+      border: none; background: transparent; cursor: pointer;
+      font-size: 15px; padding: 2px 5px; border-radius: 5px;
+      opacity: 0.35; transition: opacity 0.2s;
+    }
+    .lang-group button.active { opacity: 1; }
   </style>
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#f59e0b" />
@@ -125,13 +137,21 @@
 </head>
 <body>
 
+<!-- LANG SWITCHER (fixed top-right) -->
+<div class="lang-group">
+  <button onclick="setLangPage('fr')" id="lp-fr" title="Français" class="active">🇫🇷</button>
+  <button onclick="setLangPage('de')" id="lp-de" title="Deutsch">🇩🇪</button>
+  <button onclick="setLangPage('en')" id="lp-en" title="English">🇬🇧</button>
+  <button onclick="setLangPage('it')" id="lp-it" title="Italiano">🇮🇹</button>
+</div>
+
 <div class="logo">SPORTVISE</div>
-<div class="tagline">🇨🇭 Management Sportif IA · Suisse</div>
+<div class="tagline" data-i18n="tagline">🇨🇭 Management Sportif IA · Suisse</div>
 
 <div class="card">
   <div class="tabs">
-    <button class="tab active" onclick="showTab('login')">Se connecter</button>
-    <button class="tab" onclick="showTab('signup')">Créer un compte</button>
+    <button class="tab active" onclick="showTab('login')" data-i18n="tabLogin">Se connecter</button>
+    <button class="tab" onclick="showTab('signup')" data-i18n="tabSignup">Créer un compte</button>
   </div>
 
   <!-- ALERT -->
@@ -140,82 +160,237 @@
   <!-- LOGIN FORM -->
   <div id="loginForm">
     <div class="field">
-      <label>Email</label>
-      <input type="email" id="loginEmail" placeholder="Ex: votre@email.ch" />
+      <label data-i18n="lblEmail">Email</label>
+      <input type="email" id="loginEmail" placeholder="Ex: votre@email.ch" data-i18n-placeholder="phEmail" />
     </div>
     <div class="field">
-      <label>Mot de passe</label>
+      <label data-i18n="lblPassword">Mot de passe</label>
       <input type="password" id="loginPassword" placeholder="••••••••" />
     </div>
-    <button class="btn-main" id="loginBtn" onclick="login()">Se connecter →</button>
+    <button class="btn-main" id="loginBtn" onclick="login()" data-i18n="btnLogin">Se connecter →</button>
     <div style="text-align:center;margin-top:14px">
-      <a href="#" onclick="showTab('reset');return false" style="font-size:12px;color:var(--muted);text-decoration:none;transition:color 0.2s" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'">Mot de passe oublié ?</a>
+      <a href="#" onclick="showTab('reset');return false" style="font-size:12px;color:var(--muted);text-decoration:none;transition:color 0.2s" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'" data-i18n="forgotPassword">Mot de passe oublié ?</a>
     </div>
   </div>
 
   <!-- RESET PASSWORD FORM -->
   <div id="resetForm" style="display:none">
-    <p style="font-size:14px;color:var(--muted);margin-bottom:20px">Entrez votre email et nous vous enverrons un lien pour réinitialiser votre mot de passe.</p>
+    <p style="font-size:14px;color:var(--muted);margin-bottom:20px" data-i18n="resetIntro">Entrez votre email et nous vous enverrons un lien pour réinitialiser votre mot de passe.</p>
     <div class="field">
-      <label>Email</label>
-      <input type="email" id="resetEmail" placeholder="votre@email.ch" />
+      <label data-i18n="lblEmail">Email</label>
+      <input type="email" id="resetEmail" placeholder="votre@email.ch" data-i18n-placeholder="phEmailShort" />
     </div>
-    <button class="btn-main" id="resetBtn" onclick="resetPassword()">Envoyer le lien →</button>
+    <button class="btn-main" id="resetBtn" onclick="resetPassword()" data-i18n="btnSendLink">Envoyer le lien →</button>
     <div style="text-align:center;margin-top:14px">
-      <a href="#" onclick="showTab('login');return false" style="font-size:12px;color:var(--muted);text-decoration:none;transition:color 0.2s" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'">← Retour à la connexion</a>
+      <a href="#" onclick="showTab('login');return false" style="font-size:12px;color:var(--muted);text-decoration:none;transition:color 0.2s" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'" data-i18n="backToLogin">← Retour à la connexion</a>
     </div>
   </div>
 
   <!-- NEW PASSWORD FORM (after clicking recovery link) -->
   <div id="newPasswordForm" style="display:none">
-    <h2 style="font-size:18px;font-weight:700;margin-bottom:6px">🔐 Nouveau mot de passe</h2>
-    <p style="font-size:14px;color:var(--muted);margin-bottom:20px">Choisissez votre nouveau mot de passe.</p>
+    <h2 style="font-size:18px;font-weight:700;margin-bottom:6px" data-i18n="newPasswordTitle">🔐 Nouveau mot de passe</h2>
+    <p style="font-size:14px;color:var(--muted);margin-bottom:20px" data-i18n="newPasswordIntro">Choisissez votre nouveau mot de passe.</p>
     <div class="field">
-      <label>Nouveau mot de passe</label>
-      <input type="password" id="newPassword" placeholder="Minimum 8 caractères" />
+      <label data-i18n="lblNewPassword">Nouveau mot de passe</label>
+      <input type="password" id="newPassword" placeholder="Minimum 8 caractères" data-i18n-placeholder="phPassword8" />
     </div>
     <div class="field">
-      <label>Confirmer le mot de passe</label>
-      <input type="password" id="confirmPassword" placeholder="Répétez le mot de passe" />
+      <label data-i18n="lblConfirmPassword">Confirmer le mot de passe</label>
+      <input type="password" id="confirmPassword" placeholder="Répétez le mot de passe" data-i18n-placeholder="phRepeatPassword" />
     </div>
-    <button class="btn-main" id="newPassBtn" onclick="updatePassword()">Confirmer le nouveau mot de passe →</button>
+    <button class="btn-main" id="newPassBtn" onclick="updatePassword()" data-i18n="btnConfirmNewPassword">Confirmer le nouveau mot de passe →</button>
   </div>
 
   <!-- SIGNUP FORM -->
   <div id="signupForm" style="display:none">
     <div class="field">
-      <label>Prénom & Nom</label>
-      <input type="text" id="signupName" placeholder="Ex: Lara Müller" />
+      <label data-i18n="lblFullName">Prénom & Nom</label>
+      <input type="text" id="signupName" placeholder="Ex: Lara Müller" data-i18n-placeholder="phFullName" />
     </div>
     <div class="field">
-      <label>Email</label>
-      <input type="email" id="signupEmail" placeholder="Ex: lara@email.ch" />
+      <label data-i18n="lblEmail">Email</label>
+      <input type="email" id="signupEmail" placeholder="Ex: lara@email.ch" data-i18n-placeholder="phEmailExample" />
     </div>
     <div class="field">
-      <label>Mot de passe</label>
-      <input type="password" id="signupPassword" placeholder="Minimum 8 caractères" />
+      <label data-i18n="lblPassword">Mot de passe</label>
+      <input type="password" id="signupPassword" placeholder="Minimum 8 caractères" data-i18n-placeholder="phPassword8" />
     </div>
     <div class="field">
-      <label>Votre sport</label>
+      <label data-i18n="lblYourSport">Votre sport</label>
       <div class="sports-grid">
-        <button class="sport-btn selected" onclick="selectSport(this,'Football')">⚽ Football</button>
-        <button class="sport-btn" onclick="selectSport(this,'Hockey')">🏒 Hockey</button>
-        <button class="sport-btn" onclick="selectSport(this,'Tennis')">🎾 Tennis</button>
-        <button class="sport-btn" onclick="selectSport(this,'Ski')">⛷️ Ski</button>
-        <button class="sport-btn" onclick="selectSport(this,'Natation')">🏊 Natation</button>
-        <button class="sport-btn" onclick="selectSport(this,'Autre')">🏅 Autre</button>
+        <button class="sport-btn selected" onclick="selectSport(this,'Football')">⚽ <span data-i18n="sportFootball">Football</span></button>
+        <button class="sport-btn" onclick="selectSport(this,'Hockey')">🏒 <span data-i18n="sportHockey">Hockey</span></button>
+        <button class="sport-btn" onclick="selectSport(this,'Tennis')">🎾 <span data-i18n="sportTennis">Tennis</span></button>
+        <button class="sport-btn" onclick="selectSport(this,'Ski')">⛷️ <span data-i18n="sportSki">Ski</span></button>
+        <button class="sport-btn" onclick="selectSport(this,'Natation')">🏊 <span data-i18n="sportSwimming">Natation</span></button>
+        <button class="sport-btn" onclick="selectSport(this,'Autre')">🏅 <span data-i18n="sportOther">Autre</span></button>
       </div>
     </div>
-    <button class="btn-main" id="signupBtn" onclick="signup()">Créer mon compte →</button>
+    <button class="btn-main" id="signupBtn" onclick="signup()" data-i18n="btnSignup">Créer mon compte →</button>
   </div>
 
 </div>
 
 <div class="back-link">
-  <a href="/index.html">← Retour à sportvise.ch</a>
+  <a href="/index.html" data-i18n="backToHome">← Retour à sportvise.ch</a>
 </div>
 
 <script>
+  // ── I18N ──────────────────────────────────────────
+  const i18n = {
+    fr: {
+      tagline:"🇨🇭 Management Sportif IA · Suisse",
+      tabLogin:"Se connecter", tabSignup:"Créer un compte",
+      lblEmail:"Email", lblPassword:"Mot de passe",
+      lblNewPassword:"Nouveau mot de passe", lblConfirmPassword:"Confirmer le mot de passe",
+      lblFullName:"Prénom & Nom", lblYourSport:"Votre sport",
+      btnLogin:"Se connecter →", btnSignup:"Créer mon compte →",
+      btnSendLink:"Envoyer le lien →", btnConfirmNewPassword:"Confirmer le nouveau mot de passe →",
+      forgotPassword:"Mot de passe oublié ?", backToLogin:"← Retour à la connexion",
+      backToHome:"← Retour à sportvise.ch",
+      resetIntro:"Entrez votre email et nous vous enverrons un lien pour réinitialiser votre mot de passe.",
+      newPasswordTitle:"🔐 Nouveau mot de passe", newPasswordIntro:"Choisissez votre nouveau mot de passe.",
+      sportFootball:"Football", sportHockey:"Hockey", sportTennis:"Tennis", sportSki:"Ski",
+      sportSwimming:"Natation", sportOther:"Autre",
+      phEmail:"Ex: votre@email.ch", phEmailShort:"votre@email.ch", phEmailExample:"Ex: lara@email.ch",
+      phFullName:"Ex: Lara Müller", phPassword8:"Minimum 8 caractères", phRepeatPassword:"Répétez le mot de passe",
+      // Dynamic JS messages
+      loading:"Chargement...", updating:"Mise à jour...", sending:"Envoi en cours...",
+      errBothFields:"Veuillez remplir les deux champs.",
+      errPwd8Chars:"Le mot de passe doit contenir au moins 8 caractères.",
+      errPwdMismatch:"Les mots de passe ne correspondent pas.",
+      errEnterEmail:"Veuillez entrer votre email.",
+      errAllFields:"Veuillez remplir tous les champs.",
+      errLoginInvalid:"Email ou mot de passe incorrect.",
+      errEmailExists:"Un compte avec cet email existe peut-être déjà. Essayez de vous connecter.",
+      okPwdUpdated:"✅ Mot de passe mis à jour avec succès ! Redirection...",
+      okResetSent:"✅ Un email de réinitialisation a été envoyé ! Vérifiez votre boîte de réception.",
+      okSignupConfirm:"✅ Compte créé ! Vérifiez votre boîte email pour confirmer votre inscription avant de vous connecter.",
+      btnBackToLoginFinal:"Retour à la connexion →"
+    },
+    de: {
+      tagline:"🇨🇭 KI-Sportmanagement · Schweiz",
+      tabLogin:"Anmelden", tabSignup:"Konto erstellen",
+      lblEmail:"E-Mail", lblPassword:"Passwort",
+      lblNewPassword:"Neues Passwort", lblConfirmPassword:"Passwort bestätigen",
+      lblFullName:"Vor- & Nachname", lblYourSport:"Deine Sportart",
+      btnLogin:"Anmelden →", btnSignup:"Mein Konto erstellen →",
+      btnSendLink:"Link senden →", btnConfirmNewPassword:"Neues Passwort bestätigen →",
+      forgotPassword:"Passwort vergessen?", backToLogin:"← Zurück zur Anmeldung",
+      backToHome:"← Zurück zu sportvise.ch",
+      resetIntro:"Gib deine E-Mail ein und wir senden dir einen Link zum Zurücksetzen deines Passworts.",
+      newPasswordTitle:"🔐 Neues Passwort", newPasswordIntro:"Wähle dein neues Passwort.",
+      sportFootball:"Fußball", sportHockey:"Hockey", sportTennis:"Tennis", sportSki:"Ski",
+      sportSwimming:"Schwimmen", sportOther:"Andere",
+      phEmail:"z.B. deine@email.ch", phEmailShort:"deine@email.ch", phEmailExample:"z.B. lara@email.ch",
+      phFullName:"z.B. Lara Müller", phPassword8:"Mindestens 8 Zeichen", phRepeatPassword:"Passwort wiederholen",
+      loading:"Wird geladen...", updating:"Aktualisiere...", sending:"Wird gesendet...",
+      errBothFields:"Bitte fülle beide Felder aus.",
+      errPwd8Chars:"Das Passwort muss mindestens 8 Zeichen lang sein.",
+      errPwdMismatch:"Die Passwörter stimmen nicht überein.",
+      errEnterEmail:"Bitte gib deine E-Mail ein.",
+      errAllFields:"Bitte fülle alle Felder aus.",
+      errLoginInvalid:"E-Mail oder Passwort ungültig.",
+      errEmailExists:"Ein Konto mit dieser E-Mail existiert möglicherweise bereits. Versuche dich anzumelden.",
+      okPwdUpdated:"✅ Passwort erfolgreich aktualisiert! Weiterleitung...",
+      okResetSent:"✅ Eine Reset-E-Mail wurde gesendet! Überprüfe deinen Posteingang.",
+      okSignupConfirm:"✅ Konto erstellt! Überprüfe deinen E-Mail-Posteingang, um deine Anmeldung zu bestätigen, bevor du dich anmeldest.",
+      btnBackToLoginFinal:"Zurück zur Anmeldung →"
+    },
+    en: {
+      tagline:"🇨🇭 AI Sports Management · Switzerland",
+      tabLogin:"Log in", tabSignup:"Create account",
+      lblEmail:"Email", lblPassword:"Password",
+      lblNewPassword:"New password", lblConfirmPassword:"Confirm password",
+      lblFullName:"First & Last name", lblYourSport:"Your sport",
+      btnLogin:"Log in →", btnSignup:"Create my account →",
+      btnSendLink:"Send link →", btnConfirmNewPassword:"Confirm new password →",
+      forgotPassword:"Forgot password?", backToLogin:"← Back to login",
+      backToHome:"← Back to sportvise.ch",
+      resetIntro:"Enter your email and we'll send you a link to reset your password.",
+      newPasswordTitle:"🔐 New password", newPasswordIntro:"Choose your new password.",
+      sportFootball:"Football", sportHockey:"Hockey", sportTennis:"Tennis", sportSki:"Skiing",
+      sportSwimming:"Swimming", sportOther:"Other",
+      phEmail:"e.g. your@email.ch", phEmailShort:"your@email.ch", phEmailExample:"e.g. lara@email.ch",
+      phFullName:"e.g. Lara Müller", phPassword8:"Minimum 8 characters", phRepeatPassword:"Repeat the password",
+      loading:"Loading...", updating:"Updating...", sending:"Sending...",
+      errBothFields:"Please fill in both fields.",
+      errPwd8Chars:"Password must be at least 8 characters long.",
+      errPwdMismatch:"Passwords do not match.",
+      errEnterEmail:"Please enter your email.",
+      errAllFields:"Please fill in all fields.",
+      errLoginInvalid:"Invalid email or password.",
+      errEmailExists:"An account with this email may already exist. Try logging in.",
+      okPwdUpdated:"✅ Password updated successfully! Redirecting...",
+      okResetSent:"✅ A reset email has been sent! Check your inbox.",
+      okSignupConfirm:"✅ Account created! Check your email inbox to confirm your registration before logging in.",
+      btnBackToLoginFinal:"Back to login →"
+    },
+    it: {
+      tagline:"🇨🇭 Gestione Sportiva IA · Svizzera",
+      tabLogin:"Accedi", tabSignup:"Crea account",
+      lblEmail:"Email", lblPassword:"Password",
+      lblNewPassword:"Nuova password", lblConfirmPassword:"Conferma password",
+      lblFullName:"Nome & Cognome", lblYourSport:"Il tuo sport",
+      btnLogin:"Accedi →", btnSignup:"Crea il mio account →",
+      btnSendLink:"Invia il link →", btnConfirmNewPassword:"Conferma la nuova password →",
+      forgotPassword:"Password dimenticata?", backToLogin:"← Torna all'accesso",
+      backToHome:"← Torna a sportvise.ch",
+      resetIntro:"Inserisci la tua email e ti invieremo un link per reimpostare la password.",
+      newPasswordTitle:"🔐 Nuova password", newPasswordIntro:"Scegli la tua nuova password.",
+      sportFootball:"Calcio", sportHockey:"Hockey", sportTennis:"Tennis", sportSki:"Sci",
+      sportSwimming:"Nuoto", sportOther:"Altro",
+      phEmail:"es. tua@email.ch", phEmailShort:"tua@email.ch", phEmailExample:"es. lara@email.ch",
+      phFullName:"es. Lara Müller", phPassword8:"Minimo 8 caratteri", phRepeatPassword:"Ripeti la password",
+      loading:"Caricamento...", updating:"Aggiornamento...", sending:"Invio in corso...",
+      errBothFields:"Compila entrambi i campi.",
+      errPwd8Chars:"La password deve contenere almeno 8 caratteri.",
+      errPwdMismatch:"Le password non corrispondono.",
+      errEnterEmail:"Inserisci la tua email.",
+      errAllFields:"Compila tutti i campi.",
+      errLoginInvalid:"Email o password non corretti.",
+      errEmailExists:"Un account con questa email potrebbe già esistere. Prova ad accedere.",
+      okPwdUpdated:"✅ Password aggiornata con successo! Reindirizzamento...",
+      okResetSent:"✅ Un'email di reimpostazione è stata inviata! Controlla la tua casella.",
+      okSignupConfirm:"✅ Account creato! Controlla la tua email per confermare l'iscrizione prima di accedere.",
+      btnBackToLoginFinal:"Torna all'accesso →"
+    }
+  };
+
+  let currentLang = localStorage.getItem('sv_lang') || 'fr';
+
+  // Helper for dynamic strings (alerts, button states) — falls back to FR if key missing.
+  function tr(key) {
+    return (i18n[currentLang] && i18n[currentLang][key]) || i18n.fr[key] || key;
+  }
+
+  function setLangPage(lang) {
+    if (!i18n[lang]) return;
+    currentLang = lang;
+    localStorage.setItem('sv_lang', lang);
+    const texts = i18n[lang];
+
+    // Apply textContent translations
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (texts[key]) el.innerHTML = texts[key];
+    });
+    // Apply placeholder translations
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      const key = el.getAttribute('data-i18n-placeholder');
+      if (texts[key]) el.placeholder = texts[key];
+    });
+    // Update flag button active state
+    ['fr','de','en','it'].forEach(l => {
+      const btn = document.getElementById('lp-' + l);
+      if (btn) btn.classList.toggle('active', l === lang);
+    });
+    document.documentElement.lang = lang;
+  }
+
+  // Apply saved language on load
+  setLangPage(currentLang);
+
   // ── SUPABASE CONFIG ──────────────────────────────
   const SUPABASE_URL = 'https://ckikyvokurpehavjlkbc.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNraWt5dm9rdXJwZWhhdmpsa2JjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMjE2MzgsImV4cCI6MjA5MTY5NzYzOH0.nbvRqNly8KnqlaInY62C9YOA5-32YxrFSavXyreCOYY';
@@ -304,52 +479,52 @@
   function setLoading(btnId, loading) {
     const btn = document.getElementById(btnId);
     btn.disabled = loading;
-    btn.innerHTML = loading ? '<span class="loading"></span>Chargement...' : (btnId === 'loginBtn' ? 'Se connecter →' : 'Créer mon compte →');
+    btn.innerHTML = loading ? '<span class="loading"></span>' + tr('loading') : (btnId === 'loginBtn' ? tr('btnLogin') : tr('btnSignup'));
   }
 
   // ── UPDATE PASSWORD (after recovery link) ─────────
   async function updatePassword() {
     const pw = document.getElementById('newPassword').value;
     const pw2 = document.getElementById('confirmPassword').value;
-    if (!pw || !pw2) return showAlert('Veuillez remplir les deux champs.', 'error');
-    if (pw.length < 8) return showAlert('Le mot de passe doit contenir au moins 8 caractères.', 'error');
-    if (pw !== pw2) return showAlert('Les mots de passe ne correspondent pas.', 'error');
+    if (!pw || !pw2) return showAlert(tr('errBothFields'), 'error');
+    if (pw.length < 8) return showAlert(tr('errPwd8Chars'), 'error');
+    if (pw !== pw2) return showAlert(tr('errPwdMismatch'), 'error');
     const btn = document.getElementById('newPassBtn');
     btn.disabled = true;
-    btn.innerHTML = '<span class="loading"></span>Mise à jour...';
+    btn.innerHTML = '<span class="loading"></span>' + tr('updating');
     const { error } = await sb.auth.updateUser({ password: pw });
     btn.disabled = false;
-    btn.innerHTML = 'Confirmer le nouveau mot de passe →';
+    btn.innerHTML = tr('btnConfirmNewPassword');
     if (error) return showAlert(error.message, 'error');
-    showAlert('✅ Mot de passe mis à jour avec succès ! Redirection...', 'success');
+    showAlert(tr('okPwdUpdated'), 'success');
     setTimeout(async () => { await window._cacheCleanDone; window.location.href = 'dashboard.html?v=26&t=' + Date.now(); }, 1500);
   }
 
   // ── RESET PASSWORD ────────────────────────────────
   async function resetPassword() {
     const email = document.getElementById('resetEmail').value.trim();
-    if (!email) return showAlert('Veuillez entrer votre email.', 'error');
+    if (!email) return showAlert(tr('errEnterEmail'), 'error');
     const btn = document.getElementById('resetBtn');
     btn.disabled = true;
-    btn.innerHTML = '<span class="loading"></span>Envoi en cours...';
+    btn.innerHTML = '<span class="loading"></span>' + tr('sending');
     const { error } = await sb.auth.resetPasswordForEmail(email, {
       redirectTo: window.location.origin + '/login.html'
     });
     btn.disabled = false;
-    btn.innerHTML = 'Envoyer le lien →';
+    btn.innerHTML = tr('btnSendLink');
     if (error) return showAlert(error.message, 'error');
-    showAlert('✅ Un email de réinitialisation a été envoyé ! Vérifiez votre boîte de réception.', 'success');
+    showAlert(tr('okResetSent'), 'success');
   }
 
   // ── LOGIN ─────────────────────────────────────────
   async function login() {
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
-    if (!email || !password) return showAlert('Veuillez remplir tous les champs.', 'error');
+    if (!email || !password) return showAlert(tr('errAllFields'), 'error');
     setLoading('loginBtn', true);
     const { error } = await sb.auth.signInWithPassword({ email, password });
     setLoading('loginBtn', false);
-    if (error) return showAlert('Email ou mot de passe incorrect.', 'error');
+    if (error) return showAlert(tr('errLoginInvalid'), 'error');
     await window._cacheCleanDone;
     window.location.href = 'dashboard.html?v=26&t=' + Date.now();
   }
@@ -359,8 +534,8 @@
     const name = document.getElementById('signupName').value.trim();
     const email = document.getElementById('signupEmail').value.trim();
     const password = document.getElementById('signupPassword').value;
-    if (!name || !email || !password) return showAlert('Veuillez remplir tous les champs.', 'error');
-    if (password.length < 8) return showAlert('Le mot de passe doit contenir au moins 8 caractères.', 'error');
+    if (!name || !email || !password) return showAlert(tr('errAllFields'), 'error');
+    if (password.length < 8) return showAlert(tr('errPwd8Chars'), 'error');
     setLoading('signupBtn', true);
     const { data, error } = await sb.auth.signUp({
       email, password,
@@ -395,12 +570,12 @@
     // Vérifier si la confirmation email est requise
     if (data?.user?.identities?.length === 0) {
       // Email déjà utilisé (Supabase ne le dit pas directement pour la sécurité)
-      return showAlert('Un compte avec cet email existe peut-être déjà. Essayez de vous connecter.', 'error');
+      return showAlert(tr('errEmailExists'), 'error');
     }
 
     if (data?.user && !data?.session) {
       // Confirmation email requise — pas de session active
-      showAlert('✅ Compte créé ! Vérifiez votre boîte email pour confirmer votre inscription avant de vous connecter.', 'success');
+      showAlert(tr('okSignupConfirm'), 'success');
       document.getElementById('signupBtn').style.display = 'none';
       // Afficher un bouton pour revenir à la connexion
       const backBtn = document.createElement('button');
@@ -409,7 +584,7 @@
       backBtn.style.background = 'transparent';
       backBtn.style.border = '1px solid var(--gold)';
       backBtn.style.color = 'var(--gold)';
-      backBtn.textContent = 'Retour à la connexion →';
+      backBtn.textContent = tr('btnBackToLoginFinal');
       backBtn.onclick = () => showTab('login');
       document.getElementById('signupForm').appendChild(backBtn);
     } else if (data?.session) {

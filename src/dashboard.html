@@ -898,8 +898,22 @@ const T = {
     dashPrepaJourJ:'JOUR J !',
     dashPrepaAt:'à',
     dashPrepaPlan:'Voir le plan ⚡',
+    // JOURNAL summary view
+    editEntry:'Modifier', journalSaved:'Journal enregistré',
     // PHASE 1.6 — Score / Recap / Streak badges / Page subtitles / Agent titles
     pageDashSubtitle:"Vue d'ensemble de votre carrière",
+    pageFavSubtitle:"Vos conseils sauvegardés",
+    pageRefSubtitle:"Invitez des athlètes et gagnez 1 mois offert",
+    pageProfileSubtitle:"Vos informations sportives",
+    pageCalSubtitle:"Matchs, compétitions et entraînements",
+    pageSubSubtitle:"Gérez votre plan SPORTVISE",
+    pageGoalsSubtitle:"Fixez et suivez vos objectifs",
+    pageJournalSubtitle:"Suivez votre forme au quotidien",
+    pageProgSubtitle:"Votre évolution dans le temps",
+    pageDefisSubtitle:"Relève des défis hebdomadaires et partage tes stats",
+    pagePrepaSubtitle:"Plan de préparation coordonné par tes agents IA",
+    pageConnSubtitle:"Connecte tes apps sportives pour importer tes données",
+    pageMarketSubtitle:"Programmes d'entraînement et guides créés par tes agents",
     scoreLabel:'Score SPORTVISE',
     scoreDataDays:'{n} jour(s) de données cette semaine',
     scoreVsLastWeek:'vs sem. dernière',
@@ -1159,8 +1173,22 @@ const T = {
     dashPrepaJourJ:'TAG X!',
     dashPrepaAt:'um',
     dashPrepaPlan:'Plan ansehen ⚡',
+    // JOURNAL summary view
+    editEntry:'Bearbeiten', journalSaved:'Tagebuch gespeichert',
     // PHASE 1.6 — Score / Recap / Streak badges / Page subtitles / Agent titles
     pageDashSubtitle:'Überblick über deine Karriere',
+    pageFavSubtitle:'Deine gespeicherten Tipps',
+    pageRefSubtitle:'Lade Athleten ein und erhalte 1 Monat geschenkt',
+    pageProfileSubtitle:'Deine sportlichen Informationen',
+    pageCalSubtitle:'Spiele, Wettkämpfe und Trainings',
+    pageSubSubtitle:'Verwalte deinen SPORTVISE-Plan',
+    pageGoalsSubtitle:'Setze und verfolge deine Ziele',
+    pageJournalSubtitle:'Verfolge deine tägliche Form',
+    pageProgSubtitle:'Deine Entwicklung im Zeitverlauf',
+    pageDefisSubtitle:'Stelle dich wöchentlichen Herausforderungen und teile deine Stats',
+    pagePrepaSubtitle:'Vorbereitungsplan koordiniert von deinen KI-Agenten',
+    pageConnSubtitle:'Verbinde deine Sport-Apps, um deine Daten zu importieren',
+    pageMarketSubtitle:'Trainingsprogramme und Guides von deinen Agenten',
     scoreLabel:'SPORTVISE-Score',
     scoreDataDays:'{n} Tag(e) Daten diese Woche',
     scoreVsLastWeek:'vs. letzte Woche',
@@ -1420,8 +1448,22 @@ const T = {
     dashPrepaJourJ:'MATCH DAY!',
     dashPrepaAt:'at',
     dashPrepaPlan:'View plan ⚡',
+    // JOURNAL summary view
+    editEntry:'Edit', journalSaved:'Journal saved',
     // PHASE 1.6 — Score / Recap / Streak badges / Page subtitles / Agent titles
     pageDashSubtitle:'Overview of your career',
+    pageFavSubtitle:'Your saved tips',
+    pageRefSubtitle:'Invite athletes and earn 1 free month',
+    pageProfileSubtitle:'Your sports information',
+    pageCalSubtitle:'Matches, competitions and training',
+    pageSubSubtitle:'Manage your SPORTVISE plan',
+    pageGoalsSubtitle:'Set and track your goals',
+    pageJournalSubtitle:'Track your daily form',
+    pageProgSubtitle:'Your evolution over time',
+    pageDefisSubtitle:'Take on weekly challenges and share your stats',
+    pagePrepaSubtitle:'Preparation plan coordinated by your AI agents',
+    pageConnSubtitle:'Connect your sports apps to import your data',
+    pageMarketSubtitle:'Training programmes and guides created by your agents',
     scoreLabel:'SPORTVISE Score',
     scoreDataDays:'{n} day(s) of data this week',
     scoreVsLastWeek:'vs last week',
@@ -1681,8 +1723,22 @@ const T = {
     dashPrepaJourJ:'GIORNO X!',
     dashPrepaAt:'alle',
     dashPrepaPlan:'Vedi il piano ⚡',
+    // JOURNAL summary view
+    editEntry:'Modifica', journalSaved:'Diario salvato',
     // PHASE 1.6 — Score / Recap / Streak badges / Page subtitles / Agent titles
     pageDashSubtitle:'Panoramica della tua carriera',
+    pageFavSubtitle:'I tuoi consigli salvati',
+    pageRefSubtitle:'Invita atleti e ricevi 1 mese gratis',
+    pageProfileSubtitle:'Le tue informazioni sportive',
+    pageCalSubtitle:'Partite, competizioni e allenamenti',
+    pageSubSubtitle:'Gestisci il tuo piano SPORTVISE',
+    pageGoalsSubtitle:'Imposta e monitora i tuoi obiettivi',
+    pageJournalSubtitle:'Monitora la tua forma quotidiana',
+    pageProgSubtitle:'La tua evoluzione nel tempo',
+    pageDefisSubtitle:'Affronta sfide settimanali e condividi le tue statistiche',
+    pagePrepaSubtitle:'Piano di preparazione coordinato dai tuoi agenti IA',
+    pageConnSubtitle:'Connetti le tue app sportive per importare i tuoi dati',
+    pageMarketSubtitle:'Programmi di allenamento e guide creati dai tuoi agenti',
     scoreLabel:'Score SPORTVISE',
     scoreDataDays:'{n} giorno/i di dati questa settimana',
     scoreVsLastWeek:'vs sett. scorsa',
@@ -2489,7 +2545,7 @@ async function init() {
 // It cleans caches, reloads ONCE, and uses a retry counter to prevent infinite loops.
 // ⚠️  IMPORTANT : cette constante DOIT correspondre à src/version.json (.version).
 //     Si tu bumps version.json, bump APP_V au même nombre — sinon boucle de reload.
-const APP_V = '33';
+const APP_V = '37';
 async function checkAppVersion() {
   try {
     const res = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
@@ -3147,56 +3203,56 @@ async function showPage(page, el) {
     renderDashboard();
   } else if (page === 'favoris') {
     document.getElementById('pageTitle').textContent = '⭐ Mes Favoris';
-    document.getElementById('pageSubtitle').textContent = 'Vos conseils sauvegardés';
+    document.getElementById('pageSubtitle').textContent = (T[currentLang]?.pageFavSubtitle) || 'Vos conseils sauvegardés';
     renderFavoris();
   } else if (page === 'parrainage') {
     document.getElementById('pageTitle').textContent = '🎁 Parrainage';
-    document.getElementById('pageSubtitle').textContent = 'Invitez des athlètes et gagnez 1 mois offert';
+    document.getElementById('pageSubtitle').textContent = (T[currentLang]?.pageRefSubtitle) || 'Invitez des athlètes et gagnez 1 mois offert';
     renderParrainage();
   } else if (page === 'profil') {
     document.getElementById('pageTitle').textContent = '👤 Mon Profil';
-    document.getElementById('pageSubtitle').textContent = 'Vos informations sportives';
+    document.getElementById('pageSubtitle').textContent = (T[currentLang]?.pageProfileSubtitle) || 'Vos informations sportives';
     renderProfilePage();
   } else if (page === 'calendrier') {
     document.getElementById('pageTitle').textContent = '📅 Calendrier';
-    document.getElementById('pageSubtitle').textContent = 'Matchs, compétitions et entraînements';
+    document.getElementById('pageSubtitle').textContent = (T[currentLang]?.pageCalSubtitle) || 'Matchs, compétitions et entraînements';
     renderCalendar();
   } else if (page === 'abonnement') {
     document.getElementById('pageTitle').textContent = '💳 Abonnement';
-    document.getElementById('pageSubtitle').textContent = 'Gérez votre plan SPORTVISE';
+    document.getElementById('pageSubtitle').textContent = (T[currentLang]?.pageSubSubtitle) || 'Gérez votre plan SPORTVISE';
     renderAbonnement();
   } else if (page === 'objectifs') {
     const t = T[currentLang];
     document.getElementById('pageTitle').textContent = '🎯 ' + (t.goals || 'Objectifs');
-    document.getElementById('pageSubtitle').textContent = t.goalsSubtitle || 'Fixez et suivez vos objectifs';
+    document.getElementById('pageSubtitle').textContent = t.pageGoalsSubtitle || t.goalsSubtitle || 'Fixez et suivez vos objectifs';
     renderGoals();
   } else if (page === 'journal') {
     const t = T[currentLang];
     document.getElementById('pageTitle').textContent = '📓 ' + (t.journal || 'Journal');
-    document.getElementById('pageSubtitle').textContent = 'Suivez votre forme au quotidien';
+    document.getElementById('pageSubtitle').textContent = t.pageJournalSubtitle || 'Suivez votre forme au quotidien';
     renderJournal();
   } else if (page === 'progression') {
     const t = T[currentLang];
     document.getElementById('pageTitle').textContent = '📈 ' + (t.progression || 'Progression');
-    document.getElementById('pageSubtitle').textContent = 'Votre évolution dans le temps';
+    document.getElementById('pageSubtitle').textContent = t.pageProgSubtitle || 'Votre évolution dans le temps';
     renderProgression();
   } else if (page === 'defis') {
     document.getElementById('pageTitle').textContent = '🏅 Défis';
-    document.getElementById('pageSubtitle').textContent = 'Relève des défis hebdomadaires et partage tes stats';
+    document.getElementById('pageSubtitle').textContent = (T[currentLang]?.pageDefisSubtitle) || 'Relève des défis hebdomadaires et partage tes stats';
     if (userPlan === 'free') { renderLockedFeature('Défis', '🏅', 'Relève des défis hebdomadaires, partage tes stats et gagne des badges.', 'plus'); }
     else { renderDefis(); }
   } else if (page === 'prepa-match') {
     document.getElementById('pageTitle').textContent = '⚡ Prépa Match';
-    document.getElementById('pageSubtitle').textContent = 'Plan de préparation coordonné par tes agents IA';
+    document.getElementById('pageSubtitle').textContent = (T[currentLang]?.pagePrepaSubtitle) || 'Plan de préparation coordonné par tes agents IA';
     if (userPlan === 'free') { renderLockedFeature('Prépa Match', '⚡', 'Plan de préparation J-3 à Jour J coordonné par David, Emma, Clara, Nora et Julie.', 'plus'); }
     else { renderPrepaMatch(); }
   } else if (page === 'connexions') {
     document.getElementById('pageTitle').textContent = '🔗 Connexions';
-    document.getElementById('pageSubtitle').textContent = 'Connecte tes apps sportives pour importer tes données';
+    document.getElementById('pageSubtitle').textContent = (T[currentLang]?.pageConnSubtitle) || 'Connecte tes apps sportives pour importer tes données';
     renderConnexions();
   } else if (page === 'marketplace') {
     document.getElementById('pageTitle').textContent = '🏪 Marketplace';
-    document.getElementById('pageSubtitle').textContent = 'Programmes d\'entraînement et guides créés par tes agents';
+    document.getElementById('pageSubtitle').textContent = (T[currentLang]?.pageMarketSubtitle) || "Programmes d'entraînement et guides créés par tes agents";
     renderMarketplace();
   } else if (agent) {
     const _tt = T[currentLang] || T.fr;
@@ -4356,7 +4412,19 @@ async function sendMsg(page) {
       bmi ? `IMC: ${bmi}` : ''
     ].filter(Boolean).join(', ');
 
-    // Gather all context in parallel for speed
+    // Gather all context in parallel for speed.
+    // API-Sports is fetched ONLY for agents that benefit from league/club data:
+    //   - equipe (Lucas — career, transfers, club analysis)
+    //   - physique (David — adapt training to match calendar)
+    //   - mental (Emma — pre/post-match preparation, opponent analysis)
+    //   - nutrition (Clara — fueling around match day)
+    //   - sommeil (Nora — rest cycles around fixtures)
+    //   - recuperation (Julie — recovery protocols around match days)
+    // Business agents (marketing, sponsors, contrats, finance, comptabilite) get nothing
+    // — saves 3 API calls per chat with them, reduces prompt noise, and stays under
+    // the 100 req/day free tier.
+    const SPORTS_DATA_AGENTS = ['equipe', 'physique', 'mental', 'nutrition', 'sommeil', 'recuperation'];
+    const shouldFetchSportsData = SPORTS_DATA_AGENTS.includes(page);
     const [otherAgentsContext, calendarContext, goalsContext, dailyLogContext, trends, stravaContext, sportsDataContext] = await Promise.all([
       getOtherAgentsSummary(page),
       getCalendarContext(),
@@ -4364,7 +4432,7 @@ async function sendMsg(page) {
       getDailyLogContext(),
       getDailyLogTrends(),
       Promise.resolve(getStravaContext()),
-      getSportsDataContext()
+      shouldFetchSportsData ? getSportsDataContext() : Promise.resolve('')
     ]);
 
     // Build agent-specific smart context using trends and alerts
@@ -7175,7 +7243,8 @@ async function setJournalField(field, value, btn) {
 }
 
 async function saveJournal() {
-  const notes = document.getElementById('journalNotes').value;
+  const t = T[currentLang] || T.fr;
+  const notes = document.getElementById('journalNotes')?.value || '';
   const today = dateToStr();
 
   const { data: existing } = await sb.from('daily_log')
@@ -7186,10 +7255,21 @@ async function saveJournal() {
 
   if (existing) {
     await sb.from('daily_log').update({ notes }).eq('id', existing.id);
+  } else {
+    // Edge case: no row yet (rare — setJournalField creates one on first interaction).
+    // Insert a minimal row so the notes are not lost.
+    await sb.from('daily_log').insert({ user_id: currentUser.id, log_date: today, notes });
   }
 
-  alert('Journal sauvegardé!');
-  renderJournal();
+  // Switch back to summary view + non-blocking toast
+  _journalEditMode = false;
+  showToast('✅ ' + (t.journalSaved || 'Journal enregistré'));
+  await renderJournal();
+  // Smooth scroll to the history block so the new entry is immediately visible
+  setTimeout(() => {
+    const hist = document.getElementById('journalHistory');
+    if (hist) hist.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 150);
 }
 
 // ── OBJECTIFS (Goals) ───────────────────────────────
@@ -7286,9 +7366,21 @@ async function renderGoals() {
 }
 
 // ── JOURNAL (Daily Log) ──────────────────────────────
+// _journalEditMode: ephemeral flag — true only between editJournalEntry() and the next renderJournal.
+// renderJournal consumes the flag and resets it, so a navigation away + back defaults to summary view.
+let _journalEditMode = false;
+
+function editJournalEntry() {
+  _journalEditMode = true;
+  renderJournal();
+}
+
 async function renderJournal() {
   const t = T[currentLang];
   const today = dateToStr();
+  // Capture and reset the edit-mode flag for this render cycle
+  const useEditMode = _journalEditMode;
+  _journalEditMode = false;
 
   const { data: todayLog } = await sb.from('daily_log')
     .select('*')
@@ -7304,10 +7396,46 @@ async function renderJournal() {
 
   const moodEmojis = t.moodEmojis || ['😫','😕','😐','🙂','😁'];
 
+  // Detect if today's entry is filled enough to show the summary view
+  const isJournalFilled = !!(todayLog && todayLog.mood && todayLog.energy && todayLog.sleep_quality);
+  const showSummary = isJournalFilled && !useEditMode;
+
+  // SUMMARY VIEW (compact card with today's values + Edit button)
+  const summaryBlock = todayLog ? `
+    <div style="background:linear-gradient(135deg,#10b98112,#10b98103);border:1px solid #10b98140;border-radius:14px;padding:20px;margin-bottom:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="font-size:22px">✅</div>
+          <div>
+            <h3 style="font-size:14px;font-weight:800;color:var(--text)">${t.todayEntry || "Entrée du jour"}</h3>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">${new Date().toLocaleDateString({fr:'fr-CH',de:'de-CH',en:'en-GB',it:'it-CH'}[currentLang]||'fr-CH', {weekday:'long', day:'numeric', month:'long'})}</div>
+          </div>
+        </div>
+        <button onclick="editJournalEntry()" style="padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-weight:600;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">✏️ ${t.editEntry || 'Modifier'}</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px">
+        <div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:26px;margin-bottom:4px">${moodEmojis[todayLog.mood-1] || '—'}</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${t.mood}</div></div>
+        <div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--gold)">${todayLog.energy||'—'}/5</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${t.energy}</div></div>
+        <div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--gold)">${todayLog.motivation||'—'}/5</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${t.motivation}</div></div>
+        <div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--gold)">${todayLog.sleep_quality||'—'}/5</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${t.sleepQuality}</div></div>
+        <div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:${(todayLog.pain_level||0) > 2 ? '#ef4444' : 'var(--text)'}">${todayLog.pain_level ?? 0}/5</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${t.painLevel}</div></div>
+        <div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--gold)">${todayLog.nutrition_quality||'—'}/5</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${t.nutritionQuality}</div></div>
+        <div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:${todayLog.training_done===true ? '#10b981' : todayLog.training_done===false ? 'var(--muted)' : 'var(--muted)'}">${todayLog.training_done===true ? '✓' : todayLog.training_done===false ? '✕' : '—'}</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${t.training}</div></div>
+      </div>
+      ${todayLog.notes ? `
+        <div style="margin-top:14px;background:var(--bg);border-radius:10px;padding:12px;border-left:3px solid var(--gold)">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700;margin-bottom:6px">${t.notes}</div>
+          <div style="font-size:12px;color:var(--text);font-style:italic;line-height:1.5">"${todayLog.notes.replace(/"/g,'&quot;')}"</div>
+        </div>
+      ` : ''}
+    </div>
+  ` : '';
+
   document.getElementById('mainContent').innerHTML = `
     <div style="max-width:800px">
-      <!-- Today's Entry Form -->
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px">
+      ${showSummary ? summaryBlock : ''}
+      <!-- Today's Entry Form (hidden when summary is shown) -->
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;${showSummary ? 'display:none;' : ''}">
         <h3 style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:16px">📝 ${t.todayEntry}</h3>
 
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px">
@@ -7385,7 +7513,7 @@ async function renderJournal() {
       </div>
 
       <!-- History -->
-      <div style="margin-bottom:20px">
+      <div id="journalHistory" style="margin-bottom:20px;scroll-margin-top:20px">
         <h3 style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:12px">📊 ${t.history || 'History'}</h3>
         ${(history||[]).length === 0 ? `
           <div style="background:var(--bg3);border:1px dashed var(--border);border-radius:12px;padding:20px;text-align:center">
@@ -8824,26 +8952,35 @@ function getStravaContext() {
 }
 
 // ── LIVE SPORTS DATA (API-Sports) ─────────────────────
-// Fetches live standings and recent results for the athlete's sport league
-// Cached in localStorage for 6 hours to save API calls (100/day limit)
+// Fetches live standings, recent results AND upcoming fixtures for the athlete's sport league.
+// Cached in localStorage for 6 hours to stay under API-Sports free tier (100 req/day).
+// 3 endpoints × 1 cached read = 3 calls per fresh load, then 0 for 6h.
 async function getSportsDataContext() {
   try {
     const sport = userProfile?.sport?.toLowerCase() || '';
-    // Only fetch for supported sports
+    const club = userProfile?.club || '';
+    // Only fetch for supported sports — basketball is supported backend-side but the SBL
+    // league ID needs to be confirmed before mapping it here.
     const sportMap = {
-      'football': { sport: 'football', league: 207 },
-      'hockey': { sport: 'hockey', league: 38 },
-      'hockey sur glace': { sport: 'hockey', league: 38 }
+      'football': { sport: 'football', league: 207, leagueLabel: 'Super League' },
+      'hockey': { sport: 'hockey', league: 38, leagueLabel: 'National League' },
+      'hockey sur glace': { sport: 'hockey', league: 38, leagueLabel: 'National League' }
     };
 
     let sportConfig = null;
     for (const [key, config] of Object.entries(sportMap)) {
       if (sport.includes(key)) { sportConfig = config; break; }
     }
-    if (!sportConfig) return ''; // Sport not supported by API-Sports
+    if (!sportConfig) {
+      // Visible in console for support / metrics — we know which sports get no live data.
+      if (sport) console.info('[API-Sports] Sport "' + sport + '" not mapped — agent will work without live data.');
+      return '';
+    }
 
-    // Check cache (6 hours)
-    const cacheKey = 'sv_sports_data_' + sportConfig.sport;
+    // Cache key includes the club so two athletes from different clubs can each get
+    // a tailored context (the standings/fixtures are league-wide but the headline
+    // emphasises their own club).
+    const cacheKey = 'sv_sports_data_' + sportConfig.sport + '_' + (club || 'noclub');
     const cached = localStorage.getItem(cacheKey);
     if (cached) {
       try {
@@ -8852,35 +8989,81 @@ async function getSportsDataContext() {
       } catch(e) {}
     }
 
-    // Fetch standings + recent results in parallel
-    const [standingsRes, resultsRes] = await Promise.all([
+    // Fetch standings + recent results + UPCOMING fixtures in parallel.
+    // If a club is set, ALSO fetch that team's specific next 5 fixtures (most actionable data).
+    const fetches = [
       fetch('/.netlify/functions/sports-data?sport=' + sportConfig.sport + '&action=standings&league=' + sportConfig.league).then(r => r.ok ? r.json() : null).catch(() => null),
-      fetch('/.netlify/functions/sports-data?sport=' + sportConfig.sport + '&action=results&league=' + sportConfig.league).then(r => r.ok ? r.json() : null).catch(() => null)
-    ]);
+      fetch('/.netlify/functions/sports-data?sport=' + sportConfig.sport + '&action=results&league=' + sportConfig.league).then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch('/.netlify/functions/sports-data?sport=' + sportConfig.sport + '&action=fixtures&league=' + sportConfig.league).then(r => r.ok ? r.json() : null).catch(() => null)
+    ];
+    if (club) {
+      fetches.push(
+        fetch('/.netlify/functions/sports-data?sport=' + sportConfig.sport + '&action=team-fixtures&league=' + sportConfig.league + '&club=' + encodeURIComponent(club)).then(r => r.ok ? r.json() : null).catch(() => null)
+      );
+    }
+    const [standingsRes, resultsRes, fixturesRes, teamFixturesRes] = await Promise.all(fetches);
 
     let ctx = '\n[DONNÉES SPORTIVES LIVE — ' + new Date().toLocaleDateString('fr-CH') + ']\n';
+    if (club) {
+      ctx += 'CLUB DE L\'ATHLÈTE : ' + club + ' (utilise ces données pour analyser son équipe et ses adversaires en priorité).\n\n';
+    }
+
+    // FIRST AND MOST IMPORTANT: the athlete's own next matches.
+    // If the team was found by the search, this is the gold-standard data — use it first.
+    if (teamFixturesRes?.data?.teamFound && Array.isArray(teamFixturesRes.data.fixtures) && teamFixturesRes.data.fixtures.length > 0) {
+      const tf = teamFixturesRes.data;
+      ctx += '⭐ PROCHAINS MATCHS DE ' + (tf.teamName || club).toUpperCase() + ' (5 \u00e0 venir, source officielle):\n';
+      tf.fixtures.slice(0, 5).forEach(function(f) {
+        var date = new Date(f.date).toLocaleDateString('fr-CH', {weekday:'short', day:'numeric', month:'short'});
+        var opponent = f.isHome ? f.away : f.home;
+        var venue = f.isHome ? 'Domicile' : 'Ext\u00e9rieur';
+        ctx += '• ' + date + ' — vs ' + opponent + ' (' + venue + (f.venue ? ' · ' + f.venue : '') + ')' + (f.round ? ' — ' + f.round : '') + '\n';
+      });
+      ctx += '\n';
+    } else if (teamFixturesRes && teamFixturesRes.data && teamFixturesRes.data.teamFound === false) {
+      ctx += '(Note: club "' + club + '" non trouv\u00e9 dans la base API-Sports — utilise les donn\u00e9es de la ligue ci-dessous.)\n\n';
+    }
 
     // Add standings
     if (standingsRes?.data?.standings) {
-      ctx += 'CLASSEMENT ' + (standingsRes.data.league || 'Super League') + ' ' + (standingsRes.data.season || '2025') + ':\n';
+      ctx += 'CLASSEMENT ' + (standingsRes.data.league || sportConfig.leagueLabel) + ' ' + (standingsRes.data.season || '2025') + ':\n';
       standingsRes.data.standings.slice(0, 12).forEach(function(t) {
-        ctx += t.rank + '. ' + t.team + ' — ' + t.points + 'pts (' + t.win + 'V ' + t.draw + 'N ' + t.lose + 'D, diff: ' + (t.goalDiff > 0 ? '+' : '') + t.goalDiff + ') forme: ' + (t.form || '?') + '\n';
+        // Star the athlete's club so the agent spots it instantly
+        const isMine = club && t.team && t.team.toLowerCase().includes(club.toLowerCase().split(' ')[0]);
+        ctx += (isMine ? '⭐ ' : '') + t.rank + '. ' + t.team + ' — ' + t.points + 'pts (' + t.win + 'V ' + t.draw + 'N ' + t.lose + 'D, diff: ' + (t.goalDiff > 0 ? '+' : '') + t.goalDiff + ') forme: ' + (t.form || '?') + '\n';
       });
     }
 
-    // Add recent results
+    // Add recent results — keep 5 most recent
     if (resultsRes?.data?.fixtures) {
-      ctx += '\nDERNIERS RÉSULTATS:\n';
+      ctx += '\nDERNIERS RÉSULTATS DE LA LIGUE:\n';
       resultsRes.data.fixtures.slice(0, 5).forEach(function(f) {
         var date = new Date(f.date).toLocaleDateString('fr-CH', {day:'numeric', month:'short'});
         ctx += date + ': ' + f.home + ' ' + (f.scoreHome ?? '?') + '-' + (f.scoreAway ?? '?') + ' ' + f.away + '\n';
       });
     }
 
-    ctx += '\nUtilise ces données pour personnaliser tes conseils. Si l\'athlète a un match contre une équipe, utilise le classement pour évaluer l\'adversaire.\n';
+    // Add UPCOMING fixtures (league-wide) — useful for context even if team-fixtures found
+    if (fixturesRes?.data?.fixtures) {
+      ctx += '\nPROCHAINS MATCHS DE LA LIGUE (10 \u00e0 venir):\n';
+      fixturesRes.data.fixtures.slice(0, 10).forEach(function(f) {
+        var date = new Date(f.date).toLocaleDateString('fr-CH', {weekday:'short', day:'numeric', month:'short'});
+        const isMine = club && (
+          (f.home && f.home.toLowerCase().includes(club.toLowerCase().split(' ')[0])) ||
+          (f.away && f.away.toLowerCase().includes(club.toLowerCase().split(' ')[0]))
+        );
+        ctx += (isMine ? '⭐ ' : '') + date + ': ' + f.home + ' vs ' + f.away + (f.venue ? ' (' + f.venue + ')' : '') + '\n';
+      });
+    }
+
+    ctx += '\nINSTRUCTIONS:\n';
+    ctx += '- Le ⭐ marque le club de l\'athl\u00e8te. Utilise-le en priorit\u00e9.\n';
+    ctx += '- Le bloc "PROCHAINS MATCHS DE [CLUB]" est la donn\u00e9e la plus actionnable — utilise-la pour pr\u00e9parer pr\u00e9cis\u00e9ment chaque rencontre.\n';
+    ctx += '- Si l\'athl\u00e8te a un match \u00e0 venir contre une \u00e9quipe du classement, utilise sa position et sa forme pour pr\u00e9parer la rencontre.\n';
+    ctx += '- Pour les agents performance (David/Emma/Clara/Nora/Julie), adapte la charge d\'entra\u00eenement en fonction du calendrier de matchs r\u00e9el.\n';
 
     // Cache for 6 hours
-    localStorage.setItem(cacheKey, JSON.stringify({ timestamp: Date.now(), context: ctx }));
+    try { localStorage.setItem(cacheKey, JSON.stringify({ timestamp: Date.now(), context: ctx })); } catch(_) {}
 
     return ctx;
   } catch(e) {
