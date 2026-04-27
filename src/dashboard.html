@@ -2647,7 +2647,7 @@ async function init() {
 // It cleans caches, reloads ONCE, and uses a retry counter to prevent infinite loops.
 // ⚠️  IMPORTANT : cette constante DOIT correspondre à src/version.json (.version).
 //     Si tu bumps version.json, bump APP_V au même nombre — sinon boucle de reload.
-const APP_V = '43';
+const APP_V = '44';
 async function checkAppVersion() {
   try {
     const res = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
@@ -9113,12 +9113,15 @@ async function getSportsDataContext() {
     // sportKey() gracefully normalises any legacy FR label still sitting in DB pre-migration.
     const sport = sportKey(userProfile?.sport) || '';
     const club = userProfile?.club || '';
-    // Only fetch for supported sports — basketball is supported backend-side but the SBL
-    // league ID needs to be confirmed before mapping it here.
+    // Only fetch for supported sports. Basketball SBL ID 100 confirmed via API-Sports
+    // /leagues endpoint in v44 (men's top division — SB League W ID 101 not yet exposed).
+    // Tennis uses a separate API (Matchstat via RapidAPI) and the athlete-centric pattern.
     // Keys here are canonical sport keys (matches SPORTS_CATALOG.key).
     const sportMap = {
-      'football': { sport: 'football', league: 207, leagueLabel: 'Super League' },
-      'hockey':   { sport: 'hockey',   league: 38,  leagueLabel: 'National League' }
+      'football':   { pattern: 'team',    sport: 'football',   league: 207, leagueLabel: 'Super League' },
+      'hockey':     { pattern: 'team',    sport: 'hockey',     league: 38,  leagueLabel: 'National League' },
+      'basketball': { pattern: 'team',    sport: 'basketball', league: 100, leagueLabel: 'SB League' },
+      'tennis':     { pattern: 'athlete', sport: 'tennis' }
     };
 
     const sportConfig = sportMap[sport] || null;
@@ -9127,6 +9130,64 @@ async function getSportsDataContext() {
       if (sport) console.info('[API-Sports] Sport "' + sport + '" not mapped — agent will work without live data.');
       return '';
     }
+
+    // v44 — Tennis (athlete-centric) has its own fetch + format flow. Branch early.
+    // The athlete-centric pattern fetches individual player rankings (not league standings)
+    // and is shared globally rather than per-club, so cache key omits the club. This
+    // pattern will likely be reused for ski FIS (v45) and other individual-athlete sports.
+    if (sportConfig.pattern === 'athlete') {
+      const cacheKeyAthlete = 'sv_sports_data_v2_' + sportConfig.sport + '_global';
+      const cachedAthlete = localStorage.getItem(cacheKeyAthlete);
+      if (cachedAthlete) {
+        try {
+          const parsed = JSON.parse(cachedAthlete);
+          if (Date.now() - parsed.timestamp < 6 * 3600 * 1000) return parsed.context;
+        } catch(e) {}
+      }
+
+      // Tennis: 2 fetches in parallel (top 20 ATP + top 20 WTA singles rankings)
+      const [atpRes, wtaRes] = await Promise.all([
+        fetch('/.netlify/functions/sports-data?sport=tennis&action=atp-rankings').then(r => r.ok ? r.json() : null).catch(() => null),
+        fetch('/.netlify/functions/sports-data?sport=tennis&action=wta-rankings').then(r => r.ok ? r.json() : null).catch(() => null)
+      ]);
+
+      // If both calls failed, return empty so the coach falls back to non-live context
+      if (!atpRes?.data?.players?.length && !wtaRes?.data?.players?.length) {
+        return '';
+      }
+
+      let athleteCtx = '\n[DONNÉES SPORTIVES LIVE — ' + new Date().toLocaleDateString('fr-CH') + ']\n';
+      athleteCtx += 'TENNIS — Top 20 ATP/WTA singles rankings (joueurs suisses surlignés ⭐).\n\n';
+
+      if (atpRes?.data?.players?.length) {
+        athleteCtx += 'TOP 20 ATP (hommes):\n';
+        atpRes.data.players.forEach(function(p) {
+          athleteCtx += (p.isSwiss ? '⭐ ' : '') + p.rank + '. ' + p.name + ' (' + p.country + ') — ' + p.points + ' pts\n';
+        });
+        if (!atpRes.data.players.some(function(p) { return p.isSwiss; })) {
+          athleteCtx += '(Aucun joueur suisse dans le top 20 ATP actuellement.)\n';
+        }
+        athleteCtx += '\n';
+      }
+
+      if (wtaRes?.data?.players?.length) {
+        athleteCtx += 'TOP 20 WTA (femmes):\n';
+        wtaRes.data.players.forEach(function(p) {
+          athleteCtx += (p.isSwiss ? '⭐ ' : '') + p.rank + '. ' + p.name + ' (' + p.country + ') — ' + p.points + ' pts\n';
+        });
+        if (!wtaRes.data.players.some(function(p) { return p.isSwiss; })) {
+          athleteCtx += '(Aucune joueuse suisse dans le top 20 WTA actuellement.)\n';
+        }
+      }
+
+      try {
+        localStorage.setItem(cacheKeyAthlete, JSON.stringify({ timestamp: Date.now(), context: athleteCtx }));
+      } catch(e) {}
+
+      return athleteCtx;
+    }
+
+    // === Team-centric flow (football, hockey, basketball) — pattern: 'team' ===
 
     // Cache key includes the club so two athletes from different clubs can each get
     // a tailored context (the standings/fixtures are league-wide but the headline
