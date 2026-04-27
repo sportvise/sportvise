@@ -48,10 +48,16 @@ async function logApiUsage(payload) {
       }
     }).catch(err => console.warn('[logApiUsage] fetch error:', err.message));
 
-    // Race against a 500ms timeout so we never block the user response on logging
+    // Race against a 2500ms timeout so we never block the user response on logging.
+    // v43 — bumped from 500ms because action='fixtures' had ~25% loss rate when
+    // Supabase write latency variance pushed total handler time past the cutoff
+    // (the /fixtures?next=10 endpoint returns a heavier payload than standings/results,
+    // which combined with cold-start Supabase writes occasionally exceeded 500ms).
+    // 2500ms covers worst-case Supabase free-tier latency while staying well under
+    // Netlify's default 10s function timeout.
     await Promise.race([
       logFetch,
-      new Promise(resolve => setTimeout(resolve, 500))
+      new Promise(resolve => setTimeout(resolve, 2500))
     ]);
   } catch (err) {
     console.warn('[logApiUsage] outer error:', err.message);
