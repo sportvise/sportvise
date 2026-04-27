@@ -19,12 +19,20 @@
 // Required env vars: SUPABASE_URL, SUPABASE_SERVICE_KEY (already in use elsewhere).
 // If env vars are missing, logging is silently skipped — never blocks the response.
 async function logApiUsage(payload) {
-  const url = process.env.SUPABASE_URL;
+  // v40 — fallback SUPABASE_URL (admin-stats.js does the same). Without this,
+  // logging was silently disabled when SUPABASE_URL wasn't set as an env var
+  // (only SUPABASE_SERVICE_KEY was), and the api_usage_log table stayed empty.
+  const url = process.env.SUPABASE_URL || 'https://ckikyvokurpehavjlkbc.supabase.co';
   const key = process.env.SUPABASE_SERVICE_KEY;
-  if (!url || !key) return; // logging disabled
+  if (!key) {
+    console.warn('[logApiUsage] SUPABASE_SERVICE_KEY missing — skipping log');
+    return;
+  }
   try {
-    // Fire-and-forget — no await on the response so we never delay the user.
-    fetch(`${url}/rest/v1/api_usage_log`, {
+    // We DO await here briefly, just to log the response status into Netlify
+    // function logs. The await is wrapped in a Promise.race with a 500ms timeout
+    // so it never delays the user noticeably.
+    const logFetch = fetch(`${url}/rest/v1/api_usage_log`, {
       method: 'POST',
       headers: {
         'apikey': key,
@@ -33,8 +41,21 @@ async function logApiUsage(payload) {
         'Prefer': 'return=minimal'
       },
       body: JSON.stringify(payload)
-    }).catch(() => { /* swallow */ });
-  } catch (_) { /* swallow */ }
+    }).then(r => {
+      if (!r.ok) {
+        // Read body once so we know WHY (RLS denial, missing column, etc.)
+        return r.text().then(t => console.warn('[logApiUsage] insert failed:', r.status, t));
+      }
+    }).catch(err => console.warn('[logApiUsage] fetch error:', err.message));
+
+    // Race against a 500ms timeout so we never block the user response on logging
+    await Promise.race([
+      logFetch,
+      new Promise(resolve => setTimeout(resolve, 500))
+    ]);
+  } catch (err) {
+    console.warn('[logApiUsage] outer error:', err.message);
+  }
 }
 
 exports.handler = async (event) => {
