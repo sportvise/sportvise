@@ -784,7 +784,9 @@ const T = {
       nutrition:'Clara — Nutrition', comptabilite:'Pierre — Compta',
       sommeil:'Nora — Sommeil', equipe:'Lucas — Manager', recuperation:'Julie — Récupération',
       calendrier:'Calendrier', favoris:'Mes Favoris', profil:'Mon Profil', abonnement:'Abonnement',
-      objectifs:'Objectifs', journal:'Journal', progression:'Progression'
+      objectifs:'Objectifs', journal:'Journal', progression:'Progression',
+      marketplace:'Programmes', defis:'Défis', 'prepa-match':'Prépa Match',
+      parrainage:'Parrainage', connexions:'Connexions'
     },
     agentDescs: {
       marketing:'Stratégie réseaux sociaux, media kit, visibilité',
@@ -895,7 +897,45 @@ const T = {
     dashPrepaPasse:'PASSÉ',
     dashPrepaJourJ:'JOUR J !',
     dashPrepaAt:'à',
-    dashPrepaPlan:'Voir le plan ⚡'
+    dashPrepaPlan:'Voir le plan ⚡',
+    // PHASE 1.6 — Score / Recap / Streak badges / Page subtitles / Agent titles
+    pageDashSubtitle:"Vue d'ensemble de votre carrière",
+    scoreLabel:'Score SPORTVISE',
+    scoreDataDays:'{n} jour(s) de données cette semaine',
+    scoreVsLastWeek:'vs sem. dernière',
+    scoreStable:'stable',
+    scoreLevelExcellent:'Excellent',
+    scoreLevelGood:'Bon',
+    scoreLevelMedium:'Moyen',
+    scoreLevelImprove:'À améliorer',
+    scoreSubPhysical:'Physique',
+    scoreSubMental:'Mental',
+    scoreSubNutrition:'Nutrition',
+    scoreSubSleep:'Sommeil',
+    scoreSubRecovery:'Récup',
+    recapTitle:'Récap de ta semaine',
+    recapBy:'Par Lucas, ton manager sportif',
+    recapDaysJournal:'Jours journal',
+    recapAvgScore:'Score moyen',
+    recapTrainings:'Entraînements',
+    recapMsgs:'Messages agents',
+    recapTalkToLucas:'💬 Parler à Lucas',
+    recapAIReport:'📊 Rapport IA détaillé',
+    streakBadge3d:'3 jours', streakBadge1w:'1 semaine', streakBadge2w:'2 semaines', streakBadge1m:'1 mois',
+    streakBadgeChat:'Bavard', streakBadgePro:'Pro du chat', streakBadgeExplorer:'Explorateur', streakBadgeComplete:'Complet',
+    agentTitles:{
+      marketing:'Marketing & Personal Branding',
+      finance:'Conseil Financier',
+      sponsors:'Gestion des Sponsors',
+      contrats:'Négociation de Contrats',
+      physique:'Préparation Physique',
+      mental:'Préparation Mentale',
+      nutrition:'Nutrition Sportive',
+      comptabilite:'Comptabilité & Facturation',
+      sommeil:'Spécialiste du Sommeil',
+      equipe:'Manager Sportif',
+      recuperation:'Récupération & Régénération'
+    }
   },
   de: {
     dashboard:'🏠 Dashboard', agents:'KI-Agenten', mySpace:'Mein persönlicher Bereich', myAccount:'Mein Konto',
@@ -1005,7 +1045,9 @@ const T = {
       nutrition:'Clara — Ernährung', comptabilite:'Pierre — Buchhaltung',
       sommeil:'Nora — Schlaf', equipe:'Lucas — Sportmanager', recuperation:'Julie — Regeneration',
       calendrier:'Kalender', favoris:'Meine Favoriten', profil:'Mein Profil', abonnement:'Abonnement',
-      objectifs:'Ziele', journal:'Tagebuch', progression:'Fortschritt'
+      objectifs:'Ziele', journal:'Tagebuch', progression:'Fortschritt',
+      marketplace:'Programme', defis:'Herausforderungen', 'prepa-match':'Match-Vorbereitung',
+      parrainage:'Empfehlung', connexions:'Verbindungen'
     },
     agentDescs: {
       marketing:'Social-Media-Strategie, Media-Kit, Sichtbarkeit',
@@ -1116,7 +1158,45 @@ const T = {
     dashPrepaPasse:'VORBEI',
     dashPrepaJourJ:'TAG X!',
     dashPrepaAt:'um',
-    dashPrepaPlan:'Plan ansehen ⚡'
+    dashPrepaPlan:'Plan ansehen ⚡',
+    // PHASE 1.6 — Score / Recap / Streak badges / Page subtitles / Agent titles
+    pageDashSubtitle:'Überblick über deine Karriere',
+    scoreLabel:'SPORTVISE-Score',
+    scoreDataDays:'{n} Tag(e) Daten diese Woche',
+    scoreVsLastWeek:'vs. letzte Woche',
+    scoreStable:'stabil',
+    scoreLevelExcellent:'Ausgezeichnet',
+    scoreLevelGood:'Gut',
+    scoreLevelMedium:'Mittel',
+    scoreLevelImprove:'Zu verbessern',
+    scoreSubPhysical:'Physisch',
+    scoreSubMental:'Mental',
+    scoreSubNutrition:'Ernährung',
+    scoreSubSleep:'Schlaf',
+    scoreSubRecovery:'Erholung',
+    recapTitle:'Wochenrückblick',
+    recapBy:'Von Lucas, deinem Sportmanager',
+    recapDaysJournal:'Tagebuch-Tage',
+    recapAvgScore:'Durchschnittlicher Score',
+    recapTrainings:'Trainings',
+    recapMsgs:'Agenten-Nachrichten',
+    recapTalkToLucas:'💬 Mit Lucas sprechen',
+    recapAIReport:'📊 Detaillierter KI-Bericht',
+    streakBadge3d:'3 Tage', streakBadge1w:'1 Woche', streakBadge2w:'2 Wochen', streakBadge1m:'1 Monat',
+    streakBadgeChat:'Vielredner', streakBadgePro:'Chat-Profi', streakBadgeExplorer:'Entdecker', streakBadgeComplete:'Komplett',
+    agentTitles:{
+      marketing:'Marketing & Personal Branding',
+      finance:'Finanzberatung',
+      sponsors:'Sponsoren-Management',
+      contrats:'Vertragsverhandlung',
+      physique:'Physische Vorbereitung',
+      mental:'Mentale Vorbereitung',
+      nutrition:'Sporternährung',
+      comptabilite:'Buchhaltung & Rechnungsstellung',
+      sommeil:'Schlafspezialistin',
+      equipe:'Sportmanager',
+      recuperation:'Erholung & Regeneration'
+    }
   },
   en: {
     dashboard:'🏠 Dashboard', agents:'AI Agents', mySpace:'My Personal Space', myAccount:'My Account',
@@ -1226,7 +1306,9 @@ const T = {
       nutrition:'Clara — Nutrition', comptabilite:'Pierre — Accounting',
       sommeil:'Nora — Sleep', equipe:'Lucas — Sports Manager', recuperation:'Julie — Recovery',
       calendrier:'Calendar', favoris:'My Favorites', profil:'My Profile', abonnement:'Subscription',
-      objectifs:'Goals', journal:'Log', progression:'Progression'
+      objectifs:'Goals', journal:'Log', progression:'Progression',
+      marketplace:'Programs', defis:'Challenges', 'prepa-match':'Match Prep',
+      parrainage:'Referral', connexions:'Connections'
     },
     agentDescs: {
       marketing:'Social media strategy, media kit, visibility',
@@ -1337,7 +1419,45 @@ const T = {
     dashPrepaPasse:'PAST',
     dashPrepaJourJ:'MATCH DAY!',
     dashPrepaAt:'at',
-    dashPrepaPlan:'View plan ⚡'
+    dashPrepaPlan:'View plan ⚡',
+    // PHASE 1.6 — Score / Recap / Streak badges / Page subtitles / Agent titles
+    pageDashSubtitle:'Overview of your career',
+    scoreLabel:'SPORTVISE Score',
+    scoreDataDays:'{n} day(s) of data this week',
+    scoreVsLastWeek:'vs last week',
+    scoreStable:'stable',
+    scoreLevelExcellent:'Excellent',
+    scoreLevelGood:'Good',
+    scoreLevelMedium:'Average',
+    scoreLevelImprove:'Needs improvement',
+    scoreSubPhysical:'Physical',
+    scoreSubMental:'Mental',
+    scoreSubNutrition:'Nutrition',
+    scoreSubSleep:'Sleep',
+    scoreSubRecovery:'Recovery',
+    recapTitle:'Your weekly recap',
+    recapBy:'By Lucas, your sports manager',
+    recapDaysJournal:'Journal days',
+    recapAvgScore:'Average score',
+    recapTrainings:'Trainings',
+    recapMsgs:'Agent messages',
+    recapTalkToLucas:'💬 Talk to Lucas',
+    recapAIReport:'📊 Detailed AI report',
+    streakBadge3d:'3 days', streakBadge1w:'1 week', streakBadge2w:'2 weeks', streakBadge1m:'1 month',
+    streakBadgeChat:'Talkative', streakBadgePro:'Chat pro', streakBadgeExplorer:'Explorer', streakBadgeComplete:'Complete',
+    agentTitles:{
+      marketing:'Marketing & Personal Branding',
+      finance:'Financial Advice',
+      sponsors:'Sponsor Management',
+      contrats:'Contract Negotiation',
+      physique:'Physical Preparation',
+      mental:'Mental Preparation',
+      nutrition:'Sports Nutrition',
+      comptabilite:'Accounting & Invoicing',
+      sommeil:'Sleep Specialist',
+      equipe:'Sports Manager',
+      recuperation:'Recovery & Regeneration'
+    }
   },
   it: {
     dashboard:'🏠 Dashboard', agents:'Agenti IA', mySpace:'Il mio Spazio Personale', myAccount:'Il mio Account',
@@ -1446,7 +1566,10 @@ const T = {
       contrats:'Léa — Contratti', physique:'David — Fisico', mental:'Emma — Mentale',
       nutrition:'Clara — Nutrizione', comptabilite:'Pierre — Contabilità',
       sommeil:'Nora — Sonno', equipe:'Lucas — Manager Sportivo', recuperation:'Julie — Recupero',
-      calendrier:'Calendario', favoris:'I miei Preferiti', profil:'Il mio Profilo', abonnement:'Abbonamento'
+      calendrier:'Calendario', favoris:'I miei Preferiti', profil:'Il mio Profilo', abonnement:'Abbonamento',
+      objectifs:'Obiettivi', journal:'Diario', progression:'Progressione',
+      marketplace:'Programmi', defis:'Sfide', 'prepa-match':'Prep Match',
+      parrainage:'Referral', connexions:'Connessioni'
     },
     agentDescs: {
       marketing:'Strategia social media, media kit, visibilità',
@@ -1557,7 +1680,45 @@ const T = {
     dashPrepaPasse:'PASSATO',
     dashPrepaJourJ:'GIORNO X!',
     dashPrepaAt:'alle',
-    dashPrepaPlan:'Vedi il piano ⚡'
+    dashPrepaPlan:'Vedi il piano ⚡',
+    // PHASE 1.6 — Score / Recap / Streak badges / Page subtitles / Agent titles
+    pageDashSubtitle:'Panoramica della tua carriera',
+    scoreLabel:'Score SPORTVISE',
+    scoreDataDays:'{n} giorno/i di dati questa settimana',
+    scoreVsLastWeek:'vs sett. scorsa',
+    scoreStable:'stabile',
+    scoreLevelExcellent:'Eccellente',
+    scoreLevelGood:'Buono',
+    scoreLevelMedium:'Medio',
+    scoreLevelImprove:'Da migliorare',
+    scoreSubPhysical:'Fisico',
+    scoreSubMental:'Mentale',
+    scoreSubNutrition:'Nutrizione',
+    scoreSubSleep:'Sonno',
+    scoreSubRecovery:'Recupero',
+    recapTitle:'Riepilogo della tua settimana',
+    recapBy:'Da Lucas, il tuo manager sportivo',
+    recapDaysJournal:'Giorni diario',
+    recapAvgScore:'Score medio',
+    recapTrainings:'Allenamenti',
+    recapMsgs:'Messaggi agenti',
+    recapTalkToLucas:'💬 Parla con Lucas',
+    recapAIReport:'📊 Report IA dettagliato',
+    streakBadge3d:'3 giorni', streakBadge1w:'1 settimana', streakBadge2w:'2 settimane', streakBadge1m:'1 mese',
+    streakBadgeChat:'Loquace', streakBadgePro:'Pro della chat', streakBadgeExplorer:'Esploratore', streakBadgeComplete:'Completo',
+    agentTitles:{
+      marketing:'Marketing & Personal Branding',
+      finance:'Consulenza Finanziaria',
+      sponsors:'Gestione Sponsor',
+      contrats:'Negoziazione Contratti',
+      physique:'Preparazione Fisica',
+      mental:'Preparazione Mentale',
+      nutrition:'Nutrizione Sportiva',
+      comptabilite:'Contabilità & Fatturazione',
+      sommeil:'Specialista del Sonno',
+      equipe:'Manager Sportivo',
+      recuperation:'Recupero & Rigenerazione'
+    }
   }
 };
 
@@ -2328,7 +2489,7 @@ async function init() {
 // It cleans caches, reloads ONCE, and uses a retry counter to prevent infinite loops.
 // ⚠️  IMPORTANT : cette constante DOIT correspondre à src/version.json (.version).
 //     Si tu bumps version.json, bump APP_V au même nombre — sinon boucle de reload.
-const APP_V = '31';
+const APP_V = '33';
 async function checkAppVersion() {
   try {
     const res = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
@@ -2982,7 +3143,7 @@ async function showPage(page, el) {
   document.getElementById('agentBadge').style.display = agent ? 'inline-flex' : 'none';
   if (page === 'dashboard') {
     document.getElementById('pageTitle').textContent = '🏠 Dashboard';
-    document.getElementById('pageSubtitle').textContent = 'Vue d\'ensemble de votre carrière';
+    document.getElementById('pageSubtitle').textContent = (T[currentLang]?.pageDashSubtitle) || "Vue d'ensemble de votre carrière";
     renderDashboard();
   } else if (page === 'favoris') {
     document.getElementById('pageTitle').textContent = '⭐ Mes Favoris';
@@ -3038,8 +3199,11 @@ async function showPage(page, el) {
     document.getElementById('pageSubtitle').textContent = 'Programmes d\'entraînement et guides créés par tes agents';
     renderMarketplace();
   } else if (agent) {
-    document.getElementById('pageTitle').textContent = agent.emoji + ' ' + agent.title;
-    document.getElementById('pageSubtitle').textContent = agent.desc;
+    const _tt = T[currentLang] || T.fr;
+    const _localTitle = (_tt.agentTitles && _tt.agentTitles[page]) || agent.title;
+    const _localDesc = (_tt.agentDescs && _tt.agentDescs[page]) || agent.desc;
+    document.getElementById('pageTitle').textContent = agent.emoji + ' ' + _localTitle;
+    document.getElementById('pageSubtitle').textContent = _localDesc;
     if (isAgentLocked(page)) {
       renderLockedAgent(page, agent);
     } else {
@@ -3191,19 +3355,19 @@ async function renderDashboard() {
         }
       }
 
-      // Badges system
+      // Badges system (labels localized via t.streakBadge*)
       const badges = [];
-      if (streak >= 3) badges.push({emoji:'🔥',label:'3 jours',desc:'Streak 3j'});
-      if (streak >= 7) badges.push({emoji:'⭐',label:'1 semaine',desc:'Streak 7j'});
-      if (streak >= 14) badges.push({emoji:'💎',label:'2 semaines',desc:'Streak 14j'});
-      if (streak >= 30) badges.push({emoji:'🏆',label:'1 mois',desc:'Streak 30j'});
-      if (totalMsgs >= 10) badges.push({emoji:'💬',label:'Bavard',desc:'10+ messages'});
-      if (totalMsgs >= 50) badges.push({emoji:'🗣️',label:'Pro du chat',desc:'50+ messages'});
-      if (agentsUsed >= 5) badges.push({emoji:'🌐',label:'Explorateur',desc:'5+ agents'});
-      if (agentsUsed >= 11) badges.push({emoji:'👑',label:'Complet',desc:'11 agents'});
+      if (streak >= 3) badges.push({emoji:'🔥',label:t.streakBadge3d||'3 jours',desc:'Streak 3j'});
+      if (streak >= 7) badges.push({emoji:'⭐',label:t.streakBadge1w||'1 semaine',desc:'Streak 7j'});
+      if (streak >= 14) badges.push({emoji:'💎',label:t.streakBadge2w||'2 semaines',desc:'Streak 14j'});
+      if (streak >= 30) badges.push({emoji:'🏆',label:t.streakBadge1m||'1 mois',desc:'Streak 30j'});
+      if (totalMsgs >= 10) badges.push({emoji:'💬',label:t.streakBadgeChat||'Bavard',desc:'10+ messages'});
+      if (totalMsgs >= 50) badges.push({emoji:'🗣️',label:t.streakBadgePro||'Pro du chat',desc:'50+ messages'});
+      if (agentsUsed >= 5) badges.push({emoji:'🌐',label:t.streakBadgeExplorer||'Explorateur',desc:'5+ agents'});
+      if (agentsUsed >= 11) badges.push({emoji:'👑',label:t.streakBadgeComplete||'Complet',desc:'11 agents'});
 
       const streakColor = streak >= 14 ? '#f59e0b' : streak >= 7 ? '#10b981' : streak >= 3 ? '#06b6d4' : 'var(--muted)';
-      const nextBadge = streak < 3 ? {target:3,label:'🔥 3 jours'} : streak < 7 ? {target:7,label:'⭐ 1 semaine'} : streak < 14 ? {target:14,label:'💎 2 semaines'} : streak < 30 ? {target:30,label:'🏆 1 mois'} : null;
+      const nextBadge = streak < 3 ? {target:3,label:'🔥 '+(t.streakBadge3d||'3 jours')} : streak < 7 ? {target:7,label:'⭐ '+(t.streakBadge1w||'1 semaine')} : streak < 14 ? {target:14,label:'💎 '+(t.streakBadge2w||'2 semaines')} : streak < 30 ? {target:30,label:'🏆 '+(t.streakBadge1m||'1 mois')} : null;
 
       return `<div style="background:linear-gradient(135deg,var(--bg3),${streakColor}08);border:1px solid ${streak > 0 ? streakColor+'40' : 'var(--border)'};border-radius:14px;padding:16px;margin-bottom:16px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:${badges.length?'12':'0'}px">
@@ -3465,7 +3629,7 @@ async function renderDashboard() {
           ${locked ? '<div style="position:absolute;top:8px;right:8px;font-size:14px;opacity:0.7">🔒</div>' : ''}
           <div class="agent-emoji">${a.emoji}</div>
           <div class="agent-name" style="color:var(--text);font-size:14px;font-weight:800">${a.name}</div>
-          <div class="agent-role" style="color:${a.color};font-size:11px;font-weight:700;margin-bottom:8px">${a.title.split('&')[0].trim()}</div>
+          <div class="agent-role" style="color:${a.color};font-size:11px;font-weight:700;margin-bottom:8px">${((T[currentLang]?.agentTitles?.[id]) || a.title).split('&')[0].trim()}</div>
           <div class="agent-desc" style="color:var(--muted);font-size:11px;line-height:1.5">${T[currentLang].agentDescs[id] || a.desc}</div>
           ${locked ? '<div style="margin-top:10px;font-size:10px;color:' + (reqPlan === 'plus' ? '#06b6d4' : '#f59e0b') + ';font-weight:700">Plan ' + (reqPlan === 'plus' ? 'Plus' : 'Pro') + ' requis</div>' : '<div class="online" style="margin-top:10px"><div class="online-dot"></div>' + T[currentLang].online + '</div>'}
         </button>`;
@@ -3483,7 +3647,7 @@ async function renderDashboard() {
           ${locked ? '<div style="position:absolute;top:8px;right:8px;font-size:14px;opacity:0.7">🔒</div>' : ''}
           <div class="agent-emoji">${a.emoji}</div>
           <div class="agent-name" style="color:var(--text);font-size:14px;font-weight:800">${a.name}</div>
-          <div class="agent-role" style="color:${a.color};font-size:11px;font-weight:700;margin-bottom:8px">${a.title.split('&')[0].trim()}</div>
+          <div class="agent-role" style="color:${a.color};font-size:11px;font-weight:700;margin-bottom:8px">${((T[currentLang]?.agentTitles?.[id]) || a.title).split('&')[0].trim()}</div>
           <div class="agent-desc" style="color:var(--muted);font-size:11px;line-height:1.5">${T[currentLang].agentDescs[id] || a.desc}</div>
           ${locked ? '<div style="margin-top:10px;font-size:10px;color:' + (reqPlan === 'plus' ? '#06b6d4' : '#f59e0b') + ';font-weight:700">Plan ' + (reqPlan === 'plus' ? 'Plus' : 'Pro') + ' requis</div>' : '<div class="online" style="margin-top:10px"><div class="online-dot"></div>' + T[currentLang].online + '</div>'}
         </button>`;
@@ -3608,8 +3772,8 @@ async function renderChat(page) {
         <button class="mobile-back-btn" onclick="showPage('dashboard',document.querySelector('.nav-item'))">${t.backDashboard}</button>
         <div class="chat-avatar" style="background:${agent.color}20;border:2px solid ${agent.color}40">${agent.emoji}</div>
         <div class="chat-agent-info" style="flex:1;min-width:0">
-          <div class="chat-agent-title" style="font-weight:700;font-size:15px">${agent.name} — ${agent.title}</div>
-          <div class="chat-agent-desc" style="font-size:11px;color:var(--muted);margin-top:2px">${agent.desc}</div>
+          <div class="chat-agent-title" style="font-weight:700;font-size:15px">${agent.name} — ${(T[currentLang]?.agentTitles?.[page]) || agent.title}</div>
+          <div class="chat-agent-desc" style="font-size:11px;color:var(--muted);margin-top:2px">${(T[currentLang]?.agentDescs?.[page]) || agent.desc}</div>
         </div>
         <div class="chat-actions" style="display:flex;align-items:center;gap:8px">
           <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--green);font-weight:600">
@@ -3752,8 +3916,8 @@ function exportPDF(page) {
   <div class="agent-header">
     <div class="agent-emoji">${agent.emoji}</div>
     <div>
-      <div class="agent-name">${agent.name} — ${agent.title}</div>
-      <div class="agent-role">${agent.desc}</div>
+      <div class="agent-name">${agent.name} — ${(T[currentLang]?.agentTitles?.[page]) || agent.title}</div>
+      <div class="agent-role">${(T[currentLang]?.agentDescs?.[page]) || agent.desc}</div>
     </div>
   </div>
 
@@ -6368,27 +6532,29 @@ async function computeSportViseScore() {
 
 function renderSportViseScore(score) {
   if (!score) return '';
+  const t = T[currentLang] || T.fr;
   const getColor = s => s >= 80 ? '#f59e0b' : s >= 60 ? '#10b981' : s >= 40 ? '#f97316' : '#ef4444';
-  const getLabel = s => s >= 80 ? 'Excellent' : s >= 60 ? 'Bon' : s >= 40 ? 'Moyen' : 'À améliorer';
+  const getLabel = s => s >= 80 ? (t.scoreLevelExcellent||'Excellent') : s >= 60 ? (t.scoreLevelGood||'Bon') : s >= 40 ? (t.scoreLevelMedium||'Moyen') : (t.scoreLevelImprove||'À améliorer');
   const gc = getColor(score.global);
-  const trendArrow = score.trend !== null ? (score.trend > 0 ? '↑ +' + score.trend : score.trend < 0 ? '↓ ' + score.trend : '→ stable') : '';
+  const stableLabel = t.scoreStable || 'stable';
+  const trendArrow = score.trend !== null ? (score.trend > 0 ? '↑ +' + score.trend : score.trend < 0 ? '↓ ' + score.trend : '→ ' + stableLabel) : '';
   const trendColor = score.trend > 0 ? '#10b981' : score.trend < 0 ? '#ef4444' : 'var(--muted)';
 
   const subScores = [
-    { label: 'Physique', value: score.physical, color: '#ef4444', emoji: '🏋️' },
-    { label: 'Mental', value: score.mental, color: '#06b6d4', emoji: '🧠' },
-    { label: 'Nutrition', value: score.nutrition, color: '#84cc16', emoji: '🥗' },
-    { label: 'Sommeil', value: score.sleep, color: '#a78bfa', emoji: '😴' },
-    { label: 'Récup', value: score.recovery, color: '#14b8a6', emoji: '♻️' },
+    { label: t.scoreSubPhysical || 'Physique', value: score.physical, color: '#ef4444', emoji: '🏋️' },
+    { label: t.scoreSubMental || 'Mental', value: score.mental, color: '#06b6d4', emoji: '🧠' },
+    { label: t.scoreSubNutrition || 'Nutrition', value: score.nutrition, color: '#84cc16', emoji: '🥗' },
+    { label: t.scoreSubSleep || 'Sommeil', value: score.sleep, color: '#a78bfa', emoji: '😴' },
+    { label: t.scoreSubRecovery || 'Récup', value: score.recovery, color: '#14b8a6', emoji: '♻️' },
   ];
 
   return `<div style="background:linear-gradient(135deg,${gc}08,${gc}03);border:1px solid ${gc}30;border-radius:16px;padding:20px;margin-bottom:16px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
       <div>
-        <div style="font-size:11px;font-weight:800;color:${gc};text-transform:uppercase;letter-spacing:1px">Score SPORTVISE</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">${score.daysLogged} jour${score.daysLogged > 1 ? 's' : ''} de données cette semaine</div>
+        <div style="font-size:11px;font-weight:800;color:${gc};text-transform:uppercase;letter-spacing:1px">${t.scoreLabel||'Score SPORTVISE'}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">${(t.scoreDataDays||'{n} jour(s) de données cette semaine').replace('{n}', score.daysLogged)}</div>
       </div>
-      ${score.trend !== null ? `<div style="font-size:12px;font-weight:700;color:${trendColor}">${trendArrow} vs sem. dernière</div>` : ''}
+      ${score.trend !== null ? `<div style="font-size:12px;font-weight:700;color:${trendColor}">${trendArrow} ${t.scoreVsLastWeek||'vs sem. dernière'}</div>` : ''}
     </div>
     <div style="display:flex;align-items:center;gap:20px;margin-bottom:16px">
       <div style="position:relative;width:100px;height:100px;flex-shrink:0">
@@ -8237,6 +8403,7 @@ async function getWeeklyRecap() {
 
 function renderWeeklyRecap(recap) {
   if (!recap) return '';
+  var t = T[currentLang] || T.fr;
   var trendArrow = recap.moodTrend !== null ? (parseFloat(recap.moodTrend) > 0 ? '↑' : parseFloat(recap.moodTrend) < 0 ? '↓' : '→') : '';
   var trendColor = parseFloat(recap.moodTrend) > 0 ? '#10b981' : parseFloat(recap.moodTrend) < 0 ? '#ef4444' : 'var(--muted)';
   var name = userProfile?.full_name?.split(' ')[0] || 'Champion';
@@ -8269,8 +8436,8 @@ function renderWeeklyRecap(recap) {
   var html = '<div style="background:linear-gradient(135deg,#6366f110,#8b5cf610);border:1px solid #6366f130;border-radius:14px;padding:20px;margin-bottom:16px">';
   html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">';
   html += '<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🧑‍💼</div>';
-  html += '<div><div style="font-size:14px;font-weight:800;color:var(--text)">Récap de ta semaine</div>';
-  html += '<div style="font-size:11px;color:var(--muted)">Par Lucas, ton manager sportif</div></div>';
+  html += '<div><div style="font-size:14px;font-weight:800;color:var(--text)">' + (t.recapTitle||'Récap de ta semaine') + '</div>';
+  html += '<div style="font-size:11px;color:var(--muted)">' + (t.recapBy||'Par Lucas, ton manager sportif') + '</div></div>';
   html += '</div>';
 
   // Lucas personalized message
@@ -8279,26 +8446,26 @@ function renderWeeklyRecap(recap) {
   html += '</div>';
 
   html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;margin-bottom:14px">';
-  html += '<div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--gold)">' + recap.nbJours + '/7</div><div style="font-size:10px;color:var(--muted)">Jours journal</div></div>';
-  if (recap.avgScore !== null) html += '<div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:#6366f1">' + recap.avgScore + '</div><div style="font-size:10px;color:var(--muted)">Score moyen</div></div>';
-  html += '<div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:#10b981">' + recap.trainings + '</div><div style="font-size:10px;color:var(--muted)">Entraînements</div></div>';
-  html += '<div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:#06b6d4">' + recap.weekMsgs + '</div><div style="font-size:10px;color:var(--muted)">Messages agents</div></div>';
+  html += '<div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--gold)">' + recap.nbJours + '/7</div><div style="font-size:10px;color:var(--muted)">' + (t.recapDaysJournal||'Jours journal') + '</div></div>';
+  if (recap.avgScore !== null) html += '<div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:#6366f1">' + recap.avgScore + '</div><div style="font-size:10px;color:var(--muted)">' + (t.recapAvgScore||'Score moyen') + '</div></div>';
+  html += '<div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:#10b981">' + recap.trainings + '</div><div style="font-size:10px;color:var(--muted)">' + (t.recapTrainings||'Entraînements') + '</div></div>';
+  html += '<div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:#06b6d4">' + recap.weekMsgs + '</div><div style="font-size:10px;color:var(--muted)">' + (t.recapMsgs||'Messages agents') + '</div></div>';
   html += '</div>';
 
   // Mini bars
   html += '<div style="display:flex;gap:16px;font-size:11px">';
-  html += '<div style="flex:1"><div style="color:var(--muted);margin-bottom:4px">Humeur ' + recap.avgMood + '/10 <span style="color:' + trendColor + '">' + trendArrow + '</span></div><div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden"><div style="height:100%;width:' + (recap.avgMood*10) + '%;background:#f59e0b"></div></div></div>';
-  html += '<div style="flex:1"><div style="color:var(--muted);margin-bottom:4px">Énergie ' + recap.avgEnergy + '/10</div><div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden"><div style="height:100%;width:' + (recap.avgEnergy*10) + '%;background:#10b981"></div></div></div>';
-  html += '<div style="flex:1"><div style="color:var(--muted);margin-bottom:4px">Sommeil ' + recap.avgSleep + '/5</div><div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden"><div style="height:100%;width:' + (recap.avgSleep*20) + '%;background:#6366f1"></div></div></div>';
+  html += '<div style="flex:1"><div style="color:var(--muted);margin-bottom:4px">' + (t.briefMood||'Humeur') + ' ' + recap.avgMood + '/10 <span style="color:' + trendColor + '">' + trendArrow + '</span></div><div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden"><div style="height:100%;width:' + (recap.avgMood*10) + '%;background:#f59e0b"></div></div></div>';
+  html += '<div style="flex:1"><div style="color:var(--muted);margin-bottom:4px">' + (t.briefEnergy||'Énergie') + ' ' + recap.avgEnergy + '/10</div><div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden"><div style="height:100%;width:' + (recap.avgEnergy*10) + '%;background:#10b981"></div></div></div>';
+  html += '<div style="flex:1"><div style="color:var(--muted);margin-bottom:4px">' + (t.scoreSubSleep||'Sommeil') + ' ' + recap.avgSleep + '/5</div><div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden"><div style="height:100%;width:' + (recap.avgSleep*20) + '%;background:#6366f1"></div></div></div>';
   html += '</div>';
 
   // CTAs: Talk to Lucas + AI Report
   html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px">';
   html += '<div onclick="showPage(\'equipe\',null)" style="text-align:center;padding:10px;background:linear-gradient(135deg,#6366f115,#8b5cf615);border-radius:10px;cursor:pointer;transition:all 0.2s">';
-  html += '<div style="font-size:12px;font-weight:700;color:#6366f1">💬 Parler à Lucas</div>';
+  html += '<div style="font-size:12px;font-weight:700;color:#6366f1">' + (t.recapTalkToLucas||'💬 Parler à Lucas') + '</div>';
   html += '</div>';
   html += '<div onclick="generateWeeklyAIReport()" style="text-align:center;padding:10px;background:linear-gradient(135deg,#f59e0b15,#d9770615);border-radius:10px;cursor:pointer;transition:all 0.2s">';
-  html += '<div style="font-size:12px;font-weight:700;color:#f59e0b">📊 Rapport IA détaillé</div>';
+  html += '<div style="font-size:12px;font-weight:700;color:#f59e0b">' + (t.recapAIReport||'📊 Rapport IA détaillé') + '</div>';
   html += '</div>';
   html += '</div>';
 
