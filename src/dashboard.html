@@ -2545,7 +2545,7 @@ async function init() {
 // It cleans caches, reloads ONCE, and uses a retry counter to prevent infinite loops.
 // ⚠️  IMPORTANT : cette constante DOIT correspondre à src/version.json (.version).
 //     Si tu bumps version.json, bump APP_V au même nombre — sinon boucle de reload.
-const APP_V = '38';
+const APP_V = '39';
 async function checkAppVersion() {
   try {
     const res = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
@@ -7203,8 +7203,15 @@ function scrollToGoals(domain) {
 }
 
 // ── JOURNAL HELPERS ─────────────────────────────────
-async function setJournalField(field, value, btn) {
-  // INSTANT visual feedback before Supabase call
+// v39 — In-memory journal form state. Each click on a button (mood/energy/etc.)
+// updates this object only; persistence happens in ONE atomic upsert when the user
+// clicks "💾 Enregistrer". This eliminates the race conditions that came from
+// fire-and-forget background saves on every click (which left rows half-populated
+// and could even create duplicates if the user clicked fast).
+let _journalFormState = {};
+
+function setJournalField(field, value, btn) {
+  // INSTANT visual feedback
   if (btn) {
     var row = btn.parentElement;
     var isDark = !document.documentElement.getAttribute('data-theme') || document.documentElement.getAttribute('data-theme') === 'dark';
@@ -7224,22 +7231,9 @@ async function setJournalField(field, value, btn) {
     btn.style.boxShadow = '0 2px 8px rgba(245,158,11,0.3)';
   }
 
-  // Save to Supabase in background
-  const now = new Date();
-  const today = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
-  const { data: existing } = await sb.from('daily_log')
-    .select('*')
-    .eq('user_id', currentUser.id)
-    .eq('log_date', today)
-    .single();
-
-  const data = existing ? { ...existing } : { user_id: currentUser.id, log_date: today };
-  data[field] = value;
-
-  existing
-    ? sb.from('daily_log').update(data).eq('id', existing.id)
-    : sb.from('daily_log').insert(data);
-  // No re-render — feedback is already shown instantly
+  // Update in-memory state. NO Supabase call here — saveJournal() will atomically
+  // persist everything when the user clicks Enregistrer.
+  _journalFormState[field] = value;
 }
 
 async function saveJournal() {
@@ -7247,21 +7241,28 @@ async function saveJournal() {
   const notes = document.getElementById('journalNotes')?.value || '';
   const today = dateToStr();
 
-  const { data: existing } = await sb.from('daily_log')
-    .select('*')
-    .eq('user_id', currentUser.id)
-    .eq('log_date', today)
-    .single();
+  // v39 — One atomic upsert with the entire form state. We use the user_id+log_date
+  // unique constraint so any pre-existing row gets updated, never duplicated.
+  // (If the unique constraint isn't yet in DB, see SQL note in v39 changelog —
+  // the upsert will still work but may create dupes for users that already had multiple rows.)
+  const payload = {
+    user_id: currentUser.id,
+    log_date: today,
+    ..._journalFormState,
+    notes
+  };
 
-  if (existing) {
-    await sb.from('daily_log').update({ notes }).eq('id', existing.id);
-  } else {
-    // Edge case: no row yet (rare — setJournalField creates one on first interaction).
-    // Insert a minimal row so the notes are not lost.
-    await sb.from('daily_log').insert({ user_id: currentUser.id, log_date: today, notes });
+  const { error } = await sb
+    .from('daily_log')
+    .upsert(payload, { onConflict: 'user_id,log_date' });
+
+  if (error) {
+    console.warn('[JOURNAL] save error:', error);
+    showToast('⚠️ ' + (t.errSave || 'Erreur lors de la sauvegarde'));
+    return;
   }
 
-  // v38 — Persist a "saved today" flag in localStorage so navigating away and back
+  // Persist a "saved today" flag in localStorage so navigating away and back
   // shows the summary view even if the DB read returns partial data later.
   try { localStorage.setItem('sv_journal_saved_' + currentUser.id + '_' + today, '1'); } catch(_) {}
 
@@ -7399,6 +7400,19 @@ async function renderJournal() {
     .limit(14);
 
   const moodEmojis = t.moodEmojis || ['😫','😕','😐','🙂','😁'];
+
+  // v39 — Initialize the in-memory form state from today's row so toggling between
+  // summary <-> edit mode preserves the values, and so saveJournal upserts everything
+  // (not just the field the user changed last).
+  _journalFormState = todayLog ? {
+    mood: todayLog.mood,
+    energy: todayLog.energy,
+    motivation: todayLog.motivation,
+    sleep_quality: todayLog.sleep_quality,
+    pain_level: todayLog.pain_level,
+    nutrition_quality: todayLog.nutrition_quality,
+    training_done: todayLog.training_done
+  } : {};
 
   // v38 — Detect if today's entry is filled enough to show the summary view.
   // BUGFIX: previous condition required mood AND energy AND sleep simultaneously, too strict.
@@ -9853,6 +9867,11 @@ function showShortcutsHelp() {
   document.body.appendChild(overlay);
 }
 </script>
-<div id="versionBadge" style="position:fixed;bottom:70px;right:10px;background:rgba(0,0,0,0.7);color:#f59e0b;font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px;z-index:99999;font-family:'Inter',sans-serif;pointer-events:none;border:1px solid #f59e0b30;">v26</div>
+<div id="versionBadge" style="position:fixed;bottom:70px;right:10px;background:rgba(0,0,0,0.7);color:#f59e0b;font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px;z-index:99999;font-family:'Inter',sans-serif;pointer-events:none;border:1px solid #f59e0b30;">v—</div>
+<script>
+  // Sync the version badge with APP_V (defined in the main script above).
+  // Was previously hardcoded to "v26" — always showed the wrong version.
+  try { document.getElementById('versionBadge').textContent = 'v' + APP_V; } catch(_) {}
+</script>
 </body>
 </html>
