@@ -2647,7 +2647,7 @@ async function init() {
 // It cleans caches, reloads ONCE, and uses a retry counter to prevent infinite loops.
 // ⚠️  IMPORTANT : cette constante DOIT correspondre à src/version.json (.version).
 //     Si tu bumps version.json, bump APP_V au même nombre — sinon boucle de reload.
-const APP_V = '44';
+const APP_V = '45';
 async function checkAppVersion() {
   try {
     const res = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
@@ -4844,7 +4844,10 @@ L'athlète pratique : ${p.sport || 'sport non renseigné'}, niveau : ${p.level |
         goals: goalsContext,
         dailyLog: dailyLogContext,
         smartContext: smartContext + stravaContext + sportsDataContext,
-        style: `${dateContext}\n\n${agentPrompt}\n\n${baseStyle}\n${referralInstruction}`
+        style: `${dateContext}\n\n${agentPrompt}\n\n${baseStyle}\n${referralInstruction}`,
+        // v45 — backend uses userEmail to opt-in beta users on the Sonnet model
+        // (env var AI_MODEL_BETA_USERS). Falls back silently to Haiku if absent.
+        userEmail: currentUser?.email || null
     };
     if (attachedImageData) {
       requestBody.image = attachedImageData;
