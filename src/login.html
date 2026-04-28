@@ -549,7 +549,9 @@
       await fetch('/.netlify/functions/send-welcome', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, sport: selectedSport })
+        // v46 — lang signals send-welcome which EMAIL_TEMPLATES locale to use (fr/de/en/it).
+        // Fallback FR is handled server-side if lang is missing or unknown.
+        body: JSON.stringify({ name, email, sport: selectedSport, lang: currentLang })
       });
     } catch(e) { console.log('Welcome email skipped:', e); }
 

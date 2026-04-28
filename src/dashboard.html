@@ -1922,10 +1922,34 @@ async function quickOnboard(field, value, btn) {
   }
 }
 
+// ── ONBOARDING STATE HELPER (v46) ──────────────────
+// Source de vérité : DB (userProfile.sport renseigné = onboarding complété).
+// localStorage agit comme cache rapide. Auto-self-heal : si la DB confirme
+// l'onboarding mais la clé locale a disparu (cache vidé, changement de
+// navigateur, mode privé, sync iCloud, purge multi-user...), on repose la
+// clé locale et on retourne true.
+//
+// Historique du bug (28/04/2026) : avant v46, tous les call-sites utilisaient
+// uniquement localStorage comme source de vérité. Un utilisateur qui vidait
+// son cache Safari voyait son brief matinal disparaître silencieusement même
+// si son profil DB était complet (skip à la ligne `if (!localStorage.getItem
+// (\`sv_onboard_${currentUser.id}\`))`). Cette fonction unifie tous les checks.
+function isOnboardDone() {
+  if (!currentUser?.id) return false;
+  const onboardKey = `sv_onboard_${currentUser.id}`;
+  if (localStorage.getItem(onboardKey)) return true;
+  // Fallback DB : profile.sport renseigné = onboarding terminé
+  if (userProfile?.sport) {
+    try { localStorage.setItem(onboardKey, '1'); } catch(_) { /* localStorage indispo */ }
+    return true;
+  }
+  return false;
+}
+
 // ── LUCAS WELCOME ONBOARDING FLOW ──────────────────
 function showLucasWelcome() {
-  // Don't show again if already completed
-  if (localStorage.getItem(`sv_onboard_${currentUser.id}`)) return;
+  // Don't show again if already completed (v46: dual-check via isOnboardDone)
+  if (isOnboardDone()) return;
 
   const overlay = document.createElement('div');
   overlay.id = 'lucasWelcomeOverlay';
@@ -2620,7 +2644,8 @@ async function init() {
   showPage('dashboard', document.querySelector('.nav-item.active'));
 
   // Show setup modal if no profile yet (but NOT if Lucas onboarding will show — it asks for sport too)
-  const willShowOnboarding = !localStorage.getItem(`sv_onboard_${currentUser.id}`);
+  // v46: dual-check via isOnboardDone (cache + DB self-heal)
+  const willShowOnboarding = !isOnboardDone();
   if ((!profile || !profile.sport) && !willShowOnboarding) {
     setTimeout(() => showProfileModal(), 500);
   }
@@ -2647,7 +2672,7 @@ async function init() {
 // It cleans caches, reloads ONCE, and uses a retry counter to prevent infinite loops.
 // ⚠️  IMPORTANT : cette constante DOIT correspondre à src/version.json (.version).
 //     Si tu bumps version.json, bump APP_V au même nombre — sinon boucle de reload.
-const APP_V = '45';
+const APP_V = '46';
 async function checkAppVersion() {
   try {
     const res = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
@@ -3828,7 +3853,9 @@ async function renderDashboard() {
   `;
 
   // Trigger Lucas welcome onboarding for brand-new users
-  if (totalMsgs === 0 && !localStorage.getItem(`sv_onboard_${currentUser.id}`)) {
+  // v46: dual-check via isOnboardDone évite de re-trigger pour un user existant
+  // dont le cache a été vidé (profile.sport est renseigné en DB)
+  if (totalMsgs === 0 && !isOnboardDone()) {
     setTimeout(() => showLucasWelcome(), 800);
   }
 }
@@ -6044,8 +6071,10 @@ async function showMorningBrief() {
     console.log('[BRIEF] entry');
 
     // Only show after onboarding is completed/skipped
-    if (!localStorage.getItem(`sv_onboard_${currentUser.id}`)) {
-      console.log('[BRIEF] skipped — onboarding not done');
+    // v46: dual-check (cache + DB) + self-heal — fix régression du 28/04 où un cache
+    // vidé faisait disparaître le brief silencieusement malgré profile.sport en DB
+    if (!isOnboardDone()) {
+      console.log('[BRIEF] skipped — onboarding not done (ni local ni DB)');
       return;
     }
 
@@ -6325,8 +6354,8 @@ async function showEveningBrief() {
     const hour = new Date().getHours();
     if (hour < 18) return;
 
-    // Only show after onboarding
-    if (!localStorage.getItem(`sv_onboard_${currentUser.id}`)) return;
+    // Only show after onboarding (v46: dual-check via isOnboardDone)
+    if (!isOnboardDone()) return;
 
     // Only once per evening
     const todayStr = new Date().toLocaleDateString('fr-CH').split('.').reverse().join('-');
