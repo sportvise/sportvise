@@ -2,6 +2,47 @@
 // Agent data externalized to agents-data.js for maintainability
 const { SPORTS_SUISSE, CALENDRIERS_SUISSE, AGENTS } = require("./agents-data");
 
+// v45 — Per-model configuration for Haiku (default) / Sonnet (opt-in beta).
+// Beta opt-in is driven by env var AI_MODEL_BETA_USERS (comma-separated emails).
+// Model IDs are env-overridable so we can swap without redeploying code.
+const MODEL_CONFIG = {
+  haiku: {
+    id: process.env.AI_MODEL_DEFAULT || 'claude-haiku-4-5-20251001',
+    maxTokens: 1200,
+    temperature: 1.0,
+    systemPrefix: ''
+  },
+  sonnet: {
+    id: process.env.AI_MODEL_BETA || 'claude-sonnet-4-6',
+    maxTokens: 800,
+    temperature: 0.4,
+    // Strict style guardrails (regression case David v40 : Sonnet inventait des URLs
+    // et tirait long en listes). Préfixe écrit en FR : Claude applique les règles
+    // quel que soit le langInstruction qui suit.
+    systemPrefix: `[CONSIGNES DE STYLE STRICTES — À RESPECTER POUR CHAQUE RÉPONSE]
+- Réponds en 2 à 3 paragraphes courts maximum (pas plus).
+- Tutoie systématiquement l'athlète (jamais de "vous").
+- Termine par UNE seule question OU UN seul appel à l'action concret — pas les deux.
+- Pas de listes à puces ni de listes numérotées, SAUF si la réponse en a vraiment besoin (ex : étapes ordonnées d'un protocole). Privilégie des phrases fluides en prose.
+- N'invente JAMAIS d'URL, de lien, de site web, de marque ni de produit que tu n'es pas certain d'avoir vu apparaître dans le contexte fourni. Si tu ne connais pas un lien précis, dis "cherche sur Google" ou "demande à ta fédération".
+- Ton conversationnel et concret, pas académique.
+
+`
+  }
+};
+
+// Decide which model to use based on the caller's email.
+// Returns 'haiku' or 'sonnet'. Defaults to 'haiku' when email is missing,
+// the env var is unset, or the user is not in the beta list.
+function pickModel(userEmail) {
+  const betaUsersRaw = process.env.AI_MODEL_BETA_USERS || '';
+  if (!userEmail || !betaUsersRaw) return 'haiku';
+  const betaSet = new Set(
+    betaUsersRaw.split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
+  );
+  return betaSet.has(String(userEmail).trim().toLowerCase()) ? 'sonnet' : 'haiku';
+}
+
 exports.handler = async (event) => {
   // CORS: restrict to SPORTVISE domains only
   const allowedOrigins = ['https://sportvise.ch', 'https://www.sportvise.ch', 'https://prismatic-lebkuchen-48a8ee.netlify.app', 'https://stately-hummingbird-2ce1c2.netlify.app'];
@@ -18,7 +59,7 @@ exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
 
   try {
-    const { agentId, message, history, lang, profile, otherAgents, calendar, style, goals, dailyLog, smartContext, image, imageType } = JSON.parse(event.body);
+    const { agentId, message, history, lang, profile, otherAgents, calendar, style, goals, dailyLog, smartContext, image, imageType, userEmail } = JSON.parse(event.body);
     if (!agentId || !message) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing agentId or message' }) };
 
     // Rate limit: max message length (prevent abuse)
@@ -29,6 +70,10 @@ exports.handler = async (event) => {
 
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) return { statusCode: 500, headers, body: JSON.stringify({ error: 'API key not configured' }) };
+
+    // v45 — pick Haiku (default) or Sonnet (beta opt-in via env var).
+    const modelKey = pickModel(userEmail);
+    const modelConfig = MODEL_CONFIG[modelKey];
 
     // Language instruction
     const langInstructions = {
@@ -48,8 +93,10 @@ exports.handler = async (event) => {
     const todayIso = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Zurich' });
     const dateInstruction = `[DATE DU JOUR : ${todayLabel} (${todayIso}). Utilise cette date pour TOUS tes raisonnements temporels (J-1, demain, semaine prochaine, etc.). Ne te fie jamais à ta date d'entraînement.]`;
 
-    // Build enriched system prompt with athlete memory
-    let systemWithLang = agent.system + '\n\n' + langInstruction + '\n\n' + dateInstruction;
+    // Build enriched system prompt with athlete memory.
+    // The Sonnet model gets a strict style prefix prepended FIRST so the guardrails
+    // dominate the agent's own (often verbose) persona prompt.
+    let systemWithLang = (modelConfig.systemPrefix || '') + agent.system + '\n\n' + langInstruction + '\n\n' + dateInstruction;
 
     // Add athlete profile context
     if (profile) {
@@ -123,20 +170,46 @@ ${smartContext}`;
     }
     messages.push({ role: 'user', content: userContent });
 
+    const startTs = Date.now();
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 1200, system: systemWithLang, messages })
+      body: JSON.stringify({
+        model: modelConfig.id,
+        max_tokens: modelConfig.maxTokens,
+        temperature: modelConfig.temperature,
+        system: systemWithLang,
+        messages
+      })
     });
 
     if (!response.ok) {
       const err = await response.text();
-      console.error('Claude API error:', err);
+      console.error(`[CHAT] model=${modelKey} (${modelConfig.id}) status=${response.status} err=`, err);
       return { statusCode: 500, headers, body: JSON.stringify({ error: 'Claude API error' }) };
     }
 
     const data = await response.json();
-    return { statusCode: 200, headers, body: JSON.stringify({ reply: data.content[0].text, agent: agent.name }) };
+    const latencyMs = Date.now() - startTs;
+    const inputTokens = data.usage?.input_tokens ?? null;
+    const outputTokens = data.usage?.output_tokens ?? null;
+
+    // Comparative log line for Haiku vs Sonnet observation (visible in Netlify function logs).
+    console.log(`[CHAT] model=${modelKey} id=${modelConfig.id} agent=${agentId} email=${userEmail || 'anon'} input=${inputTokens} output=${outputTokens} latency=${latencyMs}ms`);
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        reply: data.content[0].text,
+        agent: agent.name,
+        model: modelKey,
+        modelId: modelConfig.id,
+        inputTokens,
+        outputTokens,
+        latencyMs
+      })
+    };
 
   } catch (error) {
     console.error('Function error:', error);
