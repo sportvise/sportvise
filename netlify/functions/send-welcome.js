@@ -173,7 +173,7 @@ function renderEmailHtml(t, firstName, sport) {
 <!DOCTYPE html>
 <html lang="${t.htmlLang}">
 <head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head>
-<body style="margin:0;padding:0;background:#07091a;font-family:'Segoe UI',Arial,sans-serif">
+<body style="margin:0;padding:0;background:#f5f7fb;font-family:'Segoe UI',Arial,sans-serif">
   <div style="max-width:580px;margin:0 auto;padding:32px 20px">
 
     <!-- HEADER -->
@@ -244,7 +244,7 @@ function renderEmailHtml(t, firstName, sport) {
     <div style="text-align:center;color:#475569;font-size:11px;line-height:1.7">
       <div>© 2026 SPORTVISE · ${t.footerCountry} 🇨🇭</div>
       <div>${t.footerFounded} · <a href="https://sportvise.ch" style="color:#f59e0b;text-decoration:none">sportvise.ch</a></div>
-      <div style="margin-top:6px">${t.footerQuestions} <a href="mailto:hello@sportvise.ch" style="color:#f59e0b;text-decoration:none">hello@sportvise.ch</a></div>
+      <div style="margin-top:6px">${t.footerQuestions} <a href="mailto:info@sportvise.ch" style="color:#f59e0b;text-decoration:none">info@sportvise.ch</a></div>
     </div>
   </div>
 </body>
@@ -283,7 +283,7 @@ exports.handler = async (event) => {
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        from: 'SPORTVISE <hello@sportvise.ch>',
+        from: 'SPORTVISE <info@sportvise.ch>',
         to: [email],
         subject: t.subject(firstName),
         html

@@ -216,7 +216,7 @@ async function sendPlanChangeEmail(email, newPlan, previousPlan) {
   const html = `<!DOCTYPE html>
 <html lang="fr">
 <head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head>
-<body style="margin:0;padding:0;background:#07091a;font-family:'Segoe UI',Arial,sans-serif">
+<body style="margin:0;padding:0;background:#f5f7fb;font-family:'Segoe UI',Arial,sans-serif">
   <div style="max-width:580px;margin:0 auto;padding:32px 20px">
     <div style="text-align:center;margin-bottom:32px">
       <div style="font-size:28px;font-weight:900;letter-spacing:3px;background:linear-gradient(135deg,#f59e0b,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:inline-block">SPORTVISE</div>
@@ -250,7 +250,7 @@ async function sendPlanChangeEmail(email, newPlan, previousPlan) {
     </div>
     <div style="text-align:center;color:#475569;font-size:11px;line-height:1.7">
       <div>© 2026 SPORTVISE · Suisse 🇨🇭</div>
-      <div>Des questions ? <a href="mailto:hello@sportvise.ch" style="color:#f59e0b;text-decoration:none">hello@sportvise.ch</a></div>
+      <div>Des questions ? <a href="mailto:info@sportvise.ch" style="color:#f59e0b;text-decoration:none">info@sportvise.ch</a></div>
     </div>
   </div>
 </body>
@@ -258,7 +258,7 @@ async function sendPlanChangeEmail(email, newPlan, previousPlan) {
 
   try {
     const emailBody = JSON.stringify({
-      from: 'SPORTVISE <hello@sportvise.ch>',
+      from: 'SPORTVISE <info@sportvise.ch>',
       to: [email],
       subject: subject,
       html: html
