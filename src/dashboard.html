@@ -725,7 +725,7 @@ const T = {
     nextEvent:'Prochain événement', days:'JOURS', hours:'HEURES', mins:'MIN',
     addEvent:'+ Ajouter un événement', recapEvent:'Comment s\'est passé "{title}" ?',
     addRecapPrompt:'Ajoutez votre récap pour que vos agents s\'améliorent', doRecap:'Faire le récap →',
-    weeklyLoad:'Charge cette semaine', events:'événements', noEvents:'Aucun événement',
+    weeklyLoad:'Charge cette semaine', events:'événements', eventSingular:'événement', noEvents:'Aucun événement',
     // Event types & intensity
     eventTypeMatch:'Match', eventTypeCompetition:'Compétition', eventTypeTraining:'Entraînement', eventTypeOther:'Autre',
     intensityLight:'Légère', intensityMedium:'Moyenne', intensityHigh:'Intense',
@@ -1061,7 +1061,7 @@ const T = {
     nextEvent:'Nächstes Ereignis', days:'TAGE', hours:'STUNDEN', mins:'MIN',
     addEvent:'+ Ereignis hinzufügen', recapEvent:'Wie ist es bei "{title}" gelaufen?',
     addRecapPrompt:'Fügen Sie Ihre Zusammenfassung hinzu, damit sich Ihre Agenten verbessern', doRecap:'Zusammenfassung erstellen →',
-    weeklyLoad:'Auslastung dieser Woche', events:'Ereignisse', noEvents:'Keine Ereignisse',
+    weeklyLoad:'Auslastung dieser Woche', events:'Ereignisse', eventSingular:'Ereignis', noEvents:'Keine Ereignisse',
     // Event types & intensity
     eventTypeMatch:'Spiel', eventTypeCompetition:'Wettkampf', eventTypeTraining:'Training', eventTypeOther:'Sonstiges',
     intensityLight:'Leicht', intensityMedium:'Mittel', intensityHigh:'Intensiv',
@@ -1397,7 +1397,7 @@ const T = {
     nextEvent:'Next event', days:'DAYS', hours:'HOURS', mins:'MIN',
     addEvent:'+ Add event', recapEvent:'How did "{title}" go?',
     addRecapPrompt:'Add your recap so your agents can improve', doRecap:'Create recap →',
-    weeklyLoad:'This week\'s load', events:'events', noEvents:'No events',
+    weeklyLoad:'This week\'s load', events:'events', eventSingular:'event', noEvents:'No events',
     // Event types & intensity
     eventTypeMatch:'Match', eventTypeCompetition:'Competition', eventTypeTraining:'Training', eventTypeOther:'Other',
     intensityLight:'Light', intensityMedium:'Medium', intensityHigh:'Intense',
@@ -1733,7 +1733,7 @@ const T = {
     nextEvent:'Prossimo evento', days:'GIORNI', hours:'ORE', mins:'MIN',
     addEvent:'+ Aggiungi evento', recapEvent:'Come è andato "{title}"?',
     addRecapPrompt:'Aggiungi il tuo recap in modo che i tuoi agenti possano migliorare', doRecap:'Crea recap →',
-    weeklyLoad:'Carico questa settimana', events:'eventi', noEvents:'Nessun evento',
+    weeklyLoad:'Carico questa settimana', events:'eventi', eventSingular:'evento', noEvents:'Nessun evento',
     // Event types & intensity
     eventTypeMatch:'Partita', eventTypeCompetition:'Competizione', eventTypeTraining:'Allenamento', eventTypeOther:'Altro',
     intensityLight:'Leggera', intensityMedium:'Media', intensityHigh:'Intensa',
@@ -2918,7 +2918,7 @@ async function init() {
 // It cleans caches, reloads ONCE, and uses a retry counter to prevent infinite loops.
 // ⚠️  IMPORTANT : cette constante DOIT correspondre à src/version.json (.version).
 //     Si tu bumps version.json, bump APP_V au même nombre — sinon boucle de reload.
-const APP_V = '50';
+const APP_V = '51';
 async function checkAppVersion() {
   try {
     const res = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
@@ -5533,6 +5533,22 @@ const INTENSITY = {
   intense: { label: 'Intense', color: '#ef4444', icon: '🔴' }
 };
 
+// v51 — i18n helpers for EVENT_TYPES / INTENSITY labels (label fields above kept as FR fallback).
+function eventTypeLabel(type) {
+  const t = T[currentLang] || T.fr;
+  const key = ({ match: 'eventTypeMatch', competition: 'eventTypeCompetition', entrainement: 'eventTypeTraining', autre: 'eventTypeOther' })[type] || 'eventTypeOther';
+  return t[key] || EVENT_TYPES[type]?.label || EVENT_TYPES.autre.label;
+}
+function intensityLabel(intens) {
+  const t = T[currentLang] || T.fr;
+  const key = ({ legere: 'intensityLight', moyenne: 'intensityMedium', intense: 'intensityHigh' })[intens] || 'intensityMedium';
+  return t[key] || INTENSITY[intens]?.label || INTENSITY.moyenne.label;
+}
+function eventCountLabel(n) {
+  const t = T[currentLang] || T.fr;
+  return `${n} ${n === 1 ? (t.eventSingular || 'événement') : (t.events || 'événements')}`;
+}
+
 async function loadCalendarEvents() {
   const { data } = await sb.from('calendar_events')
     .select('*')
@@ -5647,10 +5663,10 @@ async function renderCalendar() {
 
       <!-- LEGEND -->
       <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:8px">
-        ${Object.entries(EVENT_TYPES).map(([k,v]) => `<div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted)"><div style="width:7px;height:7px;border-radius:50%;background:${v.color}"></div>${v.emoji} ${v.label}</div>`).join('')}
+        ${Object.entries(EVENT_TYPES).map(([k,v]) => `<div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted)"><div style="width:7px;height:7px;border-radius:50%;background:${v.color}"></div>${v.emoji} ${eventTypeLabel(k)}</div>`).join('')}
       </div>
       <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
-        ${Object.entries(INTENSITY).map(([k,v]) => `<div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted)">${v.icon} ${v.label}</div>`).join('')}
+        ${Object.entries(INTENSITY).map(([k,v]) => `<div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted)">${v.icon} ${intensityLabel(k)}</div>`).join('')}
       </div>
     </div>
   `;
@@ -5784,7 +5800,7 @@ async function showDayDetail(dateStr) {
         <div>
           <div style="font-size:28px;margin-bottom:8px">📅</div>
           <div class="modal-title" style="text-transform:capitalize">${dayLabel}</div>
-          <div class="modal-sub">${dayEvents.length} événement${dayEvents.length > 1 ? 's' : ''}</div>
+          <div class="modal-sub">${eventCountLabel(dayEvents.length)}</div>
         </div>
         ${weather ? `
           <div style="text-align:center;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 14px;flex-shrink:0">
@@ -5808,9 +5824,9 @@ async function showDayDetail(dateStr) {
                   <div>
                     <div style="font-size:14px;font-weight:700;color:var(--text)">${e.title}</div>
                     <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
-                      <span style="font-size:11px;color:${t.color};font-weight:600">${t.label}</span>
+                      <span style="font-size:11px;color:${t.color};font-weight:600">${eventTypeLabel(e.event_type)}</span>
                       <span style="font-size:10px;color:var(--muted)">·</span>
-                      <span style="font-size:10px">${intens?.icon||'🟡'} ${intens?.label||'Moyenne'}</span>
+                      <span style="font-size:10px">${intens?.icon||'🟡'} ${intensityLabel(e.intensity||'moyenne')}</span>
                     </div>
                   </div>
                 </div>
