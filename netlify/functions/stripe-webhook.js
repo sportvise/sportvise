@@ -189,72 +189,174 @@ async function updateUserPlan(email, plan) {
   return true;
 }
 
-// ── SEND PLAN CHANGE EMAIL ──────────────────────────
+// ── SEND PLAN CHANGE EMAIL (i18n FR/DE/EN/IT, v49) ──
+//
+// Pattern: same architecture as send-welcome.js (v46). EMAIL_TEMPLATES per
+// language holds all strings, renderPlanChangeHtml() is the single template
+// renderer. Lang is resolved from session.client_reference_id ('lang_de',
+// 'lang_en', etc.) on checkout.session.completed; fallback to 'fr' otherwise
+// (e.g. cancellation events from the Stripe billing portal where we have no
+// client_reference_id channel — acceptable since the user is leaving the
+// platform anyway).
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
-async function sendPlanChangeEmail(email, newPlan, previousPlan) {
-  if (!RESEND_API_KEY) {
-    console.log('⚠️ RESEND_API_KEY not set, skipping email');
-    return;
+// Plan metadata is brand-level / language-agnostic.
+const PLAN_NAMES  = { free: 'Free', plus: 'Plus', pro: 'Pro' };
+const PLAN_COLORS = { free: '#10b981', plus: '#06b6d4', pro: '#f59e0b' };
+
+// Per-language templates. Registre formel : DE = Sie/Ihr, IT = Lei/Suo,
+// EN = neutre, FR inchangé (cohérent avec send-welcome.js).
+const EMAIL_TEMPLATES = {
+  fr: {
+    htmlLang: 'fr',
+    tagline: 'Management Sportif IA · Suisse 🇨🇭',
+    subjectUpgrade: (planName) => `SPORTVISE — Bienvenue sur le plan ${planName} ! 🎉`,
+    subjectDowngrade: 'SPORTVISE — Votre abonnement a été résilié',
+    titleUpgrade: (planName) => `Plan ${planName} activé !`,
+    titleDowngrade: 'Abonnement résilié',
+    introUpgrade: 'Votre plan a été mis à jour avec succès !',
+    downgradeBody1: `Votre abonnement a été résilié. Vous êtes désormais sur le plan <strong style="color:#10b981">Free</strong>. Vous gardez l'accès à 3 agents IA (Lucas, Emma, Clara) avec 10 messages par jour.`,
+    downgradeBody2: 'Vous pouvez passer à un plan supérieur à tout moment depuis votre dashboard.',
+    planLabel: (planName, price) => `Plan ${planName} — ${price}`,
+    planSubLabel: (agents) => `${agents} · Messages illimités`,
+    planPrices: { free: 'CHF 0', plus: 'CHF 12/mois', pro: 'CHF 29/mois' },
+    planAgents: { free: '3 agents IA', plus: '6 agents performance', pro: '11 agents IA (complet)' },
+    ctaButton: 'Accéder à mon dashboard →',
+    footerCountry: 'Suisse',
+    footerQuestions: 'Des questions ?'
+  },
+
+  de: {
+    htmlLang: 'de',
+    tagline: 'KI-Sportmanagement · Schweiz 🇨🇭',
+    subjectUpgrade: (planName) => `SPORTVISE — Willkommen im ${planName}-Plan! 🎉`,
+    subjectDowngrade: 'SPORTVISE — Ihr Abonnement wurde gekündigt',
+    titleUpgrade: (planName) => `${planName}-Plan aktiviert!`,
+    titleDowngrade: 'Abonnement gekündigt',
+    introUpgrade: 'Ihr Plan wurde erfolgreich aktualisiert!',
+    downgradeBody1: `Ihr Abonnement wurde gekündigt. Sie befinden sich nun im <strong style="color:#10b981">Free</strong>-Plan. Sie behalten Zugriff auf 3 KI-Agenten (Lucas, Emma, Clara) mit 10 Nachrichten pro Tag.`,
+    downgradeBody2: 'Sie können jederzeit über Ihr Dashboard zu einem höheren Plan wechseln.',
+    planLabel: (planName, price) => `${planName}-Plan — ${price}`,
+    planSubLabel: (agents) => `${agents} · Unbegrenzte Nachrichten`,
+    planPrices: { free: 'CHF 0', plus: 'CHF 12/Monat', pro: 'CHF 29/Monat' },
+    planAgents: { free: '3 KI-Agenten', plus: '6 Performance-Agenten', pro: '11 KI-Agenten (komplett)' },
+    ctaButton: 'Zum Dashboard →',
+    footerCountry: 'Schweiz',
+    footerQuestions: 'Fragen?'
+  },
+
+  en: {
+    htmlLang: 'en',
+    tagline: 'AI Sports Management · Switzerland 🇨🇭',
+    subjectUpgrade: (planName) => `SPORTVISE — Welcome to the ${planName} plan! 🎉`,
+    subjectDowngrade: 'SPORTVISE — Your subscription has been cancelled',
+    titleUpgrade: (planName) => `${planName} plan activated!`,
+    titleDowngrade: 'Subscription cancelled',
+    introUpgrade: 'Your plan has been updated successfully!',
+    downgradeBody1: `Your subscription has been cancelled. You are now on the <strong style="color:#10b981">Free</strong> plan. You keep access to 3 AI agents (Lucas, Emma, Clara) with 10 messages per day.`,
+    downgradeBody2: 'You can upgrade to a higher plan anytime from your dashboard.',
+    planLabel: (planName, price) => `${planName} plan — ${price}`,
+    planSubLabel: (agents) => `${agents} · Unlimited messages`,
+    planPrices: { free: 'CHF 0', plus: 'CHF 12/month', pro: 'CHF 29/month' },
+    planAgents: { free: '3 AI agents', plus: '6 performance agents', pro: '11 AI agents (complete)' },
+    ctaButton: 'Go to my dashboard →',
+    footerCountry: 'Switzerland',
+    footerQuestions: 'Questions?'
+  },
+
+  it: {
+    htmlLang: 'it',
+    tagline: 'Gestione Sportiva IA · Svizzera 🇨🇭',
+    subjectUpgrade: (planName) => `SPORTVISE — Benvenuto nel piano ${planName}! 🎉`,
+    subjectDowngrade: 'SPORTVISE — Il Suo abbonamento è stato annullato',
+    titleUpgrade: (planName) => `Piano ${planName} attivato!`,
+    titleDowngrade: 'Abbonamento annullato',
+    introUpgrade: 'Il Suo piano è stato aggiornato con successo!',
+    downgradeBody1: `Il Suo abbonamento è stato annullato. Si trova ora nel piano <strong style="color:#10b981">Free</strong>. Mantiene l'accesso a 3 agenti IA (Lucas, Emma, Clara) con 10 messaggi al giorno.`,
+    downgradeBody2: 'Può passare a un piano superiore in qualsiasi momento dalla Sua dashboard.',
+    planLabel: (planName, price) => `Piano ${planName} — ${price}`,
+    planSubLabel: (agents) => `${agents} · Messaggi illimitati`,
+    planPrices: { free: 'CHF 0', plus: 'CHF 12/mese', pro: 'CHF 29/mese' },
+    planAgents: { free: '3 agenti IA', plus: '6 agenti performance', pro: '11 agenti IA (completo)' },
+    ctaButton: 'Vai alla mia dashboard →',
+    footerCountry: 'Svizzera',
+    footerQuestions: 'Domande?'
   }
+};
 
-  const planNames = { free: 'Free', plus: 'Plus', pro: 'Pro' };
-  const planColors = { free: '#10b981', plus: '#06b6d4', pro: '#f59e0b' };
-  const planPrices = { free: 'CHF 0', plus: 'CHF 12/mois', pro: 'CHF 29/mois' };
-  const planAgents = { free: '3 agents IA', plus: '6 agents performance', pro: '11 agents IA (complet)' };
+// Parse the lang from session.client_reference_id (we send 'lang_de' from
+// dashboard.html upgrade buttons). Tolerant: accepts 'lang_de', 'lang_de_…'
+// or null/undefined. Returns one of fr/de/en/it, fallback 'fr'.
+function parseLang(clientReferenceId) {
+  if (!clientReferenceId || typeof clientReferenceId !== 'string') return 'fr';
+  const match = clientReferenceId.match(/^lang_(fr|de|en|it)(?:_|$)/i);
+  return match ? match[1].toLowerCase() : 'fr';
+}
 
-  const name = planNames[newPlan] || newPlan;
-  const color = planColors[newPlan] || '#f59e0b';
-  const isUpgrade = (newPlan === 'pro' || (newPlan === 'plus' && previousPlan === 'free'));
-  const isDowngrade = (newPlan === 'free');
+// Single HTML template — only strings change per language, structure stays.
+function renderPlanChangeHtml(t, newPlan, isDowngrade) {
+  const planName = PLAN_NAMES[newPlan] || newPlan;
+  const color = PLAN_COLORS[newPlan] || '#f59e0b';
+  const price = t.planPrices[newPlan] || '';
+  const agents = t.planAgents[newPlan] || '';
+  const ctaTextColor = newPlan === 'pro' ? '#07091a' : '#fff';
 
-  const subject = isDowngrade
-    ? `SPORTVISE — Votre abonnement a été résilié`
-    : `SPORTVISE — Bienvenue sur le plan ${name} ! 🎉`;
-
-  const html = `<!DOCTYPE html>
-<html lang="fr">
+  return `<!DOCTYPE html>
+<html lang="${t.htmlLang}">
 <head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head>
 <body style="margin:0;padding:0;background:#f5f7fb;font-family:'Segoe UI',Arial,sans-serif">
   <div style="max-width:580px;margin:0 auto;padding:32px 20px">
     <div style="text-align:center;margin-bottom:32px">
       <div style="font-size:28px;font-weight:900;letter-spacing:3px;background:linear-gradient(135deg,#f59e0b,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:inline-block">SPORTVISE</div>
-      <div style="color:#64748b;font-size:12px;margin-top:4px">Management Sportif IA · Suisse 🇨🇭</div>
+      <div style="color:#64748b;font-size:12px;margin-top:4px">${t.tagline}</div>
     </div>
     <div style="background:#0d1127;border:1px solid #1e2d47;border-radius:16px;padding:36px;margin-bottom:24px">
       <div style="font-size:32px;margin-bottom:16px">${isDowngrade ? '👋' : '🎉'}</div>
       <h1 style="color:#f1f5f9;font-size:22px;font-weight:800;margin:0 0 12px">
-        ${isDowngrade ? 'Abonnement résilié' : 'Plan ' + name + ' activé !'}
+        ${isDowngrade ? t.titleDowngrade : t.titleUpgrade(planName)}
       </h1>
       ${isDowngrade ? `
       <p style="color:#94a3b8;font-size:14px;line-height:1.6;margin:0 0 20px">
-        Votre abonnement a été résilié. Vous êtes désormais sur le plan <strong style="color:#10b981">Free</strong>.
-        Vous gardez l'accès à 3 agents IA (Lucas, Emma, Clara) avec 10 messages par jour.
+        ${t.downgradeBody1}
       </p>
       <p style="color:#94a3b8;font-size:14px;line-height:1.6;margin:0 0 20px">
-        Vous pouvez passer à un plan supérieur à tout moment depuis votre dashboard.
+        ${t.downgradeBody2}
       </p>` : `
       <p style="color:#94a3b8;font-size:14px;line-height:1.6;margin:0 0 20px">
-        Votre plan a été mis à jour avec succès !
+        ${t.introUpgrade}
       </p>
       <div style="background:${color}15;border:1px solid ${color}30;border-radius:12px;padding:18px;margin-bottom:20px">
-        <div style="color:${color};font-size:16px;font-weight:800;margin-bottom:6px">Plan ${name} — ${planPrices[newPlan]}</div>
-        <div style="color:#94a3b8;font-size:13px">${planAgents[newPlan]} · Messages illimités</div>
+        <div style="color:${color};font-size:16px;font-weight:800;margin-bottom:6px">${t.planLabel(planName, price)}</div>
+        <div style="color:#94a3b8;font-size:13px">${t.planSubLabel(agents)}</div>
       </div>`}
       <div style="text-align:center;margin-top:24px">
-        <a href="https://sportvise.ch/app/dashboard.html" style="display:inline-block;padding:14px 36px;background:linear-gradient(135deg,${color},${color}cc);color:${newPlan === 'pro' ? '#07091a' : '#fff'};font-size:15px;font-weight:800;text-decoration:none;border-radius:10px">
-          Accéder à mon dashboard →
+        <a href="https://sportvise.ch/app/dashboard.html" style="display:inline-block;padding:14px 36px;background:linear-gradient(135deg,${color},${color}cc);color:${ctaTextColor};font-size:15px;font-weight:800;text-decoration:none;border-radius:10px">
+          ${t.ctaButton}
         </a>
       </div>
     </div>
     <div style="text-align:center;color:#475569;font-size:11px;line-height:1.7">
-      <div>© 2026 SPORTVISE · Suisse 🇨🇭</div>
-      <div>Des questions ? <a href="mailto:info@sportvise.ch" style="color:#f59e0b;text-decoration:none">info@sportvise.ch</a></div>
+      <div>© 2026 SPORTVISE · ${t.footerCountry} 🇨🇭</div>
+      <div>${t.footerQuestions} <a href="mailto:info@sportvise.ch" style="color:#f59e0b;text-decoration:none">info@sportvise.ch</a></div>
     </div>
   </div>
 </body>
 </html>`;
+}
+
+async function sendPlanChangeEmail(email, newPlan, previousPlan, lang) {
+  if (!RESEND_API_KEY) {
+    console.log('⚠️ RESEND_API_KEY not set, skipping email');
+    return;
+  }
+
+  // Pick template — fallback to FR for unknown / missing lang
+  const t = EMAIL_TEMPLATES[lang] || EMAIL_TEMPLATES.fr;
+  const planName = PLAN_NAMES[newPlan] || newPlan;
+  const isDowngrade = (newPlan === 'free');
+  const subject = isDowngrade ? t.subjectDowngrade : t.subjectUpgrade(planName);
+  const html = renderPlanChangeHtml(t, newPlan, isDowngrade);
 
   try {
     const emailBody = JSON.stringify({
@@ -276,9 +378,9 @@ async function sendPlanChangeEmail(email, newPlan, previousPlan) {
     }, emailBody);
 
     if (res.status < 300) {
-      console.log(`📧 Plan change email sent to ${email} (→ ${newPlan})`);
+      console.log(`[STRIPE-WEBHOOK] sent lang=${t.htmlLang} to=${email} plan=${newPlan} (was=${previousPlan})`);
     } else {
-      console.error(`⚠️ Email send failed: ${res.status}`, res.data);
+      console.error(`⚠️ Email send failed: ${res.status} lang=${t.htmlLang}`, res.data);
     }
   } catch (e) {
     console.error('⚠️ Email send error:', e.message);
@@ -379,9 +481,12 @@ exports.handler = async (event) => {
           break;
         }
 
+        // Lang is passed via Payment Link URL param ?client_reference_id=lang_xx
+        // Set in dashboard.html upgrade buttons (v49). Fallback to 'fr'.
+        const lang = parseLang(session.client_reference_id);
         const plan = await getPlanFromSession(session);
         await updateUserPlan(customerEmail, plan);
-        await sendPlanChangeEmail(customerEmail, plan, 'free');
+        await sendPlanChangeEmail(customerEmail, plan, 'free', lang);
 
         // Confirm referral if this user was referred
         const referrerId = await confirmReferral(customerEmail);
@@ -389,7 +494,7 @@ exports.handler = async (event) => {
           console.log(`🎁 Referral bonus: referrer ${referrerId} earned 1 month for referring ${customerEmail}`);
         }
 
-        console.log(`✅ Checkout completed: ${customerEmail} → ${plan}`);
+        console.log(`✅ Checkout completed: ${customerEmail} → ${plan} (lang=${lang})`);
         break;
       }
 
@@ -411,12 +516,13 @@ exports.handler = async (event) => {
           if (priceAmount === 1200) plan = 'plus';
           else if (priceAmount === 2900) plan = 'pro';
 
+          // No client_reference_id channel for portal-driven updates → FR fallback.
           await updateUserPlan(email, plan);
-          await sendPlanChangeEmail(email, plan, 'unknown');
+          await sendPlanChangeEmail(email, plan, 'unknown', 'fr');
           console.log(`✅ Subscription updated: ${email} → ${plan}`);
         } else if (subscription.status === 'canceled' || subscription.status === 'unpaid') {
           await updateUserPlan(email, 'free');
-          await sendPlanChangeEmail(email, 'free', 'unknown');
+          await sendPlanChangeEmail(email, 'free', 'unknown', 'fr');
           console.log(`✅ Subscription ended: ${email} → free`);
         }
         break;
@@ -431,7 +537,7 @@ exports.handler = async (event) => {
 
         if (email) {
           await updateUserPlan(email, 'free');
-          await sendPlanChangeEmail(email, 'free', 'unknown');
+          await sendPlanChangeEmail(email, 'free', 'unknown', 'fr');
           console.log(`✅ Subscription deleted: ${email} → free`);
         }
         break;
