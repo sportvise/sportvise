@@ -968,6 +968,36 @@ const T = {
     recapAIReport:'📊 Rapport IA détaillé',
     streakBadge3d:'3 jours', streakBadge1w:'1 semaine', streakBadge2w:'2 semaines', streakBadge1m:'1 mois',
     streakBadgeChat:'Bavard', streakBadgePro:'Pro du chat', streakBadgeExplorer:'Explorateur', streakBadgeComplete:'Complet',
+    // v50 — Récap post-événement (modal showRecapModal + banner pending + mini-résumé carte)
+    recapModalTitle:'Récap : {title}',
+    recapModalHint:'Ces données aident vos agents à mieux vous conseiller.',
+    recapResultLabel:'Résultat',
+    recapResultPlaceholder:'Ex: Victoire 3-1, 2ème place, PB 10.85s',
+    recapPerfLabel:'Performance /10',
+    recapRpeLabel:'Effort perçu (RPE)',
+    recapRpeHint:'1 = très facile, 10 = max',
+    recapPhysLabel:'État physique',
+    recapPhysInjured:'🤕 Blessé', recapPhysTired:'😓 Fatigué', recapPhysNormal:'👍 Normal', recapPhysTop:'💪 Top',
+    recapMoodLabel:"Humeur après l'événement",
+    recapSleepLabel:'Sommeil la veille',
+    recapSleepBad:'😫 Mauvais', recapSleepMid:'😐 Moyen', recapSleepGood:'🙂 Bon', recapSleepExcellent:'😴 Excellent',
+    recapNutriLabel:"Nutrition avant l'événement",
+    recapNutriBad:'🍔 Pas top', recapNutriNormal:'👍 Normal', recapNutriGood:'🥗 Bien mangé',
+    recapInjuryLabel:'Douleur ou blessure ?',
+    recapInjurySerious:'🚨 Sérieuse', recapInjuryLight:'⚠️ Légère', recapInjuryNone:'✅ Aucune',
+    recapStrengthsLabel:'Ce qui a bien marché',
+    recapStrengthsPlaceholder:'Ex: bon jeu de passes, endurance, concentration',
+    recapWeaknessesLabel:'Ce qui est à améliorer',
+    recapWeaknessesPlaceholder:'Ex: tirs, défense, gestion du stress',
+    recapNotesLabel:'Notes libres (optionnel)',
+    recapNotesPlaceholder:'Autre chose à noter...',
+    recapPendingCount:'{n} récap(s) en attente',
+    recapBtnSkip:'Passer',
+    recapBtnSave:'Enregistrer →',
+    recapToastSaved:'✅ Récap enregistré ! Vos agents en tiendront compte.',
+    recapBadge:'RÉCAP',
+    recapMiniPerf:'Performance',
+    recapEdit:'✏️ Modifier',
     agentTitles:{
       marketing:'Marketing & Personal Branding',
       finance:'Conseil Financier',
@@ -1274,6 +1304,36 @@ const T = {
     recapAIReport:'📊 Detaillierter KI-Bericht',
     streakBadge3d:'3 Tage', streakBadge1w:'1 Woche', streakBadge2w:'2 Wochen', streakBadge1m:'1 Monat',
     streakBadgeChat:'Vielredner', streakBadgePro:'Chat-Profi', streakBadgeExplorer:'Entdecker', streakBadgeComplete:'Komplett',
+    // v50 — Récap post-événement (modal showRecapModal + banner pending + mini-résumé carte)
+    recapModalTitle:'Bilanz: {title}',
+    recapModalHint:'Diese Daten helfen Ihren Agenten, Sie besser zu beraten.',
+    recapResultLabel:'Ergebnis',
+    recapResultPlaceholder:'Z. B. Sieg 3-1, 2. Platz, PB 10.85s',
+    recapPerfLabel:'Leistung /10',
+    recapRpeLabel:'Empfundene Anstrengung (RPE)',
+    recapRpeHint:'1 = sehr leicht, 10 = max',
+    recapPhysLabel:'Körperlicher Zustand',
+    recapPhysInjured:'🤕 Verletzt', recapPhysTired:'😓 Müde', recapPhysNormal:'👍 Normal', recapPhysTop:'💪 Top',
+    recapMoodLabel:'Stimmung nach der Aktivität',
+    recapSleepLabel:'Schlaf am Vorabend',
+    recapSleepBad:'😫 Schlecht', recapSleepMid:'😐 Mittel', recapSleepGood:'🙂 Gut', recapSleepExcellent:'😴 Ausgezeichnet',
+    recapNutriLabel:'Ernährung vor der Aktivität',
+    recapNutriBad:'🍔 Nicht top', recapNutriNormal:'👍 Normal', recapNutriGood:'🥗 Gut gegessen',
+    recapInjuryLabel:'Schmerzen oder Verletzung?',
+    recapInjurySerious:'🚨 Schwer', recapInjuryLight:'⚠️ Leicht', recapInjuryNone:'✅ Keine',
+    recapStrengthsLabel:'Was gut funktioniert hat',
+    recapStrengthsPlaceholder:'Z. B. gutes Passspiel, Ausdauer, Konzentration',
+    recapWeaknessesLabel:'Was zu verbessern ist',
+    recapWeaknessesPlaceholder:'Z. B. Schüsse, Verteidigung, Stressbewältigung',
+    recapNotesLabel:'Freie Notizen (optional)',
+    recapNotesPlaceholder:'Weitere Notizen ...',
+    recapPendingCount:'{n} Bilanz(en) ausstehend',
+    recapBtnSkip:'Überspringen',
+    recapBtnSave:'Speichern →',
+    recapToastSaved:'✅ Bilanz gespeichert! Ihre Agenten werden es berücksichtigen.',
+    recapBadge:'BILANZ',
+    recapMiniPerf:'Leistung',
+    recapEdit:'✏️ Bearbeiten',
     agentTitles:{
       marketing:'Marketing & Personal Branding',
       finance:'Finanzberatung',
@@ -1580,6 +1640,36 @@ const T = {
     recapAIReport:'📊 Detailed AI report',
     streakBadge3d:'3 days', streakBadge1w:'1 week', streakBadge2w:'2 weeks', streakBadge1m:'1 month',
     streakBadgeChat:'Talkative', streakBadgePro:'Chat pro', streakBadgeExplorer:'Explorer', streakBadgeComplete:'Complete',
+    // v50 — Récap post-événement (modal showRecapModal + banner pending + mini-résumé carte)
+    recapModalTitle:'Recap: {title}',
+    recapModalHint:'This data helps your agents advise you better.',
+    recapResultLabel:'Result',
+    recapResultPlaceholder:'E.g. Win 3-1, 2nd place, PB 10.85s',
+    recapPerfLabel:'Performance /10',
+    recapRpeLabel:'Perceived effort (RPE)',
+    recapRpeHint:'1 = very easy, 10 = max',
+    recapPhysLabel:'Physical state',
+    recapPhysInjured:'🤕 Injured', recapPhysTired:'😓 Tired', recapPhysNormal:'👍 Normal', recapPhysTop:'💪 Top',
+    recapMoodLabel:'Mood after the event',
+    recapSleepLabel:'Sleep the night before',
+    recapSleepBad:'😫 Bad', recapSleepMid:'😐 Average', recapSleepGood:'🙂 Good', recapSleepExcellent:'😴 Excellent',
+    recapNutriLabel:'Nutrition before the event',
+    recapNutriBad:'🍔 Not great', recapNutriNormal:'👍 Normal', recapNutriGood:'🥗 Ate well',
+    recapInjuryLabel:'Pain or injury?',
+    recapInjurySerious:'🚨 Serious', recapInjuryLight:'⚠️ Light', recapInjuryNone:'✅ None',
+    recapStrengthsLabel:'What worked well',
+    recapStrengthsPlaceholder:'E.g. good passing, stamina, focus',
+    recapWeaknessesLabel:'What to improve',
+    recapWeaknessesPlaceholder:'E.g. shooting, defense, stress management',
+    recapNotesLabel:'Free notes (optional)',
+    recapNotesPlaceholder:'Anything else to note...',
+    recapPendingCount:'{n} recap(s) pending',
+    recapBtnSkip:'Skip',
+    recapBtnSave:'Save →',
+    recapToastSaved:'✅ Recap saved! Your agents will take it into account.',
+    recapBadge:'RECAP',
+    recapMiniPerf:'Performance',
+    recapEdit:'✏️ Edit',
     agentTitles:{
       marketing:'Marketing & Personal Branding',
       finance:'Financial Advice',
@@ -1886,6 +1976,36 @@ const T = {
     recapAIReport:'📊 Report IA dettagliato',
     streakBadge3d:'3 giorni', streakBadge1w:'1 settimana', streakBadge2w:'2 settimane', streakBadge1m:'1 mese',
     streakBadgeChat:'Loquace', streakBadgePro:'Pro della chat', streakBadgeExplorer:'Esploratore', streakBadgeComplete:'Completo',
+    // v50 — Récap post-événement (modal showRecapModal + banner pending + mini-résumé carte)
+    recapModalTitle:'Riepilogo: {title}',
+    recapModalHint:'Questi dati aiutano i Suoi agenti a consigliarLa meglio.',
+    recapResultLabel:'Risultato',
+    recapResultPlaceholder:'Es: Vittoria 3-1, 2° posto, PB 10.85s',
+    recapPerfLabel:'Performance /10',
+    recapRpeLabel:'Sforzo percepito (RPE)',
+    recapRpeHint:'1 = molto facile, 10 = max',
+    recapPhysLabel:'Stato fisico',
+    recapPhysInjured:'🤕 Infortunato', recapPhysTired:'😓 Stanco', recapPhysNormal:'👍 Normale', recapPhysTop:'💪 Top',
+    recapMoodLabel:"Umore dopo l'evento",
+    recapSleepLabel:'Sonno la sera prima',
+    recapSleepBad:'😫 Pessimo', recapSleepMid:'😐 Medio', recapSleepGood:'🙂 Buono', recapSleepExcellent:'😴 Eccellente',
+    recapNutriLabel:"Nutrizione prima dell'evento",
+    recapNutriBad:'🍔 Non ottimale', recapNutriNormal:'👍 Normale', recapNutriGood:'🥗 Mangiato bene',
+    recapInjuryLabel:'Dolore o infortunio?',
+    recapInjurySerious:'🚨 Seria', recapInjuryLight:'⚠️ Leggera', recapInjuryNone:'✅ Nessuna',
+    recapStrengthsLabel:'Cosa ha funzionato',
+    recapStrengthsPlaceholder:'Es: buon gioco di passaggi, resistenza, concentrazione',
+    recapWeaknessesLabel:'Cosa migliorare',
+    recapWeaknessesPlaceholder:'Es: tiri, difesa, gestione dello stress',
+    recapNotesLabel:'Note libere (opzionale)',
+    recapNotesPlaceholder:'Altro da annotare...',
+    recapPendingCount:'{n} riepilogo/i in attesa',
+    recapBtnSkip:'Salta',
+    recapBtnSave:'Salva →',
+    recapToastSaved:'✅ Riepilogo salvato! I Suoi agenti ne terranno conto.',
+    recapBadge:'RIEPILOGO',
+    recapMiniPerf:'Performance',
+    recapEdit:'✏️ Modifica',
     agentTitles:{
       marketing:'Marketing & Personal Branding',
       finance:'Consulenza Finanziaria',
@@ -2798,7 +2918,7 @@ async function init() {
 // It cleans caches, reloads ONCE, and uses a retry counter to prevent infinite loops.
 // ⚠️  IMPORTANT : cette constante DOIT correspondre à src/version.json (.version).
 //     Si tu bumps version.json, bump APP_V au même nombre — sinon boucle de reload.
-const APP_V = '49';
+const APP_V = '50';
 async function checkAppVersion() {
   try {
     const res = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
@@ -5472,19 +5592,19 @@ async function renderCalendar() {
 
       <!-- RECAP POST-EVENT -->
       ${needsRecap.map(e => {
-        const t = EVENT_TYPES[e.event_type] || EVENT_TYPES.autre;
+        const et = EVENT_TYPES[e.event_type] || EVENT_TYPES.autre;
         return `
         <div style="background:linear-gradient(135deg,#6366f115,#6366f105);border:1px solid #6366f130;border-radius:14px;padding:16px;margin-bottom:16px">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-            <div style="font-size:22px">${t.emoji}</div>
+            <div style="font-size:22px">${et.emoji}</div>
             <div>
-              <div style="font-size:13px;font-weight:700;color:var(--text)">Comment s'est passé "${e.title}" ?</div>
-              <div style="font-size:11px;color:var(--muted)">Ajoutez votre récap pour que vos agents s'améliorent</div>
+              <div style="font-size:13px;font-weight:700;color:var(--text)">${(t.recapEvent || 'Comment s\'est passé "{title}" ?').replace('{title}', e.title)}</div>
+              <div style="font-size:11px;color:var(--muted)">${t.addRecapPrompt || "Ajoutez votre récap pour que vos agents s'améliorent"}</div>
             </div>
           </div>
           <button onclick="showRecapModal('${e.id}','${e.title.replace(/'/g,"\\'")}','${e.event_type}','${e.event_date}')"
             style="width:100%;padding:10px;border-radius:8px;border:none;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">
-            Faire le récap →
+            ${t.doRecap || 'Faire le récap →'}
           </button>
         </div>`;
       }).join('')}
@@ -5644,9 +5764,11 @@ async function showDayDetail(dateStr) {
   const existing = document.getElementById('eventModal');
   if (existing) existing.remove();
 
+  const tLang = T[currentLang] || T.fr;
+  const localeCode = ({fr:'fr-CH',de:'de-CH',en:'en-GB',it:'it-CH'})[currentLang] || 'fr-CH';
   const dayEvents = calendarEvents.filter(e => e.event_date === dateStr);
   const d = new Date(dateStr + 'T00:00:00');
-  const dayLabel = d.toLocaleDateString('fr-CH', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const dayLabel = d.toLocaleDateString(localeCode, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
   // Fetch weather for this day
   // v42 — canton is now a key (e.g. 'VD'); we resolve it to the FR label which is geocodable.
@@ -5702,9 +5824,12 @@ async function showDayDetail(dateStr) {
               ${e.notes ? `<div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-bottom:4px">📝 ${e.notes}</div>` : ''}
               ${e.recap_done ? `
                 <div style="margin-top:8px;padding:8px 10px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
-                  <div style="font-size:10px;font-weight:700;color:var(--gold);margin-bottom:4px">RÉCAP</div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+                    <div style="font-size:10px;font-weight:700;color:var(--gold)">${tLang.recapBadge || 'RÉCAP'}</div>
+                    <button onclick="editRecap('${e.id}')" style="background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;padding:2px 6px;border-radius:4px;font-family:'Inter',sans-serif" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'">${tLang.recapEdit || '✏️ Modifier'}</button>
+                  </div>
                   ${e.result ? `<div style="font-size:11px;color:var(--text);margin-bottom:2px">🏅 ${e.result}</div>` : ''}
-                  <div style="font-size:11px;color:var(--muted)">Performance: ${'⭐'.repeat(Math.min(e.performance_note||0, 5))}${e.performance_note > 5 ? '⭐'.repeat(e.performance_note-5) : ''} (${e.performance_note}/10) · ${e.physical_state === 'top' ? '💪 Top' : e.physical_state === 'fatigue' ? '😓 Fatigué' : e.physical_state === 'blessure' ? '🤕 Blessé' : '👍 Normal'} · ${e.mood === 'excellent' ? '😄' : e.mood === 'decu' ? '😞' : e.mood === 'frustre' ? '😤' : e.mood === 'neutre' ? '😐' : '🙂'}</div>
+                  <div style="font-size:11px;color:var(--muted)">${tLang.recapMiniPerf || 'Performance'}: ${'⭐'.repeat(Math.min(e.performance_note||0, 5))}${e.performance_note > 5 ? '⭐'.repeat(e.performance_note-5) : ''} (${e.performance_note}/10)${e.rpe ? ' · RPE ' + e.rpe + '/10' : ''} · ${e.physical_state === 'top' ? (tLang.recapPhysTop || '💪 Top') : e.physical_state === 'fatigue' ? (tLang.recapPhysTired || '😓 Fatigué') : e.physical_state === 'blessure' ? (tLang.recapPhysInjured || '🤕 Blessé') : (tLang.recapPhysNormal || '👍 Normal')} · ${e.mood === 'excellent' ? '😄' : e.mood === 'decu' ? '😞' : e.mood === 'frustre' ? '😤' : e.mood === 'neutre' ? '😐' : '🙂'}</div>
                 </div>
               ` : ''}
             </div>
@@ -5966,14 +6091,42 @@ async function deleteEvent(id) {
 }
 
 // ── RECAP POST-EVENT MODAL ──────────────────────────
-function showRecapModal(eventId, eventTitle, eventType, eventDate) {
-  const existing = document.getElementById('eventModal');
-  if (existing) existing.remove();
+function showRecapModal(eventId, eventTitle, eventType, eventDate, existing) {
+  const existingModal = document.getElementById('eventModal');
+  if (existingModal) existingModal.remove();
 
+  const t = T[currentLang] || T.fr;
   const isMatch = eventType === 'match' || eventType === 'competition';
-  const typeLabels = { match:'Match', competition:'Compétition', entrainement:'Entraînement', autre:'Événement' };
+  // Local i18n map for event type labels (EVENT_TYPES.label refactor is v50+ P1, cf. spec).
+  const typeLabelsByLang = {
+    fr: { match:'Match', competition:'Compétition', entrainement:'Entraînement', autre:'Événement' },
+    de: { match:'Match', competition:'Wettkampf', entrainement:'Training', autre:'Ereignis' },
+    en: { match:'Match', competition:'Competition', entrainement:'Training', autre:'Event' },
+    it: { match:'Partita', competition:'Competizione', entrainement:'Allenamento', autre:'Evento' }
+  };
+  const typeLabels = typeLabelsByLang[currentLang] || typeLabelsByLang.fr;
   const typeEmojis = { match:'⚽', competition:'🏆', entrainement:'🏋️', autre:'📌' };
-  const dateStr = eventDate ? new Date(eventDate).toLocaleDateString('fr-CH', { weekday:'long', day:'numeric', month:'long' }) : '';
+  const localeCode = ({fr:'fr-CH',de:'de-CH',en:'en-GB',it:'it-CH'})[currentLang] || 'fr-CH';
+  const dateStr = eventDate ? new Date(eventDate).toLocaleDateString(localeCode, { weekday:'long', day:'numeric', month:'long' }) : '';
+
+  // Pre-fill defaults from `existing` (edit flow) or use sane defaults (new recap flow).
+  const eHas = existing && typeof existing === 'object';
+  if (eHas) {
+    recapPerformance = existing.performance_note || 7;
+    recapPhysical    = existing.physical_state || 'normal';
+    recapMood        = existing.mood || 'bien';
+    recapSleep       = existing.sleep_quality || 'bon';
+    recapNutrition   = existing.pre_nutrition || 'normal';
+    recapInjury      = existing.injury || 'aucune';
+    recapRpe         = existing.rpe || null;
+  }
+  const initResult     = eHas ? (existing.result || '')      : '';
+  const initStrengths  = eHas ? (existing.strengths || '')   : '';
+  const initWeaknesses = eHas ? (existing.weaknesses || '')  : '';
+  const initNotes      = eHas ? (existing.recap_notes || '') : '';
+
+  // Helper to mark `selected` class on the right button per categorical field.
+  const sel = (field, val) => field === val ? ' selected' : '';
 
   const modal = document.createElement('div');
   modal.className = 'modal-overlay';
@@ -5981,17 +6134,17 @@ function showRecapModal(eventId, eventTitle, eventType, eventDate) {
   modal.innerHTML = `
     <div class="modal-box" style="max-width:460px;max-height:90vh;overflow-y:auto">
       <div style="font-size:28px;margin-bottom:8px">📝</div>
-      <div class="modal-title">Récap : ${eventTitle}</div>
-      <div class="modal-sub">${typeEmojis[eventType]||'📌'} ${typeLabels[eventType]||'Événement'}${dateStr ? ' · ' + dateStr : ''}</div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:16px">Ces données aident vos agents à mieux vous conseiller.</div>
+      <div class="modal-title">${t.recapModalTitle.replace('{title}', eventTitle)}</div>
+      <div class="modal-sub">${typeEmojis[eventType]||'📌'} ${typeLabels[eventType]||typeLabels.autre}${dateStr ? ' · ' + dateStr : ''}</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:16px">${t.recapModalHint}</div>
 
       ${isMatch ? `<div class="form-field">
-        <label class="form-label">Résultat</label>
-        <input type="text" class="form-input" id="recapResult" placeholder="Ex: Victoire 3-1, 2ème place, PB 10.85s" />
+        <label class="form-label">${t.recapResultLabel}</label>
+        <input type="text" class="form-input" id="recapResult" value="${initResult.replace(/"/g,'&quot;')}" placeholder="${t.recapResultPlaceholder}" />
       </div>` : ''}
 
       <div class="form-field">
-        <label class="form-label">Performance /10</label>
+        <label class="form-label">${t.recapPerfLabel}</label>
         <div style="display:flex;gap:4px" id="recapStars">
           ${[1,2,3,4,5,6,7,8,9,10].map(n => `
             <button onclick="selectPerformance(${n})" id="star${n}"
@@ -6000,82 +6153,99 @@ function showRecapModal(eventId, eventTitle, eventType, eventDate) {
         </div>
       </div>
 
+      <!-- v50: NEW field — RPE (Rating of Perceived Exertion, 1-10) -->
       <div class="form-field">
-        <label class="form-label">État physique</label>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
-          <button class="sport-btn" onclick="selectPhysical(this,'blessure')" style="padding:8px 4px;font-size:11px">🤕 Blessé</button>
-          <button class="sport-btn" onclick="selectPhysical(this,'fatigue')" style="padding:8px 4px;font-size:11px">😓 Fatigué</button>
-          <button class="sport-btn selected" onclick="selectPhysical(this,'normal')" style="padding:8px 4px;font-size:11px">👍 Normal</button>
-          <button class="sport-btn" onclick="selectPhysical(this,'top')" style="padding:8px 4px;font-size:11px">💪 Top</button>
+        <label class="form-label">${t.recapRpeLabel}</label>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px">${t.recapRpeHint}</div>
+        <div style="display:flex;gap:4px" id="recapRpeButtons">
+          ${[1,2,3,4,5,6,7,8,9,10].map(n => `
+            <button onclick="selectRpe(${n})" id="rpe${n}"
+              style="flex:1;padding:8px 0;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--muted);font-size:13px;font-weight:800;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.15s">${n}</button>
+          `).join('')}
         </div>
       </div>
 
       <div class="form-field">
-        <label class="form-label">Humeur après l'événement</label>
+        <label class="form-label">${t.recapPhysLabel}</label>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+          <button class="sport-btn${sel(recapPhysical,'blessure')}" onclick="selectPhysical(this,'blessure')" style="padding:8px 4px;font-size:11px">${t.recapPhysInjured}</button>
+          <button class="sport-btn${sel(recapPhysical,'fatigue')}" onclick="selectPhysical(this,'fatigue')" style="padding:8px 4px;font-size:11px">${t.recapPhysTired}</button>
+          <button class="sport-btn${sel(recapPhysical,'normal')}" onclick="selectPhysical(this,'normal')" style="padding:8px 4px;font-size:11px">${t.recapPhysNormal}</button>
+          <button class="sport-btn${sel(recapPhysical,'top')}" onclick="selectPhysical(this,'top')" style="padding:8px 4px;font-size:11px">${t.recapPhysTop}</button>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label">${t.recapMoodLabel}</label>
         <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">
-          <button class="sport-btn" onclick="selectMood(this,'frustre')" style="padding:8px 4px;font-size:16px" title="Frustré">😤</button>
-          <button class="sport-btn" onclick="selectMood(this,'decu')" style="padding:8px 4px;font-size:16px" title="Déçu">😞</button>
-          <button class="sport-btn" onclick="selectMood(this,'neutre')" style="padding:8px 4px;font-size:16px" title="Neutre">😐</button>
-          <button class="sport-btn selected" onclick="selectMood(this,'bien')" style="padding:8px 4px;font-size:16px" title="Bien">🙂</button>
-          <button class="sport-btn" onclick="selectMood(this,'excellent')" style="padding:8px 4px;font-size:16px" title="Excellent">😄</button>
+          <button class="sport-btn${sel(recapMood,'frustre')}" onclick="selectMood(this,'frustre')" style="padding:8px 4px;font-size:16px">😤</button>
+          <button class="sport-btn${sel(recapMood,'decu')}" onclick="selectMood(this,'decu')" style="padding:8px 4px;font-size:16px">😞</button>
+          <button class="sport-btn${sel(recapMood,'neutre')}" onclick="selectMood(this,'neutre')" style="padding:8px 4px;font-size:16px">😐</button>
+          <button class="sport-btn${sel(recapMood,'bien')}" onclick="selectMood(this,'bien')" style="padding:8px 4px;font-size:16px">🙂</button>
+          <button class="sport-btn${sel(recapMood,'excellent')}" onclick="selectMood(this,'excellent')" style="padding:8px 4px;font-size:16px">😄</button>
         </div>
       </div>
 
       <div class="form-field">
-        <label class="form-label">Sommeil la veille</label>
+        <label class="form-label">${t.recapSleepLabel}</label>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
-          <button class="sport-btn" onclick="selectRecapField(this,'recapSleep','mauvais')" style="padding:8px 4px;font-size:11px">😫 Mauvais</button>
-          <button class="sport-btn" onclick="selectRecapField(this,'recapSleep','moyen')" style="padding:8px 4px;font-size:11px">😐 Moyen</button>
-          <button class="sport-btn selected" onclick="selectRecapField(this,'recapSleep','bon')" style="padding:8px 4px;font-size:11px">🙂 Bon</button>
-          <button class="sport-btn" onclick="selectRecapField(this,'recapSleep','excellent')" style="padding:8px 4px;font-size:11px">😴 Excellent</button>
+          <button class="sport-btn${sel(recapSleep,'mauvais')}" onclick="selectRecapField(this,'recapSleep','mauvais')" style="padding:8px 4px;font-size:11px">${t.recapSleepBad}</button>
+          <button class="sport-btn${sel(recapSleep,'moyen')}" onclick="selectRecapField(this,'recapSleep','moyen')" style="padding:8px 4px;font-size:11px">${t.recapSleepMid}</button>
+          <button class="sport-btn${sel(recapSleep,'bon')}" onclick="selectRecapField(this,'recapSleep','bon')" style="padding:8px 4px;font-size:11px">${t.recapSleepGood}</button>
+          <button class="sport-btn${sel(recapSleep,'excellent')}" onclick="selectRecapField(this,'recapSleep','excellent')" style="padding:8px 4px;font-size:11px">${t.recapSleepExcellent}</button>
         </div>
       </div>
 
       <div class="form-field">
-        <label class="form-label">Nutrition avant l'événement</label>
+        <label class="form-label">${t.recapNutriLabel}</label>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
-          <button class="sport-btn" onclick="selectRecapField(this,'recapNutrition','pas_top')" style="padding:8px 4px;font-size:11px">🍔 Pas top</button>
-          <button class="sport-btn selected" onclick="selectRecapField(this,'recapNutrition','normal')" style="padding:8px 4px;font-size:11px">👍 Normal</button>
-          <button class="sport-btn" onclick="selectRecapField(this,'recapNutrition','bien')" style="padding:8px 4px;font-size:11px">🥗 Bien mangé</button>
+          <button class="sport-btn${sel(recapNutrition,'pas_top')}" onclick="selectRecapField(this,'recapNutrition','pas_top')" style="padding:8px 4px;font-size:11px">${t.recapNutriBad}</button>
+          <button class="sport-btn${sel(recapNutrition,'normal')}" onclick="selectRecapField(this,'recapNutrition','normal')" style="padding:8px 4px;font-size:11px">${t.recapNutriNormal}</button>
+          <button class="sport-btn${sel(recapNutrition,'bien')}" onclick="selectRecapField(this,'recapNutrition','bien')" style="padding:8px 4px;font-size:11px">${t.recapNutriGood}</button>
         </div>
       </div>
 
       <div class="form-field">
-        <label class="form-label">Douleur ou blessure ?</label>
+        <label class="form-label">${t.recapInjuryLabel}</label>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
-          <button class="sport-btn" onclick="selectRecapField(this,'recapInjury','serieuse')" style="padding:8px 4px;font-size:11px">🚨 Sérieuse</button>
-          <button class="sport-btn" onclick="selectRecapField(this,'recapInjury','legere')" style="padding:8px 4px;font-size:11px">⚠️ Légère</button>
-          <button class="sport-btn selected" onclick="selectRecapField(this,'recapInjury','aucune')" style="padding:8px 4px;font-size:11px">✅ Aucune</button>
+          <button class="sport-btn${sel(recapInjury,'serieuse')}" onclick="selectRecapField(this,'recapInjury','serieuse')" style="padding:8px 4px;font-size:11px">${t.recapInjurySerious}</button>
+          <button class="sport-btn${sel(recapInjury,'legere')}" onclick="selectRecapField(this,'recapInjury','legere')" style="padding:8px 4px;font-size:11px">${t.recapInjuryLight}</button>
+          <button class="sport-btn${sel(recapInjury,'aucune')}" onclick="selectRecapField(this,'recapInjury','aucune')" style="padding:8px 4px;font-size:11px">${t.recapInjuryNone}</button>
         </div>
       </div>
 
       <div class="form-field">
-        <label class="form-label">Ce qui a bien marché</label>
-        <input type="text" class="form-input" id="recapStrengths" placeholder="Ex: bon jeu de passes, endurance, concentration" />
+        <label class="form-label">${t.recapStrengthsLabel}</label>
+        <input type="text" class="form-input" id="recapStrengths" value="${initStrengths.replace(/"/g,'&quot;')}" placeholder="${t.recapStrengthsPlaceholder}" />
       </div>
 
       <div class="form-field">
-        <label class="form-label">Ce qui est à améliorer</label>
-        <input type="text" class="form-input" id="recapWeaknesses" placeholder="Ex: tirs, défense, gestion du stress" />
+        <label class="form-label">${t.recapWeaknessesLabel}</label>
+        <input type="text" class="form-input" id="recapWeaknesses" value="${initWeaknesses.replace(/"/g,'&quot;')}" placeholder="${t.recapWeaknessesPlaceholder}" />
       </div>
 
       <div class="form-field">
-        <label class="form-label">Notes libres (optionnel)</label>
-        <input type="text" class="form-input" id="recapNotes" placeholder="Autre chose à noter..." />
+        <label class="form-label">${t.recapNotesLabel}</label>
+        <input type="text" class="form-input" id="recapNotes" value="${initNotes.replace(/"/g,'&quot;')}" placeholder="${t.recapNotesPlaceholder}" />
       </div>
 
-      ${_pendingRecapsCount > 1 ? `<div style="text-align:center;font-size:11px;color:var(--muted);margin-bottom:8px;font-weight:600">${_pendingRecapsCount} récap(s) en attente</div>` : ''}
+      ${_pendingRecapsCount > 1 ? `<div style="text-align:center;font-size:11px;color:var(--muted);margin-bottom:8px;font-weight:600">${(t.recapPendingCount || '{n} récap(s) en attente').replace('{n}', _pendingRecapsCount)}</div>` : ''}
       <div style="display:flex;gap:8px;margin-top:12px">
         <button onclick="skipRecap('${eventId}')"
-          style="flex:1;padding:13px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">Passer</button>
+          style="flex:1;padding:13px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">${t.recapBtnSkip}</button>
         <button onclick="saveRecap('${eventId}')"
-          style="flex:2;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">Enregistrer →</button>
+          style="flex:2;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">${t.recapBtnSave}</button>
       </div>
     </div>
   `;
   document.body.appendChild(modal);
   // Click outside = skip this recap (and chain to next if any)
   modal.addEventListener('click', e => { if (e.target === modal) skipRecap(eventId); });
+  // Refresh slider colors after DOM mount (Performance + RPE if pre-filled).
+  setTimeout(() => {
+    try { selectPerformance(recapPerformance); } catch(_){}
+    if (recapRpe !== null) { try { selectRpe(recapRpe); } catch(_){} }
+  }, 0);
 }
 
 let recapPerformance = 7;
@@ -6084,6 +6254,7 @@ let recapMood = 'bien';
 let recapSleep = 'bon';
 let recapNutrition = 'normal';
 let recapInjury = 'aucune';
+let recapRpe = null; // v50: Rating of Perceived Exertion (1-10), optional. Foundation for ACWR.
 
 function selectRecapField(btn, field, value) {
   btn.closest('.form-field').querySelectorAll('.sport-btn').forEach(b => b.classList.remove('selected'));
@@ -6105,6 +6276,25 @@ function selectPerformance(n) {
   }
 }
 
+// v50: RPE slider — gradient color by zone (1-3 green = light effort, 4-7 orange = moderate, 8-10 red = hard).
+function selectRpe(n) {
+  recapRpe = n;
+  for (let i = 1; i <= 10; i++) {
+    const btn = document.getElementById('rpe' + i);
+    if (!btn) continue;
+    if (i <= n) {
+      const color = n <= 3 ? '#10b981' : n <= 7 ? '#f59e0b' : '#ef4444';
+      btn.style.background = color;
+      btn.style.color = '#fff';
+      btn.style.borderColor = color;
+    } else {
+      btn.style.background = 'var(--bg)';
+      btn.style.color = 'var(--muted)';
+      btn.style.borderColor = 'var(--border)';
+    }
+  }
+}
+
 function selectPhysical(btn, state) {
   btn.closest('.form-field').querySelectorAll('.sport-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
@@ -6117,12 +6307,23 @@ function selectMood(btn, mood) {
   recapMood = mood;
 }
 
+// v50: Open showRecapModal in EDIT mode (5th arg = existing event row).
+// Looks up the event from the global calendarEvents array — avoids JSON-encoding in inline onclick.
+function editRecap(eventId) {
+  const e = (calendarEvents || []).find(ev => ev.id === eventId);
+  if (!e) { console.warn('[RECAP] editRecap: event not found', eventId); return; }
+  showRecapModal(e.id, e.title, e.event_type, e.event_date, e);
+}
+
 async function saveRecap(eventId) {
+  const t = T[currentLang] || T.fr;
   const result = document.getElementById('recapResult')?.value?.trim() || null;
   const strengths = document.getElementById('recapStrengths')?.value?.trim() || null;
   const weaknesses = document.getElementById('recapWeaknesses')?.value?.trim() || null;
   const notes = document.getElementById('recapNotes')?.value?.trim() || null;
-  const { error } = await sb.from('calendar_events').update({
+  // v50: Build payload conditionally — only include rpe if user actually picked one,
+  // so editing without touching RPE doesn't overwrite an existing value with NULL.
+  const payload = {
     result,
     performance_note: recapPerformance,
     physical_state: recapPhysical,
@@ -6134,13 +6335,18 @@ async function saveRecap(eventId) {
     weaknesses,
     recap_notes: notes,
     recap_done: true
-  }).eq('id', eventId);
+  };
+  if (recapRpe !== null) payload.rpe = recapRpe;
+
+  const { error } = await sb.from('calendar_events').update(payload).eq('id', eventId);
   if (error) return alert('Erreur: ' + error.message);
   document.getElementById('eventModal')?.remove();
-  showToast('✅ Récap enregistré ! Vos agents en tiendront compte.');
+  console.log(`[RECAP] saved id=${eventId} rpe=${recapRpe ?? 'null'} perf=${recapPerformance} lang=${currentLang}`);
+  showToast(t.recapToastSaved || '✅ Récap enregistré ! Vos agents en tiendront compte.');
   // Reset for next recap
   recapPerformance = 7; recapPhysical = 'normal'; recapMood = 'bien';
   recapSleep = 'bon'; recapNutrition = 'normal'; recapInjury = 'aucune';
+  recapRpe = null;
   renderCalendar();
   // Chain to next pending recap if any (the saved one is now recap_done=true so it won't reappear)
   setTimeout(() => { try { checkPendingRecaps(); } catch(e) { console.warn('saveRecap chain error:', e); } }, 600);
