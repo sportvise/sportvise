@@ -863,6 +863,10 @@ const T = {
     connGarminTagline:'Montres Garmin, santé, sommeil', connGarminDesc:"L'intégration Garmin Connect arrive prochainement pour synchroniser données de santé, sommeil et entraînements.",
     connAppleTagline:'Données de santé, activité quotidienne', connAppleDesc:"Intégration Apple Santé pour synchroniser tes données de santé et d'activité depuis ton iPhone/Apple Watch.",
     connComingSoon:'Bientôt',
+    // v49 — Marketplace UI chrome (programs i18n is in PROGRAM_I18N constant, not here)
+    marketHero:'Programmes par tes agents', marketHeroDesc:'Plans personnalisés créés par tes agents IA, adaptés à ton sport et ton niveau',
+    viewDetails:'Voir le détail', hideDetails:'Masquer le détail',
+    generateProgram:'Générer le programme', continueProgram:'Continuer',
     // ONBOARDING (Lucas welcome flow)
     obLucasGreeting:"Salut ! Moi c'est Lucas 👋",
     obLucasIntro:'Je suis ton agent carrière, et je vais te guider dans SPORTVISE.',
@@ -1165,6 +1169,10 @@ const T = {
     connGarminTagline:'Garmin-Uhren, Gesundheit, Schlaf', connGarminDesc:'Die Garmin Connect-Integration kommt bald, um Gesundheits-, Schlaf- und Trainingsdaten zu synchronisieren.',
     connAppleTagline:'Gesundheitsdaten, tägliche Aktivität', connAppleDesc:'Apple Health-Integration, um deine Gesundheits- und Aktivitätsdaten von deinem iPhone/Apple Watch zu synchronisieren.',
     connComingSoon:'Bald',
+    // v49 — Marketplace UI chrome (programs i18n in PROGRAM_I18N constant)
+    marketHero:'Programme von deinen Agenten', marketHeroDesc:'Personalisierte Pläne, erstellt von deinen KI-Agenten, angepasst an deinen Sport und dein Niveau',
+    viewDetails:'Details anzeigen', hideDetails:'Details ausblenden',
+    generateProgram:'Programm generieren', continueProgram:'Fortsetzen',
     // ONBOARDING (Lucas welcome flow)
     obLucasGreeting:'Hallo! Ich bin Lucas 👋',
     obLucasIntro:'Ich bin dein Karriere-Agent und führe dich durch SPORTVISE.',
@@ -1467,6 +1475,10 @@ const T = {
     connGarminTagline:'Garmin watches, health, sleep', connGarminDesc:'Garmin Connect integration is coming soon to sync health, sleep and workout data.',
     connAppleTagline:'Health data, daily activity', connAppleDesc:'Apple Health integration to sync your health and activity data from your iPhone/Apple Watch.',
     connComingSoon:'Soon',
+    // v49 — Marketplace UI chrome (programs i18n in PROGRAM_I18N constant)
+    marketHero:'Programs by your agents', marketHeroDesc:'Personalised plans created by your AI agents, tailored to your sport and level',
+    viewDetails:'View details', hideDetails:'Hide details',
+    generateProgram:'Generate program', continueProgram:'Continue',
     // ONBOARDING (Lucas welcome flow)
     obLucasGreeting:"Hi! I'm Lucas 👋",
     obLucasIntro:"I'm your career agent and I'll guide you through SPORTVISE.",
@@ -1769,6 +1781,10 @@ const T = {
     connGarminTagline:'Orologi Garmin, salute, sonno', connGarminDesc:"L'integrazione Garmin Connect arriva presto per sincronizzare dati di salute, sonno e allenamenti.",
     connAppleTagline:'Dati sulla salute, attività quotidiana', connAppleDesc:"Integrazione Apple Salute per sincronizzare i tuoi dati di salute e attività dal tuo iPhone/Apple Watch.",
     connComingSoon:'Presto',
+    // v49 — Marketplace UI chrome (programs i18n in PROGRAM_I18N constant)
+    marketHero:'Programmi dai tuoi agenti', marketHeroDesc:'Piani personalizzati creati dai tuoi agenti IA, adattati al tuo sport e al tuo livello',
+    viewDetails:'Vedi dettagli', hideDetails:'Nascondi dettagli',
+    generateProgram:'Genera il programma', continueProgram:'Continua',
     // ONBOARDING (Lucas welcome flow)
     obLucasGreeting:'Ciao! Sono Lucas 👋',
     obLucasIntro:'Sono il tuo agente di carriera, ti guiderò in SPORTVISE.',
@@ -2782,7 +2798,7 @@ async function init() {
 // It cleans caches, reloads ONCE, and uses a retry counter to prevent infinite loops.
 // ⚠️  IMPORTANT : cette constante DOIT correspondre à src/version.json (.version).
 //     Si tu bumps version.json, bump APP_V au même nombre — sinon boucle de reload.
-const APP_V = '48';
+const APP_V = '49';
 async function checkAppVersion() {
   try {
     const res = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
@@ -7122,133 +7138,415 @@ function scheduleProactiveNotifications() {
 }
 
 // ── MARKETPLACE (Programmes) ───────────────────────
-function getMarketplacePrograms() {
-  // v42 — marketplace strings are FR-only for now; resolve key→FR canonical label
-  const sport = userProfile?.sport ? sportLabel(userProfile.sport, 'fr') : 'Football';
-  const level = userProfile?.level ? levelLabel(userProfile.level, 'fr') : 'intermédiaire';
+// v49 — full i18n des 6 programmes en FR/DE/EN/IT.
+// Structure : PROGRAM_META (agent/emoji/color, lang-agnostic) + PROGRAM_I18N (titres, descriptions, tags, détails, prompt LLM par langue) + RESPOND_IN_LANG (suffixe ajouté au prompt LLM pour que le programme généré soit dans la bonne langue).
+// Placeholders supportés dans desc/details/prompt : {sport}, {level}, {weight}, {height} — résolus à runtime selon userProfile + currentLang.
 
-  return [
-    {
-      id: 'physique-4sem',
-      agent: 'David',
-      emoji: '🏋️',
-      color: '#ef4444',
+const PROGRAM_META = {
+  'physique-4sem':           { agent: 'David', emoji: '🏋️', color: '#ef4444' },
+  'mental-confiance':        { agent: 'Emma',  emoji: '🧠', color: '#06b6d4' },
+  'nutrition-performance':   { agent: 'Clara', emoji: '🥗', color: '#84cc16' },
+  'sommeil-optimisation':    { agent: 'Nora',  emoji: '😴', color: '#a78bfa' },
+  'recuperation-protocole':  { agent: 'Julie', emoji: '♻️', color: '#14b8a6' },
+  'marketing-personal-brand':{ agent: 'Alex',  emoji: '🎯', color: '#f97316' }
+};
+
+const PROGRAM_ORDER = ['physique-4sem','mental-confiance','nutrition-performance','sommeil-optimisation','recuperation-protocole','marketing-personal-brand'];
+
+const RESPOND_IN_LANG = {
+  fr: 'Réponds en français.',
+  de: 'Antworte auf Deutsch.',
+  en: 'Respond in English.',
+  it: 'Rispondi in italiano.'
+};
+
+const PROGRAM_I18N = {
+  fr: {
+    'physique-4sem': {
       title: 'Programme Force & Explosivité — 4 semaines',
-      desc: 'Programme personnalisé de préparation physique avec périodisation DUP. 4 séances/semaine adaptées au ' + sport + '.',
-      duration: '4 semaines',
-      sessions: '16 séances',
-      level: level,
+      desc: 'Programme personnalisé de préparation physique avec périodisation DUP. 4 séances/semaine adaptées au {sport}.',
+      duration: '4 semaines', sessions: '16 séances',
       tags: ['Force', 'Explosivité', 'Prévention'],
       details: [
-        'Sem 1-2 : Phase d\'accumulation (hypertrophie + endurance de force)',
-        'Sem 3 : Phase d\'intensification (force max + puissance)',
-        'Sem 4 : Affûtage (vitesse-force + explosivité)',
-        'Inclut : échauffement, exercices principaux, accessoires, cool-down',
-        'Bonus : protocole Nordic Hamstring + FIFA 11+'
+        "Sem 1-2 : Phase d'accumulation (hypertrophie + endurance de force)",
+        "Sem 3 : Phase d'intensification (force max + puissance)",
+        "Sem 4 : Affûtage (vitesse-force + explosivité)",
+        "Inclut : échauffement, exercices principaux, accessoires, cool-down",
+        "Bonus : protocole Nordic Hamstring + FIFA 11+"
       ],
-      prompt: 'Crée-moi un programme de force et explosivité sur 4 semaines pour le ' + sport + ', niveau ' + level + '. 4 séances par semaine avec périodisation DUP. Inclus échauffement, exercices principaux avec séries/répétitions/charges, accessoires et cool-down. Ajoute le protocole Nordic Hamstring et FIFA 11+.'
+      prompt: "Crée-moi un programme de force et explosivité sur 4 semaines pour le {sport}, niveau {level}. 4 séances par semaine avec périodisation DUP. Inclus échauffement, exercices principaux avec séries/répétitions/charges, accessoires et cool-down. Ajoute le protocole Nordic Hamstring et FIFA 11+."
     },
-    {
-      id: 'mental-confiance',
-      agent: 'Emma',
-      emoji: '🧠',
-      color: '#06b6d4',
+    'mental-confiance': {
       title: 'Programme Confiance & Focus — 3 semaines',
       desc: 'Protocole ACT et mindfulness pour renforcer la confiance en soi et la concentration en compétition.',
-      duration: '3 semaines',
-      sessions: '15 exercices',
-      level: 'Tous niveaux',
+      duration: '3 semaines', sessions: '15 exercices', fixedLevel: 'Tous niveaux',
       tags: ['Confiance', 'Mindfulness', 'Compétition'],
       details: [
-        'Sem 1 : Fondations (respiration diaphragmatique, body scan, auto-dialogue positif)',
-        'Sem 2 : Approfondissement (visualisation, défusion cognitive, routine pré-compétition)',
-        'Sem 3 : Intégration (simulation compétition, gestion du stress, ancrage)',
-        'Inclut : audio guidés, journaling mental, exercices quotidiens 10-15 min',
-        'Basé sur le protocole MSPE validé scientifiquement'
+        "Sem 1 : Fondations (respiration diaphragmatique, body scan, auto-dialogue positif)",
+        "Sem 2 : Approfondissement (visualisation, défusion cognitive, routine pré-compétition)",
+        "Sem 3 : Intégration (simulation compétition, gestion du stress, ancrage)",
+        "Inclut : audio guidés, journaling mental, exercices quotidiens 10-15 min",
+        "Basé sur le protocole MSPE validé scientifiquement"
       ],
-      prompt: 'Crée-moi un programme mental de 3 semaines basé sur l\'ACT et le MSPE pour développer la confiance en soi et le focus en compétition pour un athlète de ' + sport + '. 5 exercices par semaine de 10-15 min. Inclus les techniques de respiration, visualisation, défusion cognitive, routine pré-compétition.'
+      prompt: "Crée-moi un programme mental de 3 semaines basé sur l'ACT et le MSPE pour développer la confiance en soi et le focus en compétition pour un athlète de {sport}. 5 exercices par semaine de 10-15 min. Inclus les techniques de respiration, visualisation, défusion cognitive, routine pré-compétition."
     },
-    {
-      id: 'nutrition-performance',
-      agent: 'Clara',
-      emoji: '🥗',
-      color: '#84cc16',
+    'nutrition-performance': {
       title: 'Plan Nutrition Performance — 4 semaines',
-      desc: 'Plan alimentaire périodisé selon ton calendrier sportif. Repas, snacks et timing adaptés au ' + sport + '.',
-      duration: '4 semaines',
-      sessions: '28 jours de menus',
-      level: level,
+      desc: 'Plan alimentaire périodisé selon ton calendrier sportif. Repas, snacks et timing adaptés au {sport}.',
+      duration: '4 semaines', sessions: '28 jours de menus',
       tags: ['Nutrition', 'Performance', 'Récupération'],
       details: [
-        'Performance Plates adaptées à chaque type de journée (repos, entraînement, match)',
-        'Petit-déjeuner, déjeuner, dîner + collations pré/post-effort',
-        'Timing des repas selon le rythme circadien',
-        'Liste de courses hebdomadaire',
-        'Guide suppléments evidence-based (créatine, oméga-3, etc.)'
+        "Performance Plates adaptées à chaque type de journée (repos, entraînement, match)",
+        "Petit-déjeuner, déjeuner, dîner + collations pré/post-effort",
+        "Timing des repas selon le rythme circadien",
+        "Liste de courses hebdomadaire",
+        "Guide suppléments evidence-based (créatine, oméga-3, etc.)"
       ],
-      prompt: 'Crée-moi un plan nutrition performance sur 4 semaines pour un athlète de ' + sport + ', ' + (userProfile?.weight || '75') + 'kg, ' + (userProfile?.height || '178') + 'cm. Utilise le concept Performance Plates avec 3 types de journées (repos, entraînement, compétition). Inclus repas complets avec grammages, collations pré/post-effort, timing des repas, et liste de courses hebdomadaire.'
+      prompt: "Crée-moi un plan nutrition performance sur 4 semaines pour un athlète de {sport}, {weight}kg, {height}cm. Utilise le concept Performance Plates avec 3 types de journées (repos, entraînement, compétition). Inclus repas complets avec grammages, collations pré/post-effort, timing des repas, et liste de courses hebdomadaire."
     },
-    {
-      id: 'sommeil-optimisation',
-      agent: 'Nora',
-      emoji: '😴',
-      color: '#a78bfa',
+    'sommeil-optimisation': {
       title: 'Protocole Sommeil Optimal — 2 semaines',
       desc: 'Optimise ta qualité de sommeil avec un protocole basé sur la chronobiologie sportive.',
-      duration: '2 semaines',
-      sessions: '14 routines',
-      level: 'Tous niveaux',
+      duration: '2 semaines', sessions: '14 routines', fixedLevel: 'Tous niveaux',
       tags: ['Sommeil', 'Récupération', 'Circadien'],
       details: [
-        'Sem 1 : Audit et mise en place (hygiène du sommeil, environnement, routine)',
-        'Sem 2 : Optimisation (extension de sommeil, siestes stratégiques, chronotype)',
-        'Routine du soir personnalisée (30 min)',
-        'Gestion lumière bleue et température',
-        'Stratégies post-entraînement tardif'
+        "Sem 1 : Audit et mise en place (hygiène du sommeil, environnement, routine)",
+        "Sem 2 : Optimisation (extension de sommeil, siestes stratégiques, chronotype)",
+        "Routine du soir personnalisée (30 min)",
+        "Gestion lumière bleue et température",
+        "Stratégies post-entraînement tardif"
       ],
-      prompt: 'Crée-moi un protocole d\'optimisation du sommeil sur 2 semaines pour un athlète de ' + sport + '. Sem 1 : audit et mise en place des bases (hygiène du sommeil, environnement, routine du soir). Sem 2 : optimisation avancée (extension de sommeil, siestes stratégiques, adaptation au chronotype). Inclus une routine du soir de 30 min, la gestion de la lumière bleue, et les stratégies post-entraînement tardif.'
+      prompt: "Crée-moi un protocole d'optimisation du sommeil sur 2 semaines pour un athlète de {sport}. Sem 1 : audit et mise en place des bases (hygiène du sommeil, environnement, routine du soir). Sem 2 : optimisation avancée (extension de sommeil, siestes stratégiques, adaptation au chronotype). Inclus une routine du soir de 30 min, la gestion de la lumière bleue, et les stratégies post-entraînement tardif."
     },
-    {
-      id: 'recuperation-protocole',
-      agent: 'Julie',
-      emoji: '♻️',
-      color: '#14b8a6',
+    'recuperation-protocole': {
       title: 'Protocole Récupération Active — 3 semaines',
-      desc: 'Programme complet de récupération : foam rolling, mobilité, CWI, compression. Adapté au ' + sport + '.',
-      duration: '3 semaines',
-      sessions: '18 séances',
-      level: level,
+      desc: 'Programme complet de récupération : foam rolling, mobilité, CWI, compression. Adapté au {sport}.',
+      duration: '3 semaines', sessions: '18 séances',
       tags: ['Récupération', 'Mobilité', 'Prévention'],
       details: [
-        'Routines post-entraînement (20 min) : foam rolling + étirements ciblés',
-        'Séances mobilité (30 min) : articulations clés pour le ' + sport,
-        'Protocoles CWI et compression (quand et comment)',
-        'Gestion de la charge (ACWR) et signes d\'alerte',
-        'Bonus : auto-massage et photobiomodulation'
+        "Routines post-entraînement (20 min) : foam rolling + étirements ciblés",
+        "Séances mobilité (30 min) : articulations clés pour le {sport}",
+        "Protocoles CWI et compression (quand et comment)",
+        "Gestion de la charge (ACWR) et signes d'alerte",
+        "Bonus : auto-massage et photobiomodulation"
       ],
-      prompt: 'Crée-moi un protocole de récupération active sur 3 semaines pour un athlète de ' + sport + ', niveau ' + level + '. 6 séances par semaine alternant : routine post-entraînement (foam rolling + étirements, 20 min), séance mobilité (30 min), protocoles CWI et compression. Inclus les zones clés pour le ' + sport + ' et les signes d\'alerte de surcharge.'
+      prompt: "Crée-moi un protocole de récupération active sur 3 semaines pour un athlète de {sport}, niveau {level}. 6 séances par semaine alternant : routine post-entraînement (foam rolling + étirements, 20 min), séance mobilité (30 min), protocoles CWI et compression. Inclus les zones clés pour le {sport} et les signes d'alerte de surcharge."
     },
-    {
-      id: 'marketing-personal-brand',
-      agent: 'Alex',
-      emoji: '🎯',
-      color: '#f97316',
+    'marketing-personal-brand': {
       title: 'Plan Personal Branding — 4 semaines',
-      desc: 'Construis ta marque personnelle d\'athlète sur Instagram et TikTok avec un plan de contenu complet.',
-      duration: '4 semaines',
-      sessions: '28 posts + stories',
-      level: 'Tous niveaux',
+      desc: "Construis ta marque personnelle d'athlète sur Instagram et TikTok avec un plan de contenu complet.",
+      duration: '4 semaines', sessions: '28 posts + stories', fixedLevel: 'Tous niveaux',
       tags: ['Instagram', 'TikTok', 'Branding'],
       details: [
-        'Audit de ton profil actuel et positionnement',
-        'Calendrier éditorial 4 semaines (Reels, carrousels, stories)',
-        'Scripts et captions prêts à poster',
-        'Stratégie hashtags et horaires optimaux',
-        'Framework 80/20 (valeur vs promotion)'
+        "Audit de ton profil actuel et positionnement",
+        "Calendrier éditorial 4 semaines (Reels, carrousels, stories)",
+        "Scripts et captions prêts à poster",
+        "Stratégie hashtags et horaires optimaux",
+        "Framework 80/20 (valeur vs promotion)"
       ],
-      prompt: 'Crée-moi un plan de personal branding sur 4 semaines pour un athlète de ' + sport + ' en Suisse. Inclus : audit du profil, calendrier éditorial détaillé (7 posts/semaine : Reels, carrousels, stories), scripts et captions en français, stratégie hashtags pour le marché suisse, et horaires de publication optimaux. Utilise le framework 80/20.'
+      prompt: "Crée-moi un plan de personal branding sur 4 semaines pour un athlète de {sport} en Suisse. Inclus : audit du profil, calendrier éditorial détaillé (7 posts/semaine : Reels, carrousels, stories), scripts et captions en français, stratégie hashtags pour le marché suisse, et horaires de publication optimaux. Utilise le framework 80/20."
     }
-  ];
+  },
+  de: {
+    'physique-4sem': {
+      title: 'Kraft & Explosivität — 4 Wochen',
+      desc: 'Personalisiertes Programm zur körperlichen Vorbereitung mit DUP-Periodisierung. 4 Einheiten/Woche, angepasst an {sport}.',
+      duration: '4 Wochen', sessions: '16 Einheiten',
+      tags: ['Kraft', 'Explosivität', 'Prävention'],
+      details: [
+        "Wo 1-2: Akkumulationsphase (Hypertrophie + Kraftausdauer)",
+        "Wo 3: Intensivierungsphase (Maximalkraft + Schnellkraft)",
+        "Wo 4: Tapering (Schnellkraft + Explosivität)",
+        "Beinhaltet: Aufwärmen, Hauptübungen, Zusatzübungen, Cool-down",
+        "Bonus: Nordic Hamstring + FIFA 11+ Protokoll"
+      ],
+      prompt: "Erstelle mir ein Kraft- und Explosivitätsprogramm über 4 Wochen für {sport}, Niveau {level}. 4 Einheiten pro Woche mit DUP-Periodisierung. Inklusive Aufwärmen, Hauptübungen mit Sätzen/Wiederholungen/Belastungen, Zusatzübungen und Cool-down. Füge das Nordic Hamstring und FIFA 11+ Protokoll hinzu."
+    },
+    'mental-confiance': {
+      title: 'Selbstvertrauen & Fokus — 3 Wochen',
+      desc: 'ACT- und Mindfulness-Protokoll zur Stärkung des Selbstvertrauens und der Konzentration im Wettkampf.',
+      duration: '3 Wochen', sessions: '15 Übungen', fixedLevel: 'Alle Niveaus',
+      tags: ['Selbstvertrauen', 'Mindfulness', 'Wettkampf'],
+      details: [
+        "Wo 1: Grundlagen (Zwerchfellatmung, Body Scan, positiver Selbstdialog)",
+        "Wo 2: Vertiefung (Visualisierung, kognitive Defusion, Pre-Performance-Routine)",
+        "Wo 3: Integration (Wettkampfsimulation, Stressbewältigung, Verankerung)",
+        "Beinhaltet: geführte Audios, Mental-Journaling, tägliche Übungen 10-15 Min",
+        "Basiert auf dem wissenschaftlich validierten MSPE-Protokoll"
+      ],
+      prompt: "Erstelle mir ein 3-Wochen-Mentalprogramm basierend auf ACT und MSPE zur Entwicklung von Selbstvertrauen und Wettkampffokus für einen {sport}-Athleten. 5 Übungen pro Woche à 10-15 Min. Beinhaltet Atemtechniken, Visualisierung, kognitive Defusion, Pre-Performance-Routine."
+    },
+    'nutrition-performance': {
+      title: 'Performance-Ernährungsplan — 4 Wochen',
+      desc: 'Periodisierter Ernährungsplan nach deinem Sportkalender. Mahlzeiten, Snacks und Timing angepasst an {sport}.',
+      duration: '4 Wochen', sessions: '28 Tage Menüs',
+      tags: ['Ernährung', 'Performance', 'Erholung'],
+      details: [
+        "Performance Plates angepasst an jeden Tagestyp (Ruhe, Training, Wettkampf)",
+        "Frühstück, Mittagessen, Abendessen + Snacks vor/nach dem Sport",
+        "Mahlzeiten-Timing nach zirkadianem Rhythmus",
+        "Wöchentliche Einkaufsliste",
+        "Evidenzbasierte Supplement-Anleitung (Kreatin, Omega-3, usw.)"
+      ],
+      prompt: "Erstelle mir einen Performance-Ernährungsplan über 4 Wochen für einen {sport}-Athleten, {weight}kg, {height}cm. Verwende das Performance Plates Konzept mit 3 Tagestypen (Ruhe, Training, Wettkampf). Beinhaltet vollständige Mahlzeiten mit Mengen, Pre/Post-Workout-Snacks, Mahlzeiten-Timing und wöchentliche Einkaufsliste."
+    },
+    'sommeil-optimisation': {
+      title: 'Optimales Schlafprotokoll — 2 Wochen',
+      desc: 'Optimiere deine Schlafqualität mit einem Protokoll basierend auf sportlicher Chronobiologie.',
+      duration: '2 Wochen', sessions: '14 Routinen', fixedLevel: 'Alle Niveaus',
+      tags: ['Schlaf', 'Erholung', 'Zirkadian'],
+      details: [
+        "Wo 1: Audit und Etablierung (Schlafhygiene, Umgebung, Routine)",
+        "Wo 2: Optimierung (Schlafverlängerung, strategische Mittagsschläfe, Chronotyp)",
+        "Personalisierte Abendroutine (30 Min)",
+        "Blaulicht- und Temperaturmanagement",
+        "Strategien nach spätem Training"
+      ],
+      prompt: "Erstelle mir ein 2-wöchiges Schlafoptimierungsprotokoll für einen {sport}-Athleten. Wo 1: Audit und Etablierung der Grundlagen (Schlafhygiene, Umgebung, Abendroutine). Wo 2: Fortgeschrittene Optimierung (Schlafverlängerung, strategische Mittagsschläfe, Chronotyp-Anpassung). Beinhaltet eine 30-Min-Abendroutine, Blaulicht-Management und Strategien nach spätem Training."
+    },
+    'recuperation-protocole': {
+      title: 'Aktives Erholungsprotokoll — 3 Wochen',
+      desc: 'Vollständiges Erholungsprogramm: Foam Rolling, Mobilität, CWI, Kompression. Angepasst an {sport}.',
+      duration: '3 Wochen', sessions: '18 Einheiten',
+      tags: ['Erholung', 'Mobilität', 'Prävention'],
+      details: [
+        "Routinen nach dem Training (20 Min): Foam Rolling + gezielte Dehnungen",
+        "Mobilitätssitzungen (30 Min): Schlüsselgelenke für {sport}",
+        "CWI- und Kompressionsprotokolle (wann und wie)",
+        "Belastungsmanagement (ACWR) und Warnsignale",
+        "Bonus: Selbstmassage und Photobiomodulation"
+      ],
+      prompt: "Erstelle mir ein aktives Erholungsprotokoll über 3 Wochen für einen {sport}-Athleten, Niveau {level}. 6 Einheiten pro Woche im Wechsel: Routine nach dem Training (Foam Rolling + Dehnungen, 20 Min), Mobilitätssitzung (30 Min), CWI- und Kompressionsprotokolle. Beinhaltet die Schlüsselzonen für {sport} und Warnsignale für Überlastung."
+    },
+    'marketing-personal-brand': {
+      title: 'Personal Branding Plan — 4 Wochen',
+      desc: 'Baue deine persönliche Marke als Athlet auf Instagram und TikTok mit einem vollständigen Content-Plan.',
+      duration: '4 Wochen', sessions: '28 Posts + Stories', fixedLevel: 'Alle Niveaus',
+      tags: ['Instagram', 'TikTok', 'Branding'],
+      details: [
+        "Audit deines aktuellen Profils und Positionierung",
+        "4-Wochen-Redaktionskalender (Reels, Karussells, Stories)",
+        "Postfertige Skripte und Captions",
+        "Hashtag-Strategie und optimale Posting-Zeiten",
+        "80/20-Framework (Wert vs. Promotion)"
+      ],
+      prompt: "Erstelle mir einen Personal-Branding-Plan über 4 Wochen für einen {sport}-Athleten in der Schweiz. Beinhaltet: Profil-Audit, detaillierter Redaktionskalender (7 Posts/Woche: Reels, Karussells, Stories), Skripte und Captions auf Deutsch, Hashtag-Strategie für den Schweizer Markt, und optimale Posting-Zeiten. Verwende das 80/20-Framework."
+    }
+  },
+  en: {
+    'physique-4sem': {
+      title: 'Strength & Explosiveness Program — 4 weeks',
+      desc: 'Personalised strength & conditioning program with DUP periodization. 4 sessions/week tailored to {sport}.',
+      duration: '4 weeks', sessions: '16 sessions',
+      tags: ['Strength', 'Explosiveness', 'Prevention'],
+      details: [
+        "Wk 1-2: Accumulation phase (hypertrophy + strength endurance)",
+        "Wk 3: Intensification phase (max strength + power)",
+        "Wk 4: Taper (speed-strength + explosiveness)",
+        "Includes: warm-up, main lifts, accessories, cool-down",
+        "Bonus: Nordic Hamstring + FIFA 11+ protocol"
+      ],
+      prompt: "Create a 4-week strength and explosiveness program for {sport}, level {level}. 4 sessions per week with DUP periodization. Include warm-up, main lifts with sets/reps/loads, accessories, and cool-down. Add the Nordic Hamstring and FIFA 11+ protocol."
+    },
+    'mental-confiance': {
+      title: 'Confidence & Focus Program — 3 weeks',
+      desc: 'ACT and mindfulness protocol to build self-confidence and competition focus.',
+      duration: '3 weeks', sessions: '15 exercises', fixedLevel: 'All levels',
+      tags: ['Confidence', 'Mindfulness', 'Competition'],
+      details: [
+        "Wk 1: Foundations (diaphragmatic breathing, body scan, positive self-talk)",
+        "Wk 2: Deepening (visualization, cognitive defusion, pre-competition routine)",
+        "Wk 3: Integration (competition simulation, stress management, anchoring)",
+        "Includes: guided audios, mental journaling, daily exercises 10-15 min",
+        "Based on the scientifically validated MSPE protocol"
+      ],
+      prompt: "Create a 3-week mental program based on ACT and MSPE to build self-confidence and competition focus for a {sport} athlete. 5 exercises per week of 10-15 min. Include breathing techniques, visualization, cognitive defusion, pre-competition routine."
+    },
+    'nutrition-performance': {
+      title: 'Performance Nutrition Plan — 4 weeks',
+      desc: 'Periodised meal plan based on your sports calendar. Meals, snacks and timing tailored to {sport}.',
+      duration: '4 weeks', sessions: '28 days of menus',
+      tags: ['Nutrition', 'Performance', 'Recovery'],
+      details: [
+        "Performance Plates adapted to each day type (rest, training, match)",
+        "Breakfast, lunch, dinner + pre/post-workout snacks",
+        "Meal timing aligned with circadian rhythm",
+        "Weekly shopping list",
+        "Evidence-based supplement guide (creatine, omega-3, etc.)"
+      ],
+      prompt: "Create a 4-week performance nutrition plan for a {sport} athlete, {weight}kg, {height}cm. Use the Performance Plates concept with 3 day types (rest, training, competition). Include complete meals with quantities, pre/post-workout snacks, meal timing, and a weekly shopping list."
+    },
+    'sommeil-optimisation': {
+      title: 'Optimal Sleep Protocol — 2 weeks',
+      desc: 'Optimize your sleep quality with a protocol based on sports chronobiology.',
+      duration: '2 weeks', sessions: '14 routines', fixedLevel: 'All levels',
+      tags: ['Sleep', 'Recovery', 'Circadian'],
+      details: [
+        "Wk 1: Audit and setup (sleep hygiene, environment, routine)",
+        "Wk 2: Optimization (sleep extension, strategic naps, chronotype)",
+        "Personalised evening routine (30 min)",
+        "Blue light and temperature management",
+        "Strategies after late training"
+      ],
+      prompt: "Create a 2-week sleep optimization protocol for a {sport} athlete. Wk 1: audit and basics setup (sleep hygiene, environment, evening routine). Wk 2: advanced optimization (sleep extension, strategic naps, chronotype adaptation). Include a 30-min evening routine, blue light management, and post-late-training strategies."
+    },
+    'recuperation-protocole': {
+      title: 'Active Recovery Protocol — 3 weeks',
+      desc: 'Complete recovery program: foam rolling, mobility, CWI, compression. Tailored to {sport}.',
+      duration: '3 weeks', sessions: '18 sessions',
+      tags: ['Recovery', 'Mobility', 'Prevention'],
+      details: [
+        "Post-training routines (20 min): foam rolling + targeted stretches",
+        "Mobility sessions (30 min): key joints for {sport}",
+        "CWI and compression protocols (when and how)",
+        "Load management (ACWR) and warning signs",
+        "Bonus: self-massage and photobiomodulation"
+      ],
+      prompt: "Create a 3-week active recovery protocol for a {sport} athlete, level {level}. 6 sessions per week alternating: post-training routine (foam rolling + stretches, 20 min), mobility session (30 min), CWI and compression protocols. Include the key zones for {sport} and overtraining warning signs."
+    },
+    'marketing-personal-brand': {
+      title: 'Personal Branding Plan — 4 weeks',
+      desc: 'Build your personal brand as an athlete on Instagram and TikTok with a complete content plan.',
+      duration: '4 weeks', sessions: '28 posts + stories', fixedLevel: 'All levels',
+      tags: ['Instagram', 'TikTok', 'Branding'],
+      details: [
+        "Audit of your current profile and positioning",
+        "4-week editorial calendar (Reels, carousels, stories)",
+        "Ready-to-post scripts and captions",
+        "Hashtag strategy and optimal posting times",
+        "80/20 framework (value vs. promotion)"
+      ],
+      prompt: "Create a personal branding plan over 4 weeks for a {sport} athlete in Switzerland. Include: profile audit, detailed editorial calendar (7 posts/week: Reels, carousels, stories), scripts and captions in English, hashtag strategy for the Swiss market, and optimal posting times. Use the 80/20 framework."
+    }
+  },
+  it: {
+    'physique-4sem': {
+      title: 'Forza & Esplosività — 4 settimane',
+      desc: 'Programma personalizzato di preparazione fisica con periodizzazione DUP. 4 sessioni/settimana adattate a {sport}.',
+      duration: '4 settimane', sessions: '16 sessioni',
+      tags: ['Forza', 'Esplosività', 'Prevenzione'],
+      details: [
+        "Sett 1-2: Fase di accumulo (ipertrofia + resistenza alla forza)",
+        "Sett 3: Fase di intensificazione (forza max + potenza)",
+        "Sett 4: Tapering (velocità-forza + esplosività)",
+        "Include: riscaldamento, esercizi principali, accessori, cool-down",
+        "Bonus: protocollo Nordic Hamstring + FIFA 11+"
+      ],
+      prompt: "Creami un programma di forza ed esplosività di 4 settimane per {sport}, livello {level}. 4 sessioni a settimana con periodizzazione DUP. Include riscaldamento, esercizi principali con serie/ripetizioni/carichi, accessori e cool-down. Aggiungi il protocollo Nordic Hamstring e FIFA 11+."
+    },
+    'mental-confiance': {
+      title: 'Fiducia & Focus — 3 settimane',
+      desc: 'Protocollo ACT e mindfulness per rafforzare la fiducia in sé e la concentrazione in competizione.',
+      duration: '3 settimane', sessions: '15 esercizi', fixedLevel: 'Tutti i livelli',
+      tags: ['Fiducia', 'Mindfulness', 'Competizione'],
+      details: [
+        "Sett 1: Fondamenti (respirazione diaframmatica, body scan, dialogo interno positivo)",
+        "Sett 2: Approfondimento (visualizzazione, defusione cognitiva, routine pre-competizione)",
+        "Sett 3: Integrazione (simulazione competizione, gestione stress, ancoraggio)",
+        "Include: audio guidati, journaling mentale, esercizi quotidiani 10-15 min",
+        "Basato sul protocollo MSPE validato scientificamente"
+      ],
+      prompt: "Creami un programma mentale di 3 settimane basato su ACT e MSPE per sviluppare fiducia in sé e focus in competizione per un atleta di {sport}. 5 esercizi a settimana di 10-15 min. Include tecniche di respirazione, visualizzazione, defusione cognitiva, routine pre-competizione."
+    },
+    'nutrition-performance': {
+      title: 'Piano Nutrizione Performance — 4 settimane',
+      desc: 'Piano alimentare periodizzato secondo il tuo calendario sportivo. Pasti, snack e timing adattati a {sport}.',
+      duration: '4 settimane', sessions: '28 giorni di menù',
+      tags: ['Nutrizione', 'Performance', 'Recupero'],
+      details: [
+        "Performance Plates adattate a ogni tipo di giornata (riposo, allenamento, partita)",
+        "Colazione, pranzo, cena + snack pre/post-allenamento",
+        "Timing dei pasti secondo il ritmo circadiano",
+        "Lista della spesa settimanale",
+        "Guida agli integratori basata sull'evidenza (creatina, omega-3, ecc.)"
+      ],
+      prompt: "Creami un piano nutrizionale performance su 4 settimane per un atleta di {sport}, {weight}kg, {height}cm. Usa il concetto Performance Plates con 3 tipi di giornate (riposo, allenamento, competizione). Include pasti completi con grammature, snack pre/post-allenamento, timing dei pasti, e lista della spesa settimanale."
+    },
+    'sommeil-optimisation': {
+      title: 'Protocollo Sonno Ottimale — 2 settimane',
+      desc: 'Ottimizza la qualità del tuo sonno con un protocollo basato sulla cronobiologia sportiva.',
+      duration: '2 settimane', sessions: '14 routine', fixedLevel: 'Tutti i livelli',
+      tags: ['Sonno', 'Recupero', 'Circadiano'],
+      details: [
+        "Sett 1: Audit e impostazione (igiene del sonno, ambiente, routine)",
+        "Sett 2: Ottimizzazione (estensione del sonno, pisolini strategici, cronotipo)",
+        "Routine serale personalizzata (30 min)",
+        "Gestione luce blu e temperatura",
+        "Strategie post-allenamento tardivo"
+      ],
+      prompt: "Creami un protocollo di ottimizzazione del sonno su 2 settimane per un atleta di {sport}. Sett 1: audit e impostazione delle basi (igiene del sonno, ambiente, routine serale). Sett 2: ottimizzazione avanzata (estensione del sonno, pisolini strategici, adattamento al cronotipo). Include una routine serale di 30 min, gestione della luce blu, e strategie post-allenamento tardivo."
+    },
+    'recuperation-protocole': {
+      title: 'Protocollo Recupero Attivo — 3 settimane',
+      desc: 'Programma completo di recupero: foam rolling, mobilità, CWI, compressione. Adattato a {sport}.',
+      duration: '3 settimane', sessions: '18 sessioni',
+      tags: ['Recupero', 'Mobilità', 'Prevenzione'],
+      details: [
+        "Routine post-allenamento (20 min): foam rolling + stretching mirato",
+        "Sessioni di mobilità (30 min): articolazioni chiave per {sport}",
+        "Protocolli CWI e compressione (quando e come)",
+        "Gestione del carico (ACWR) e segnali d'allarme",
+        "Bonus: auto-massaggio e fotobiomodulazione"
+      ],
+      prompt: "Creami un protocollo di recupero attivo su 3 settimane per un atleta di {sport}, livello {level}. 6 sessioni a settimana alternando: routine post-allenamento (foam rolling + stretching, 20 min), sessione di mobilità (30 min), protocolli CWI e compressione. Include le zone chiave per {sport} e i segnali d'allarme di sovraccarico."
+    },
+    'marketing-personal-brand': {
+      title: 'Piano Personal Branding — 4 settimane',
+      desc: 'Costruisci il tuo personal brand come atleta su Instagram e TikTok con un piano di contenuti completo.',
+      duration: '4 settimane', sessions: '28 post + storie', fixedLevel: 'Tutti i livelli',
+      tags: ['Instagram', 'TikTok', 'Branding'],
+      details: [
+        "Audit del tuo profilo attuale e posizionamento",
+        "Calendario editoriale di 4 settimane (Reels, caroselli, storie)",
+        "Script e didascalie pronti da pubblicare",
+        "Strategia hashtag e orari ottimali",
+        "Framework 80/20 (valore vs. promozione)"
+      ],
+      prompt: "Creami un piano di personal branding su 4 settimane per un atleta di {sport} in Svizzera. Include: audit del profilo, calendario editoriale dettagliato (7 post/settimana: Reels, caroselli, storie), script e didascalie in italiano, strategia hashtag per il mercato svizzero, e orari ottimali di pubblicazione. Usa il framework 80/20."
+    }
+  }
+};
+
+// Fallbacks for sport/level when userProfile fields are missing — keeps interpolation lang-coherent.
+const PROGRAM_FALLBACK_SPORT = { fr: 'Football', de: 'Fußball', en: 'Football', it: 'Calcio' };
+const PROGRAM_FALLBACK_LEVEL = { fr: 'intermédiaire', de: 'fortgeschritten', en: 'intermediate', it: 'intermedio' };
+
+function getMarketplacePrograms() {
+  // v49 — fully i18n. Resolve sport/level in current UI language for in-card interpolation,
+  // then map each program's i18n entry through {placeholder} substitution.
+  const lang = currentLang || 'fr';
+  const sport = userProfile?.sport ? sportLabel(userProfile.sport, lang) : (PROGRAM_FALLBACK_SPORT[lang] || 'Football');
+  const level = userProfile?.level ? levelLabel(userProfile.level, lang) : (PROGRAM_FALLBACK_LEVEL[lang] || 'intermédiaire');
+  const weight = (userProfile?.weight || '75');
+  const height = (userProfile?.height || '178');
+  const langData = PROGRAM_I18N[lang] || PROGRAM_I18N.fr;
+  const respondInLang = RESPOND_IN_LANG[lang] || RESPOND_IN_LANG.fr;
+
+  const interp = (s) => String(s)
+    .replace(/\{sport\}/g, sport)
+    .replace(/\{level\}/g, level)
+    .replace(/\{weight\}/g, weight)
+    .replace(/\{height\}/g, height);
+
+  return PROGRAM_ORDER.map(id => {
+    const meta = PROGRAM_META[id];
+    const p = langData[id] || PROGRAM_I18N.fr[id];
+    return {
+      id,
+      agent: meta.agent,
+      emoji: meta.emoji,
+      color: meta.color,
+      title: p.title,
+      desc: interp(p.desc),
+      duration: p.duration,
+      sessions: p.sessions,
+      level: p.fixedLevel || level,
+      tags: p.tags,
+      details: p.details.map(interp),
+      // v49 — append "respond in {lang}" instruction so generated programs come back in the right language
+      prompt: interp(p.prompt) + '\n\n' + respondInLang
+    };
+  });
 }
 
 async function renderMarketplace() {
@@ -7267,8 +7565,8 @@ async function renderMarketplace() {
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
           <div style="font-size:28px">🏪</div>
           <div>
-            <div style="font-size:16px;font-weight:800;color:var(--text)">Programmes par tes agents</div>
-            <div style="font-size:12px;color:var(--muted)">Plans personnalisés créés par tes agents IA, adaptés à ton sport et ton niveau</div>
+            <div style="font-size:16px;font-weight:800;color:var(--text)">${t.marketHero || 'Programmes par tes agents'}</div>
+            <div style="font-size:12px;color:var(--muted)">${t.marketHeroDesc || 'Plans personnalisés créés par tes agents IA, adaptés à ton sport et ton niveau'}</div>
           </div>
         </div>
       </div>
@@ -7297,10 +7595,10 @@ async function renderMarketplace() {
               </div>
               <div style="display:flex;gap:8px">
                 <button onclick="toggleProgramDetails('${p.id}')" style="flex:1;padding:10px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:12px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;transition:all 0.2s">
-                  <span id="toggle-text-${p.id}">Voir le détail</span>
+                  <span id="toggle-text-${p.id}">${t.viewDetails || 'Voir le détail'}</span>
                 </button>
                 <button onclick="startProgram('${p.id}')" style="flex:1;padding:10px;border-radius:10px;border:none;background:linear-gradient(135deg,${p.color},${p.color}cc);color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;transition:all 0.2s">
-                  ${started ? '📋 Continuer' : '🚀 Générer le programme'}
+                  ${started ? '📋 ' + (t.continueProgram || 'Continuer') : '🚀 ' + (t.generateProgram || 'Générer le programme')}
                 </button>
               </div>
             </div>
@@ -7314,14 +7612,15 @@ async function renderMarketplace() {
 }
 
 function toggleProgramDetails(id) {
+  const t = T[currentLang] || {};
   const details = document.getElementById('details-' + id);
   const text = document.getElementById('toggle-text-' + id);
   if (details.style.display === 'none') {
     details.style.display = 'block';
-    text.textContent = 'Masquer le détail';
+    text.textContent = t.hideDetails || 'Masquer le détail';
   } else {
     details.style.display = 'none';
-    text.textContent = 'Voir le détail';
+    text.textContent = t.viewDetails || 'Voir le détail';
   }
 }
 
@@ -9559,7 +9858,7 @@ function renderAbonnement() {
           <div style="margin-bottom:16px"></div>
           ${isPlus ? `<button disabled style="width:100%;padding:10px;border-radius:8px;border:none;background:#06b6d4;color:#07091a;font-weight:700;font-size:12px;cursor:default;font-family:'Inter',sans-serif;opacity:0.6">
             ${t.currentPlanCheck}
-          </button>` : `<button onclick="window.open('https://buy.stripe.com/00w14p3B721JetFavS6AM00','_blank')"
+          </button>` : `<button onclick="window.open('https://buy.stripe.com/00w14p3B721JetFavS6AM00?client_reference_id=lang_${currentLang}','_blank')"
             style="width:100%;padding:10px;border-radius:8px;border:none;background:#06b6d4;color:#07091a;font-weight:700;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity 0.2s" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
             ${t.upgradToPlus || 'Passer au Plus →'}
           </button>`}
@@ -9576,7 +9875,7 @@ function renderAbonnement() {
           <div style="margin-bottom:16px"></div>
           ${isPro ? `<button disabled style="width:100%;padding:10px;border-radius:8px;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-weight:700;font-size:12px;cursor:default;font-family:'Inter',sans-serif;opacity:0.6">
             ${t.currentPlanCheck}
-          </button>` : `<button onclick="window.open('https://buy.stripe.com/28E00ldbHayf99lbzW6AM01','_blank')"
+          </button>` : `<button onclick="window.open('https://buy.stripe.com/28E00ldbHayf99lbzW6AM01?client_reference_id=lang_${currentLang}','_blank')"
             style="width:100%;padding:10px;border-radius:8px;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-weight:700;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity 0.2s" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
             ${t.upgradeToPro}
           </button>`}
@@ -10213,7 +10512,7 @@ function showShortcutsHelp() {
   document.body.appendChild(overlay);
 }
 </script>
-<div id="versionBadge" style="position:fixed;bottom:70px;right:10px;background:rgba(0,0,0,0.7);color:#f59e0b;font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px;z-index:99999;font-family:'Inter',sans-serif;pointer-events:none;border:1px solid #f59e0b30;">v—</div>
+<div id="versionBadge" style="position:fixed;bottom:70px;right:10px;background:var(--bg2);color:var(--gold);font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px;z-index:99999;font-family:'Inter',sans-serif;pointer-events:none;border:1px solid var(--border);box-shadow:0 2px 6px rgba(0,0,0,0.06);">v—</div>
 <script>
   // Sync the version badge with APP_V (defined in the main script above).
   // Was previously hardcoded to "v26" — always showed the wrong version.
