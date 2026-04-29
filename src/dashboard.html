@@ -721,7 +721,7 @@ const T = {
     monthNames:['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'],
     dayNamesShort:['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'],
     dayNamesFull:['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'],
-    today:'Aujourd\'hui', week:'Semaine', weeklyLoad:'Charge hebdo',
+    today:'Aujourd\'hui', week:'Semaine', month:'Mois', weeklyLoad:'Charge hebdo',
     nextEvent:'Prochain événement', days:'JOURS', hours:'HEURES', mins:'MIN',
     addEvent:'+ Ajouter un événement', recapEvent:'Comment s\'est passé "{title}" ?',
     addRecapPrompt:'Ajoutez votre récap pour que vos agents s\'améliorent', doRecap:'Faire le récap →',
@@ -1065,7 +1065,7 @@ const T = {
     monthNames:['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'],
     dayNamesShort:['Mo','Di','Mi','Do','Fr','Sa','So'],
     dayNamesFull:['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'],
-    today:'Heute', week:'Woche', weeklyLoad:'Wöchentliche Auslastung',
+    today:'Heute', week:'Woche', month:'Monat', weeklyLoad:'Wöchentliche Auslastung',
     nextEvent:'Nächstes Ereignis', days:'TAGE', hours:'STUNDEN', mins:'MIN',
     addEvent:'+ Ereignis hinzufügen', recapEvent:'Wie ist es bei "{title}" gelaufen?',
     addRecapPrompt:'Fügen Sie Ihre Zusammenfassung hinzu, damit sich Ihre Agenten verbessern', doRecap:'Zusammenfassung erstellen →',
@@ -1409,7 +1409,7 @@ const T = {
     monthNames:['January','February','March','April','May','June','July','August','September','October','November','December'],
     dayNamesShort:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
     dayNamesFull:['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],
-    today:'Today', week:'Week', weeklyLoad:'Weekly load',
+    today:'Today', week:'Week', month:'Month', weeklyLoad:'Weekly load',
     nextEvent:'Next event', days:'DAYS', hours:'HOURS', mins:'MIN',
     addEvent:'+ Add event', recapEvent:'How did "{title}" go?',
     addRecapPrompt:'Add your recap so your agents can improve', doRecap:'Create recap →',
@@ -1753,7 +1753,7 @@ const T = {
     monthNames:['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'],
     dayNamesShort:['Lun','Mar','Mer','Gio','Ven','Sab','Dom'],
     dayNamesFull:['Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato','Domenica'],
-    today:'Oggi', week:'Settimana', weeklyLoad:'Carico settimanale',
+    today:'Oggi', week:'Settimana', month:'Mese', weeklyLoad:'Carico settimanale',
     nextEvent:'Prossimo evento', days:'GIORNI', hours:'ORE', mins:'MIN',
     addEvent:'+ Aggiungi evento', recapEvent:'Come è andato "{title}"?',
     addRecapPrompt:'Aggiungi il tuo recap in modo che i tuoi agenti possano migliorare', doRecap:'Crea recap →',
@@ -2950,7 +2950,7 @@ async function init() {
 // It cleans caches, reloads ONCE, and uses a retry counter to prevent infinite loops.
 // ⚠️  IMPORTANT : cette constante DOIT correspondre à src/version.json (.version).
 //     Si tu bumps version.json, bump APP_V au même nombre — sinon boucle de reload.
-const APP_V = '52';
+const APP_V = '53';
 async function checkAppVersion() {
   try {
     const res = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
@@ -4716,10 +4716,12 @@ async function getCalendarContext() {
     if (!events || events.length === 0) return '';
 
     const typeLabels = { match:'Match', competition:'Compétition', entrainement:'Entraînement', autre:'Événement' };
-    // Also get recent past events with recaps for context
+    // v53 — also get recent past events with recaps for context (window expanded 3 → 10 within last 14 days)
+    const fourteenDaysAgo = new Date(today.getTime() - 14 * 86400000);
     const { data: pastEvents } = await sb.from('calendar_events')
       .select('*').eq('user_id', currentUser.id).eq('recap_done', true)
-      .order('event_date', { ascending: false }).limit(3);
+      .gte('event_date', dateToStr(fourteenDaysAgo))
+      .order('event_date', { ascending: false }).limit(10);
 
     let ctx = events.map(e => {
       const d = new Date(e.event_date);
@@ -4731,7 +4733,9 @@ async function getCalendarContext() {
 
     if (pastEvents && pastEvents.length > 0) {
       ctx += '\n\nRÉCAPS RÉCENTS (utilise ces données pour personnaliser tes conseils):\n' + pastEvents.map(e => {
-        let recap = `${e.title} (${e.event_date}): performance=${e.performance_note}/10, physique=${e.physical_state}, humeur=${e.mood}`;
+        let recap = `${e.title} (${e.event_date}): performance=${e.performance_note}/10`;
+        if (e.rpe) recap += `, RPE=${e.rpe}/10`;
+        recap += `, physique=${e.physical_state}, humeur=${e.mood}`;
         if (e.result) recap += `, résultat=${e.result}`;
         if (e.sleep_quality) recap += `, sommeil veille=${e.sleep_quality}`;
         if (e.pre_nutrition) recap += `, nutrition avant=${e.pre_nutrition}`;
@@ -5624,16 +5628,17 @@ async function renderCalendar() {
         const days = Math.floor(diff / 86400000);
         const hours = Math.floor((diff % 86400000) / 3600000);
         const mins = Math.floor((diff % 3600000) / 60000);
-        const t = EVENT_TYPES[nextEvent.event_type] || EVENT_TYPES.autre;
+        const et = EVENT_TYPES[nextEvent.event_type] || EVENT_TYPES.autre;
+        const localeCode = ({fr:'fr-CH',de:'de-CH',en:'en-GB',it:'it-CH'})[currentLang] || 'fr-CH';
         return `
-        <div style="background:linear-gradient(135deg,${t.color}15,${t.color}05);border:1px solid ${t.color}30;border-radius:14px;padding:20px;margin-bottom:16px;text-align:center">
-          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Prochain événement</div>
-          <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:4px">${t.emoji} ${nextEvent.title}</div>
-          <div style="font-size:11px;color:var(--muted);margin-bottom:14px">${nextEvent.location ? nextEvent.location + ' · ' : ''}${new Date(nextEvent.event_date).toLocaleDateString('fr-CH',{weekday:'long',day:'numeric',month:'long'})}${nextEvent.event_time ? ' à ' + nextEvent.event_time.slice(0,5) : ''}</div>
+        <div style="background:linear-gradient(135deg,${et.color}15,${et.color}05);border:1px solid ${et.color}30;border-radius:14px;padding:20px;margin-bottom:16px;text-align:center">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">${t.nextEvent}</div>
+          <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:4px">${et.emoji} ${nextEvent.title}</div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:14px">${nextEvent.location ? nextEvent.location + ' · ' : ''}${new Date(nextEvent.event_date).toLocaleDateString(localeCode,{weekday:'long',day:'numeric',month:'long'})}${nextEvent.event_time ? ' ' + (t.dashPrepaAt||'à') + ' ' + nextEvent.event_time.slice(0,5) : ''}</div>
           <div style="display:flex;justify-content:center;gap:12px">
-            ${days > 0 ? `<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 16px;min-width:60px"><div style="font-size:24px;font-weight:900;color:${t.color}">${days}</div><div style="font-size:9px;color:var(--muted);font-weight:600">JOURS</div></div>` : ''}
-            <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 16px;min-width:60px"><div style="font-size:24px;font-weight:900;color:${t.color}">${hours}</div><div style="font-size:9px;color:var(--muted);font-weight:600">HEURES</div></div>
-            <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 16px;min-width:60px"><div style="font-size:24px;font-weight:900;color:${t.color}">${mins}</div><div style="font-size:9px;color:var(--muted);font-weight:600">MIN</div></div>
+            ${days > 0 ? `<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 16px;min-width:60px"><div style="font-size:24px;font-weight:900;color:${et.color}">${days}</div><div style="font-size:9px;color:var(--muted);font-weight:600">${t.days}</div></div>` : ''}
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 16px;min-width:60px"><div style="font-size:24px;font-weight:900;color:${et.color}">${hours}</div><div style="font-size:9px;color:var(--muted);font-weight:600">${t.hours}</div></div>
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 16px;min-width:60px"><div style="font-size:24px;font-weight:900;color:${et.color}">${mins}</div><div style="font-size:9px;color:var(--muted);font-weight:600">${t.mins}</div></div>
           </div>
         </div>`;
       })() : ''}
@@ -5679,7 +5684,7 @@ async function renderCalendar() {
 
       <!-- VIEW TOGGLE -->
       <div style="display:flex;gap:4px;margin-bottom:16px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:3px">
-        <button onclick="calendarView='month';renderCalendar()" style="flex:1;padding:8px;border-radius:6px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;${calendarView==='month'?'background:var(--bg3);color:var(--text)':'background:transparent;color:var(--muted)'}">📅 Mois</button>
+        <button onclick="calendarView='month';renderCalendar()" style="flex:1;padding:8px;border-radius:6px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;${calendarView==='month'?'background:var(--bg3);color:var(--text)':'background:transparent;color:var(--muted)'}">📅 ${t.month||'Mois'}</button>
         <button onclick="calendarView='week';renderCalendar()" style="flex:1;padding:8px;border-radius:6px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;${calendarView==='week'?'background:var(--bg3);color:var(--text)':'background:transparent;color:var(--muted)'}">📋 ${t.week}</button>
       </div>
 
