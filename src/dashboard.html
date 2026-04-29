@@ -732,6 +732,14 @@ const T = {
     // Calendar form
     eventTitle:'Titre', eventType:'Type', eventDate:'Date', eventTime:'Heure', eventLocation:'Lieu',
     eventNotes:'Notes (optionnel)', plannedIntensity:'Intensité prévue',
+    // v52 — Add/Edit event modals i18n
+    eventModalAddTitle:'Nouvel événement', eventModalAddSub:'Ajoutez un match, une compétition ou un entraînement.',
+    eventModalEditTitle:"Modifier l'événement", eventModalEditSub:'Modifiez les détails de votre événement.',
+    eventDuration:'Durée', eventTitlePlaceholder:'Ex: Match vs FC Sion',
+    eventLocationPlaceholder:'Ex: Stade de la Tuilière, Lausanne', eventNotesPlaceholder:"Ex: Arriver 1h avant, échauffement spécial",
+    eventBtnAdd:'Ajouter →', eventBtnSave:'Enregistrer ✓',
+    eventValidationError:'Veuillez remplir le titre et la date.', eventErrorPrefix:'Erreur:',
+    eventToastModified:'✅ Événement modifié !', eventToastDeleted:'🗑 Événement supprimé', eventConfirmDelete:'Supprimer cet événement ?',
     save:'Sauvegarder', cancel:'Annuler', delete:'Supprimer', skip:'Passer', yes:'Oui', no:'Non',
     // Event modal
     mySchedule:'Mon Calendrier', addEventTitle:'Ajouter un événement',
@@ -1068,6 +1076,14 @@ const T = {
     // Calendar form
     eventTitle:'Titel', eventType:'Typ', eventDate:'Datum', eventTime:'Uhrzeit', eventLocation:'Ort',
     eventNotes:'Notizen (optional)', plannedIntensity:'Geplante Intensität',
+    // v52 — Add/Edit event modals i18n
+    eventModalAddTitle:'Neues Ereignis', eventModalAddSub:'Fügen Sie ein Spiel, einen Wettkampf oder ein Training hinzu.',
+    eventModalEditTitle:'Ereignis bearbeiten', eventModalEditSub:'Bearbeiten Sie die Details Ihres Ereignisses.',
+    eventDuration:'Dauer', eventTitlePlaceholder:'Z. B. Spiel gegen FC Zürich',
+    eventLocationPlaceholder:'Z. B. Stadion Letzigrund, Zürich', eventNotesPlaceholder:'Z. B. 1 Std. vorher ankommen, spezielles Aufwärmen',
+    eventBtnAdd:'Hinzufügen →', eventBtnSave:'Speichern ✓',
+    eventValidationError:'Bitte füllen Sie Titel und Datum aus.', eventErrorPrefix:'Fehler:',
+    eventToastModified:'✅ Ereignis aktualisiert!', eventToastDeleted:'🗑 Ereignis gelöscht', eventConfirmDelete:'Dieses Ereignis löschen?',
     save:'Speichern', cancel:'Abbrechen', delete:'Löschen', skip:'Überspringen', yes:'Ja', no:'Nein',
     // Event modal
     mySchedule:'Mein Kalender', addEventTitle:'Ereignis hinzufügen',
@@ -1404,6 +1420,14 @@ const T = {
     // Calendar form
     eventTitle:'Title', eventType:'Type', eventDate:'Date', eventTime:'Time', eventLocation:'Location',
     eventNotes:'Notes (optional)', plannedIntensity:'Planned intensity',
+    // v52 — Add/Edit event modals i18n
+    eventModalAddTitle:'New event', eventModalAddSub:'Add a match, competition or training.',
+    eventModalEditTitle:'Edit event', eventModalEditSub:"Edit your event's details.",
+    eventDuration:'Duration', eventTitlePlaceholder:'E.g. Match vs FC Sion',
+    eventLocationPlaceholder:'E.g. Stade de la Tuilière, Lausanne', eventNotesPlaceholder:'E.g. Arrive 1h before, special warm-up',
+    eventBtnAdd:'Add →', eventBtnSave:'Save ✓',
+    eventValidationError:'Please fill in the title and date.', eventErrorPrefix:'Error:',
+    eventToastModified:'✅ Event updated!', eventToastDeleted:'🗑 Event deleted', eventConfirmDelete:'Delete this event?',
     save:'Save', cancel:'Cancel', delete:'Delete', skip:'Skip', yes:'Yes', no:'No',
     // Event modal
     mySchedule:'My Calendar', addEventTitle:'Add event',
@@ -1740,6 +1764,14 @@ const T = {
     // Calendar form
     eventTitle:'Titolo', eventType:'Tipo', eventDate:'Data', eventTime:'Ora', eventLocation:'Luogo',
     eventNotes:'Note (opzionale)', plannedIntensity:'Intensità pianificata',
+    // v52 — Add/Edit event modals i18n
+    eventModalAddTitle:'Nuovo evento', eventModalAddSub:'Aggiunga una partita, una competizione o un allenamento.',
+    eventModalEditTitle:'Modifica evento', eventModalEditSub:'Modifichi i dettagli del Suo evento.',
+    eventDuration:'Durata', eventTitlePlaceholder:'Es: Partita contro FC Lugano',
+    eventLocationPlaceholder:'Es: Stadio di Cornaredo, Lugano', eventNotesPlaceholder:'Es: Arrivare 1h prima, riscaldamento speciale',
+    eventBtnAdd:'Aggiungi →', eventBtnSave:'Salva ✓',
+    eventValidationError:'Per favore compili titolo e data.', eventErrorPrefix:'Errore:',
+    eventToastModified:'✅ Evento aggiornato!', eventToastDeleted:'🗑 Evento eliminato', eventConfirmDelete:'Eliminare questo evento?',
     save:'Salva', cancel:'Annulla', delete:'Elimina', skip:'Salta', yes:'Sì', no:'No',
     // Event modal
     mySchedule:'Il mio Calendario', addEventTitle:'Aggiungi evento',
@@ -2918,7 +2950,7 @@ async function init() {
 // It cleans caches, reloads ONCE, and uses a retry counter to prevent infinite loops.
 // ⚠️  IMPORTANT : cette constante DOIT correspondre à src/version.json (.version).
 //     Si tu bumps version.json, bump APP_V au même nombre — sinon boucle de reload.
-const APP_V = '51';
+const APP_V = '52';
 async function checkAppVersion() {
   try {
     const res = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
@@ -5873,41 +5905,42 @@ function showAddEvent(dateStr) {
   const existing = document.getElementById('eventModal');
   if (existing) existing.remove();
 
+  const t = T[currentLang] || T.fr;
+  const types = ['match','competition','entrainement','autre'];
+  const intensities = ['legere','moyenne','intense'];
+
   const modal = document.createElement('div');
   modal.className = 'modal-overlay';
   modal.id = 'eventModal';
   modal.innerHTML = `
     <div class="modal-box" style="max-width:420px">
       <div style="font-size:28px;margin-bottom:8px">📅</div>
-      <div class="modal-title">Nouvel événement</div>
-      <div class="modal-sub">Ajoutez un match, une compétition ou un entraînement.</div>
+      <div class="modal-title">${t.eventModalAddTitle}</div>
+      <div class="modal-sub">${t.eventModalAddSub}</div>
 
       <div class="form-field">
-        <label class="form-label">Type d'événement</label>
+        <label class="form-label">${t.eventType}</label>
         <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
-          <button class="sport-btn selected" onclick="selectEventType(this,'match')" style="padding:10px;font-size:12px">⚽ Match</button>
-          <button class="sport-btn" onclick="selectEventType(this,'competition')" style="padding:10px;font-size:12px">🏆 Compétition</button>
-          <button class="sport-btn" onclick="selectEventType(this,'entrainement')" style="padding:10px;font-size:12px">🏋️ Entraînement</button>
-          <button class="sport-btn" onclick="selectEventType(this,'autre')" style="padding:10px;font-size:12px">📌 Autre</button>
+          ${types.map(tp => `<button class="sport-btn${tp==='match'?' selected':''}" onclick="selectEventType(this,'${tp}')" style="padding:10px;font-size:12px">${EVENT_TYPES[tp].emoji} ${eventTypeLabel(tp)}</button>`).join('')}
         </div>
       </div>
 
       <div class="form-field">
-        <label class="form-label">Titre</label>
-        <input type="text" class="form-input" id="evTitle" placeholder="Ex: Match vs FC Sion" />
+        <label class="form-label">${t.eventTitle}</label>
+        <input type="text" class="form-input" id="evTitle" placeholder="${t.eventTitlePlaceholder}" />
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
         <div class="form-field">
-          <label class="form-label">Date</label>
+          <label class="form-label">${t.eventDate}</label>
           <input type="date" class="form-input" id="evDate" value="${dateStr}" />
         </div>
         <div class="form-field">
-          <label class="form-label">Heure</label>
+          <label class="form-label">${t.eventTime}</label>
           <input type="time" class="form-input" id="evTime" value="18:00" />
         </div>
         <div class="form-field">
-          <label class="form-label">Durée</label>
+          <label class="form-label">${t.eventDuration}</label>
           <select class="form-input form-select" id="evDuration" style="padding:11px 12px">
             <option value="30">30 min</option>
             <option value="60">1h</option>
@@ -5920,32 +5953,30 @@ function showAddEvent(dateStr) {
       </div>
 
       <div class="form-field">
-        <label class="form-label">Lieu</label>
-        <input type="text" class="form-input" id="evLocation" placeholder="Ex: Stade de la Tuilière, Lausanne" />
+        <label class="form-label">${t.eventLocation}</label>
+        <input type="text" class="form-input" id="evLocation" placeholder="${t.eventLocationPlaceholder}" />
       </div>
 
       <div class="form-field">
-        <label class="form-label">Intensité prévue</label>
+        <label class="form-label">${t.plannedIntensity}</label>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
-          <button class="sport-btn" onclick="selectIntensity(this,'legere')" style="padding:8px;font-size:11px">🟢 Légère</button>
-          <button class="sport-btn selected" onclick="selectIntensity(this,'moyenne')" style="padding:8px;font-size:11px">🟡 Moyenne</button>
-          <button class="sport-btn" onclick="selectIntensity(this,'intense')" style="padding:8px;font-size:11px">🔴 Intense</button>
+          ${intensities.map(i => `<button class="sport-btn${i==='moyenne'?' selected':''}" onclick="selectIntensity(this,'${i}')" style="padding:8px;font-size:11px">${INTENSITY[i].icon} ${intensityLabel(i)}</button>`).join('')}
         </div>
       </div>
 
       <div class="form-field">
-        <label class="form-label">Notes (optionnel)</label>
-        <input type="text" class="form-input" id="evNotes" placeholder="Ex: Arriver 1h avant, échauffement spécial" />
+        <label class="form-label">${t.eventNotes}</label>
+        <input type="text" class="form-input" id="evNotes" placeholder="${t.eventNotesPlaceholder}" />
       </div>
 
       <div style="display:flex;gap:8px;margin-top:12px">
         <button onclick="document.getElementById('eventModal')?.remove()"
           style="flex:1;padding:13px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">
-          Annuler
+          ${t.cancel}
         </button>
         <button onclick="saveEvent()"
           style="flex:2;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">
-          Ajouter →
+          ${t.eventBtnAdd}
         </button>
       </div>
     </div>
@@ -5968,6 +5999,7 @@ function selectIntensity(btn, level) {
 }
 
 async function saveEvent() {
+  const t = T[currentLang] || T.fr;
   const title = document.getElementById('evTitle').value.trim();
   const date = document.getElementById('evDate').value;
   const time = document.getElementById('evTime').value || null;
@@ -5975,7 +6007,7 @@ async function saveEvent() {
   const location = document.getElementById('evLocation').value.trim() || null;
   const notes = document.getElementById('evNotes').value.trim() || null;
 
-  if (!title || !date) return alert('Veuillez remplir le titre et la date.');
+  if (!title || !date) return alert(t.eventValidationError);
 
   const { error } = await sb.from('calendar_events').insert({
     user_id: currentUser.id,
@@ -5989,7 +6021,7 @@ async function saveEvent() {
     intensity: selectedIntensity
   });
 
-  if (error) return alert('Erreur: ' + error.message);
+  if (error) return alert(t.eventErrorPrefix + ' ' + error.message);
   document.getElementById('eventModal')?.remove();
   renderCalendar();
 }
@@ -6001,10 +6033,9 @@ function editEvent(id, title, type, date, time, location, intensity, notes) {
   selectedEventType = type;
   selectedIntensity = intensity;
 
+  const tLang = T[currentLang] || T.fr;
   const types = ['match','competition','entrainement','autre'];
-  const typeLabels = {'match':'⚽ Match','competition':'🏆 Compétition','entrainement':'🏋️ Entraînement','autre':'📌 Autre'};
   const intensities = ['legere','moyenne','intense'];
-  const intensityLabels = {'legere':'🟢 Légère','moyenne':'🟡 Moyenne','intense':'🔴 Intense'};
 
   const modal = document.createElement('div');
   modal.className = 'modal-overlay';
@@ -6012,57 +6043,57 @@ function editEvent(id, title, type, date, time, location, intensity, notes) {
   modal.innerHTML = `
     <div class="modal-box" style="max-width:420px">
       <div style="font-size:28px;margin-bottom:8px">✏️</div>
-      <div class="modal-title">Modifier l'événement</div>
-      <div class="modal-sub">Modifiez les détails de votre événement.</div>
+      <div class="modal-title">${tLang.eventModalEditTitle}</div>
+      <div class="modal-sub">${tLang.eventModalEditSub}</div>
 
       <div class="form-field">
-        <label class="form-label">Type d'événement</label>
+        <label class="form-label">${tLang.eventType}</label>
         <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
-          ${types.map(t => `<button class="sport-btn${t===type?' selected':''}" onclick="selectEventType(this,'${t}')" style="padding:10px;font-size:12px">${typeLabels[t]}</button>`).join('')}
+          ${types.map(tp => `<button class="sport-btn${tp===type?' selected':''}" onclick="selectEventType(this,'${tp}')" style="padding:10px;font-size:12px">${EVENT_TYPES[tp].emoji} ${eventTypeLabel(tp)}</button>`).join('')}
         </div>
       </div>
 
       <div class="form-field">
-        <label class="form-label">Titre</label>
+        <label class="form-label">${tLang.eventTitle}</label>
         <input type="text" class="form-input" id="evTitle" value="${title}" />
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div class="form-field">
-          <label class="form-label">Date</label>
+          <label class="form-label">${tLang.eventDate}</label>
           <input type="date" class="form-input" id="evDate" value="${date}" />
         </div>
         <div class="form-field">
-          <label class="form-label">Heure</label>
+          <label class="form-label">${tLang.eventTime}</label>
           <input type="time" class="form-input" id="evTime" value="${time ? time.slice(0,5) : ''}" />
         </div>
       </div>
 
       <div class="form-field">
-        <label class="form-label">Lieu</label>
+        <label class="form-label">${tLang.eventLocation}</label>
         <input type="text" class="form-input" id="evLocation" value="${location}" />
       </div>
 
       <div class="form-field">
-        <label class="form-label">Intensité prévue</label>
+        <label class="form-label">${tLang.plannedIntensity}</label>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
-          ${intensities.map(i => `<button class="sport-btn${i===intensity?' selected':''}" onclick="selectIntensity(this,'${i}')" style="padding:8px;font-size:11px">${intensityLabels[i]}</button>`).join('')}
+          ${intensities.map(i => `<button class="sport-btn${i===intensity?' selected':''}" onclick="selectIntensity(this,'${i}')" style="padding:8px;font-size:11px">${INTENSITY[i].icon} ${intensityLabel(i)}</button>`).join('')}
         </div>
       </div>
 
       <div class="form-field">
-        <label class="form-label">Notes (optionnel)</label>
+        <label class="form-label">${tLang.eventNotes}</label>
         <input type="text" class="form-input" id="evNotes" value="${notes}" />
       </div>
 
       <div style="display:flex;gap:8px;margin-top:12px">
         <button onclick="document.getElementById('eventModal')?.remove()"
           style="flex:1;padding:13px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">
-          Annuler
+          ${tLang.cancel}
         </button>
         <button onclick="updateEvent('${id}')"
           style="flex:2;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">
-          Enregistrer ✓
+          ${tLang.eventBtnSave}
         </button>
       </div>
     </div>
@@ -6072,13 +6103,14 @@ function editEvent(id, title, type, date, time, location, intensity, notes) {
 }
 
 async function updateEvent(id) {
+  const t = T[currentLang] || T.fr;
   const title = document.getElementById('evTitle').value.trim();
   const date = document.getElementById('evDate').value;
   const time = document.getElementById('evTime').value || null;
   const location = document.getElementById('evLocation').value.trim() || null;
   const notes = document.getElementById('evNotes').value.trim() || null;
 
-  if (!title || !date) return alert('Veuillez remplir le titre et la date.');
+  if (!title || !date) return alert(t.eventValidationError);
 
   const { error } = await sb.from('calendar_events').update({
     title,
@@ -6090,19 +6122,20 @@ async function updateEvent(id) {
     intensity: selectedIntensity
   }).eq('id', id);
 
-  if (error) return alert('Erreur: ' + error.message);
+  if (error) return alert(t.eventErrorPrefix + ' ' + error.message);
   document.getElementById('eventModal')?.remove();
-  showToast('✅ Événement modifié !');
+  showToast(t.eventToastModified);
   renderCalendar();
 }
 
 async function deleteEvent(id) {
-  if (!confirm('Supprimer cet événement ?')) return;
+  const t = T[currentLang] || T.fr;
+  if (!confirm(t.eventConfirmDelete)) return;
   await sb.from('calendar_events').delete().eq('id', id);
   // Remove from local array immediately for instant UI update
   calendarEvents = calendarEvents.filter(e => e.id !== id);
   document.getElementById('eventModal')?.remove();
-  showToast('🗑 Événement supprimé');
+  showToast(t.eventToastDeleted);
   await renderCalendar();
 }
 
