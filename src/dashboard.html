@@ -1024,6 +1024,8 @@ const T = {
     btnCancel:'Annuler',
     btnContinue:'Continuer',
     btnConfirmDelete:'Supprimer définitivement',
+    // v56 — bouton de retour vers le brief du jour (page Journal)
+    briefViewAgain:'Voir le brief du jour',
     agentTitles:{
       marketing:'Marketing & Personal Branding',
       finance:'Conseil Financier',
@@ -1385,6 +1387,8 @@ const T = {
     btnCancel:'Abbrechen',
     btnContinue:'Weiter',
     btnConfirmDelete:'Endgültig löschen',
+    // v56 — Tagesbriefing erneut öffnen (Journal-Seite)
+    briefViewAgain:'Tagesbriefing anzeigen',
     agentTitles:{
       marketing:'Marketing & Personal Branding',
       finance:'Finanzberatung',
@@ -1746,6 +1750,8 @@ const T = {
     btnCancel:'Cancel',
     btnContinue:'Continue',
     btnConfirmDelete:'Delete permanently',
+    // v56 — re-open today's morning brief (Journal page)
+    briefViewAgain:"View today's brief",
     agentTitles:{
       marketing:'Marketing & Personal Branding',
       finance:'Financial Advice',
@@ -2107,6 +2113,8 @@ const T = {
     btnCancel:'Annulla',
     btnContinue:'Continua',
     btnConfirmDelete:'Elimina definitivamente',
+    // v56 — riapri il briefing del giorno (pagina Diario)
+    briefViewAgain:'Vedi il briefing di oggi',
     agentTitles:{
       marketing:'Marketing & Personal Branding',
       finance:'Consulenza Finanziaria',
@@ -3035,7 +3043,7 @@ async function init() {
 // It cleans caches, reloads ONCE, and uses a retry counter to prevent infinite loops.
 // ⚠️  IMPORTANT : cette constante DOIT correspondre à src/version.json (.version).
 //     Si tu bumps version.json, bump APP_V au même nombre — sinon boucle de reload.
-const APP_V = '55';
+const APP_V = '56';
 async function checkAppVersion() {
   try {
     const res = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
@@ -6690,10 +6698,14 @@ function skipRecap(eventId) {
 // restait posée → brief perdu pour la journée, sans aucun log clair. Désormais on pose la clé
 // SEULEMENT après que le DOM ait été appendChild'é avec succès. Logs préfixés [BRIEF] pour
 // faciliter le filtrage en console (Settings → Console → Filter "BRIEF").
-async function showMorningBrief() {
+// v56 — `forceShow` permet de re-ouvrir le brief depuis un bouton manuel
+// (page Journal "🌅 Voir le brief du jour"), même s'il a déjà été affiché aujourd'hui.
+// Bug rapporté 30/04 : si l'user cliquait "Remplir mon journal" depuis le brief, il
+// ne pouvait plus revenir au brief jusqu'au lendemain. Maintenant il a une voie de retour.
+async function showMorningBrief(forceShow = false) {
   const _briefStart = performance.now();
   try {
-    console.log('[BRIEF] entry');
+    console.log('[BRIEF] entry' + (forceShow ? ' (forceShow=true)' : ''));
 
     // Only show after onboarding is completed/skipped
     // v46: dual-check (cache + DB) + self-heal — fix régression du 28/04 où un cache
@@ -6703,12 +6715,18 @@ async function showMorningBrief() {
       return;
     }
 
-    // Only show once per day
+    // If a brief is already on screen, just bring it back into view (defensive)
+    if (document.getElementById('morningBriefOverlay')) {
+      console.log('[BRIEF] already in DOM — no-op');
+      return;
+    }
+
+    // Only show once per day — UNLESS forceShow=true (manual re-open from journal page)
     const today = new Date();
     today.setHours(0,0,0,0);
     const todayStr = dateToStr(today);
     const briefKey = `sv_morning_brief_${currentUser.id}_${todayStr}`;
-    if (localStorage.getItem(briefKey)) {
+    if (!forceShow && localStorage.getItem(briefKey)) {
       console.log('[BRIEF] skipped — already shown today (' + todayStr + ')');
       return;
     }
@@ -8538,8 +8556,21 @@ async function renderJournal() {
     </div>
   ` : '';
 
+  // v56 — petit bouton de retour vers le brief du jour, visible si l'user a déjà vu son brief aujourd'hui
+  // (résout le bug 30/04 : depuis le brief, "Remplir mon journal" navigue ici sans voie de retour)
+  const _todayStr = dateToStr();
+  const briefShownToday = !!localStorage.getItem('sv_morning_brief_' + currentUser.id + '_' + _todayStr);
+  const briefBackBtn = briefShownToday ? `
+    <div style="margin-bottom:14px;display:flex;justify-content:flex-start">
+      <button onclick="showMorningBrief(true)" style="padding:8px 14px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;display:inline-flex;align-items:center;gap:6px;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">
+        🌅 ${t.briefViewAgain || 'Voir le brief du jour'}
+      </button>
+    </div>
+  ` : '';
+
   document.getElementById('mainContent').innerHTML = `
     <div style="max-width:800px">
+      ${briefBackBtn}
       ${showSummary ? summaryBlock : ''}
       <!-- Today's Entry Form (hidden when summary is shown) -->
       <div style="background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;${showSummary ? 'display:none;' : ''}">
