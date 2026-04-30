@@ -2301,6 +2301,7 @@ function showLucasWelcome() {
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;animation:fadeIn 0.4s ease';
 
   let step = 0;
+  let advancing = false; // v55 — debounce pour éviter le double-clic qui empile 2 setTimeout(step++) → crash steps[5]
   const data = { sport: '', level: '', goal: '' };
 
   // v42 — Sources of truth are SPORTS_CATALOG / LEVELS_CATALOG / GOALS_CATALOG defined globally.
@@ -2409,6 +2410,14 @@ function showLucasWelcome() {
         `;
       }
     ];
+    // v55 — defensive guard : si step est out of bounds (e.g. double-clic non capté
+    // par le debounce, ou state corrompu), on finit l'onboarding plutôt que crasher.
+    if (step < 0 || step >= steps.length) {
+      console.warn('[onboarding] step out of bounds:', step, '/ length:', steps.length, '→ auto-finish');
+      // Use a 0-delay setTimeout so the current renderStep() call completes cleanly.
+      setTimeout(() => { try { window.finishOnboarding && window.finishOnboarding('dashboard'); } catch(_) {} }, 0);
+      return '<div style="padding:40px;text-align:center;color:#94a3b8">…</div>';
+    }
     return steps[step]();
   }
 
@@ -2423,13 +2432,16 @@ function showLucasWelcome() {
   }
 
   window.nextOnboardStep = function() {
+    if (advancing) return; // v55 — debounce double-clic
     if (step === 1 && !data.sport) {
       const custom = document.getElementById('obCustomSport');
       if (custom && custom.value.trim()) data.sport = custom.value.trim();
       else return;
     }
+    advancing = true;
     step++;
     render();
+    setTimeout(() => { advancing = false; }, 350);
   };
 
   window.selectOnboardSport = function(btn, sport) {
@@ -2442,19 +2454,23 @@ function showLucasWelcome() {
   };
 
   window.selectOnboardLevel = function(btn, level) {
+    if (advancing) return; // v55 — debounce double-clic (le crash de v54 venait d'ici : 2 setTimeout step++ empilés)
+    advancing = true;
     data.level = level;
     document.querySelectorAll('.ob-level-btn').forEach(b => { b.style.borderColor = '#1e2d47'; b.style.background = '#111827'; });
     btn.style.borderColor = '#f59e0b';
     btn.style.background = '#f59e0b15';
-    setTimeout(() => { step++; render(); }, 300);
+    setTimeout(() => { step++; render(); advancing = false; }, 300);
   };
 
   window.selectOnboardGoal = function(btn, goal) {
+    if (advancing) return; // v55 — debounce double-clic
+    advancing = true;
     data.goal = goal;
     document.querySelectorAll('.ob-goal-btn').forEach(b => { b.style.borderColor = '#1e2d47'; b.style.background = '#111827'; });
     btn.style.borderColor = '#f59e0b';
     btn.style.background = '#f59e0b15';
-    setTimeout(() => { step++; render(); }, 300);
+    setTimeout(() => { step++; render(); advancing = false; }, 300);
   };
 
   window.skipOnboardingTemp = function() {
@@ -3019,7 +3035,7 @@ async function init() {
 // It cleans caches, reloads ONCE, and uses a retry counter to prevent infinite loops.
 // ⚠️  IMPORTANT : cette constante DOIT correspondre à src/version.json (.version).
 //     Si tu bumps version.json, bump APP_V au même nombre — sinon boucle de reload.
-const APP_V = '54';
+const APP_V = '55';
 async function checkAppVersion() {
   try {
     const res = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
