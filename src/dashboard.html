@@ -412,6 +412,7 @@
     @keyframes micPulse { 0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.3)} 50%{box-shadow:0 0 0 8px rgba(239,68,68,0)} }
     @keyframes fadeIn { from{opacity:0} to{opacity:1} }
     @keyframes slideUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes spin { to { transform: rotate(360deg); } }
     .file-preview {
       position: relative; background: var(--bg3); border: 1px solid var(--border);
       border-radius: 12px; padding: 10px; margin: 0 12px 8px 12px;
@@ -1006,6 +1007,23 @@ const T = {
     recapBadge:'RÉCAP',
     recapMiniPerf:'Performance',
     recapEdit:'✏️ Modifier',
+    // v54 — Suppression de compte (right to be forgotten)
+    dangerZone:'Zone dangereuse',
+    deleteAccountTitle:'Supprimer mon compte',
+    deleteAccountDesc:'Cette action est définitive. Toutes vos données seront effacées : profil, objectifs, journal quotidien, calendrier, récapitulatifs, conversations avec les agents IA. Votre abonnement sera annulé immédiatement.',
+    deleteAccountBtn:'🗑 Supprimer mon compte',
+    deleteAccountConfirm1Title:'Êtes-vous absolument sûr ?',
+    deleteAccountConfirm1Desc:'Cette action est irréversible. Une fois confirmée, toutes vos données seront effacées définitivement.',
+    deleteAccountConfirm2Title:'Confirmation finale',
+    deleteAccountConfirm2Desc:'Pour confirmer la suppression, tapez le mot ci-dessous en majuscules :',
+    deleteAccountTypeWord:'SUPPRIMER',
+    deleteAccountTypeError:'❌ Le mot saisi ne correspond pas. Suppression annulée.',
+    deleteAccountInProgress:'Suppression en cours…',
+    deleteAccountError:'❌ Erreur lors de la suppression. Contactez info@sportvise.ch',
+    deleteAccountSuccess:'Votre compte a été supprimé. Au revoir.',
+    btnCancel:'Annuler',
+    btnContinue:'Continuer',
+    btnConfirmDelete:'Supprimer définitivement',
     agentTitles:{
       marketing:'Marketing & Personal Branding',
       finance:'Conseil Financier',
@@ -1350,6 +1368,23 @@ const T = {
     recapBadge:'BILANZ',
     recapMiniPerf:'Leistung',
     recapEdit:'✏️ Bearbeiten',
+    // v54 — Kontolöschung (Recht auf Vergessenwerden)
+    dangerZone:'Gefahrenzone',
+    deleteAccountTitle:'Konto löschen',
+    deleteAccountDesc:'Diese Aktion ist endgültig. Alle Ihre Daten werden gelöscht: Profil, Ziele, Tagebuch, Kalender, Bilanzen, Konversationen mit den KI-Agenten. Ihr Abonnement wird sofort gekündigt.',
+    deleteAccountBtn:'🗑 Konto löschen',
+    deleteAccountConfirm1Title:'Sind Sie absolut sicher?',
+    deleteAccountConfirm1Desc:'Diese Aktion ist unwiderruflich. Nach der Bestätigung werden alle Ihre Daten endgültig gelöscht.',
+    deleteAccountConfirm2Title:'Endgültige Bestätigung',
+    deleteAccountConfirm2Desc:'Um die Löschung zu bestätigen, geben Sie das untenstehende Wort in Grossbuchstaben ein:',
+    deleteAccountTypeWord:'LÖSCHEN',
+    deleteAccountTypeError:'❌ Das eingegebene Wort stimmt nicht überein. Löschung abgebrochen.',
+    deleteAccountInProgress:'Löschung läuft…',
+    deleteAccountError:'❌ Fehler bei der Löschung. Kontaktieren Sie info@sportvise.ch',
+    deleteAccountSuccess:'Ihr Konto wurde gelöscht. Auf Wiedersehen.',
+    btnCancel:'Abbrechen',
+    btnContinue:'Weiter',
+    btnConfirmDelete:'Endgültig löschen',
     agentTitles:{
       marketing:'Marketing & Personal Branding',
       finance:'Finanzberatung',
@@ -1694,6 +1729,23 @@ const T = {
     recapBadge:'RECAP',
     recapMiniPerf:'Performance',
     recapEdit:'✏️ Edit',
+    // v54 — Account deletion (right to be forgotten)
+    dangerZone:'Danger zone',
+    deleteAccountTitle:'Delete my account',
+    deleteAccountDesc:'This action is permanent. All your data will be erased: profile, goals, daily journal, calendar, recaps, conversations with AI agents. Your subscription will be cancelled immediately.',
+    deleteAccountBtn:'🗑 Delete my account',
+    deleteAccountConfirm1Title:'Are you absolutely sure?',
+    deleteAccountConfirm1Desc:'This action is irreversible. Once confirmed, all your data will be permanently erased.',
+    deleteAccountConfirm2Title:'Final confirmation',
+    deleteAccountConfirm2Desc:'To confirm deletion, type the word below in uppercase:',
+    deleteAccountTypeWord:'DELETE',
+    deleteAccountTypeError:'❌ The word does not match. Deletion cancelled.',
+    deleteAccountInProgress:'Deleting…',
+    deleteAccountError:'❌ Error during deletion. Contact info@sportvise.ch',
+    deleteAccountSuccess:'Your account has been deleted. Goodbye.',
+    btnCancel:'Cancel',
+    btnContinue:'Continue',
+    btnConfirmDelete:'Delete permanently',
     agentTitles:{
       marketing:'Marketing & Personal Branding',
       finance:'Financial Advice',
@@ -2038,6 +2090,23 @@ const T = {
     recapBadge:'RIEPILOGO',
     recapMiniPerf:'Performance',
     recapEdit:'✏️ Modifica',
+    // v54 — Eliminazione account (diritto all'oblio)
+    dangerZone:'Zona pericolosa',
+    deleteAccountTitle:'Elimina il mio account',
+    deleteAccountDesc:"Questa azione è definitiva. Tutti i Suoi dati saranno cancellati: profilo, obiettivi, diario quotidiano, calendario, riepiloghi, conversazioni con gli agenti IA. Il Suo abbonamento sarà annullato immediatamente.",
+    deleteAccountBtn:'🗑 Elimina il mio account',
+    deleteAccountConfirm1Title:'È assolutamente sicuro?',
+    deleteAccountConfirm1Desc:'Questa azione è irreversibile. Una volta confermata, tutti i Suoi dati saranno cancellati definitivamente.',
+    deleteAccountConfirm2Title:'Conferma finale',
+    deleteAccountConfirm2Desc:'Per confermare l’eliminazione, digiti la parola sottostante in maiuscolo:',
+    deleteAccountTypeWord:'ELIMINA',
+    deleteAccountTypeError:"❌ La parola inserita non corrisponde. Eliminazione annullata.",
+    deleteAccountInProgress:'Eliminazione in corso…',
+    deleteAccountError:"❌ Errore durante l'eliminazione. Contatti info@sportvise.ch",
+    deleteAccountSuccess:'Il Suo account è stato eliminato. Arrivederci.',
+    btnCancel:'Annulla',
+    btnContinue:'Continua',
+    btnConfirmDelete:'Elimina definitivamente',
     agentTitles:{
       marketing:'Marketing & Personal Branding',
       finance:'Consulenza Finanziaria',
@@ -2950,7 +3019,7 @@ async function init() {
 // It cleans caches, reloads ONCE, and uses a retry counter to prevent infinite loops.
 // ⚠️  IMPORTANT : cette constante DOIT correspondre à src/version.json (.version).
 //     Si tu bumps version.json, bump APP_V au même nombre — sinon boucle de reload.
-const APP_V = '53';
+const APP_V = '54';
 async function checkAppVersion() {
   try {
     const res = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
@@ -3552,10 +3621,165 @@ function showProfileModal() {
       <button onclick="saveProfile()" style="width:100%;padding:14px;border-radius:10px;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-size:15px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;margin-top:8px">
         ${t.saveProfile}
       </button>
+
+      <!-- v54 — Zone dangereuse : suppression de compte (right to be forgotten LPD/RGPD) -->
+      <div style="margin-top:32px;padding:18px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.25);border-radius:12px">
+        <div style="font-size:13px;font-weight:700;color:#ef4444;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">⚠️ ${t.dangerZone}</div>
+        <div style="font-size:14px;color:var(--text);margin-bottom:6px;font-weight:600">${t.deleteAccountTitle}</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">${t.deleteAccountDesc}</div>
+        <button onclick="showDeleteAccountModal()" style="padding:10px 18px;border-radius:8px;border:1px solid #ef4444;background:transparent;color:#ef4444;font-weight:700;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif">
+          ${t.deleteAccountBtn}
+        </button>
+      </div>
     </div>
   `;
   document.body.appendChild(modal);
   selectedLevel = currentLevelKey; // store the canonical key (was previously the FR label)
+}
+
+// ── v54 — DELETE ACCOUNT MODAL (right to be forgotten) ──────────
+// 2-step styled confirmation : (1) "êtes-vous sûr ?", (2) taper SUPPRIMER → POST /.netlify/functions/delete-account
+// → signOut + redirect /index.html?deleted=1
+function showDeleteAccountModal() {
+  const t = T[currentLang] || T.fr;
+  const expectedWord = t.deleteAccountTypeWord;
+
+  // Don't close profileModal — the danger modal stacks on top.
+  // If the user cancels, they fall back to the profile modal underneath.
+
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.id = 'deleteAccountModal';
+  modal.innerHTML = `
+    <div class="modal-box" style="max-width:440px">
+      <div id="dangerStep1">
+        <div style="font-size:40px;margin-bottom:12px;text-align:center">⚠️</div>
+        <div class="modal-title" style="color:#ef4444;text-align:center">${t.deleteAccountConfirm1Title}</div>
+        <div class="modal-sub" style="text-align:center;line-height:1.5">${t.deleteAccountConfirm1Desc}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px">
+          <button onclick="closeDeleteAccountModal()" style="padding:12px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text);font-weight:600;font-size:14px;cursor:pointer;font-family:'Inter',sans-serif">
+            ${t.btnCancel}
+          </button>
+          <button onclick="goToDangerStep2()" style="padding:12px;border-radius:10px;border:none;background:#ef4444;color:white;font-weight:700;font-size:14px;cursor:pointer;font-family:'Inter',sans-serif">
+            ${t.btnContinue}
+          </button>
+        </div>
+      </div>
+      <div id="dangerStep2" style="display:none">
+        <div style="font-size:40px;margin-bottom:12px;text-align:center">🗑</div>
+        <div class="modal-title" style="color:#ef4444;text-align:center">${t.deleteAccountConfirm2Title}</div>
+        <div class="modal-sub" style="text-align:center;line-height:1.5;margin-bottom:8px">${t.deleteAccountConfirm2Desc}</div>
+        <div style="text-align:center;font-size:18px;font-weight:800;color:#ef4444;letter-spacing:2px;margin-bottom:14px">${expectedWord}</div>
+        <input id="deleteAccountConfirmInput" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false"
+               oninput="onDeleteAccountInputChange()"
+               style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:16px;font-weight:700;letter-spacing:2px;text-align:center;font-family:'Inter',sans-serif;text-transform:uppercase;box-sizing:border-box" />
+        <div id="deleteAccountInputError" style="color:#ef4444;font-size:12px;margin-top:8px;min-height:16px;text-align:center"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px">
+          <button onclick="closeDeleteAccountModal()" style="padding:12px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text);font-weight:600;font-size:14px;cursor:pointer;font-family:'Inter',sans-serif">
+            ${t.btnCancel}
+          </button>
+          <button id="deleteAccountConfirmBtn" onclick="performAccountDeletion()" disabled
+                  style="padding:12px;border-radius:10px;border:none;background:#ef4444;color:white;font-weight:700;font-size:14px;cursor:not-allowed;opacity:0.5;font-family:'Inter',sans-serif">
+            ${t.btnConfirmDelete}
+          </button>
+        </div>
+        <div id="deleteAccountProgress" style="display:none;margin-top:14px;text-align:center;color:var(--muted);font-size:13px">
+          <span style="display:inline-block;width:14px;height:14px;border:2px solid var(--muted);border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-right:8px"></span>
+          ${t.deleteAccountInProgress}
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+function closeDeleteAccountModal() {
+  document.getElementById('deleteAccountModal')?.remove();
+}
+
+function goToDangerStep2() {
+  const s1 = document.getElementById('dangerStep1');
+  const s2 = document.getElementById('dangerStep2');
+  if (s1) s1.style.display = 'none';
+  if (s2) s2.style.display = 'block';
+  // Focus input
+  setTimeout(() => document.getElementById('deleteAccountConfirmInput')?.focus(), 50);
+}
+
+function onDeleteAccountInputChange() {
+  const t = T[currentLang] || T.fr;
+  const input = document.getElementById('deleteAccountConfirmInput');
+  const btn = document.getElementById('deleteAccountConfirmBtn');
+  const err = document.getElementById('deleteAccountInputError');
+  if (!input || !btn) return;
+  const typed = (input.value || '').trim().toUpperCase();
+  const expected = t.deleteAccountTypeWord;
+  if (typed === expected) {
+    btn.disabled = false;
+    btn.style.cursor = 'pointer';
+    btn.style.opacity = '1';
+    if (err) err.textContent = '';
+  } else {
+    btn.disabled = true;
+    btn.style.cursor = 'not-allowed';
+    btn.style.opacity = '0.5';
+    if (err) err.textContent = '';
+  }
+}
+
+async function performAccountDeletion() {
+  const t = T[currentLang] || T.fr;
+  const btn = document.getElementById('deleteAccountConfirmBtn');
+  const cancelBtn = btn?.parentElement?.querySelector('button:first-child');
+  const progress = document.getElementById('deleteAccountProgress');
+  const err = document.getElementById('deleteAccountInputError');
+  const input = document.getElementById('deleteAccountConfirmInput');
+
+  // Defensive re-check (user shouldn't be able to click if word doesn't match, but safe)
+  const typed = (input?.value || '').trim().toUpperCase();
+  if (typed !== t.deleteAccountTypeWord) {
+    if (err) err.textContent = t.deleteAccountTypeError;
+    return;
+  }
+
+  // Loading state
+  if (btn) { btn.disabled = true; btn.style.opacity = '0.5'; btn.style.cursor = 'wait'; }
+  if (cancelBtn) { cancelBtn.disabled = true; cancelBtn.style.opacity = '0.5'; cancelBtn.style.cursor = 'wait'; }
+  if (input) input.disabled = true;
+  if (progress) progress.style.display = 'block';
+  if (err) err.textContent = '';
+
+  try {
+    const sessionRes = await sb.auth.getSession();
+    const session = sessionRes?.data?.session;
+    if (!session?.access_token) throw new Error('No session');
+
+    const res = await fetch('/.netlify/functions/delete-account', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + session.access_token,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({}));
+      throw new Error(errBody.error || ('HTTP ' + res.status));
+    }
+
+    // Success — sign out and redirect to public homepage with deleted=1 flag
+    try { await sb.auth.signOut(); } catch (_) { /* non-blocking */ }
+    try { localStorage.clear(); } catch (_) { /* non-blocking */ }
+    window.location.href = '/index.html?deleted=1&lang=' + currentLang;
+  } catch (e) {
+    console.error('[DELETE_ACCOUNT] error:', e);
+    // Restore UI
+    if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; }
+    if (cancelBtn) { cancelBtn.disabled = false; cancelBtn.style.opacity = '1'; cancelBtn.style.cursor = 'pointer'; }
+    if (input) input.disabled = false;
+    if (progress) progress.style.display = 'none';
+    if (err) err.textContent = t.deleteAccountError;
+  }
 }
 
 function selectLevel(btn, levelKeyArg) {
