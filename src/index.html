@@ -4,6 +4,23 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>SPORTVISE — Management Sportif IA · Suisse</title>
+  <!-- ── Sentry error reporting (v58 P0 #7) — landing surface ─────── -->
+  <script src="https://browser.sentry-cdn.com/8.45.0/bundle.min.js" crossorigin="anonymous"></script>
+  <script>
+  (function () {
+    if (!window.Sentry) return;
+    if (!/sportvise\.ch$/i.test(location.hostname)) return;
+    Sentry.init({
+      dsn: 'https://815c2a765347b04e879535be1a600826@o4511314258165760.ingest.de.sentry.io/4511314265309264',
+      environment: 'production',
+      release: 'sportvise-landing',
+      sendDefaultPii: false,
+      sampleRate: 1.0,
+      ignoreErrors: [/ResizeObserver loop/i, 'Script error.', /Load failed/i, /NetworkError/i],
+      denyUrls: [/\/extensions\//i, /^chrome-extension:\/\//i, /^moz-extension:\/\//i, /^safari-(web-)?extension:\/\//i]
+    });
+  })();
+  </script>
   <script>
   // CACHE CLEANER v21 — async, cleans SW + caches silently
   window._cacheCleanDone = (async function(){

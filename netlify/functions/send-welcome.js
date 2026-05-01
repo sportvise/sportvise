@@ -220,7 +220,7 @@ function renderEmailHtml(t, firstName, sport) {
 
       <!-- CTA -->
       <div style="text-align:center">
-        <a href="https://sportvise.ch/app/login.html" style="display:inline-block;padding:14px 36px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-size:15px;font-weight:800;text-decoration:none;border-radius:10px;letter-spacing:0.3px">
+        <a href="https://sportvise.ch/login.html" style="display:inline-block;padding:14px 36px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-size:15px;font-weight:800;text-decoration:none;border-radius:10px;letter-spacing:0.3px">
           ${t.ctaButton}
         </a>
       </div>

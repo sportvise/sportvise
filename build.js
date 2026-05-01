@@ -51,6 +51,12 @@ if (appVersion) {
   } else {
     console.warn('  ⚠️  Could not find APP_V declaration to sync');
   }
+  // Also sync <meta name="app-version" content="..."> — used by Sentry release tag (v58)
+  const metaVRegex = /<meta\s+name=["']app-version["']\s+content=["'][^"']*["']\s*\/?>/i;
+  if (metaVRegex.test(dashboardRaw)) {
+    dashboardRaw = dashboardRaw.replace(metaVRegex, `<meta name="app-version" content="${appVersion}" />`);
+    console.log(`  ✅ <meta app-version> synced → '${appVersion}'`);
+  }
 }
 
 // Extract the main <style> block (the big one after the initial scripts)
