@@ -5019,6 +5019,63 @@ async function getOtherAgentsSummary(currentAgentId) {
 }
 
 // ── CALENDAR CONTEXT FOR AGENTS ─────────────────────
+
+// v59 — Block TENDANCES événements (P1 ticket #3 spec v53). Pré-calcule des agrégats
+// numériques sur les récaps des 7 derniers jours pour que l'agent ne rate pas les
+// signaux clés (RPE moyen, blessures, état dominant). Conditionnel ≥2 events sur 7j
+// pour éviter du bruit chez les users avec peu de data. Cap implicite par le filtre
+// 14j amont (LIMIT 10).
+function buildEventTrendsBlock(pastEvents) {
+  if (!pastEvents || pastEvents.length === 0) return '';
+  const now = Date.now();
+  const sevenDaysAgo = new Date(now - 7 * 86400000);
+  const fourteenDaysAgo = new Date(now - 14 * 86400000);
+  const eventsLast7d = pastEvents.filter(e => new Date(e.event_date) >= sevenDaysAgo);
+  if (eventsLast7d.length < 2) return '';
+
+  const lines = [];
+  // RPE moyen 7j
+  const withRpe = eventsLast7d.filter(e => typeof e.rpe === 'number' && e.rpe > 0);
+  if (withRpe.length > 0) {
+    const avgRpe = (withRpe.reduce((s,e) => s + e.rpe, 0) / withRpe.length).toFixed(1);
+    lines.push(`- RPE moyen : ${avgRpe}/10 (${withRpe.length} séance${withRpe.length>1?'s':''} avec RPE renseigné sur 7j)`);
+  }
+  // Performance moyenne 7j
+  const withPerf = eventsLast7d.filter(e => typeof e.performance_note === 'number' && e.performance_note > 0);
+  if (withPerf.length > 0) {
+    const avgPerf = (withPerf.reduce((s,e) => s + e.performance_note, 0) / withPerf.length).toFixed(1);
+    lines.push(`- Performance moyenne : ${avgPerf}/10 (${withPerf.length} évaluation${withPerf.length>1?'s':''})`);
+  }
+  // Qualité sommeil veille (depuis sleep_quality des récaps)
+  const sleepCounts = {};
+  eventsLast7d.forEach(e => { if (e.sleep_quality) sleepCounts[e.sleep_quality] = (sleepCounts[e.sleep_quality] || 0) + 1; });
+  const sleepKeys = Object.keys(sleepCounts);
+  if (sleepKeys.length > 0) {
+    const sleepStr = sleepKeys.map(k => `${sleepCounts[k]} ${k}`).join(', ');
+    const total = sleepKeys.reduce((s,k) => s + sleepCounts[k], 0);
+    lines.push(`- Sommeil veille des séances (sur ${total} récap${total>1?'s':''}) : ${sleepStr}`);
+  }
+  // Blessures actives 14j (window élargie pour ne pas rater une blessure J-10)
+  const eventsLast14d = pastEvents.filter(e => new Date(e.event_date) >= fourteenDaysAgo);
+  const injuries = eventsLast14d.filter(e => e.injury && e.injury !== 'aucune');
+  if (injuries.length > 0) {
+    const list = injuries.map(e => `${e.injury} (${e.event_date})`).join(', ');
+    lines.push(`- ⚠️ Blessures signalées (14 derniers jours) : ${list}`);
+  }
+  // État physique dominant 7j
+  const physCounts = {};
+  eventsLast7d.forEach(e => { if (e.physical_state) physCounts[e.physical_state] = (physCounts[e.physical_state] || 0) + 1; });
+  const physEntries = Object.entries(physCounts).sort((a,b) => b[1] - a[1]);
+  if (physEntries.length > 0) {
+    let line = `- État physique dominant : "${physEntries[0][0]}" (${physEntries[0][1]} fois)`;
+    if (physEntries[1]) line += `, puis "${physEntries[1][0]}" (${physEntries[1][1]})`;
+    lines.push(line);
+  }
+
+  if (lines.length === 0) return '';
+  return `📊 TENDANCES ÉVÉNEMENTS — 7 DERNIERS JOURS (utilise activement ces agrégats pour personnaliser tes conseils) :\n${lines.join('\n')}\n\n`;
+}
+
 async function getCalendarContext() {
   try {
     const today = new Date();
@@ -5042,7 +5099,11 @@ async function getCalendarContext() {
       .gte('event_date', dateToStr(fourteenDaysAgo))
       .order('event_date', { ascending: false }).limit(10);
 
-    let ctx = events.map(e => {
+    // v59 — block TENDANCES en tête (les LLMs accordent plus de poids au début du context block)
+    let ctx = buildEventTrendsBlock(pastEvents);
+
+    ctx += 'ÉVÉNEMENTS À VENIR :\n';
+    ctx += events.map(e => {
       const d = new Date(e.event_date);
       const diff = Math.round((d - today) / 86400000);
       const when = diff === 0 ? "AUJOURD'HUI" : diff === 1 ? 'DEMAIN' : `dans ${diff} jours`;
