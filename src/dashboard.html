@@ -5542,11 +5542,42 @@ L'athlète pratique : ${p.sport || 'sport non renseigné'}, niveau : ${p.level |
       requestBody.image = attachedImageData;
       requestBody.imageType = attachedImageType;
     }
+
+    // v60 — récupérer le JWT Supabase pour l'Authorization header (rate-limit + auth serveur)
+    const fetchHeaders = { 'Content-Type': 'application/json' };
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session?.access_token) fetchHeaders['Authorization'] = `Bearer ${session.access_token}`;
+    } catch(_) { /* token absent → 401 server, fallback local par catch */ }
+
     const res = await fetch('/.netlify/functions/chat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: fetchHeaders,
       body: JSON.stringify(requestBody)
     });
+
+    // v60 — gestion 429 : message UX dédié, pas de fallback générique
+    if (res.status === 429) {
+      let body = {};
+      try { body = await res.json(); } catch(_) {}
+      const icon = body.scope === 'minute' ? '⏱️' : '🔒';
+      const limitMsg = body.message || 'Limite de messages atteinte.';
+      const showUpgrade = body.plan === 'free' && body.scope === 'day';
+      const upgradeBtn = showUpgrade
+        ? `<button onclick="showPage('abonnement',document.querySelector('[onclick*=abonnement]'))" style="margin-top:10px;padding:9px 18px;border-radius:8px;border:none;background:#06b6d4;color:#fff;font-weight:700;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif">Passer au Plus — CHF 12/mois →</button>`
+        : '';
+      const msgsEl = document.getElementById('chatMessages');
+      if (msgsEl) {
+        msgsEl.innerHTML += `<div style="background:#f59e0b15;border:1px solid #f59e0b30;border-radius:12px;padding:14px;margin:12px 0;text-align:center">
+          <div style="font-size:22px;margin-bottom:6px">${icon}</div>
+          <div style="font-weight:700;font-size:13px;color:var(--text);margin-bottom:4px">Limite atteinte</div>
+          <div style="font-size:12px;color:var(--muted2);line-height:1.5">${limitMsg}</div>
+          ${upgradeBtn}
+        </div>`;
+        msgsEl.scrollTop = msgsEl.scrollHeight;
+      }
+      return; // sortir de sendMsg : pas de fallback agent.getResponse, pas de save Supabase
+    }
 
     if (!res.ok) throw new Error('API error');
     const data = await res.json();
@@ -9923,9 +9954,17 @@ async function generateWeeklyAIReport() {
 - Notes du journal : ${(logs||[]).filter(l=>l.notes).map(l=>l.log_date.slice(5)+': '+l.notes).join(' | ') || 'aucune'}`;
 
     // Call AI
+    // v60 — Authorization header pour cohérence (NB : ce site utilise un format
+    // payload incompatible avec /chat — agent au lieu de agentId — donc échoue déjà
+    // en 400 et tombe dans le fallback local. L'auth ne change pas le comportement.)
+    const reportHeaders = { 'Content-Type': 'application/json' };
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session?.access_token) reportHeaders['Authorization'] = `Bearer ${session.access_token}`;
+    } catch(_) {}
     const aiRes = await fetch('/.netlify/functions/chat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: reportHeaders,
       body: JSON.stringify({
         message: 'Génère un rapport hebdomadaire complet et personnalisé pour cet athlète. Structure : 1) Résumé (2-3 phrases), 2) Points forts de la semaine (2-3), 3) Points d\'amélioration (2-3), 4) Recommandations prioritaires pour la semaine prochaine (3 actions concrètes), 5) Un message de motivation personnalisé. Sois concis, bienveillant et actionnable. Utilise des emojis avec modération.',
         agent: 'equipe',
