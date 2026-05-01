@@ -564,6 +564,13 @@
       <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Besoin d'aide ?</div>
       <a href="mailto:info@sportvise.ch" style="color:#f59e0b;font-size:12px;font-weight:600;text-decoration:none">info@sportvise.ch</a>
     </div>
+    <div class="legal-links" style="display:flex;justify-content:center;align-items:center;gap:6px;font-size:10px;margin:0 0 8px;color:var(--muted)">
+      <a href="terms_fr.html" data-legal-section="terms" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:none">CGU</a>
+      <span style="opacity:0.5">·</span>
+      <a href="privacy_fr.html" data-legal-section="privacy" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:none">Conf.</a>
+      <span style="opacity:0.5">·</span>
+      <a href="legal_fr.html" data-legal-section="legal" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:none">Mentions</a>
+    </div>
     <button class="logout-btn" onclick="logout()">🚪 Se déconnecter</button>
   </div>
 </div>
@@ -2588,6 +2595,21 @@ function setLang(lang) {
   if (logoutBtn) logoutBtn.textContent = t.logout;
   const sideContact = document.getElementById('sidebarContact');
   if (sideContact) sideContact.innerHTML = '<div style="font-size:11px;color:var(--muted);margin-bottom:4px">' + (t.contactQuestion || 'Une question ?') + '</div><a href="mailto:info@sportvise.ch" style="color:#f59e0b;font-size:12px;font-weight:600;text-decoration:none">info@sportvise.ch</a>';
+  // Wire sidebar legal links (terms / privacy / legal_notice) to localized HTML pages
+  const legalLabelsLocal = {
+    fr: { terms: 'CGU',   privacy: 'Conf.',      legal: 'Mentions' },
+    de: { terms: 'AGB',   privacy: 'Datenschutz', legal: 'Impressum' },
+    en: { terms: 'Terms', privacy: 'Privacy',     legal: 'Legal' },
+    it: { terms: 'CGU',   privacy: 'Privacy',     legal: 'Note legali' }
+  };
+  document.querySelectorAll('a[data-legal-section]').forEach(a => {
+    const section = a.getAttribute('data-legal-section');
+    if (!section) return;
+    a.setAttribute('href', section + '_' + lang + '.html');
+    if (legalLabelsLocal[lang] && legalLabelsLocal[lang][section]) {
+      a.textContent = legalLabelsLocal[lang][section];
+    }
+  });
   const agentBadge = document.getElementById('agentBadge');
   if (agentBadge) agentBadge.textContent = t.agentActive;
   // Refresh current page content

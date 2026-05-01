@@ -109,14 +109,24 @@ fs.writeFileSync(path.join(DIST, 'dashboard.html'), dashboardWithoutCSS);
 console.log(`  ✅ dashboard.html → dist/ (${Math.round(dashboardWithoutCSS.length/1024)}KB, slim)`);
 
 // ── 2. Copy other files as-is ──────────────────────
-const copyFiles = ['login.html', 'index.html', 'admin.html', 'nuke.html', 'sw.js', 'manifest.json', 'version.json'];
-copyFiles.forEach(f => {
+// Whitelist for non-html static files; HTML files are auto-globbed below
+// (so freshly-generated legal pages — privacy_*.html, terms_*.html, legal_*.html — ship without
+//  needing a build.js change every time a language is added).
+const copyStatic = ['sw.js', 'manifest.json', 'version.json'];
+copyStatic.forEach(f => {
   const src = path.join(SRC, f);
   if (fs.existsSync(src)) {
     fs.copyFileSync(src, path.join(DIST, f));
   }
 });
-console.log(`  ✅ ${copyFiles.length} static files copied`);
+
+// Auto-glob all *.html except dashboard.html (which has its own CSS/JS extraction pass above)
+const htmlFiles = fs.readdirSync(SRC)
+  .filter(f => f.endsWith('.html') && f !== 'dashboard.html');
+htmlFiles.forEach(f => {
+  fs.copyFileSync(path.join(SRC, f), path.join(DIST, f));
+});
+console.log(`  ✅ ${copyStatic.length} static files + ${htmlFiles.length} HTML pages copied`);
 
 // Copy icons
 const iconsDir = path.join(SRC, 'icons');

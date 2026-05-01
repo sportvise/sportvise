@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SPORTVISE — Conditions d'utilisation</title>
+  <meta name="description" content="Conditions d'utilisation SPORTVISE." />
+  <meta name="robots" content="index, follow" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #07091a; --bg2: #0d1127; --bg3: #111827;
+      --border: #1e2d47; --gold: #f59e0b; --gold-soft: #fbbf24;
+      --green: #10b981; --red: #ef4444;
+      --text: #f1f5f9; --text-soft: #cbd5e1; --muted: #94a3b8; --muted-2: #64748b;
+    }
+    html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; }
+    body {
+      min-height: 100vh; display: flex; flex-direction: column;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    body::before {
+      content: ''; position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 500px;
+      background: radial-gradient(ellipse, #f59e0b0a 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+    /* Header */
+    header.legal-header {
+      position: relative; z-index: 1;
+      max-width: 880px; margin: 0 auto; width: 100%;
+      padding: 28px 24px 8px;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .logo-wrap { display: flex; flex-direction: column; }
+    .logo {
+      font-size: 22px; font-weight: 900; letter-spacing: 3px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-soft));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      text-decoration: none;
+    }
+    .tagline { font-size: 11px; color: var(--muted); margin-top: 2px; letter-spacing: 0.4px; }
+    .lang-switch { display: inline-flex; gap: 4px; }
+    .lang-flag {
+      display: inline-block; padding: 4px 8px; border-radius: 6px;
+      font-size: 18px; line-height: 1; text-decoration: none;
+      opacity: 0.45; transition: opacity 0.2s, background 0.2s;
+    }
+    .lang-flag:hover { opacity: 1; background: var(--bg2); }
+    .lang-flag.active { opacity: 1; background: var(--bg2); }
+    .back-link {
+      display: inline-block; margin: 8px 0 0;
+      font-size: 13px; color: var(--muted); text-decoration: none;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--gold); }
+    /* Content */
+    main.legal-content {
+      position: relative; z-index: 1;
+      max-width: 760px; margin: 24px auto 64px; width: 100%;
+      padding: 32px 24px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+    }
+    main.legal-content h1 {
+      font-size: 28px; font-weight: 900; line-height: 1.25;
+      margin-bottom: 24px; padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+    main.legal-content h2 {
+      font-size: 19px; font-weight: 800; margin-top: 36px; margin-bottom: 12px;
+      color: var(--gold);
+    }
+    main.legal-content h3 {
+      font-size: 16px; font-weight: 700; margin-top: 24px; margin-bottom: 10px;
+      color: var(--text);
+    }
+    main.legal-content h4 {
+      font-size: 14px; font-weight: 700; margin-top: 18px; margin-bottom: 8px;
+      color: var(--text-soft);
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    main.legal-content p {
+      font-size: 15px; color: var(--text-soft); margin-bottom: 14px;
+    }
+    main.legal-content strong { color: var(--text); font-weight: 700; }
+    main.legal-content em { color: var(--text-soft); font-style: italic; }
+    main.legal-content a {
+      color: var(--gold); text-decoration: underline; text-decoration-color: rgba(245, 158, 11, 0.4);
+      text-underline-offset: 2px; transition: text-decoration-color 0.2s;
+    }
+    main.legal-content a:hover { text-decoration-color: var(--gold); }
+    main.legal-content ul, main.legal-content ol {
+      margin: 0 0 16px 0; padding-left: 22px;
+    }
+    main.legal-content li { font-size: 15px; color: var(--text-soft); margin-bottom: 6px; }
+    main.legal-content blockquote {
+      border-left: 3px solid var(--gold);
+      background: var(--bg3);
+      padding: 12px 16px; margin: 16px 0;
+      border-radius: 0 8px 8px 0;
+      font-size: 14px; color: var(--text-soft);
+    }
+    main.legal-content code {
+      font-family: 'SF Mono', Monaco, Consolas, monospace;
+      font-size: 13px; background: var(--bg3); padding: 1px 6px;
+      border-radius: 4px; color: var(--gold-soft);
+    }
+    main.legal-content hr {
+      margin: 32px 0; border: 0;
+      border-top: 1px solid var(--border);
+    }
+    /* Tables */
+    .table-wrap { overflow-x: auto; margin: 16px 0 22px; border-radius: 10px; border: 1px solid var(--border); }
+    main.legal-content table {
+      width: 100%; border-collapse: collapse; font-size: 13.5px;
+      background: var(--bg3);
+    }
+    main.legal-content th {
+      text-align: left; font-weight: 700; color: var(--text);
+      padding: 10px 14px; background: rgba(245, 158, 11, 0.08);
+      border-bottom: 1px solid var(--border);
+    }
+    main.legal-content td {
+      padding: 10px 14px; color: var(--text-soft);
+      border-bottom: 1px solid rgba(30, 45, 71, 0.6);
+      vertical-align: top;
+    }
+    main.legal-content tr:last-child td { border-bottom: 0; }
+    main.legal-content tr:hover td { background: rgba(245, 158, 11, 0.03); }
+    /* Footer */
+    footer.legal-footer {
+      position: relative; z-index: 1;
+      max-width: 880px; margin: 0 auto 32px; width: 100%;
+      padding: 22px 24px;
+      border-top: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 12px; align-items: center;
+      font-size: 12px; color: var(--muted);
+      text-align: center;
+    }
+    footer.legal-footer .related { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
+    footer.legal-footer a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    footer.legal-footer a:hover { color: var(--gold); }
+    footer.legal-footer .related-title { font-weight: 700; color: var(--text-soft); margin-right: 8px; }
+    footer.legal-footer .contact { font-size: 11px; }
+    footer.legal-footer .copy { font-size: 11px; color: var(--muted-2); }
+    /* Responsive */
+    @media (max-width: 600px) {
+      header.legal-header { padding: 20px 16px 4px; }
+      main.legal-content { padding: 22px 18px; margin: 16px 12px 40px; border-radius: 12px; }
+      main.legal-content h1 { font-size: 22px; }
+      main.legal-content h2 { font-size: 17px; }
+      main.legal-content table { font-size: 12.5px; }
+      main.legal-content th, main.legal-content td { padding: 8px 10px; }
+    }
+    /* Print */
+    @media print {
+      body { background: white; color: black; }
+      body::before { display: none; }
+      header.legal-header, footer.legal-footer { display: none; }
+      main.legal-content {
+        background: white; border: none; max-width: 100%; margin: 0; padding: 0;
+        color: black;
+      }
+      main.legal-content h1, main.legal-content h3, main.legal-content h4 { color: black; }
+      main.legal-content h2 { color: #b45309; }
+      main.legal-content p, main.legal-content li, main.legal-content td { color: #1e293b; }
+      main.legal-content a { color: #b45309; text-decoration: underline; }
+      .table-wrap, main.legal-content table { background: white; border-color: #cbd5e1; }
+      main.legal-content th { background: #fef3c7; }
+    }
+  </style>
+</head>
+<body>
+  <header class="legal-header">
+    <div class="logo-wrap">
+      <a href="index.html" class="logo">SPORTVISE</a>
+      <div class="tagline">🇨🇭 Management Sportif IA · Suisse</div>
+      <a href="index.html" class="back-link">← Retour à l'accueil</a>
+    </div>
+    <div class="lang-switch" role="navigation" aria-label="Language"><a href="terms_fr.html" title="Français" class="lang-flag active" aria-current="page">🇫🇷</a><a href="terms_de.html" title="Deutsch" class="lang-flag" aria-current="false">🇩🇪</a><a href="terms_en.html" title="English" class="lang-flag" aria-current="false">🇬🇧</a><a href="terms_it.html" title="Italiano" class="lang-flag" aria-current="false">🇮🇹</a></div>
+  </header>
+
+  <main class="legal-content">
+<h1>Conditions Générales d'Utilisation — SPORTVISE</h1>
+<p><strong>Version 1.0 — En vigueur depuis le 1er juin 2026</strong><br/><strong>Dernière modification : 1er juin 2026</strong></p>
+<hr/>
+<h2>1. Objet</h2>
+<p>Les présentes Conditions Générales d'Utilisation (ci-après « CGU ») régissent l'utilisation de la plateforme SPORTVISE, accessible à l'adresse <a href="https://sportvise.ch" target="_blank" rel="noopener noreferrer">https://sportvise.ch</a> (ci-après « le Service »), éditée par <strong>Thomas Castella</strong>, raison individuelle, dont le siège est en Suisse (cf. mentions légales).</p>
+<p>L'utilisation du Service implique l'acceptation pleine et entière des présentes CGU. Toute personne qui n'accepte pas tout ou partie de ces CGU doit s'abstenir d'utiliser le Service.</p>
+<h2>2. Définitions</h2>
+<ul><li><strong>Service</strong> : la plateforme SPORTVISE, incluant le site web, le tableau de bord athlète, les agents IA virtuels, le calendrier, le journal et toutes les fonctionnalités associées.</li><li><strong>Utilisateur</strong> : toute personne accédant ou utilisant le Service, qu'elle soit titulaire d'un compte gratuit ou payant.</li><li><strong>Contenu</strong> : toutes les données, textes, images saisis par l'Utilisateur dans le Service.</li><li><strong>Agents IA</strong> : les assistants virtuels alimentés par intelligence artificielle (Lucas, David, Emma, Clara, Nora, Julie, Alex, Marc, Léa, Sophie, Pierre, etc.).</li><li><strong>Abonnement</strong> : l'engagement contractuel d'accès au Service moyennant paiement (plans Plus et Pro).</li></ul>
+<h2>3. Acceptation des CGU</h2>
+<p>En créant un compte, en cliquant sur « J'accepte les conditions » ou en utilisant le Service de quelque manière que ce soit, vous reconnaissez :</p>
+<ul><li>Avoir lu, compris et accepté l'intégralité des présentes CGU</li><li>Avoir lu et accepté la <a href="/privacy">Politique de confidentialité</a></li><li>Avoir au moins <strong>16 ans</strong> (ou 16-17 ans avec consentement parental, voir art. 5)</li><li>Avoir la capacité juridique de contracter selon le droit applicable</li></ul>
+<h2>4. Description du Service</h2>
+<p>SPORTVISE est une plateforme de <strong>coaching sportif assistée par intelligence artificielle</strong> destinée aux athlètes amateurs et semi-professionnels en Suisse. Le Service comprend notamment :</p>
+<ul><li>Un <strong>tableau de bord</strong> personnel (profil, statistiques, score SPORTVISE)</li><li>Un <strong>calendrier</strong> des matchs, compétitions et entraînements</li><li>Un <strong>journal</strong> de bord quotidien (humeur, énergie, sommeil, douleurs)</li><li>Un <strong>système de récapitulatif</strong> post-événement (performance, RPE, ressenti)</li><li>Un <strong>marketplace</strong> d'agents IA spécialisés (mental, physique, nutrition, sommeil, récupération, finance, marketing, sponsors, contrats, comptabilité)</li><li>Un <strong>brief quotidien</strong> personnalisé</li><li>Des <strong>rapports hebdomadaires</strong> générés par IA</li></ul>
+<p>SPORTVISE évolue régulièrement : des fonctionnalités peuvent être ajoutées, modifiées ou retirées sans préavis individuel.</p>
+<h2>5. Création de compte et accès</h2>
+<h3>5.1 Conditions d'éligibilité</h3>
+<p>Pour créer un compte, vous devez :</p>
+<ul><li>Être âgé de <strong>16 ans révolus</strong> au minimum</li><li>Si vous avez <strong>16 ou 17 ans</strong>, fournir le consentement écrit de votre représentant légal sur demande</li><li>Être domicilié dans un pays où l'accès à internet et aux services numériques étrangers est légal</li><li>Fournir des informations exactes, complètes et à jour (nom, e-mail valide, etc.)</li></ul>
+<h3>5.2 Sécurité du compte</h3>
+<p>Vous êtes responsable de la confidentialité de votre mot de passe et de toute action effectuée sous votre compte. En cas de soupçon d'utilisation non autorisée, vous devez nous notifier sans délai à <a href="mailto:info@sportvise.ch">info@sportvise.ch</a>.</p>
+<h3>5.3 Unicité du compte</h3>
+<p>Chaque utilisateur ne peut créer qu'<strong>un seul compte personnel</strong>. Le partage d'un compte entre plusieurs personnes est interdit.</p>
+<h2>6. Plans, abonnements et paiements</h2>
+<h3>6.1 Plans disponibles</h3>
+<p>SPORTVISE propose trois plans dont les caractéristiques sont détaillées sur la page <a href="https://sportvise.ch" target="_blank" rel="noopener noreferrer">/abonnement</a> :</p>
+<ul><li><strong>Free — CHF 0/mois</strong> : 3 agents IA (Lucas, Emma, Clara), 10 messages par jour, dashboard + Fitness Score, journal quotidien, calendrier, objectifs.</li><li><strong>Plus — CHF 12/mois</strong> : 6 agents performance (ajout de David, Nora, Julie), messages illimités, Prépa Match (J-3 à Jour J), défis hebdomadaires, récap hebdomadaire + notifications.</li><li><strong>Pro — CHF 29/mois</strong> : tout le plan Plus + 11 agents IA (suite Business : Alex Marketing, Marc Sponsors, Léa Contrats, Sophie Finance, Pierre Comptabilité), export PDF (Media Kit, CV, Nutrition), rapport mensuel de progression, support prioritaire.</li></ul>
+<p>Tous les prix sont indiqués en CHF (francs suisses), taxes incluses (TVA suisse, le cas échéant).</p>
+<h3>6.1bis Garantie de remboursement et résiliation</h3>
+<ul><li><strong>Résiliation à tout moment</strong> : vous pouvez annuler votre abonnement Plus ou Pro à tout moment depuis votre tableau de bord. La résiliation prend effet à la fin de la période en cours déjà payée.</li><li><strong>Remboursement garanti 30 jours</strong> : pour tout premier abonnement payant (passage de Free à Plus ou Pro), vous bénéficiez d'une garantie satisfait ou remboursé de 30 jours. Sur simple demande à <a href="mailto:info@sportvise.ch">info@sportvise.ch</a> dans les 30 jours suivant le premier paiement, le montant intégral vous est remboursé sous 14 jours ouvrés.</li><li>Cette garantie ne s'applique pas aux renouvellements ultérieurs ni aux changements de palier (Plus → Pro ou Pro → Plus).</li></ul>
+<h3>6.2 Modalités de paiement</h3>
+<p>Les paiements sont traités par <strong>Stripe Payments Europe Ltd.</strong>, prestataire certifié PCI-DSS niveau 1. SPORTVISE ne stocke <strong>jamais</strong> vos informations bancaires.</p>
+<p>Les abonnements sont <strong>renouvelés automatiquement</strong> à chaque échéance (mensuelle ou annuelle selon le plan choisi) sauf résiliation préalable.</p>
+<h3>6.3 Résiliation par l'utilisateur</h3>
+<p>Vous pouvez résilier votre abonnement <strong>à tout moment</strong> depuis votre tableau de bord (section « Abonnement »). La résiliation prend effet à la fin de la période en cours déjà payée. <strong>Aucun remboursement n'est dû</strong> pour la période en cours.</p>
+<h3>6.4 Modification des tarifs</h3>
+<p>Tout changement tarifaire pour les plans existants vous sera notifié par e-mail au moins <strong>30 jours avant</strong> l'entrée en vigueur. Vous pourrez résilier sans frais si vous refusez le nouveau tarif.</p>
+<h2>7. Utilisation acceptable</h2>
+<p>En utilisant SPORTVISE, vous vous engagez à ne pas :</p>
+<ul><li>Utiliser le Service à des fins illégales, frauduleuses ou nuisibles</li><li>Tenter d'accéder aux comptes d'autres utilisateurs ou aux systèmes internes</li><li>Reverse-engineer, décompiler ou copier le Service</li><li>Saturer le Service par des requêtes automatisées (bots, scripts) sans autorisation</li><li>Soumettre des contenus manifestement illégaux, diffamatoires, haineux ou discriminatoires</li><li>Usurper l'identité d'un tiers</li><li>Tenter d'extraire des données via les agents IA pour les redistribuer ou les revendre</li></ul>
+<p>Tout manquement peut entraîner la suspension immédiate du compte sans préavis ni remboursement.</p>
+<h2>8. Contenu utilisateur</h2>
+<h3>8.1 Propriété</h3>
+<p>Vous <strong>conservez la propriété intégrale</strong> des Contenus que vous saisissez dans SPORTVISE (notes du journal, événements de calendrier, récapitulatifs, messages aux agents).</p>
+<h3>8.2 Licence d'usage accordée à SPORTVISE</h3>
+<p>Pour permettre le fonctionnement du Service, vous accordez à SPORTVISE une licence <strong>non-exclusive, mondiale, gratuite et non-cessible</strong> d'utilisation de votre Contenu, <strong>strictement limitée aux finalités suivantes</strong> :</p>
+<ul><li>Stocker et afficher votre Contenu dans votre interface</li><li>Le transmettre aux sous-traitants techniques nécessaires (notamment Anthropic pour les agents IA, Supabase pour la base de données)</li><li>L'utiliser sous forme <strong>anonymisée et agrégée</strong> pour améliorer le Service</li></ul>
+<p>Cette licence prend fin au moment de la suppression de votre compte.</p>
+<h3>8.3 Engagement d'exactitude</h3>
+<p>Vous garantissez que votre Contenu est exact et que vous disposez du droit de le saisir (notamment pour les images partagées avec les agents).</p>
+<h2>9. ⚠️ Limitations des agents IA — IMPORTANT</h2>
+<h3>9.1 Nature des conseils IA</h3>
+<p>Les conseils, recommandations, informations et analyses fournis par les agents IA de SPORTVISE sont générés par des modèles de langage (Claude par Anthropic) et sont fournis <strong>à titre informatif et indicatif uniquement</strong>.</p>
+<p><strong>Ces conseils ne constituent EN AUCUN CAS</strong> :</p>
+<ul><li>Un avis médical, paramédical ou diagnostic</li><li>Un avis juridique professionnel</li><li>Un avis fiscal ou comptable certifié</li><li>Un avis financier ou d'investissement</li><li>Une prescription médicamenteuse ou nutritionnelle</li><li>Un protocole d'entraînement individualisé certifié par un coach diplômé</li></ul>
+<h3>9.2 Limitation de fiabilité</h3>
+<p>Les modèles d'intelligence artificielle peuvent <strong>commettre des erreurs</strong>, halluciner des informations, ou fournir des conseils inadaptés à votre situation spécifique. SPORTVISE met en œuvre les meilleures pratiques pour minimiser ces risques mais ne peut garantir l'exactitude absolue des sorties des agents IA.</p>
+<h3>9.3 Obligation de consulter un professionnel</h3>
+<p><strong>Pour toute décision importante touchant votre santé, vos finances, votre situation juridique ou fiscale, vous devez consulter un professionnel qualifié et certifié.</strong> SPORTVISE ne se substitue jamais à un médecin, un avocat, un comptable, un nutritionniste diplômé ou un coach sportif certifié.</p>
+<h3>9.4 Urgences médicales</h3>
+<p><strong>EN CAS D'URGENCE MÉDICALE, NE CONSULTEZ PAS LES AGENTS IA.</strong> Composez immédiatement :</p>
+<ul><li><strong>144</strong> (urgences sanitaires Suisse)</li><li><strong>112</strong> (numéro d'urgence européen)</li><li>Ou rendez-vous aux urgences de l'hôpital le plus proche.</li></ul>
+<p>Les agents IA ne sont <strong>pas conçus pour répondre à des urgences médicales</strong> et leur réponse pourrait retarder une prise en charge nécessaire.</p>
+<h2>10. Propriété intellectuelle</h2>
+<h3>10.1 Propriété de SPORTVISE</h3>
+<p>L'ensemble du Service (code, design, marque « SPORTVISE », logo, textes des agents IA, structure du tableau de bord) est la propriété exclusive de <strong>Thomas Castella</strong> ou de ses concédants de licence. Toute reproduction, modification, distribution, ou exploitation commerciale du Service ou de ses éléments est strictement interdite sans autorisation écrite préalable.</p>
+<h3>10.2 Marques</h3>
+<p>« SPORTVISE » et les noms des agents (Lucas, David, etc.) sont des marques utilisées par Thomas Castella. Leur usage non autorisé est prohibé.</p>
+<h2>11. Suspension, résiliation et suppression de compte</h2>
+<h3>11.1 Résiliation par l'utilisateur</h3>
+<p>Vous pouvez supprimer votre compte à tout moment depuis votre tableau de bord ou en envoyant une demande à <a href="mailto:info@sportvise.ch">info@sportvise.ch</a>. Vos données seront supprimées conformément à la Politique de confidentialité (durée maximum 30 jours).</p>
+<h3>11.2 Suspension ou résiliation par SPORTVISE</h3>
+<p>SPORTVISE se réserve le droit de suspendre ou résilier un compte sans préavis ni remboursement en cas de :</p>
+<ul><li>Violation grave des présentes CGU</li><li>Usage frauduleux ou illégal du Service</li><li>Non-paiement persistant des sommes dues</li><li>Demande des autorités compétentes</li></ul>
+<h3>11.3 Effets de la résiliation</h3>
+<p>La résiliation entraîne la perte d'accès au Service. Les sommes versées au titre de la période en cours restent acquises à SPORTVISE. Les obligations qui par leur nature survivent à la résiliation (responsabilité, propriété intellectuelle, droit applicable) restent en vigueur.</p>
+<h2>12. Garanties et limitation de responsabilité</h2>
+<h3>12.1 Service fourni « en l'état »</h3>
+<p>Le Service est fourni <strong>« tel quel »</strong> et <strong>« selon disponibilité »</strong>, sans aucune garantie expresse ou implicite, notamment de qualité marchande, d'adéquation à un usage particulier, ou d'absence d'erreur.</p>
+<p>SPORTVISE ne garantit pas que :</p>
+<ul><li>Le Service sera ininterrompu, sécurisé ou exempt d'erreur</li><li>Les conseils des agents IA seront exacts ou adaptés à toute situation</li><li>Les résultats sportifs ou personnels obtenus correspondront à vos attentes</li></ul>
+<h3>12.2 Limitation de responsabilité</h3>
+<p>Dans toute la mesure permise par le droit suisse applicable, la responsabilité totale de SPORTVISE envers un Utilisateur est <strong>limitée au montant des sommes effectivement versées au titre de l'abonnement par cet Utilisateur au cours des 12 mois précédant l'événement déclencheur</strong>.</p>
+<p>SPORTVISE ne saurait être tenu responsable de tout dommage indirect, fortuit, consécutif ou spécial, notamment perte de données, perte de revenus, atteinte à la réputation, ou préjudice résultant d'une décision prise sur la base de conseils des agents IA.</p>
+<p>Cette limitation ne s'applique pas en cas de <strong>faute intentionnelle ou de négligence grave</strong> de SPORTVISE, conformément aux art. 100 al. 1 et 101 CO.</p>
+<h2>13. Indemnisation</h2>
+<p>Vous acceptez d'indemniser et de tenir SPORTVISE indemne de toute réclamation, dommage, responsabilité, coût ou frais (y compris frais d'avocat raisonnables) découlant de :</p>
+<ul><li>Votre usage du Service en violation des présentes CGU</li><li>Votre violation des droits d'un tiers</li><li>Votre Contenu (notamment s'il est diffamatoire ou illégal)</li></ul>
+<h2>14. Modifications des CGU</h2>
+<p>SPORTVISE se réserve le droit de modifier les CGU à tout moment. Toute modification substantielle vous sera notifiée par e-mail au moins <strong>30 jours avant</strong> l'entrée en vigueur. La poursuite de l'utilisation du Service après cette date vaut acceptation. Si vous refusez les nouvelles CGU, vous pouvez résilier votre compte sans frais.</p>
+<h2>15. Force majeure</h2>
+<p>SPORTVISE ne saurait être tenu responsable d'un manquement résultant d'un cas de force majeure au sens de la jurisprudence suisse, notamment : panne d'infrastructure tierce (Supabase, Netlify, Anthropic), cyberattaque massive, catastrophe naturelle, pandémie, décision gouvernementale.</p>
+<h2>16. Droit applicable et juridiction</h2>
+<p>Les présentes CGU sont <strong>régies par le droit suisse</strong>, à l'exclusion des règles de conflit de lois.</p>
+<p>Tout litige relatif à leur interprétation ou exécution sera soumis à la <strong>compétence exclusive des tribunaux ordinaires du canton de Fribourg</strong>, sous réserve de recours auprès du Tribunal fédéral.</p>
+<p>Pour les consommateurs résidant dans l'Union européenne, cette clause ne fait pas obstacle aux protections juridictionnelles applicables dans leur pays de résidence.</p>
+<h2>17. Dispositions diverses</h2>
+<h3>17.1 Nullité partielle</h3>
+<p>Si une disposition des présentes CGU est jugée nulle ou inapplicable par un tribunal compétent, les autres dispositions restent en vigueur et continuent de produire leurs effets.</p>
+<h3>17.2 Intégralité de l'accord</h3>
+<p>Les présentes CGU, ensemble avec la <a href="/privacy">Politique de confidentialité</a> et les <a href="/legal">Mentions légales</a>, constituent l'intégralité de l'accord entre vous et SPORTVISE et remplacent tout accord antérieur sur le même objet.</p>
+<h3>17.3 Cession</h3>
+<p>SPORTVISE peut céder ses droits et obligations en vertu des présentes CGU à un tiers (notamment en cas de cession d'activité ou de fusion). Cette cession ne peut être effective que si elle ne diminue pas vos droits.</p>
+<h3>17.4 Communications</h3>
+<p>Toute communication officielle entre vous et SPORTVISE se fait par e-mail à <a href="mailto:info@sportvise.ch">info@sportvise.ch</a> (de votre côté) et à l'adresse e-mail enregistrée sur votre compte (de notre côté).</p>
+<h2>18. Contact</h2>
+<p>Pour toute question relative aux présentes CGU :</p>
+<p><strong>Thomas Castella</strong><br/><a href="mailto:info@sportvise.ch">info@sportvise.ch</a><br/>SPORTVISE — <a href="https://sportvise.ch" target="_blank" rel="noopener noreferrer">https://sportvise.ch</a></p>
+<hr/>
+  </main>
+
+  <footer class="legal-footer">
+    <div class="related"><span class="related-title">Voir aussi :</span><a href="privacy_fr.html">Politique de confidentialité</a> · <a href="legal_fr.html">Mentions légales</a></div>
+    <div class="contact">Une question ? Écrivez-nous à info@sportvise.ch</div>
+    <div class="copy">© 2026 SPORTVISE · Suisse 🇨🇭</div>
+  </footer>
+
+  <script>
+    // Persiste la langue choisie via le switcher (cohérent avec localStorage 'sv_lang' du reste de l'app)
+    (function () {
+      try {
+        document.querySelectorAll('.lang-switch a.lang-flag').forEach(function (a) {
+          a.addEventListener('click', function () {
+            var match = a.getAttribute('href').match(/_(fr|de|en|it)\.html$/);
+            if (match) localStorage.setItem('sv_lang', match[1]);
+          });
+        });
+      } catch (e) { /* localStorage may be unavailable */ }
+    })();
+  </script>
+</body>
+</html>

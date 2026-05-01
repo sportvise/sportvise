@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SPORTVISE — Legal Notice</title>
+  <meta name="description" content="SPORTVISE Legal Notice." />
+  <meta name="robots" content="index, follow" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #07091a; --bg2: #0d1127; --bg3: #111827;
+      --border: #1e2d47; --gold: #f59e0b; --gold-soft: #fbbf24;
+      --green: #10b981; --red: #ef4444;
+      --text: #f1f5f9; --text-soft: #cbd5e1; --muted: #94a3b8; --muted-2: #64748b;
+    }
+    html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; }
+    body {
+      min-height: 100vh; display: flex; flex-direction: column;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    body::before {
+      content: ''; position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 500px;
+      background: radial-gradient(ellipse, #f59e0b0a 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+    /* Header */
+    header.legal-header {
+      position: relative; z-index: 1;
+      max-width: 880px; margin: 0 auto; width: 100%;
+      padding: 28px 24px 8px;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .logo-wrap { display: flex; flex-direction: column; }
+    .logo {
+      font-size: 22px; font-weight: 900; letter-spacing: 3px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-soft));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      text-decoration: none;
+    }
+    .tagline { font-size: 11px; color: var(--muted); margin-top: 2px; letter-spacing: 0.4px; }
+    .lang-switch { display: inline-flex; gap: 4px; }
+    .lang-flag {
+      display: inline-block; padding: 4px 8px; border-radius: 6px;
+      font-size: 18px; line-height: 1; text-decoration: none;
+      opacity: 0.45; transition: opacity 0.2s, background 0.2s;
+    }
+    .lang-flag:hover { opacity: 1; background: var(--bg2); }
+    .lang-flag.active { opacity: 1; background: var(--bg2); }
+    .back-link {
+      display: inline-block; margin: 8px 0 0;
+      font-size: 13px; color: var(--muted); text-decoration: none;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--gold); }
+    /* Content */
+    main.legal-content {
+      position: relative; z-index: 1;
+      max-width: 760px; margin: 24px auto 64px; width: 100%;
+      padding: 32px 24px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+    }
+    main.legal-content h1 {
+      font-size: 28px; font-weight: 900; line-height: 1.25;
+      margin-bottom: 24px; padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+    main.legal-content h2 {
+      font-size: 19px; font-weight: 800; margin-top: 36px; margin-bottom: 12px;
+      color: var(--gold);
+    }
+    main.legal-content h3 {
+      font-size: 16px; font-weight: 700; margin-top: 24px; margin-bottom: 10px;
+      color: var(--text);
+    }
+    main.legal-content h4 {
+      font-size: 14px; font-weight: 700; margin-top: 18px; margin-bottom: 8px;
+      color: var(--text-soft);
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    main.legal-content p {
+      font-size: 15px; color: var(--text-soft); margin-bottom: 14px;
+    }
+    main.legal-content strong { color: var(--text); font-weight: 700; }
+    main.legal-content em { color: var(--text-soft); font-style: italic; }
+    main.legal-content a {
+      color: var(--gold); text-decoration: underline; text-decoration-color: rgba(245, 158, 11, 0.4);
+      text-underline-offset: 2px; transition: text-decoration-color 0.2s;
+    }
+    main.legal-content a:hover { text-decoration-color: var(--gold); }
+    main.legal-content ul, main.legal-content ol {
+      margin: 0 0 16px 0; padding-left: 22px;
+    }
+    main.legal-content li { font-size: 15px; color: var(--text-soft); margin-bottom: 6px; }
+    main.legal-content blockquote {
+      border-left: 3px solid var(--gold);
+      background: var(--bg3);
+      padding: 12px 16px; margin: 16px 0;
+      border-radius: 0 8px 8px 0;
+      font-size: 14px; color: var(--text-soft);
+    }
+    main.legal-content code {
+      font-family: 'SF Mono', Monaco, Consolas, monospace;
+      font-size: 13px; background: var(--bg3); padding: 1px 6px;
+      border-radius: 4px; color: var(--gold-soft);
+    }
+    main.legal-content hr {
+      margin: 32px 0; border: 0;
+      border-top: 1px solid var(--border);
+    }
+    /* Tables */
+    .table-wrap { overflow-x: auto; margin: 16px 0 22px; border-radius: 10px; border: 1px solid var(--border); }
+    main.legal-content table {
+      width: 100%; border-collapse: collapse; font-size: 13.5px;
+      background: var(--bg3);
+    }
+    main.legal-content th {
+      text-align: left; font-weight: 700; color: var(--text);
+      padding: 10px 14px; background: rgba(245, 158, 11, 0.08);
+      border-bottom: 1px solid var(--border);
+    }
+    main.legal-content td {
+      padding: 10px 14px; color: var(--text-soft);
+      border-bottom: 1px solid rgba(30, 45, 71, 0.6);
+      vertical-align: top;
+    }
+    main.legal-content tr:last-child td { border-bottom: 0; }
+    main.legal-content tr:hover td { background: rgba(245, 158, 11, 0.03); }
+    /* Footer */
+    footer.legal-footer {
+      position: relative; z-index: 1;
+      max-width: 880px; margin: 0 auto 32px; width: 100%;
+      padding: 22px 24px;
+      border-top: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 12px; align-items: center;
+      font-size: 12px; color: var(--muted);
+      text-align: center;
+    }
+    footer.legal-footer .related { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
+    footer.legal-footer a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    footer.legal-footer a:hover { color: var(--gold); }
+    footer.legal-footer .related-title { font-weight: 700; color: var(--text-soft); margin-right: 8px; }
+    footer.legal-footer .contact { font-size: 11px; }
+    footer.legal-footer .copy { font-size: 11px; color: var(--muted-2); }
+    /* Responsive */
+    @media (max-width: 600px) {
+      header.legal-header { padding: 20px 16px 4px; }
+      main.legal-content { padding: 22px 18px; margin: 16px 12px 40px; border-radius: 12px; }
+      main.legal-content h1 { font-size: 22px; }
+      main.legal-content h2 { font-size: 17px; }
+      main.legal-content table { font-size: 12.5px; }
+      main.legal-content th, main.legal-content td { padding: 8px 10px; }
+    }
+    /* Print */
+    @media print {
+      body { background: white; color: black; }
+      body::before { display: none; }
+      header.legal-header, footer.legal-footer { display: none; }
+      main.legal-content {
+        background: white; border: none; max-width: 100%; margin: 0; padding: 0;
+        color: black;
+      }
+      main.legal-content h1, main.legal-content h3, main.legal-content h4 { color: black; }
+      main.legal-content h2 { color: #b45309; }
+      main.legal-content p, main.legal-content li, main.legal-content td { color: #1e293b; }
+      main.legal-content a { color: #b45309; text-decoration: underline; }
+      .table-wrap, main.legal-content table { background: white; border-color: #cbd5e1; }
+      main.legal-content th { background: #fef3c7; }
+    }
+  </style>
+</head>
+<body>
+  <header class="legal-header">
+    <div class="logo-wrap">
+      <a href="index.html" class="logo">SPORTVISE</a>
+      <div class="tagline">🇨🇭 AI Sports Management · Switzerland</div>
+      <a href="index.html" class="back-link">← Back to home</a>
+    </div>
+    <div class="lang-switch" role="navigation" aria-label="Language"><a href="legal_fr.html" title="Français" class="lang-flag" aria-current="false">🇫🇷</a><a href="legal_de.html" title="Deutsch" class="lang-flag" aria-current="false">🇩🇪</a><a href="legal_en.html" title="English" class="lang-flag active" aria-current="page">🇬🇧</a><a href="legal_it.html" title="Italiano" class="lang-flag" aria-current="false">🇮🇹</a></div>
+  </header>
+
+  <main class="legal-content">
+<h1>Legal Notice — SPORTVISE</h1>
+<p><strong>Version 1.0 — In effect since June 1, 2026</strong></p>
+<hr/>
+<h2>Publisher of the site</h2>
+<p><strong>Thomas Castella</strong><br/>Sole proprietorship (individual business not registered with the Commercial Register)</p>
+<p><strong>Address:</strong><br/>Gantrischweg 9<br/>3186 Düdingen (Guin)<br/>Canton of Fribourg<br/>Switzerland</p>
+<p><strong>Contact:</strong><br/><a href="mailto:info@sportvise.ch">info@sportvise.ch</a></p>
+<p><strong>Website:</strong> <a href="https://sportvise.ch" target="_blank" rel="noopener noreferrer">https://sportvise.ch</a></p>
+<hr/>
+<h2>Director of publication</h2>
+<p>Thomas Castella, in his capacity as publisher, is also the director of publication of the SPORTVISE site.</p>
+<hr/>
+<h2>Hosting</h2>
+<p>The SPORTVISE site (front-end and serverless functions) is hosted by:</p>
+<p><strong>Netlify, Inc.</strong><br/>512 2nd Street, Suite 200<br/>San Francisco, CA 94107<br/>United States<br/>Website: <a href="https://www.netlify.com" target="_blank" rel="noopener noreferrer">https://www.netlify.com</a></p>
+<hr/>
+<h2>Database</h2>
+<p>User data is stored by:</p>
+<p><strong>Supabase, Inc.</strong><br/>1390 Market Street #200<br/>San Francisco, CA 94102<br/>United States<br/>Website: <a href="https://supabase.com" target="_blank" rel="noopener noreferrer">https://supabase.com</a></p>
+<hr/>
+<h2>Artificial intelligence</h2>
+<p>SPORTVISE's AI agents are powered by the Claude models from:</p>
+<p><strong>Anthropic, PBC</strong><br/>548 Market Street #80450<br/>San Francisco, CA 94104<br/>United States<br/>Website: <a href="https://www.anthropic.com" target="_blank" rel="noopener noreferrer">https://www.anthropic.com</a></p>
+<hr/>
+<h2>Payments</h2>
+<p>Financial transactions are processed by:</p>
+<p><strong>Stripe Payments Europe, Ltd.</strong><br/>1 Grand Canal Street Lower<br/>Grand Canal Dock<br/>Dublin, D02 H210<br/>Ireland<br/>Website: <a href="https://stripe.com" target="_blank" rel="noopener noreferrer">https://stripe.com</a></p>
+<hr/>
+<h2>Intellectual property</h2>
+<p>All content on the SPORTVISE site (text, graphics, logos, code, database structure, AI agent prompts) is the exclusive property of Thomas Castella, with the exception of third-party trademarks, partner logos and user content (see Terms of Service).</p>
+<p>Any reproduction, representation, modification, publication, or adaptation of all or part of the site's elements, by any means whatsoever, is strictly prohibited without the prior written authorization of Thomas Castella.</p>
+<p>Any unauthorized use of the site or any of its elements may give rise to civil or criminal proceedings.</p>
+<hr/>
+<h2>Credits</h2>
+<ul><li><strong>Typeface:</strong> Inter (open source, <a href="https://rsms.me/inter/" target="_blank" rel="noopener noreferrer">rsms.me/inter</a>)</li><li><strong>Icons and emojis:</strong> user's operating system (Apple, Microsoft, Google)</li><li><strong>Sports data:</strong> API-Sports (<a href="https://api-sports.io" target="_blank" rel="noopener noreferrer">api-sports.io</a>), Matchstat Tennis</li><li><strong>Design and development:</strong> Thomas Castella</li></ul>
+<hr/>
+<h2>Terms of use and privacy</h2>
+<p>The use of the SPORTVISE site is governed by:</p>
+<ul><li>the <strong><a href="/terms">Terms of Service</a></strong></li><li>the <strong><a href="/privacy">Privacy Policy</a></strong></li></ul>
+<hr/>
+<h2>Reports</h2>
+<p>To report illegal content, an intellectual property infringement, or any issue requiring publisher intervention, please write to <a href="mailto:info@sportvise.ch">info@sportvise.ch</a> with the subject "Report".</p>
+<p>We undertake to process any report within a reasonable timeframe, generally within <strong>5 business days</strong>.</p>
+<hr/>
+<h2>Federal Data Protection and Information Commissioner (FDPIC)</h2>
+<p>For any complaint concerning the processing of your personal data, you may contact:</p>
+<p><strong>Federal Data Protection and Information Commissioner (FDPIC)</strong><br/>Feldeggweg 1<br/>3003 Bern, Switzerland<br/>Website: <a href="https://www.edoeb.admin.ch" target="_blank" rel="noopener noreferrer">https://www.edoeb.admin.ch</a></p>
+<hr/>
+<h2>Effective date</h2>
+<p>This legal notice came into effect on <strong>June 1, 2026</strong> and may be modified without notice to reflect a change in the situation of the publisher or its service providers.</p>
+<hr/>
+  </main>
+
+  <footer class="legal-footer">
+    <div class="related"><span class="related-title">See also :</span><a href="privacy_en.html">Privacy Policy</a> · <a href="terms_en.html">Terms of Service</a></div>
+    <div class="contact">Questions? Reach us at info@sportvise.ch</div>
+    <div class="copy">© 2026 SPORTVISE · Switzerland 🇨🇭</div>
+  </footer>
+
+  <script>
+    // Persiste la langue choisie via le switcher (cohérent avec localStorage 'sv_lang' du reste de l'app)
+    (function () {
+      try {
+        document.querySelectorAll('.lang-switch a.lang-flag').forEach(function (a) {
+          a.addEventListener('click', function () {
+            var match = a.getAttribute('href').match(/_(fr|de|en|it)\.html$/);
+            if (match) localStorage.setItem('sv_lang', match[1]);
+          });
+        });
+      } catch (e) { /* localStorage may be unavailable */ }
+    })();
+  </script>
+</body>
+</html>

@@ -434,7 +434,7 @@
       <div class="footer-ch" data-i18n="footerSwissBased">🇨🇭 Fondé en Suisse Romande · 2026</div>
     </div>
     <div class="footer-col"><h4 data-i18n="footerProduct">Produit</h4><a href="#agents" data-i18n="footerLinkAgents">Agents IA</a><a href="#tarifs" data-i18n="footerLinkPricing">Tarifs</a><a href="login.html" data-i18n="footerLinkLogin">Connexion</a></div>
-    <div class="footer-col"><h4 data-i18n="footerLegal">Légal</h4><a href="#" data-i18n="footerLinkTos">CGU</a><a href="#" data-i18n="footerLinkPrivacy">Confidentialité</a><a href="#" data-i18n="footerLinkLpd">LPD Suisse</a></div>
+    <div class="footer-col"><h4 data-i18n="footerLegal">Légal</h4><a href="terms_fr.html" data-legal-section="terms" data-i18n="footerLinkTos">CGU</a><a href="privacy_fr.html" data-legal-section="privacy" data-i18n="footerLinkPrivacy">Confidentialité</a><a href="legal_fr.html" data-legal-section="legal" data-i18n="footerLinkLegal">Mentions légales</a></div>
     <div class="footer-col"><h4 data-i18n="footerContact">Contact</h4><a href="mailto:info@sportvise.ch">info@sportvise.ch</a><a href="#">Instagram</a><a href="#">LinkedIn</a></div>
   </div>
   <div class="footer-bottom">
@@ -526,7 +526,7 @@
       footerSwissBased:"🇨🇭 Fondé en Suisse Romande · 2026",
       footerProduct:"Produit", footerLegal:"Légal", footerContact:"Contact",
       footerLinkAgents:"Agents IA", footerLinkPricing:"Tarifs", footerLinkLogin:"Connexion",
-      footerLinkTos:"CGU", footerLinkPrivacy:"Confidentialité", footerLinkLpd:"LPD Suisse",
+      footerLinkTos:"CGU", footerLinkPrivacy:"Confidentialité", footerLinkLegal:"Mentions légales",
       footerCopyright:"© 2026 SPORTVISE · Suisse 🇨🇭"
     },
     de: {
@@ -598,7 +598,7 @@
       footerSwissBased:"🇨🇭 Gegründet in der Romandie · 2026",
       footerProduct:"Produkt", footerLegal:"Rechtliches", footerContact:"Kontakt",
       footerLinkAgents:"KI-Agenten", footerLinkPricing:"Preise", footerLinkLogin:"Anmelden",
-      footerLinkTos:"AGB", footerLinkPrivacy:"Datenschutz", footerLinkLpd:"DSG Schweiz",
+      footerLinkTos:"AGB", footerLinkPrivacy:"Datenschutz", footerLinkLegal:"Impressum",
       footerCopyright:"© 2026 SPORTVISE · Schweiz 🇨🇭"
     },
     en: {
@@ -670,7 +670,7 @@
       footerSwissBased:"🇨🇭 Founded in French-speaking Switzerland · 2026",
       footerProduct:"Product", footerLegal:"Legal", footerContact:"Contact",
       footerLinkAgents:"AI Agents", footerLinkPricing:"Pricing", footerLinkLogin:"Log in",
-      footerLinkTos:"Terms", footerLinkPrivacy:"Privacy", footerLinkLpd:"Swiss FADP",
+      footerLinkTos:"Terms", footerLinkPrivacy:"Privacy", footerLinkLegal:"Legal Notice",
       footerCopyright:"© 2026 SPORTVISE · Switzerland 🇨🇭"
     },
     it: {
@@ -742,7 +742,7 @@
       footerSwissBased:"🇨🇭 Fondato nella Svizzera Romanda · 2026",
       footerProduct:"Prodotto", footerLegal:"Legale", footerContact:"Contatto",
       footerLinkAgents:"Agenti IA", footerLinkPricing:"Prezzi", footerLinkLogin:"Accedi",
-      footerLinkTos:"CGU", footerLinkPrivacy:"Privacy", footerLinkLpd:"LPD Svizzera",
+      footerLinkTos:"CGU", footerLinkPrivacy:"Privacy", footerLinkLegal:"Note legali",
       footerCopyright:"© 2026 SPORTVISE · Svizzera 🇨🇭"
     }
   };
@@ -768,7 +768,22 @@
 
     // Update html lang attribute
     document.documentElement.lang = lang;
+
+    // Wire footer legal links to the correct localized HTML page
+    document.querySelectorAll('a[data-legal-section]').forEach(a => {
+      const section = a.getAttribute('data-legal-section');
+      if (section) a.setAttribute('href', section + '_' + lang + '.html');
+    });
+
+    // Persist the choice (cohérent avec login.html / dashboard.html — clé 'sv_lang')
+    try { localStorage.setItem('sv_lang', lang); } catch(e) {}
   }
+
+  // Restore the user's previously chosen language on load
+  try {
+    const saved = localStorage.getItem('sv_lang');
+    if (saved && i18n[saved]) setLangPage(saved);
+  } catch(e) {}
 </script>
 </body>
 </html>
