@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SPORTVISE — Mentions légales</title>
+  <meta name="description" content="Mentions légales SPORTVISE." />
+  <meta name="robots" content="index, follow" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #07091a; --bg2: #0d1127; --bg3: #111827;
+      --border: #1e2d47; --gold: #f59e0b; --gold-soft: #fbbf24;
+      --green: #10b981; --red: #ef4444;
+      --text: #f1f5f9; --text-soft: #cbd5e1; --muted: #94a3b8; --muted-2: #64748b;
+    }
+    html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; }
+    body {
+      min-height: 100vh; display: flex; flex-direction: column;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    body::before {
+      content: ''; position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 500px;
+      background: radial-gradient(ellipse, #f59e0b0a 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+    /* Header */
+    header.legal-header {
+      position: relative; z-index: 1;
+      max-width: 880px; margin: 0 auto; width: 100%;
+      padding: 28px 24px 8px;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .logo-wrap { display: flex; flex-direction: column; }
+    .logo {
+      font-size: 22px; font-weight: 900; letter-spacing: 3px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-soft));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      text-decoration: none;
+    }
+    .tagline { font-size: 11px; color: var(--muted); margin-top: 2px; letter-spacing: 0.4px; }
+    .lang-switch { display: inline-flex; gap: 4px; }
+    .lang-flag {
+      display: inline-block; padding: 4px 8px; border-radius: 6px;
+      font-size: 18px; line-height: 1; text-decoration: none;
+      opacity: 0.45; transition: opacity 0.2s, background 0.2s;
+    }
+    .lang-flag:hover { opacity: 1; background: var(--bg2); }
+    .lang-flag.active { opacity: 1; background: var(--bg2); }
+    .back-link {
+      display: inline-block; margin: 8px 0 0;
+      font-size: 13px; color: var(--muted); text-decoration: none;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--gold); }
+    /* Content */
+    main.legal-content {
+      position: relative; z-index: 1;
+      max-width: 760px; margin: 24px auto 64px; width: 100%;
+      padding: 32px 24px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+    }
+    main.legal-content h1 {
+      font-size: 28px; font-weight: 900; line-height: 1.25;
+      margin-bottom: 24px; padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+    main.legal-content h2 {
+      font-size: 19px; font-weight: 800; margin-top: 36px; margin-bottom: 12px;
+      color: var(--gold);
+    }
+    main.legal-content h3 {
+      font-size: 16px; font-weight: 700; margin-top: 24px; margin-bottom: 10px;
+      color: var(--text);
+    }
+    main.legal-content h4 {
+      font-size: 14px; font-weight: 700; margin-top: 18px; margin-bottom: 8px;
+      color: var(--text-soft);
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    main.legal-content p {
+      font-size: 15px; color: var(--text-soft); margin-bottom: 14px;
+    }
+    main.legal-content strong { color: var(--text); font-weight: 700; }
+    main.legal-content em { color: var(--text-soft); font-style: italic; }
+    main.legal-content a {
+      color: var(--gold); text-decoration: underline; text-decoration-color: rgba(245, 158, 11, 0.4);
+      text-underline-offset: 2px; transition: text-decoration-color 0.2s;
+    }
+    main.legal-content a:hover { text-decoration-color: var(--gold); }
+    main.legal-content ul, main.legal-content ol {
+      margin: 0 0 16px 0; padding-left: 22px;
+    }
+    main.legal-content li { font-size: 15px; color: var(--text-soft); margin-bottom: 6px; }
+    main.legal-content blockquote {
+      border-left: 3px solid var(--gold);
+      background: var(--bg3);
+      padding: 12px 16px; margin: 16px 0;
+      border-radius: 0 8px 8px 0;
+      font-size: 14px; color: var(--text-soft);
+    }
+    main.legal-content code {
+      font-family: 'SF Mono', Monaco, Consolas, monospace;
+      font-size: 13px; background: var(--bg3); padding: 1px 6px;
+      border-radius: 4px; color: var(--gold-soft);
+    }
+    main.legal-content hr {
+      margin: 32px 0; border: 0;
+      border-top: 1px solid var(--border);
+    }
+    /* Tables */
+    .table-wrap { overflow-x: auto; margin: 16px 0 22px; border-radius: 10px; border: 1px solid var(--border); }
+    main.legal-content table {
+      width: 100%; border-collapse: collapse; font-size: 13.5px;
+      background: var(--bg3);
+    }
+    main.legal-content th {
+      text-align: left; font-weight: 700; color: var(--text);
+      padding: 10px 14px; background: rgba(245, 158, 11, 0.08);
+      border-bottom: 1px solid var(--border);
+    }
+    main.legal-content td {
+      padding: 10px 14px; color: var(--text-soft);
+      border-bottom: 1px solid rgba(30, 45, 71, 0.6);
+      vertical-align: top;
+    }
+    main.legal-content tr:last-child td { border-bottom: 0; }
+    main.legal-content tr:hover td { background: rgba(245, 158, 11, 0.03); }
+    /* Footer */
+    footer.legal-footer {
+      position: relative; z-index: 1;
+      max-width: 880px; margin: 0 auto 32px; width: 100%;
+      padding: 22px 24px;
+      border-top: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 12px; align-items: center;
+      font-size: 12px; color: var(--muted);
+      text-align: center;
+    }
+    footer.legal-footer .related { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
+    footer.legal-footer a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    footer.legal-footer a:hover { color: var(--gold); }
+    footer.legal-footer .related-title { font-weight: 700; color: var(--text-soft); margin-right: 8px; }
+    footer.legal-footer .contact { font-size: 11px; }
+    footer.legal-footer .copy { font-size: 11px; color: var(--muted-2); }
+    /* Responsive */
+    @media (max-width: 600px) {
+      header.legal-header { padding: 20px 16px 4px; }
+      main.legal-content { padding: 22px 18px; margin: 16px 12px 40px; border-radius: 12px; }
+      main.legal-content h1 { font-size: 22px; }
+      main.legal-content h2 { font-size: 17px; }
+      main.legal-content table { font-size: 12.5px; }
+      main.legal-content th, main.legal-content td { padding: 8px 10px; }
+    }
+    /* Print */
+    @media print {
+      body { background: white; color: black; }
+      body::before { display: none; }
+      header.legal-header, footer.legal-footer { display: none; }
+      main.legal-content {
+        background: white; border: none; max-width: 100%; margin: 0; padding: 0;
+        color: black;
+      }
+      main.legal-content h1, main.legal-content h3, main.legal-content h4 { color: black; }
+      main.legal-content h2 { color: #b45309; }
+      main.legal-content p, main.legal-content li, main.legal-content td { color: #1e293b; }
+      main.legal-content a { color: #b45309; text-decoration: underline; }
+      .table-wrap, main.legal-content table { background: white; border-color: #cbd5e1; }
+      main.legal-content th { background: #fef3c7; }
+    }
+  </style>
+</head>
+<body>
+  <header class="legal-header">
+    <div class="logo-wrap">
+      <a href="index.html" class="logo">SPORTVISE</a>
+      <div class="tagline">🇨🇭 Management Sportif IA · Suisse</div>
+      <a href="index.html" class="back-link">← Retour à l'accueil</a>
+    </div>
+    <div class="lang-switch" role="navigation" aria-label="Language"><a href="legal_fr.html" title="Français" class="lang-flag active" aria-current="page">🇫🇷</a><a href="legal_de.html" title="Deutsch" class="lang-flag" aria-current="false">🇩🇪</a><a href="legal_en.html" title="English" class="lang-flag" aria-current="false">🇬🇧</a><a href="legal_it.html" title="Italiano" class="lang-flag" aria-current="false">🇮🇹</a></div>
+  </header>
+
+  <main class="legal-content">
+<h1>Mentions légales — SPORTVISE</h1>
+<p><strong>Version 1.0 — En vigueur depuis le 1er juin 2026</strong></p>
+<hr/>
+<h2>Éditeur du site</h2>
+<p><strong>Thomas Castella</strong><br/>Raison individuelle (entreprise individuelle non-inscrite au registre du commerce)</p>
+<p><strong>Adresse :</strong><br/>Gantrischweg 9<br/>3186 Düdingen (Guin)<br/>Canton de Fribourg<br/>Suisse</p>
+<p><strong>Contact :</strong><br/><a href="mailto:info@sportvise.ch">info@sportvise.ch</a></p>
+<p><strong>Site web :</strong> <a href="https://sportvise.ch" target="_blank" rel="noopener noreferrer">https://sportvise.ch</a></p>
+<hr/>
+<h2>Directeur de la publication</h2>
+<p>Thomas Castella, en sa qualité d'éditeur, est également directeur de la publication du site SPORTVISE.</p>
+<hr/>
+<h2>Hébergement</h2>
+<p>Le site SPORTVISE (front-end et fonctions serverless) est hébergé par :</p>
+<p><strong>Netlify, Inc.</strong><br/>512 2nd Street, Suite 200<br/>San Francisco, CA 94107<br/>États-Unis<br/>Site : <a href="https://www.netlify.com" target="_blank" rel="noopener noreferrer">https://www.netlify.com</a></p>
+<hr/>
+<h2>Base de données</h2>
+<p>Les données utilisateurs sont stockées par :</p>
+<p><strong>Supabase, Inc.</strong><br/>1390 Market Street #200<br/>San Francisco, CA 94102<br/>États-Unis<br/>Site : <a href="https://supabase.com" target="_blank" rel="noopener noreferrer">https://supabase.com</a></p>
+<hr/>
+<h2>Intelligence artificielle</h2>
+<p>Les agents IA de SPORTVISE sont alimentés par les modèles Claude de :</p>
+<p><strong>Anthropic, PBC</strong><br/>548 Market Street #80450<br/>San Francisco, CA 94104<br/>États-Unis<br/>Site : <a href="https://www.anthropic.com" target="_blank" rel="noopener noreferrer">https://www.anthropic.com</a></p>
+<hr/>
+<h2>Paiements</h2>
+<p>Les transactions financières sont traitées par :</p>
+<p><strong>Stripe Payments Europe, Ltd.</strong><br/>1 Grand Canal Street Lower<br/>Grand Canal Dock<br/>Dublin, D02 H210<br/>Irlande<br/>Site : <a href="https://stripe.com" target="_blank" rel="noopener noreferrer">https://stripe.com</a></p>
+<hr/>
+<h2>Propriété intellectuelle</h2>
+<p>L'ensemble du contenu du site SPORTVISE (textes, graphismes, logos, code, structure de la base de données, prompts des agents IA) est la propriété exclusive de Thomas Castella, à l'exception des marques tierces, des logos partenaires et des contenus utilisateurs (cf. CGU).</p>
+<p>Toute reproduction, représentation, modification, publication, ou adaptation de tout ou partie des éléments du site, par quelque procédé que ce soit, est strictement interdite sans autorisation écrite préalable de Thomas Castella.</p>
+<p>Toute exploitation non autorisée du site ou de l'un quelconque de ses éléments est susceptible d'entraîner des poursuites civiles ou pénales.</p>
+<hr/>
+<h2>Crédits</h2>
+<ul><li><strong>Police de caractères</strong> : Inter (open source, <a href="https://rsms.me/inter/" target="_blank" rel="noopener noreferrer">rsms.me/inter</a>)</li><li><strong>Icônes et emojis</strong> : système d'exploitation de l'utilisateur (Apple, Microsoft, Google)</li><li><strong>Données sportives</strong> : API-Sports (<a href="https://api-sports.io" target="_blank" rel="noopener noreferrer">api-sports.io</a>), Matchstat Tennis</li><li><strong>Conception et développement</strong> : Thomas Castella</li></ul>
+<hr/>
+<h2>Conditions d'utilisation et confidentialité</h2>
+<p>L'utilisation du site SPORTVISE est régie par :</p>
+<ul><li>les <strong><a href="/terms">Conditions Générales d'Utilisation</a></strong></li><li>la <strong><a href="/privacy">Politique de confidentialité</a></strong></li></ul>
+<hr/>
+<h2>Signalements</h2>
+<p>Pour signaler un contenu illicite, une violation de propriété intellectuelle, ou tout problème nécessitant une intervention de l'éditeur, veuillez écrire à <a href="mailto:info@sportvise.ch">info@sportvise.ch</a> en précisant l'objet « Signalement ».</p>
+<p>Nous nous engageons à traiter tout signalement dans un délai raisonnable, généralement sous <strong>5 jours ouvrés</strong>.</p>
+<hr/>
+<h2>Préposé fédéral à la protection des données (PFPDT)</h2>
+<p>Pour toute réclamation concernant le traitement de vos données personnelles, vous pouvez vous adresser au :</p>
+<p><strong>Préposé fédéral à la protection des données et à la transparence (PFPDT)</strong><br/>Feldeggweg 1<br/>3003 Berne, Suisse<br/>Site : <a href="https://www.edoeb.admin.ch" target="_blank" rel="noopener noreferrer">https://www.edoeb.admin.ch</a></p>
+<hr/>
+<h2>Date d'entrée en vigueur</h2>
+<p>Les présentes mentions légales sont entrées en vigueur le <strong>1er juin 2026</strong> et peuvent être modifiées sans préavis pour refléter une évolution de la situation de l'éditeur ou de ses prestataires.</p>
+<hr/>
+  </main>
+
+  <footer class="legal-footer">
+    <div class="related"><span class="related-title">Voir aussi :</span><a href="privacy_fr.html">Politique de confidentialité</a> · <a href="terms_fr.html">Conditions d'utilisation</a></div>
+    <div class="contact">Une question ? Écrivez-nous à info@sportvise.ch</div>
+    <div class="copy">© 2026 SPORTVISE · Suisse 🇨🇭</div>
+  </footer>
+
+  <script>
+    // Persiste la langue choisie via le switcher (cohérent avec localStorage 'sv_lang' du reste de l'app)
+    (function () {
+      try {
+        document.querySelectorAll('.lang-switch a.lang-flag').forEach(function (a) {
+          a.addEventListener('click', function () {
+            var match = a.getAttribute('href').match(/_(fr|de|en|it)\.html$/);
+            if (match) localStorage.setItem('sv_lang', match[1]);
+          });
+        });
+      } catch (e) { /* localStorage may be unavailable */ }
+    })();
+  </script>
+</body>
+</html>

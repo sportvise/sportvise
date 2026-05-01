@@ -235,6 +235,15 @@
   <a href="/index.html" data-i18n="backToHome">← Retour à sportvise.ch</a>
 </div>
 
+<!-- LEGAL FOOTER (minimal) -->
+<div class="legal-footer-mini" style="margin-top:18px;text-align:center;font-size:11px;color:var(--muted);display:flex;justify-content:center;gap:14px;flex-wrap:wrap;padding-bottom:24px">
+  <a href="terms_fr.html" data-legal-section="terms" data-i18n="footerLinkTos" style="color:var(--muted);text-decoration:none">CGU</a>
+  <span style="opacity:0.5">·</span>
+  <a href="privacy_fr.html" data-legal-section="privacy" data-i18n="footerLinkPrivacy" style="color:var(--muted);text-decoration:none">Confidentialité</a>
+  <span style="opacity:0.5">·</span>
+  <a href="legal_fr.html" data-legal-section="legal" data-i18n="footerLinkLegal" style="color:var(--muted);text-decoration:none">Mentions légales</a>
+</div>
+
 <script>
   // ── I18N ──────────────────────────────────────────
   const i18n = {
@@ -248,6 +257,7 @@
       btnSendLink:"Envoyer le lien →", btnConfirmNewPassword:"Confirmer le nouveau mot de passe →",
       forgotPassword:"Mot de passe oublié ?", backToLogin:"← Retour à la connexion",
       backToHome:"← Retour à sportvise.ch",
+      footerLinkTos:"CGU", footerLinkPrivacy:"Confidentialité", footerLinkLegal:"Mentions légales",
       resetIntro:"Entrez votre email et nous vous enverrons un lien pour réinitialiser votre mot de passe.",
       newPasswordTitle:"🔐 Nouveau mot de passe", newPasswordIntro:"Choisissez votre nouveau mot de passe.",
       sportFootball:"Football", sportHockey:"Hockey", sportTennis:"Tennis", sportSki:"Ski",
@@ -278,6 +288,7 @@
       btnSendLink:"Link senden →", btnConfirmNewPassword:"Neues Passwort bestätigen →",
       forgotPassword:"Passwort vergessen?", backToLogin:"← Zurück zur Anmeldung",
       backToHome:"← Zurück zu sportvise.ch",
+      footerLinkTos:"AGB", footerLinkPrivacy:"Datenschutz", footerLinkLegal:"Impressum",
       resetIntro:"Gib deine E-Mail ein und wir senden dir einen Link zum Zurücksetzen deines Passworts.",
       newPasswordTitle:"🔐 Neues Passwort", newPasswordIntro:"Wähle dein neues Passwort.",
       sportFootball:"Fußball", sportHockey:"Hockey", sportTennis:"Tennis", sportSki:"Ski",
@@ -307,6 +318,7 @@
       btnSendLink:"Send link →", btnConfirmNewPassword:"Confirm new password →",
       forgotPassword:"Forgot password?", backToLogin:"← Back to login",
       backToHome:"← Back to sportvise.ch",
+      footerLinkTos:"Terms", footerLinkPrivacy:"Privacy", footerLinkLegal:"Legal Notice",
       resetIntro:"Enter your email and we'll send you a link to reset your password.",
       newPasswordTitle:"🔐 New password", newPasswordIntro:"Choose your new password.",
       sportFootball:"Football", sportHockey:"Hockey", sportTennis:"Tennis", sportSki:"Skiing",
@@ -336,6 +348,7 @@
       btnSendLink:"Invia il link →", btnConfirmNewPassword:"Conferma la nuova password →",
       forgotPassword:"Password dimenticata?", backToLogin:"← Torna all'accesso",
       backToHome:"← Torna a sportvise.ch",
+      footerLinkTos:"CGU", footerLinkPrivacy:"Privacy", footerLinkLegal:"Note legali",
       resetIntro:"Inserisci la tua email e ti invieremo un link per reimpostare la password.",
       newPasswordTitle:"🔐 Nuova password", newPasswordIntro:"Scegli la tua nuova password.",
       sportFootball:"Calcio", sportHockey:"Hockey", sportTennis:"Tennis", sportSki:"Sci",
@@ -384,6 +397,11 @@
     ['fr','de','en','it'].forEach(l => {
       const btn = document.getElementById('lp-' + l);
       if (btn) btn.classList.toggle('active', l === lang);
+    });
+    // Wire footer legal links to localized HTML pages
+    document.querySelectorAll('a[data-legal-section]').forEach(a => {
+      const section = a.getAttribute('data-legal-section');
+      if (section) a.setAttribute('href', section + '_' + lang + '.html');
     });
     document.documentElement.lang = lang;
   }

@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SPORTVISE — Privacy Policy</title>
+  <meta name="description" content="SPORTVISE Privacy Policy — nFADP / GDPR compliant." />
+  <meta name="robots" content="index, follow" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #07091a; --bg2: #0d1127; --bg3: #111827;
+      --border: #1e2d47; --gold: #f59e0b; --gold-soft: #fbbf24;
+      --green: #10b981; --red: #ef4444;
+      --text: #f1f5f9; --text-soft: #cbd5e1; --muted: #94a3b8; --muted-2: #64748b;
+    }
+    html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; }
+    body {
+      min-height: 100vh; display: flex; flex-direction: column;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    body::before {
+      content: ''; position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 500px;
+      background: radial-gradient(ellipse, #f59e0b0a 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+    /* Header */
+    header.legal-header {
+      position: relative; z-index: 1;
+      max-width: 880px; margin: 0 auto; width: 100%;
+      padding: 28px 24px 8px;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .logo-wrap { display: flex; flex-direction: column; }
+    .logo {
+      font-size: 22px; font-weight: 900; letter-spacing: 3px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-soft));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      text-decoration: none;
+    }
+    .tagline { font-size: 11px; color: var(--muted); margin-top: 2px; letter-spacing: 0.4px; }
+    .lang-switch { display: inline-flex; gap: 4px; }
+    .lang-flag {
+      display: inline-block; padding: 4px 8px; border-radius: 6px;
+      font-size: 18px; line-height: 1; text-decoration: none;
+      opacity: 0.45; transition: opacity 0.2s, background 0.2s;
+    }
+    .lang-flag:hover { opacity: 1; background: var(--bg2); }
+    .lang-flag.active { opacity: 1; background: var(--bg2); }
+    .back-link {
+      display: inline-block; margin: 8px 0 0;
+      font-size: 13px; color: var(--muted); text-decoration: none;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--gold); }
+    /* Content */
+    main.legal-content {
+      position: relative; z-index: 1;
+      max-width: 760px; margin: 24px auto 64px; width: 100%;
+      padding: 32px 24px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+    }
+    main.legal-content h1 {
+      font-size: 28px; font-weight: 900; line-height: 1.25;
+      margin-bottom: 24px; padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+    main.legal-content h2 {
+      font-size: 19px; font-weight: 800; margin-top: 36px; margin-bottom: 12px;
+      color: var(--gold);
+    }
+    main.legal-content h3 {
+      font-size: 16px; font-weight: 700; margin-top: 24px; margin-bottom: 10px;
+      color: var(--text);
+    }
+    main.legal-content h4 {
+      font-size: 14px; font-weight: 700; margin-top: 18px; margin-bottom: 8px;
+      color: var(--text-soft);
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    main.legal-content p {
+      font-size: 15px; color: var(--text-soft); margin-bottom: 14px;
+    }
+    main.legal-content strong { color: var(--text); font-weight: 700; }
+    main.legal-content em { color: var(--text-soft); font-style: italic; }
+    main.legal-content a {
+      color: var(--gold); text-decoration: underline; text-decoration-color: rgba(245, 158, 11, 0.4);
+      text-underline-offset: 2px; transition: text-decoration-color 0.2s;
+    }
+    main.legal-content a:hover { text-decoration-color: var(--gold); }
+    main.legal-content ul, main.legal-content ol {
+      margin: 0 0 16px 0; padding-left: 22px;
+    }
+    main.legal-content li { font-size: 15px; color: var(--text-soft); margin-bottom: 6px; }
+    main.legal-content blockquote {
+      border-left: 3px solid var(--gold);
+      background: var(--bg3);
+      padding: 12px 16px; margin: 16px 0;
+      border-radius: 0 8px 8px 0;
+      font-size: 14px; color: var(--text-soft);
+    }
+    main.legal-content code {
+      font-family: 'SF Mono', Monaco, Consolas, monospace;
+      font-size: 13px; background: var(--bg3); padding: 1px 6px;
+      border-radius: 4px; color: var(--gold-soft);
+    }
+    main.legal-content hr {
+      margin: 32px 0; border: 0;
+      border-top: 1px solid var(--border);
+    }
+    /* Tables */
+    .table-wrap { overflow-x: auto; margin: 16px 0 22px; border-radius: 10px; border: 1px solid var(--border); }
+    main.legal-content table {
+      width: 100%; border-collapse: collapse; font-size: 13.5px;
+      background: var(--bg3);
+    }
+    main.legal-content th {
+      text-align: left; font-weight: 700; color: var(--text);
+      padding: 10px 14px; background: rgba(245, 158, 11, 0.08);
+      border-bottom: 1px solid var(--border);
+    }
+    main.legal-content td {
+      padding: 10px 14px; color: var(--text-soft);
+      border-bottom: 1px solid rgba(30, 45, 71, 0.6);
+      vertical-align: top;
+    }
+    main.legal-content tr:last-child td { border-bottom: 0; }
+    main.legal-content tr:hover td { background: rgba(245, 158, 11, 0.03); }
+    /* Footer */
+    footer.legal-footer {
+      position: relative; z-index: 1;
+      max-width: 880px; margin: 0 auto 32px; width: 100%;
+      padding: 22px 24px;
+      border-top: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 12px; align-items: center;
+      font-size: 12px; color: var(--muted);
+      text-align: center;
+    }
+    footer.legal-footer .related { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
+    footer.legal-footer a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    footer.legal-footer a:hover { color: var(--gold); }
+    footer.legal-footer .related-title { font-weight: 700; color: var(--text-soft); margin-right: 8px; }
+    footer.legal-footer .contact { font-size: 11px; }
+    footer.legal-footer .copy { font-size: 11px; color: var(--muted-2); }
+    /* Responsive */
+    @media (max-width: 600px) {
+      header.legal-header { padding: 20px 16px 4px; }
+      main.legal-content { padding: 22px 18px; margin: 16px 12px 40px; border-radius: 12px; }
+      main.legal-content h1 { font-size: 22px; }
+      main.legal-content h2 { font-size: 17px; }
+      main.legal-content table { font-size: 12.5px; }
+      main.legal-content th, main.legal-content td { padding: 8px 10px; }
+    }
+    /* Print */
+    @media print {
+      body { background: white; color: black; }
+      body::before { display: none; }
+      header.legal-header, footer.legal-footer { display: none; }
+      main.legal-content {
+        background: white; border: none; max-width: 100%; margin: 0; padding: 0;
+        color: black;
+      }
+      main.legal-content h1, main.legal-content h3, main.legal-content h4 { color: black; }
+      main.legal-content h2 { color: #b45309; }
+      main.legal-content p, main.legal-content li, main.legal-content td { color: #1e293b; }
+      main.legal-content a { color: #b45309; text-decoration: underline; }
+      .table-wrap, main.legal-content table { background: white; border-color: #cbd5e1; }
+      main.legal-content th { background: #fef3c7; }
+    }
+  </style>
+</head>
+<body>
+  <header class="legal-header">
+    <div class="logo-wrap">
+      <a href="index.html" class="logo">SPORTVISE</a>
+      <div class="tagline">🇨🇭 AI Sports Management · Switzerland</div>
+      <a href="index.html" class="back-link">← Back to home</a>
+    </div>
+    <div class="lang-switch" role="navigation" aria-label="Language"><a href="privacy_fr.html" title="Français" class="lang-flag" aria-current="false">🇫🇷</a><a href="privacy_de.html" title="Deutsch" class="lang-flag" aria-current="false">🇩🇪</a><a href="privacy_en.html" title="English" class="lang-flag active" aria-current="page">🇬🇧</a><a href="privacy_it.html" title="Italiano" class="lang-flag" aria-current="false">🇮🇹</a></div>
+  </header>
+
+  <main class="legal-content">
+<h1>Privacy Policy — SPORTVISE</h1>
+<p><strong>Version 1.0 — In effect since June 1, 2026</strong><br/><strong>Last modified: June 1, 2026</strong></p>
+<hr/>
+<h2>1. Preamble</h2>
+<p>This privacy policy (hereinafter "Policy") describes how SPORTVISE collects, uses and protects your personal data in the context of the use of the platform accessible at <a href="https://sportvise.ch" target="_blank" rel="noopener noreferrer">https://sportvise.ch</a> (hereinafter "the Service").</p>
+<p>This Policy applies to any person accessing the Service, whether they hold an account or are a simple visitor.</p>
+<p>We comply with the <strong>Swiss Federal Act on Data Protection (FADP / nFADP)</strong> which entered into force on 1 September 2023, as well as with the <strong>General Data Protection Regulation (GDPR, EU 2016/679)</strong> for users residing in the European Union.</p>
+<h2>2. Data controller</h2>
+<p>The controller of your personal data is:</p>
+<p><strong>Thomas Castella</strong> (sole proprietorship)<br/>Gantrischweg 9<br/>3186 Düdingen (Guin)<br/>Canton of Fribourg, Switzerland</p>
+<p><strong>Contact for any question regarding your data:</strong><br/><a href="mailto:info@sportvise.ch">info@sportvise.ch</a></p>
+<p>Given the size of the structure (solo individual business), no Data Protection Officer (DPO) has been formally designated. All requests are handled directly by the controller.</p>
+<h2>3. Personal data collected</h2>
+<p>We collect the following categories of data:</p>
+<h3>3.1 Data provided directly by the user</h3>
+<ul><li><strong>Account data</strong>: first name, last name, email address, password (encrypted), preferred language</li><li><strong>Sport profile data</strong>: sport practiced, level, club, canton of residence, sporting goals</li><li><strong>Daily journal</strong>: mood (1-10), energy (1-10), sleep quality (1-5), reported pain areas, physical state, free notes</li><li><strong>Event calendar</strong>: matches, competitions, training sessions (title, date, time, location, duration, planned intensity, notes)</li><li><strong>Post-event recaps</strong>: performance rating (1-10), RPE — perceived effort (1-10), physical state perceived, mood, sleep quality the night before, pre-event nutrition, reporting of pain or injuries, strong points, areas to improve, free notes</li><li><strong>Exchanges with AI agents</strong>: content of messages sent and received with the virtual agents (Lucas, David, Clara, Emma, Nora, Julie, Alex, Marc, Léa, Sophie, Pierre)</li><li><strong>Payments</strong>: billing information processed exclusively by Stripe (we never store your card numbers)</li><li><strong>Attachments</strong>: images shared in conversations with the agents (where applicable)</li></ul>
+<h3>3.2 Data collected automatically</h3>
+<ul><li>IP address, browser type, operating system (technical hosting logs)</li><li>Service usage data (pages visited, features used, action timestamps)</li><li>Session identifiers (essential cookies only)</li></ul>
+<h3>3.3 Health data — sensitive category</h3>
+<p>Some of the data collected above falls within the <strong>category of sensitive data</strong> within the meaning of art. 5 para. 3 let. c nFADP and art. 9 GDPR:</p>
+<ul><li>Physical state, pain, injuries</li><li>Sleep quality</li><li>Mood and emotional state</li><li>Perceived physical effort (RPE)</li></ul>
+<p>This data is subject to <strong>enhanced protection measures</strong> detailed in section 8.</p>
+<h2>4. Purposes of processing</h2>
+<p>Your data is collected and processed for the following purposes:</p>
+<ol><li><strong>Providing the AI sports coaching service</strong>: enabling the virtual agents to personalize their advice based on your profile, calendar, journal, and recaps.</li><li><strong>Authentication and securing of your account</strong>: login, password management, prevention of unauthorized access.</li><li><strong>Management of your subscription</strong>: billing, collection, cancellation management (via Stripe).</li><li><strong>Transactional communication</strong>: sending welcome emails, payment confirmations, reminders relating to the account.</li><li><strong>Improvement of the Service</strong>: anonymized statistical analysis of usage to improve features.</li><li><strong>Compliance with our legal obligations</strong>: accounting retention, processing of authority requests if applicable.</li></ol>
+<h2>5. Legal bases for processing (GDPR)</h2>
+<p>For users residing in the European Union, the legal bases are:</p>
+<div class="table-wrap"><table><thead><tr><th>Purpose</th><th>GDPR legal basis</th></tr></thead><tbody><tr><td>Account creation, operation of the service</td><td>Performance of the contract (art. 6.1.b)</td></tr><tr><td>Health data (journal, recap)</td><td>Explicit consent (art. 9.2.a)</td></tr><tr><td>Transactional communications</td><td>Performance of the contract (art. 6.1.b)</td></tr><tr><td>Improvement of the Service (anonymized statistics)</td><td>Legitimate interest (art. 6.1.f)</td></tr><tr><td>Accounting retention</td><td>Legal obligation (art. 6.1.c)</td></tr></tbody></table></div>
+<p>For users residing in Switzerland, processing is based on the principles of the nFADP: recognizable purpose, proportionality, informed consent for sensitive data.</p>
+<h2>6. Recipients and processors</h2>
+<p>We never sell or rent your data to third parties. We use technical processors to provide the Service:</p>
+<div class="table-wrap"><table><thead><tr><th>Processor</th><th>Role</th><th>Data location</th></tr></thead><tbody><tr><td><strong>Supabase Inc.</strong></td><td>Database (PostgreSQL)</td><td>United States (DPA available)</td></tr><tr><td><strong>Netlify Inc.</strong></td><td>Frontend hosting</td><td>United States (standard DPA)</td></tr><tr><td><strong>Anthropic PBC</strong></td><td>Claude API (AI agents)</td><td>United States (DPA + DPF)</td></tr><tr><td><strong>Resend Inc.</strong></td><td>Sending of transactional emails</td><td>United States (SCC)</td></tr><tr><td><strong>Stripe Payments Europe Ltd.</strong></td><td>Payment processing</td><td>Ireland (EU) + United States</td></tr><tr><td><strong>API-Sports</strong></td><td>Real-time sports data (results, rankings)</td><td>France (EU)</td></tr></tbody></table></div>
+<p>Each processor is bound to SPORTVISE by a data processing agreement (DPA) guaranteeing a level of protection compliant with the FADP and the GDPR.</p>
+<h2>7. International data transfers</h2>
+<p>Several of our processors being established in the United States, some of your data is transferred there. These transfers are governed by:</p>
+<ol><li><strong>Standard Contractual Clauses (SCC)</strong> approved by the European Commission for the GDPR;</li><li><strong>Data Privacy Framework (DPF)</strong> for participating processors (Anthropic, Stripe);</li><li><strong>Adequacy decision</strong> Switzerland–United States for Swiss users (Swiss-US Data Privacy Framework, in force since 2024).</li></ol>
+<p>Your sensitive data (health) is transmitted to Anthropic only in the contextual form necessary for AI coaching. We never send Anthropic more data than is needed to respond to your message.</p>
+<h3>7bis. Commitment to minimization and to non-human access to health data</h3>
+<p><strong>Thomas Castella, controller, formally undertakes never to access individually the health data of users</strong> (mood, energy, sleep quality, pain, injuries, RPE — perceived effort, physical state, performance, post-event perceptions).</p>
+<p>This sensitive data is processed only:</p>
+<ul><li>in an <strong>automated manner</strong> by the AI agents, and only to personalize the advice displayed in the interface of the user who entered it;</li><li>in <strong>machine-read only</strong> form, for the calculation of anonymized and aggregated statistics over all users (for example: median RPE per sport, frequency of injuries per discipline) — without ever identifying an individual user.</li></ul>
+<p>No manual extraction, no human analysis, no export for commercial prospecting purposes, no transmission to third parties (outside the technical processors listed in section 6) is carried out.</p>
+<p>This commitment is contractual and enforceable. Any violation may be reported to the Federal Data Protection and Information Commissioner (FDPIC) or to the supervisory authority of your EU country.</p>
+<h2>8. Security measures</h2>
+<p>We implement the following measures to protect your data:</p>
+<ul><li><strong>Encryption in transit</strong>: all communications with sportvise.ch use HTTPS/TLS 1.3</li><li><strong>Encryption at rest</strong>: the Supabase database encrypts data at the disk level</li><li><strong>Passwords</strong>: hashed with bcrypt (never stored in clear)</li><li><strong>Authentication</strong>: managed via Supabase Auth (OAuth 2.0 / JWT standards)</li><li><strong>Access control</strong>: Row-Level Security (RLS) PostgreSQL — each user can only access their own data</li><li><strong>Backups</strong>: daily automatic backups by Supabase (7-day retention on standard plan)</li><li><strong>Audit logs</strong>: retention of login and error logs for 90 days</li><li><strong>Access limitation</strong>: only Thomas Castella (controller) has read/write access to production</li></ul>
+<p>In case of a data breach likely to entail a risk for your rights, we undertake to notify you within <strong>72 hours</strong> of discovery, in accordance with art. 24 nFADP and art. 33 GDPR.</p>
+<h2>9. Retention period</h2>
+<div class="table-wrap"><table><thead><tr><th>Category</th><th>Duration</th></tr></thead><tbody><tr><td>Account data (profile, email)</td><td>As long as the account is active + 30 days after deletion</td></tr><tr><td>Journal, calendar, recaps</td><td>As long as the account is active + 30 days after deletion</td></tr><tr><td>Conversation history with agents</td><td>As long as the account is active + 30 days after deletion</td></tr><tr><td>Billing data</td><td>10 years (Swiss accounting obligation, art. 958f CO)</td></tr><tr><td>Technical logs</td><td>90 days</td></tr><tr><td>Anonymized data (statistics)</td><td>Indefinitely (anonymous)</td></tr></tbody></table></div>
+<p>Upon expiry of the period, the data is deleted in a secure and irreversible manner from the production databases. Backups automatically include the deletions on the next rotation cycle.</p>
+<h3>9bis. Account deletion and right to be forgotten</h3>
+<p>You may delete your account at any time from your dashboard (Profile → "Danger zone" section → "Delete my account"). Deletion is <strong>definitive and irreversible</strong>: no recovery is possible once confirmation is validated.</p>
+<h4>Immediate effect</h4>
+<p>At the moment of confirmation:</p>
+<ul><li>All your personal data stored at SPORTVISE and at Supabase (our database provider) is permanently erased from production: profile, goals, daily journal, calendar, post-event recaps, conversations with AI agents, favorites, ratings, fitness scores.</li><li>Your authentication account is deleted.</li><li>If you had an active paid subscription, it is automatically cancelled (no pro-rata refund).</li><li>A confirmation email is sent to your address.</li></ul>
+<p>The operation is atomic on the database side: if a step fails, the entire deletion is rolled back to avoid leaving orphan data.</p>
+<h4>Residual retention with our technical processors</h4>
+<p>For technical or regulatory reasons, certain data may persist temporarily with our processors beyond the deletion carried out on our side:</p>
+<div class="table-wrap"><table><thead><tr><th>Processor</th><th>Data concerned</th><th>Residual retention period</th></tr></thead><tbody><tr><td>Anthropic (Claude API)</td><td>Logs of past AI conversations</td><td>~30 days</td></tr><tr><td>Resend</td><td>Logs of sent emails</td><td>~30 days</td></tr><tr><td>Netlify</td><td>Server logs (IP, user-agent)</td><td>~7 days</td></tr><tr><td>Supabase</td><td>Daily automatic backups</td><td>7 days then purge</td></tr><tr><td>Stripe</td><td>Transaction data (invoices)</td><td>10 years (Swiss accounting obligation, art. 958f CO)</td></tr></tbody></table></div>
+<p>Beyond these periods, your data is permanently erased with all our processors, with the exception of Stripe transactions which are kept for the legal duration of the accounting obligation.</p>
+<h4>Controller's commitment</h4>
+<p><strong>Thomas Castella, controller, never accesses individually the health data of users (mood, pain, injuries, sleep, RPE).</strong> This data is processed only by the AI agents in an automated manner to personalize the advice in the interface of the user who entered it. No extraction, no manual analysis, no transmission to third parties outside the technical processors listed above is carried out. This commitment is formalized in section 7bis.</p>
+<h2>10. Your rights</h2>
+<p>Whatever your place of residence, you have the following rights over your personal data:</p>
+<ul><li><strong>Right of access</strong>: obtain confirmation that your data is being processed and obtain a copy of it</li><li><strong>Right of rectification</strong>: correct inaccurate or incomplete data</li><li><strong>Right to erasure</strong> ("right to be forgotten"): request the deletion of your account and your data</li><li><strong>Right to restriction</strong>: request the temporary suspension of processing</li><li><strong>Right to portability</strong>: receive your data in a structured format (JSON)</li><li><strong>Right to object</strong>: object to processing based on legitimate interest</li><li><strong>Right to withdraw consent</strong>: at any time, without affecting the lawfulness of prior processing</li><li><strong>Right to lodge a complaint</strong>: with the Federal Data Protection and Information Commissioner (FDPIC — <a href="https://www.edoeb.admin.ch" target="_blank" rel="noopener noreferrer">edoeb.admin.ch</a>) or with the supervisory authority of your EU country</li></ul>
+<h3>How to exercise your rights</h3>
+<p>Send your request to <a href="mailto:info@sportvise.ch">info@sportvise.ch</a> specifying the subject ("GDPR/FADP request") and the right you wish to exercise. We respond within a maximum period of <strong>30 days</strong>.</p>
+<p>For the deletion of your account, you may also use the "Delete my account" button available in the settings of your dashboard (currently being deployed).</p>
+<h2>11. Cookies</h2>
+<p>SPORTVISE uses a minimal number of cookies, all <strong>strictly necessary for the operation of the Service</strong>:</p>
+<div class="table-wrap"><table><thead><tr><th>Cookie</th><th>Provider</th><th>Purpose</th><th>Duration</th></tr></thead><tbody><tr><td><code>sb-access-token</code></td><td>Supabase</td><td>Maintenance of authenticated session</td><td>Session</td></tr><tr><td><code>sb-refresh-token</code></td><td>Supabase</td><td>Automatic token renewal</td><td>7 days</td></tr><tr><td><code>__stripe_*</code></td><td>Stripe</td><td>Payment security (only on the payment page)</td><td>30 minutes to 1 year depending on cookie</td></tr></tbody></table></div>
+<p>These essential cookies do not require a consent banner under FADP, GDPR, or ePrivacy guidelines.</p>
+<p><strong>SPORTVISE does not use analytical or advertising cookies</strong> (no Google Analytics, Facebook Pixel, or equivalent).</p>
+<h2>12. Minors</h2>
+<p>The use of SPORTVISE is reserved for persons aged <strong>16 years and older</strong>. For users aged 16 to 17, the <strong>written consent of the legal representative</strong> (parent or guardian) is required and may be requested at any time.</p>
+<p>If we learn that a user is under 16 years of age, their account is deleted without delay and all their data erased.</p>
+<p>Parents or guardians may contact <a href="mailto:info@sportvise.ch">info@sportvise.ch</a> to request the deletion of the account of a minor in their charge.</p>
+<h2>13. Automated decisions and profiling</h2>
+<p>SPORTVISE's AI agents generate personalized advice based on your data (profile, journal, recaps). This advice <strong>does not constitute automated decisions producing legal effects</strong> within the meaning of art. 22 GDPR.</p>
+<p>You retain at all times:</p>
+<ul><li>Full control over the actions to be taken following the recommendations</li><li>The possibility to request human intervention (Thomas Castella) via <a href="mailto:info@sportvise.ch">info@sportvise.ch</a></li><li>The right to contest any recommendation that seems inappropriate to you</li></ul>
+<p><strong>Important: the advice of the AI agents never substitutes for qualified medical, legal, tax or financial advice.</strong> For any question in these areas, consult a certified professional.</p>
+<h2>14. Modifications of the Policy</h2>
+<p>We reserve the right to modify this Policy to reflect legal, technical or functional changes. Any substantial modification will be notified to you by email at least 30 days before entry into force. The date of the last modification is indicated at the top of this document.</p>
+<p>Continued use of the Service after notification constitutes acceptance of the new Policy.</p>
+<h2>15. Applicable law and jurisdiction</h2>
+<p>This Policy is governed by <strong>Swiss law</strong>. Any dispute relating to its interpretation or its execution shall be subject to the <strong>exclusive jurisdiction of the ordinary courts of the Canton of Fribourg</strong>, subject to appeal to the Swiss Federal Supreme Court.</p>
+<p>Users residing in the European Union retain the right to lodge a complaint with the supervisory authority of their country of residence.</p>
+<h2>16. Contact</h2>
+<p>For any question, request, or complaint relating to this Policy:</p>
+<p><strong>Thomas Castella</strong><br/><a href="mailto:info@sportvise.ch">info@sportvise.ch</a><br/>SPORTVISE — <a href="https://sportvise.ch" target="_blank" rel="noopener noreferrer">https://sportvise.ch</a></p>
+<hr/>
+  </main>
+
+  <footer class="legal-footer">
+    <div class="related"><span class="related-title">See also :</span><a href="terms_en.html">Terms of Service</a> · <a href="legal_en.html">Legal Notice</a></div>
+    <div class="contact">Questions? Reach us at info@sportvise.ch</div>
+    <div class="copy">© 2026 SPORTVISE · Switzerland 🇨🇭</div>
+  </footer>
+
+  <script>
+    // Persiste la langue choisie via le switcher (cohérent avec localStorage 'sv_lang' du reste de l'app)
+    (function () {
+      try {
+        document.querySelectorAll('.lang-switch a.lang-flag').forEach(function (a) {
+          a.addEventListener('click', function () {
+            var match = a.getAttribute('href').match(/_(fr|de|en|it)\.html$/);
+            if (match) localStorage.setItem('sv_lang', match[1]);
+          });
+        });
+      } catch (e) { /* localStorage may be unavailable */ }
+    })();
+  </script>
+</body>
+</html>
