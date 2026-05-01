@@ -3,8 +3,41 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="app-version" content="26" />
+  <meta name="app-version" content="57" />
   <title>SPORTVISE — Dashboard</title>
+  <!-- ── Sentry error reporting (v58 P0 #7) ─────────────────────────
+       Loaded BEFORE all other scripts so init errors are captured too.
+       DSN is public-safe (it identifies the project, not a secret).
+       Skip in dev (only enabled on sportvise.ch domain). -->
+  <script src="https://browser.sentry-cdn.com/8.45.0/bundle.min.js" crossorigin="anonymous"></script>
+  <script>
+  (function () {
+    if (!window.Sentry) return;
+    if (!/sportvise\.ch$/i.test(location.hostname)) return; // skip dev/staging/local
+    var APP_V_FROM_META = (document.querySelector('meta[name="app-version"]') || {}).content || 'unknown';
+    Sentry.init({
+      dsn: 'https://815c2a765347b04e879535be1a600826@o4511314258165760.ingest.de.sentry.io/4511314265309264',
+      environment: 'production',
+      release: 'sportvise@' + APP_V_FROM_META,
+      sendDefaultPii: false,
+      sampleRate: 1.0,
+      ignoreErrors: [
+        /ResizeObserver loop/i,
+        /Non-Error promise rejection captured/i,
+        'Script error.',
+        /Load failed/i,
+        /NetworkError when attempting to fetch/i,
+        /AbortError/i
+      ],
+      denyUrls: [
+        /\/extensions\//i,
+        /^chrome-extension:\/\//i,
+        /^moz-extension:\/\//i,
+        /^safari-(web-)?extension:\/\//i
+      ]
+    });
+  })();
+  </script>
   <script>
   // CACHE CLEANER v21 — async, cleans SW + caches silently
   window._cacheCleanDone = (async function(){
@@ -21,10 +54,18 @@
   })();
 
   // GLOBAL ERROR HANDLER — catches unhandled errors and shows diagnostic screen
+  // (assigning window.onerror overrides Sentry's auto-instrument, so we forward manually)
   window._svErrors = [];
-  window.onerror = function(msg, src, line) {
+  window.onerror = function(msg, src, line, col, error) {
     console.error('SPORTVISE Error:', msg, src, line);
     window._svErrors.push(msg + ' (L' + line + ')');
+    // Forward to Sentry (if loaded + on prod domain — see <head>)
+    try {
+      if (window.Sentry) {
+        if (error) { Sentry.captureException(error); }
+        else { Sentry.captureMessage(String(msg) + ' (' + src + ':' + line + ':' + col + ')', 'error'); }
+      }
+    } catch (_) {}
     if (document.getElementById('svErrorScreen')) {
       // Update existing error screen with new error
       var errList = document.getElementById('svErrorList');
@@ -49,6 +90,11 @@
   };
   window.addEventListener('unhandledrejection', function(e) {
     console.error('Unhandled promise:', e.reason);
+    try {
+      if (window.Sentry) {
+        Sentry.captureException(e.reason instanceof Error ? e.reason : new Error('Unhandled promise: ' + String(e.reason)));
+      }
+    } catch (_) {}
     window.onerror('Promise: ' + (e.reason && e.reason.message ? e.reason.message : String(e.reason)), '', 0);
   });
   </script>
@@ -2963,6 +3009,9 @@ async function init() {
   }
   if (!session) { window.location.href = 'login.html'; return; }
   currentUser = session.user;
+
+  // Attach user context to Sentry (id + email only, no other PII)
+  try { if (window.Sentry) Sentry.setUser({ id: currentUser.id, email: currentUser.email }); } catch (_) {}
 
   // Purge ALL user-specific data from a different user (prevents data leak between accounts)
   const lastUserId = localStorage.getItem('sv_last_user');
@@ -10947,6 +10996,8 @@ async function logout() {
       }
     });
   } catch(e) {}
+  // Detach Sentry user context before logout
+  try { if (window.Sentry) Sentry.setUser(null); } catch (_) {}
   await sb.auth.signOut();
   window.location.href = 'login.html';
 }
