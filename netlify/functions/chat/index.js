@@ -28,6 +28,10 @@
 
 const https = require('https');
 const { SPORTS_SUISSE, CALENDRIERS_SUISSE, AGENTS } = require("./agents-data");
+const { initSentry, captureError } = require('../_sentry');
+
+// v61.3 — observability serveur. No-op gracieux si SENTRY_DSN_SERVER absent.
+initSentry({ component: 'chat', release: process.env.SPORTVISE_APP_V || 'v62.5' });
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://ckikyvokurpehavjlkbc.supabase.co';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
@@ -416,6 +420,7 @@ ${smartContext}`;
   } catch (fetchErr) {
     const latencyMs = Date.now() - startTs;
     console.error('[CHAT] fetch error:', fetchErr.message);
+    captureError(fetchErr, { context: { user_id: user.id, agent_id: agentId, model: modelConfig.id, error_code: 'claude_network_error' }, level: 'error' });
     await logUsage({ userId: user.id, agentId, model: modelConfig.id, latencyMs, success: false, errorCode: 'claude_network_error' });
     return { statusCode: 502, headers, body: JSON.stringify({ error: 'Claude API unreachable' }) };
   }
@@ -424,6 +429,7 @@ ${smartContext}`;
     const err = await response.text();
     const latencyMs = Date.now() - startTs;
     console.error(`[CHAT] model=${modelKey} (${modelConfig.id}) status=${response.status} err=`, err);
+    captureError(new Error(`Claude API ${response.status}: ${err.slice(0, 500)}`), { context: { user_id: user.id, agent_id: agentId, model: modelConfig.id, status: response.status, error_code: `claude_api_${response.status}` }, level: response.status >= 500 ? 'error' : 'warning' });
     await logUsage({ userId: user.id, agentId, model: modelConfig.id, latencyMs, success: false, errorCode: `claude_api_${response.status}` });
     return { statusCode: 500, headers, body: JSON.stringify({ error: 'Claude API error' }) };
   }
