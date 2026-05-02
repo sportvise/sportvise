@@ -2696,6 +2696,16 @@ loadTheme();
 function setLang(lang) {
   currentLang = lang;
   localStorage.setItem('sv_lang', lang);
+  // v61.4 — Persiste la langue dans profiles.lang pour que les emails Stripe
+  // (subscription portal events, payment failed) arrivent dans la bonne langue,
+  // même sans channel client_reference_id. Idempotent côté DB. Fire-and-forget,
+  // pas bloquant pour le re-rendering UI.
+  // Guard : currentUser pas encore défini pendant l'init initial → skip.
+  if (typeof currentUser !== 'undefined' && currentUser && currentUser.id && ['fr','de','en','it'].includes(lang)) {
+    sb.from('profiles').update({ lang }).eq('id', currentUser.id)
+      .then(({ error }) => { if (error) console.warn('[LANG] profiles.lang update failed:', error.message); })
+      .catch(e => console.warn('[LANG] profiles.lang update threw:', e?.message));
+  }
   // Update flag buttons opacity
   ['fr','de','en','it'].forEach(l => {
     const btn = document.getElementById('lang-'+l);
@@ -5156,6 +5166,79 @@ function buildEventTrendsBlock(pastEvents) {
   return `📊 TENDANCES ÉVÉNEMENTS — 7 DERNIERS JOURS (utilise activement ces agrégats pour personnaliser tes conseils) :\n${lines.join('\n')}\n\n`;
 }
 
+// v62.7 — Helper : sépare une liste d'events en (séries ≥3 occurrences, oneShots).
+// Les séries de 1-2 occurrences dans la fenêtre sont traitées comme one-shots
+// (pas la peine d'agréger pour si peu).
+function splitEventsBySeries(events) {
+  const seriesMap = new Map(); // groupId -> events[]
+  const oneShots = [];
+  for (const e of events) {
+    if (e.recurrence_group_id) {
+      if (!seriesMap.has(e.recurrence_group_id)) seriesMap.set(e.recurrence_group_id, []);
+      seriesMap.get(e.recurrence_group_id).push(e);
+    } else {
+      oneShots.push(e);
+    }
+  }
+  // Petites séries (1-2 occurrences) → traitées comme oneShots
+  const series = [];
+  seriesMap.forEach((evts) => {
+    if (evts.length >= 3) {
+      series.push(evts);
+    } else {
+      oneShots.push(...evts);
+    }
+  });
+  oneShots.sort((a, b) => a.event_date.localeCompare(b.event_date));
+  return { series, oneShots };
+}
+
+// v62.7 — Génère une ligne summary pour une série d'events à venir.
+// Format : "Série récurrente 'Entraînement physique' (8 occurrences à venir, jours: Lun/Mer/Ven à 18:00, intensité moyenne, prochaine DEMAIN)"
+function summarizeUpcomingSeries(serie, today, typeLabels) {
+  const sample = serie[0]; // déjà sorted ascending
+  const dayNames = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+  const days = [...new Set(serie.map(e => new Date(e.event_date + 'T00:00:00').getDay()))]
+    .sort().map(d => dayNames[d]);
+  const time = sample.event_time ? sample.event_time.slice(0,5) : null;
+  const next = serie[0];
+  const nextDiff = Math.round((new Date(next.event_date) - today) / 86400000);
+  const whenNext = nextDiff === 0 ? "AUJOURD'HUI" : nextDiff === 1 ? 'DEMAIN' : `dans ${nextDiff} jours`;
+  const typeLabel = typeLabels[sample.event_type] || 'Événement';
+  return `🔁 Série récurrente '${sample.title}' (${typeLabel}, ${serie.length} occurrences à venir, jours: ${days.join('/')}${time ? ' à ' + time : ''}, intensité ${sample.intensity || 'moyenne'}${sample.location ? ', lieu: ' + sample.location : ''}, prochaine ${whenNext})`;
+}
+
+// v62.7 — Génère une ligne summary agrégée pour une série de récaps passés.
+// Calcule RPE moyen, performance moyenne, état physique dominant, dernière occurrence.
+function summarizePastSeries(serie) {
+  const sample = serie[0];
+  const withRpe = serie.filter(e => typeof e.rpe === 'number' && e.rpe > 0);
+  const withPerf = serie.filter(e => typeof e.performance_note === 'number' && e.performance_note > 0);
+  const physCounts = {};
+  serie.forEach(e => { if (e.physical_state) physCounts[e.physical_state] = (physCounts[e.physical_state] || 0) + 1; });
+  const physTop = Object.entries(physCounts).sort((a,b) => b[1] - a[1])[0];
+  const injuries = serie.filter(e => e.injury && e.injury !== 'aucune');
+  const last = serie.reduce((a, b) => a.event_date > b.event_date ? a : b);
+
+  const parts = [];
+  parts.push(`🔁 Série '${sample.title}' (${serie.length} récap${serie.length>1?'s':''} sur 14j)`);
+  if (withRpe.length > 0) {
+    const avgRpe = (withRpe.reduce((s,e) => s + e.rpe, 0) / withRpe.length).toFixed(1);
+    const minRpe = Math.min(...withRpe.map(e => e.rpe));
+    const maxRpe = Math.max(...withRpe.map(e => e.rpe));
+    parts.push(`RPE moyen=${avgRpe}/10 (range ${minRpe}-${maxRpe}, n=${withRpe.length})`);
+  }
+  if (withPerf.length > 0) {
+    const avgPerf = (withPerf.reduce((s,e) => s + e.performance_note, 0) / withPerf.length).toFixed(1);
+    parts.push(`performance moyenne=${avgPerf}/10`);
+  }
+  if (physTop) parts.push(`état physique majoritaire="${physTop[0]}" (${physTop[1]}/${serie.length})`);
+  if (injuries.length > 0) parts.push(`⚠️ ${injuries.length} blessure${injuries.length>1?'s':''} signalée${injuries.length>1?'s':''} dans la série`);
+  parts.push(`dernière le ${last.event_date}`);
+
+  return parts.join(', ');
+}
+
 async function getCalendarContext() {
   try {
     const today = new Date();
@@ -5171,40 +5254,68 @@ async function getCalendarContext() {
 
     if (!events || events.length === 0) return '';
 
+    // v62.6 — exclure les events cancelled/postponed du contexte agent (pas pertinents pour le coaching)
+    const activeEvents = events.filter(e => e.event_status !== 'cancelled' && e.event_status !== 'postponed');
+
     const typeLabels = { match:'Match', competition:'Compétition', entrainement:'Entraînement', autre:'Événement' };
     // v53 — also get recent past events with recaps for context (window expanded 3 → 10 within last 14 days)
+    // v62.7 — bumpé à 30 pour que les agrégats série soient plus représentatifs
     const fourteenDaysAgo = new Date(today.getTime() - 14 * 86400000);
     const { data: pastEvents } = await sb.from('calendar_events')
       .select('*').eq('user_id', currentUser.id).eq('recap_done', true)
       .gte('event_date', dateToStr(fourteenDaysAgo))
-      .order('event_date', { ascending: false }).limit(10);
+      .order('event_date', { ascending: false }).limit(30);
 
     // v59 — block TENDANCES en tête (les LLMs accordent plus de poids au début du context block)
     let ctx = buildEventTrendsBlock(pastEvents);
 
+    // v62.7 — Group upcoming events by série (≥3 occurrences) pour éviter de spammer le
+    // contexte avec 36 lignes répétitives quand un user a un entraînement hebdo régulier.
+    // Les séries sont affichées en summary, les one-shots et petites séries restent listés.
+    const upcoming = splitEventsBySeries(activeEvents);
     ctx += 'ÉVÉNEMENTS À VENIR :\n';
-    ctx += events.map(e => {
-      const d = new Date(e.event_date);
-      const diff = Math.round((d - today) / 86400000);
-      const when = diff === 0 ? "AUJOURD'HUI" : diff === 1 ? 'DEMAIN' : `dans ${diff} jours`;
-      const intens = e.intensity ? ` (intensité: ${e.intensity})` : '';
-      return `${typeLabels[e.event_type] || 'Événement'} ${when}: ${e.title}${e.event_time ? ' à ' + e.event_time.slice(0,5) : ''}${e.location ? ' (' + e.location + ')' : ''}${intens}${e.notes ? ' — Note: ' + e.notes : ''}`;
-    }).join('\n');
 
-    if (pastEvents && pastEvents.length > 0) {
-      ctx += '\n\nRÉCAPS RÉCENTS (utilise ces données pour personnaliser tes conseils):\n' + pastEvents.map(e => {
-        let recap = `${e.title} (${e.event_date}): performance=${e.performance_note}/10`;
-        if (e.rpe) recap += `, RPE=${e.rpe}/10`;
-        recap += `, physique=${e.physical_state}, humeur=${e.mood}`;
-        if (e.result) recap += `, résultat=${e.result}`;
-        if (e.sleep_quality) recap += `, sommeil veille=${e.sleep_quality}`;
-        if (e.pre_nutrition) recap += `, nutrition avant=${e.pre_nutrition}`;
-        if (e.injury && e.injury !== 'aucune') recap += `, BLESSURE=${e.injury}`;
-        if (e.strengths) recap += `, points forts: ${e.strengths}`;
-        if (e.weaknesses) recap += `, à améliorer: ${e.weaknesses}`;
-        if (e.recap_notes) recap += `, notes: ${e.recap_notes}`;
-        return recap;
+    if (upcoming.series.length > 0) {
+      ctx += upcoming.series.map(s => summarizeUpcomingSeries(s, today, typeLabels)).join('\n');
+      if (upcoming.oneShots.length > 0) ctx += '\n';
+    }
+
+    if (upcoming.oneShots.length > 0) {
+      ctx += upcoming.oneShots.map(e => {
+        const d = new Date(e.event_date);
+        const diff = Math.round((d - today) / 86400000);
+        const when = diff === 0 ? "AUJOURD'HUI" : diff === 1 ? 'DEMAIN' : `dans ${diff} jours`;
+        const intens = e.intensity ? ` (intensité: ${e.intensity})` : '';
+        return `${typeLabels[e.event_type] || 'Événement'} ${when}: ${e.title}${e.event_time ? ' à ' + e.event_time.slice(0,5) : ''}${e.location ? ' (' + e.location + ')' : ''}${intens}${e.notes ? ' — Note: ' + e.notes : ''}`;
       }).join('\n');
+    }
+
+    // v62.7 — Idem pour les récaps : agréger les séries pour donner des tendances
+    // ("RPE en hausse de 7→8 sur tes 5 derniers entraînements physiques du mardi").
+    if (pastEvents && pastEvents.length > 0) {
+      const past = splitEventsBySeries(pastEvents);
+      ctx += '\n\nRÉCAPS RÉCENTS (utilise ces données pour personnaliser tes conseils):\n';
+
+      if (past.series.length > 0) {
+        ctx += past.series.map(s => summarizePastSeries(s)).join('\n');
+        if (past.oneShots.length > 0) ctx += '\n';
+      }
+
+      if (past.oneShots.length > 0) {
+        ctx += past.oneShots.map(e => {
+          let recap = `${e.title} (${e.event_date}): performance=${e.performance_note}/10`;
+          if (e.rpe) recap += `, RPE=${e.rpe}/10`;
+          recap += `, physique=${e.physical_state}, humeur=${e.mood}`;
+          if (e.result) recap += `, résultat=${e.result}`;
+          if (e.sleep_quality) recap += `, sommeil veille=${e.sleep_quality}`;
+          if (e.pre_nutrition) recap += `, nutrition avant=${e.pre_nutrition}`;
+          if (e.injury && e.injury !== 'aucune') recap += `, BLESSURE=${e.injury}`;
+          if (e.strengths) recap += `, points forts: ${e.strengths}`;
+          if (e.weaknesses) recap += `, à améliorer: ${e.weaknesses}`;
+          if (e.recap_notes) recap += `, notes: ${e.recap_notes}`;
+          return recap;
+        }).join('\n');
+      }
     }
     return ctx;
   } catch(e) {
