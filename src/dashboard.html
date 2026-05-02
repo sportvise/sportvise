@@ -372,7 +372,7 @@
     .online-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
     /* PROFILE & MODAL */
-    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:1000; display:flex; align-items:center; justify-content:center; padding:20px; }
+    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); z-index:1000; display:flex; align-items:center; justify-content:center; padding:20px; }
     .modal-box { background:var(--bg3); border:1px solid var(--border); border-radius:20px; padding:36px; width:100%; max-width:520px; max-height:90vh; overflow-y:auto; }
     .modal-title { font-size:22px; font-weight:800; margin-bottom:6px; }
     .modal-sub { font-size:13px; color:var(--muted); margin-bottom:28px; }
@@ -779,7 +779,7 @@ const T = {
     nextEvent:'Prochain événement', days:'JOURS', hours:'HEURES', mins:'MIN',
     addEvent:'+ Ajouter un événement', recapEvent:'Comment s\'est passé "{title}" ?',
     addRecapPrompt:'Ajoutez votre récap pour que vos agents s\'améliorent', doRecap:'Faire le récap →',
-    weeklyLoad:'Charge cette semaine', events:'événements', eventSingular:'événement', noEvents:'Aucun événement',
+    weeklyLoad:'Charge cette semaine', events:'événements', eventSingular:'événement', noEvents:'Aucun événement', weekLoadRest:'Repos',
     // Event types & intensity
     eventTypeMatch:'Match', eventTypeCompetition:'Compétition', eventTypeTraining:'Entraînement', eventTypeOther:'Autre',
     intensityLight:'Légère', intensityMedium:'Moyenne', intensityHigh:'Intense',
@@ -795,10 +795,20 @@ const T = {
     recurrenceDays:'Jours de la semaine', recurrenceUntil:'Jusqu\'au',
     recurrenceCreated:'{n} événements créés', recurrenceTooMany:'Maximum 365 occurrences par série',
     recurrenceBadge:'Série', recurrenceDeleteTitle:'Supprimer la série ?',
+    recurrenceEditTitle:'Modifier la série ?',
     recurrenceDeleteHint:'Cet événement fait partie d\'une série récurrente.',
     recurrenceDeleteOnly:'Cet événement seulement',
     recurrenceDeleteAll:'Toute la série depuis cette date',
+    recurrenceEditOnly:'Cet événement seulement',
+    recurrenceEditAll:'Toute la série depuis cette date',
     recurrenceSeriesDeleted:'{n} événements supprimés',
+    recurrenceSeriesUpdated:'{n} événements mis à jour',
+    eventStatusCancel:'Annuler',
+    eventStatusCancelled:'Annulé',
+    eventStatusReactivate:'Réactiver',
+    eventStatusReactivated:'Événement réactivé',
+    eventConfirmCancel:'Annuler cet événement ? Il restera dans l\'historique mais aucun récap ne sera demandé.',
+    eventDuplicate:'Dupliquer',
     dayLetters:['D','L','M','M','J','V','S'],
     eventBtnAdd:'Ajouter →', eventBtnSave:'Enregistrer ✓',
     eventValidationError:'Veuillez remplir le titre et la date.', eventErrorPrefix:'Erreur:',
@@ -1152,7 +1162,7 @@ const T = {
     nextEvent:'Nächstes Ereignis', days:'TAGE', hours:'STUNDEN', mins:'MIN',
     addEvent:'+ Ereignis hinzufügen', recapEvent:'Wie ist es bei "{title}" gelaufen?',
     addRecapPrompt:'Fügen Sie Ihre Zusammenfassung hinzu, damit sich Ihre Agenten verbessern', doRecap:'Zusammenfassung erstellen →',
-    weeklyLoad:'Auslastung dieser Woche', events:'Ereignisse', eventSingular:'Ereignis', noEvents:'Keine Ereignisse',
+    weeklyLoad:'Auslastung dieser Woche', events:'Ereignisse', eventSingular:'Ereignis', noEvents:'Keine Ereignisse', weekLoadRest:'Erholung',
     // Event types & intensity
     eventTypeMatch:'Spiel', eventTypeCompetition:'Wettkampf', eventTypeTraining:'Training', eventTypeOther:'Sonstiges',
     intensityLight:'Leicht', intensityMedium:'Mittel', intensityHigh:'Intensiv',
@@ -1168,10 +1178,20 @@ const T = {
     recurrenceDays:'Wochentage', recurrenceUntil:'Bis zum',
     recurrenceCreated:'{n} Termine erstellt', recurrenceTooMany:'Maximal 365 Wiederholungen pro Serie',
     recurrenceBadge:'Serie', recurrenceDeleteTitle:'Serie löschen?',
+    recurrenceEditTitle:'Serie bearbeiten?',
     recurrenceDeleteHint:'Dieser Termin gehört zu einer wiederkehrenden Serie.',
     recurrenceDeleteOnly:'Nur dieser Termin',
     recurrenceDeleteAll:'Ganze Serie ab diesem Datum',
+    recurrenceEditOnly:'Nur dieser Termin',
+    recurrenceEditAll:'Ganze Serie ab diesem Datum',
     recurrenceSeriesDeleted:'{n} Termine gelöscht',
+    recurrenceSeriesUpdated:'{n} Termine aktualisiert',
+    eventStatusCancel:'Absagen',
+    eventStatusCancelled:'Abgesagt',
+    eventStatusReactivate:'Reaktivieren',
+    eventStatusReactivated:'Termin reaktiviert',
+    eventConfirmCancel:'Diesen Termin absagen? Er bleibt im Verlauf, aber es wird keine Nachbesprechung angefordert.',
+    eventDuplicate:'Duplizieren',
     dayLetters:['S','M','D','M','D','F','S'],
     eventBtnAdd:'Hinzufügen →', eventBtnSave:'Speichern ✓',
     eventValidationError:'Bitte füllen Sie Titel und Datum aus.', eventErrorPrefix:'Fehler:',
@@ -1525,7 +1545,7 @@ const T = {
     nextEvent:'Next event', days:'DAYS', hours:'HOURS', mins:'MIN',
     addEvent:'+ Add event', recapEvent:'How did "{title}" go?',
     addRecapPrompt:'Add your recap so your agents can improve', doRecap:'Create recap →',
-    weeklyLoad:'This week\'s load', events:'events', eventSingular:'event', noEvents:'No events',
+    weeklyLoad:'This week\'s load', events:'events', eventSingular:'event', noEvents:'No events', weekLoadRest:'Rest',
     // Event types & intensity
     eventTypeMatch:'Match', eventTypeCompetition:'Competition', eventTypeTraining:'Training', eventTypeOther:'Other',
     intensityLight:'Light', intensityMedium:'Medium', intensityHigh:'Intense',
@@ -1541,10 +1561,20 @@ const T = {
     recurrenceDays:'Days of week', recurrenceUntil:'Until',
     recurrenceCreated:'{n} events created', recurrenceTooMany:'Max 365 occurrences per series',
     recurrenceBadge:'Series', recurrenceDeleteTitle:'Delete series?',
+    recurrenceEditTitle:'Edit series?',
     recurrenceDeleteHint:'This event is part of a recurring series.',
     recurrenceDeleteOnly:'This event only',
     recurrenceDeleteAll:'Whole series from this date',
+    recurrenceEditOnly:'This event only',
+    recurrenceEditAll:'Whole series from this date',
     recurrenceSeriesDeleted:'{n} events deleted',
+    recurrenceSeriesUpdated:'{n} events updated',
+    eventStatusCancel:'Cancel',
+    eventStatusCancelled:'Cancelled',
+    eventStatusReactivate:'Reactivate',
+    eventStatusReactivated:'Event reactivated',
+    eventConfirmCancel:'Cancel this event? It will stay in your history but no recap will be requested.',
+    eventDuplicate:'Duplicate',
     dayLetters:['S','M','T','W','T','F','S'],
     eventBtnAdd:'Add →', eventBtnSave:'Save ✓',
     eventValidationError:'Please fill in the title and date.', eventErrorPrefix:'Error:',
@@ -1898,7 +1928,7 @@ const T = {
     nextEvent:'Prossimo evento', days:'GIORNI', hours:'ORE', mins:'MIN',
     addEvent:'+ Aggiungi evento', recapEvent:'Come è andato "{title}"?',
     addRecapPrompt:'Aggiungi il tuo recap in modo che i tuoi agenti possano migliorare', doRecap:'Crea recap →',
-    weeklyLoad:'Carico questa settimana', events:'eventi', eventSingular:'evento', noEvents:'Nessun evento',
+    weeklyLoad:'Carico questa settimana', events:'eventi', eventSingular:'evento', noEvents:'Nessun evento', weekLoadRest:'Riposo',
     // Event types & intensity
     eventTypeMatch:'Partita', eventTypeCompetition:'Competizione', eventTypeTraining:'Allenamento', eventTypeOther:'Altro',
     intensityLight:'Leggera', intensityMedium:'Media', intensityHigh:'Intensa',
@@ -1914,10 +1944,20 @@ const T = {
     recurrenceDays:'Giorni della settimana', recurrenceUntil:'Fino al',
     recurrenceCreated:'{n} eventi creati', recurrenceTooMany:'Massimo 365 occorrenze per serie',
     recurrenceBadge:'Serie', recurrenceDeleteTitle:'Eliminare la serie?',
+    recurrenceEditTitle:'Modificare la serie?',
     recurrenceDeleteHint:'Questo evento fa parte di una serie ricorrente.',
     recurrenceDeleteOnly:'Solo questo evento',
     recurrenceDeleteAll:'Tutta la serie da questa data',
+    recurrenceEditOnly:'Solo questo evento',
+    recurrenceEditAll:'Tutta la serie da questa data',
     recurrenceSeriesDeleted:'{n} eventi eliminati',
+    recurrenceSeriesUpdated:'{n} eventi aggiornati',
+    eventStatusCancel:'Annulla',
+    eventStatusCancelled:'Annullato',
+    eventStatusReactivate:'Riattiva',
+    eventStatusReactivated:'Evento riattivato',
+    eventConfirmCancel:'Annullare questo evento? Resterà nello storico ma non verrà richiesto alcun recap.',
+    eventDuplicate:'Duplica',
     dayLetters:['D','L','M','M','G','V','S'],
     eventBtnAdd:'Aggiungi →', eventBtnSave:'Salva ✓',
     eventValidationError:'Per favore compili titolo e data.', eventErrorPrefix:'Errore:',
@@ -6050,7 +6090,8 @@ async function renderCalendar() {
   const today = new Date(); today.setHours(0,0,0,0);
 
   // Next event for countdown
-  const nextEvent = calendarEvents.find(e => new Date(e.event_date) >= today);
+  // v62.6 — exclure les events cancelled/postponed du countdown "prochain événement"
+  const nextEvent = calendarEvents.find(e => new Date(e.event_date) >= today && e.event_status !== 'cancelled' && e.event_status !== 'postponed');
 
   // Past events needing recap
   const needsRecap = calendarEvents.filter(e => {
@@ -6059,15 +6100,25 @@ async function renderCalendar() {
   }).slice(0, 3);
 
   // Week intensity map
+  // v62.6 — exclure les events 'cancelled' / 'postponed' du calcul de charge (un event annulé
+  // ne contribue pas à la charge réelle de la semaine, sinon on surestime).
   const weekEvents = calendarEvents.filter(e => {
     const d = new Date(e.event_date);
     const weekAhead = new Date(today.getTime() + 7 * 86400000);
-    return d >= today && d < weekAhead;
+    return d >= today && d < weekAhead && e.event_status !== 'cancelled' && e.event_status !== 'postponed';
   });
   const weekIntensity = weekEvents.reduce((sum, e) => sum + (e.intensity === 'intense' ? 3 : e.intensity === 'legere' ? 1 : 2), 0);
   const weekLoadLevels = [t.intensityLight, t.intensityLight, t.intensityMedium, t.intensityHigh, t.intensityHigh];
-  const weekLoad = weekIntensity <= 3 ? t.intensityLight : weekIntensity <= 7 ? t.intensityMedium : weekIntensity <= 12 ? t.intensityHigh : 'Très ' + t.intensityHigh.toLowerCase();
-  const weekLoadColor = weekIntensity <= 3 ? '#84cc16' : weekIntensity <= 7 ? '#f59e0b' : '#ef4444';
+  // v62 polish — si 0 events cette semaine, label = "Repos" au lieu de "Légère" (cohérence sémantique)
+  const weekLoad = weekEvents.length === 0 ? (t.weekLoadRest || 'Repos')
+    : weekIntensity <= 3 ? t.intensityLight
+    : weekIntensity <= 7 ? t.intensityMedium
+    : weekIntensity <= 12 ? t.intensityHigh
+    : 'Très ' + t.intensityHigh.toLowerCase();
+  const weekLoadColor = weekEvents.length === 0 ? '#64748b'
+    : weekIntensity <= 3 ? '#84cc16'
+    : weekIntensity <= 7 ? '#f59e0b'
+    : '#ef4444';
 
   document.getElementById('mainContent').innerHTML = `
     <div style="max-width:800px">
@@ -6125,7 +6176,7 @@ async function renderCalendar() {
             const c = INTENSITY[e.intensity||'moyenne']?.color || '#f59e0b';
             return `<div title="${e.title}" style="width:14px;height:${h}px;border-radius:3px;background:${c}"></div>`;
           }).join('')}
-          ${weekEvents.length === 0 ? '<div style="font-size:11px;color:var(--muted)">Aucun événement</div>' : ''}
+          ${weekEvents.length === 0 ? `<div style="font-size:11px;color:var(--muted)">${t.noEvents || 'Aucun événement'}</div>` : ''}
         </div>
         <div style="text-align:right">
           <div style="font-size:20px;font-weight:900;color:var(--text)">${weekEvents.length}</div>
@@ -6305,14 +6356,15 @@ async function showDayDetail(dateStr) {
           const t = EVENT_TYPES[e.event_type] || EVENT_TYPES.autre;
           const intens = INTENSITY[e.intensity||'moyenne'];
           return `
-            <div style="background:${t.color}08;border:1px solid ${t.color}25;border-radius:12px;padding:16px;margin-bottom:10px">
+            <div style="background:${t.color}08;border:1px solid ${t.color}25;border-radius:12px;padding:16px;margin-bottom:10px;${e.event_status === 'cancelled' ? 'opacity:0.55' : ''}">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
                 <div style="display:flex;align-items:center;gap:8px">
                   <div style="width:32px;height:32px;border-radius:8px;background:${t.color}20;display:flex;align-items:center;justify-content:center;font-size:16px">${t.emoji}</div>
                   <div>
-                    <div style="font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px">
+                    <div style="font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px;${e.event_status === 'cancelled' ? 'text-decoration:line-through' : ''}">
                       ${e.title}
-                      ${e.recurrence_group_id ? `<span title="${tLang.recurrenceBadge||'Série récurrente'}" style="font-size:11px;padding:1px 6px;border-radius:6px;background:${t.color}15;color:${t.color};font-weight:600">🔁 ${tLang.recurrenceBadge||'Série'}</span>` : ''}
+                      ${e.event_status === 'cancelled' ? `<span style="font-size:10px;padding:1px 6px;border-radius:6px;background:#ef444415;color:#ef4444;font-weight:700;text-decoration:none">Ø ${tLang.eventStatusCancelled || 'Annulé'}</span>` : ''}
+                      ${e.recurrence_group_id ? `<span title="${tLang.recurrenceBadge||'Série récurrente'}" style="font-size:11px;padding:1px 6px;border-radius:6px;background:${t.color}15;color:${t.color};font-weight:600;text-decoration:none">🔁 ${tLang.recurrenceBadge||'Série'}</span>` : ''}
                     </div>
                     <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
                       <span style="font-size:11px;color:${t.color};font-weight:600">${eventTypeLabel(e.event_type)}</span>
@@ -6322,7 +6374,9 @@ async function showDayDetail(dateStr) {
                   </div>
                 </div>
                 <div style="display:flex;gap:4px">
-                  <button onclick="editEvent('${e.id}','${e.title.replace(/'/g,"\\'")}','${e.event_type}','${dateStr}','${e.event_time||''}','${(e.location||'').replace(/'/g,"\\'")}','${e.intensity||'moyenne'}','${(e.notes||'').replace(/'/g,"\\'")}')" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s" onmouseover="this.style.background='#f59e0b20';this.style.color='#f59e0b'" onmouseout="this.style.background='none';this.style.color='var(--muted)'">✏️</button>
+                  <button onclick="${e.recurrence_group_id ? `editEventSmart('${e.id}','${e.recurrence_group_id}','${dateStr}','${e.title.replace(/'/g,"\\'")}','${e.event_type}','${e.event_time||''}','${(e.location||'').replace(/'/g,"\\'")}','${e.intensity||'moyenne'}','${(e.notes||'').replace(/'/g,"\\'")}')` : `editEvent('${e.id}','${e.title.replace(/'/g,"\\'")}','${e.event_type}','${dateStr}','${e.event_time||''}','${(e.location||'').replace(/'/g,"\\'")}','${e.intensity||'moyenne'}','${(e.notes||'').replace(/'/g,"\\'")}')`}" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s" onmouseover="this.style.background='#f59e0b20';this.style.color='#f59e0b'" onmouseout="this.style.background='none';this.style.color='var(--muted)'">✏️</button>
+                  <button onclick="duplicateEvent('${e.id}')" title="${tLang.eventDuplicate || 'Dupliquer'}" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s" onmouseover="this.style.background='#06b6d420';this.style.color='#06b6d4'" onmouseout="this.style.background='none';this.style.color='var(--muted)'">📋</button>
+                  <button onclick="toggleEventStatus('${e.id}')" title="${e.event_status === 'cancelled' ? (tLang.eventStatusReactivate || 'Réactiver') : (tLang.eventStatusCancel || 'Annuler')}" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s" onmouseover="this.style.background='#64748b20';this.style.color='#94a3b8'" onmouseout="this.style.background='none';this.style.color='var(--muted)'">${e.event_status === 'cancelled' ? '↩️' : 'Ø'}</button>
                   <button onclick="${e.recurrence_group_id ? `deleteEventSmart('${e.id}','${e.recurrence_group_id}','${dateStr}')` : `deleteEvent('${e.id}')`}" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s" onmouseover="this.style.background='#ef444420';this.style.color='#ef4444'" onmouseout="this.style.background='none';this.style.color='var(--muted)'">🗑</button>
                 </div>
               </div>
@@ -6368,6 +6422,29 @@ function showAddEvent(dateStr) {
   const types = ['match','competition','entrainement','autre'];
   const intensities = ['legere','moyenne','intense'];
 
+  // v62 polish — heure par défaut intelligente : si la date sélectionnée est aujourd'hui,
+  // proposer la prochaine heure pile +1h (capée 06h-22h pour rester réaliste).
+  // Sinon, garder 18:00 (heure d'entraînement la plus fréquente). Évite "il est 10:45
+  // et le formulaire propose 18:00" qui forçait à reset à chaque fois.
+  const todayStr = dateToStr(new Date());
+  let defaultTime = '18:00';
+  if (dateStr === todayStr) {
+    const h = new Date().getHours();
+    const next = Math.min(Math.max(h + 1, 6), 22);
+    defaultTime = String(next).padStart(2, '0') + ':00';
+  }
+
+  // v62.6 — Pré-remplissage depuis duplicateEvent() : si __preFillEvent set, on l'utilise
+  // pour pré-remplir titre/type/lieu/notes/intensité/durée. La date reste celle passée en
+  // arg (= aujourd'hui pour duplicateEvent). __preFillEvent est consommé puis reset.
+  const pf = __preFillEvent;
+  __preFillEvent = null;
+  if (pf) {
+    selectedEventType = pf.event_type;
+    selectedIntensity = pf.intensity;
+    if (pf.event_time) defaultTime = pf.event_time.slice(0, 5);
+  }
+
   const modal = document.createElement('div');
   modal.className = 'modal-overlay';
   modal.id = 'eventModal';
@@ -6380,13 +6457,13 @@ function showAddEvent(dateStr) {
       <div class="form-field">
         <label class="form-label">${t.eventType}</label>
         <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
-          ${types.map(tp => `<button class="sport-btn${tp==='match'?' selected':''}" onclick="selectEventType(this,'${tp}')" style="padding:10px;font-size:12px">${EVENT_TYPES[tp].emoji} ${eventTypeLabel(tp)}</button>`).join('')}
+          ${types.map(tp => `<button class="sport-btn${tp===(pf?pf.event_type:'match')?' selected':''}" onclick="selectEventType(this,'${tp}')" style="padding:10px;font-size:12px">${EVENT_TYPES[tp].emoji} ${eventTypeLabel(tp)}</button>`).join('')}
         </div>
       </div>
 
       <div class="form-field">
         <label class="form-label">${t.eventTitle}</label>
-        <input type="text" class="form-input" id="evTitle" placeholder="${t.eventTitlePlaceholder}" />
+        <input type="text" class="form-input" id="evTitle" value="${pf ? pf.title.replace(/"/g,'&quot;') : ''}" placeholder="${t.eventTitlePlaceholder}" />
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
@@ -6396,24 +6473,19 @@ function showAddEvent(dateStr) {
         </div>
         <div class="form-field">
           <label class="form-label">${t.eventTime}</label>
-          <input type="time" class="form-input" id="evTime" value="18:00" />
+          <input type="time" class="form-input" id="evTime" value="${defaultTime}" />
         </div>
         <div class="form-field">
           <label class="form-label">${t.eventDuration}</label>
           <select class="form-input form-select" id="evDuration" style="padding:11px 12px">
-            <option value="30">30 min</option>
-            <option value="60">1h</option>
-            <option value="90" selected>1h30</option>
-            <option value="120">2h</option>
-            <option value="150">2h30</option>
-            <option value="180">3h</option>
+            ${[30,60,90,120,150,180].map(m => `<option value="${m}"${(pf ? pf.duration_minutes : 90) === m ? ' selected' : ''}>${m < 60 ? m + ' min' : (m/60 % 1 === 0 ? (m/60) + 'h' : Math.floor(m/60) + 'h' + (m%60))}</option>`).join('')}
           </select>
         </div>
       </div>
 
       <div class="form-field">
         <label class="form-label">${t.eventLocation}</label>
-        <input type="text" class="form-input" id="evLocation" placeholder="${t.eventLocationPlaceholder}" />
+        <input type="text" class="form-input" id="evLocation" value="${pf ? pf.location.replace(/"/g,'&quot;') : ''}" placeholder="${t.eventLocationPlaceholder}" />
       </div>
 
       <!-- v62 RÉCURRENCE — section "Répéter ?" -->
@@ -6445,13 +6517,13 @@ function showAddEvent(dateStr) {
       <div class="form-field">
         <label class="form-label">${t.plannedIntensity}</label>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
-          ${intensities.map(i => `<button class="sport-btn${i==='moyenne'?' selected':''}" onclick="selectIntensity(this,'${i}')" style="padding:8px;font-size:11px">${INTENSITY[i].icon} ${intensityLabel(i)}</button>`).join('')}
+          ${intensities.map(i => `<button class="sport-btn${i===(pf?pf.intensity:'moyenne')?' selected':''}" onclick="selectIntensity(this,'${i}')" style="padding:8px;font-size:11px">${INTENSITY[i].icon} ${intensityLabel(i)}</button>`).join('')}
         </div>
       </div>
 
       <div class="form-field">
         <label class="form-label">${t.eventNotes}</label>
-        <input type="text" class="form-input" id="evNotes" placeholder="${t.eventNotesPlaceholder}" />
+        <input type="text" class="form-input" id="evNotes" value="${pf ? pf.notes.replace(/"/g,'&quot;') : ''}" placeholder="${t.eventNotesPlaceholder}" />
       </div>
 
       <div style="display:flex;gap:8px;margin-top:12px">
@@ -6698,6 +6770,31 @@ async function updateEvent(id) {
 
   if (!title || !date) return alert(t.eventValidationError);
 
+  // v62 — si _editingSeriesContext set, on est en mode "modifier toute la série depuis cette date".
+  // On n'update PAS event_date ni event_time (sinon toutes les occurrences auraient la même date,
+  // ce qui détruirait la série). On update seulement les champs "métadonnées" : title, type,
+  // location, notes, intensity. Bulk update via WHERE recurrence_group_id + event_date >= fromDate.
+  const ctx = _editingSeriesContext;
+  if (ctx && ctx.groupId && ctx.fromDate) {
+    const { data, error } = await sb.from('calendar_events').update({
+      title,
+      event_type: selectedEventType,
+      event_time: time,
+      location,
+      notes,
+      intensity: selectedIntensity
+    }).eq('recurrence_group_id', ctx.groupId).gte('event_date', ctx.fromDate).select('id');
+    _editingSeriesContext = null; // reset
+    if (error) return alert(t.eventErrorPrefix + ' ' + error.message);
+    const n = (data || []).length;
+    document.getElementById('eventModal')?.remove();
+    const msg = (t.recurrenceSeriesUpdated || '{n} événements mis à jour').replace('{n}', n);
+    showToast('✏️ ' + msg);
+    renderCalendar();
+    return;
+  }
+
+  // Mode classique (single event) — comportement existant
   const { error } = await sb.from('calendar_events').update({
     title,
     event_type: selectedEventType,
@@ -6722,6 +6819,51 @@ async function deleteEvent(id) {
   calendarEvents = calendarEvents.filter(e => e.id !== id);
   document.getElementById('eventModal')?.remove();
   showToast(t.eventToastDeleted);
+  await renderCalendar();
+}
+
+// v62.6 — Duplication d'un event existant. Ouvre showAddEvent avec valeurs pré-remplies
+// (sauf date = aujourd'hui, pour forcer l'user à choisir la nouvelle date). Cas d'usage :
+// matchs similaires non-récurrents (ex : Coupe Suisse vs FC Bâle puis vs Servette 2 mois plus tard,
+// avec mêmes notes "arriver 1h avant", même intensité, même lieu). Évite la re-saisie de tous
+// les champs. Le pré-remplissage utilise les variables globales __preFillEvent consommées
+// par showAddEvent au prochain appel.
+let __preFillEvent = null;
+
+function duplicateEvent(id) {
+  const ev = calendarEvents.find(e => e.id === id);
+  if (!ev) return;
+  __preFillEvent = {
+    title: ev.title || '',
+    event_type: ev.event_type || 'match',
+    event_time: ev.event_time || null,
+    duration_minutes: ev.duration_minutes || 90,
+    location: ev.location || '',
+    notes: ev.notes || '',
+    intensity: ev.intensity || 'moyenne'
+  };
+  document.getElementById('eventModal')?.remove();
+  // Date par défaut = aujourd'hui (force le choix d'une nouvelle date pour l'occurrence dupliquée)
+  showAddEvent(dateToStr(new Date()));
+}
+
+// v62.6 — Annulation d'event (préserve l'historique mais désactive les récaps).
+// Appelé depuis le bouton Ø dans showDayDetail. Si l'event est déjà cancelled,
+// on le réactive (toggle back to 'planned'). Cas d'usage : match reporté pour cause
+// de météo, équipe adverse forfait, blessure de dernière minute.
+async function toggleEventStatus(id) {
+  const t = T[currentLang] || T.fr;
+  const ev = calendarEvents.find(e => e.id === id);
+  if (!ev) return;
+  const isCurrentlyCancelled = ev.event_status === 'cancelled';
+  const newStatus = isCurrentlyCancelled ? 'planned' : 'cancelled';
+  if (!isCurrentlyCancelled && !confirm(t.eventConfirmCancel || 'Annuler cet événement ? Il restera dans l\'historique mais aucun récap ne sera demandé.')) return;
+  const { error } = await sb.from('calendar_events').update({ event_status: newStatus }).eq('id', id);
+  if (error) return alert(t.eventErrorPrefix + ' ' + error.message);
+  // Update local cache
+  ev.event_status = newStatus;
+  document.getElementById('eventModal')?.remove();
+  showToast(isCurrentlyCancelled ? '✅ ' + (t.eventStatusReactivated || 'Événement réactivé') : 'Ø ' + (t.eventStatusCancelled || 'Événement annulé'));
   await renderCalendar();
 }
 
@@ -6788,6 +6930,56 @@ async function _doDeleteSeries(singleId, groupId, fromDate) {
   }
   document.getElementById('eventModal')?.remove();
   await renderCalendar();
+}
+
+// v62 — Édition smart d'un event qui fait partie d'une série.
+// Affiche un dialog "Modifier cet événement seulement vs Toute la série depuis cette date".
+// State global _editingSeriesContext consommé par updateEvent() pour décider du WHERE :
+// - null  → UPDATE classique WHERE id = X (single)
+// - {groupId, fromDate} → UPDATE bulk WHERE recurrence_group_id = X AND event_date >= fromDate
+// (préserve l'historique RPE des occurrences passées + propage les changements aux futurs).
+let _editingSeriesContext = null;
+
+function editEventSmart(id, groupId, fromDate, title, type, time, location, intensity, notes) {
+  const t = T[currentLang] || T.fr;
+  const existing = document.getElementById('seriesEditDialog');
+  if (existing) existing.remove();
+
+  const dialog = document.createElement('div');
+  dialog.id = 'seriesEditDialog';
+  dialog.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);z-index:10001;display:flex;align-items:center;justify-content:center;padding:20px';
+  dialog.innerHTML = `
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;max-width:380px;width:100%;box-shadow:0 24px 80px rgba(0,0,0,0.5)">
+      <div style="font-size:32px;text-align:center;margin-bottom:8px">🔁</div>
+      <div style="font-size:17px;font-weight:800;color:var(--text);text-align:center;margin-bottom:6px">${t.recurrenceEditTitle || 'Modifier la série ?'}</div>
+      <div style="font-size:12px;color:var(--muted2);text-align:center;line-height:1.5;margin-bottom:18px">${t.recurrenceDeleteHint || 'Cet événement fait partie d\'une série récurrente.'}</div>
+
+      <button onclick="_doEditSmart('${id}','','${fromDate}','${title.replace(/'/g,"\\'")}','${type}','${time}','${(location||'').replace(/'/g,"\\'")}','${intensity}','${(notes||'').replace(/'/g,"\\'")}')" style="width:100%;padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;margin-bottom:8px;transition:all 0.2s" onmouseover="this.style.borderColor='#f59e0b';this.style.color='#f59e0b'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">
+        ${t.recurrenceEditOnly || 'Cet événement seulement'}
+      </button>
+
+      <button onclick="_doEditSmart('${id}','${groupId}','${fromDate}','${title.replace(/'/g,"\\'")}','${type}','${time}','${(location||'').replace(/'/g,"\\'")}','${intensity}','${(notes||'').replace(/'/g,"\\'")}')" style="width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;margin-bottom:8px">
+        ✏️ ${t.recurrenceEditAll || 'Toute la série depuis cette date'}
+      </button>
+
+      <button onclick="document.getElementById('seriesEditDialog')?.remove()" style="width:100%;padding:10px;border-radius:10px;border:none;background:transparent;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">
+        ${t.cancel || 'Annuler'}
+      </button>
+    </div>
+  `;
+  document.body.appendChild(dialog);
+  dialog.addEventListener('click', e => { if (e.target === dialog) dialog.remove(); });
+}
+
+// Helper interne — set le state _editingSeriesContext et délègue à editEvent classique.
+// Si groupId est truthy → mode "toute la série depuis fromDate".
+// Sinon (groupId vide ''/null) → mode "cet event seulement".
+// fromDate est TOUJOURS la date de l'event (utilisée pour pré-remplir le champ Date du modal).
+// time est le event_time (paramètre 6 dans la signature de editEvent).
+function _doEditSmart(id, groupId, fromDate, title, type, time, location, intensity, notes) {
+  document.getElementById('seriesEditDialog')?.remove();
+  _editingSeriesContext = groupId ? { groupId, fromDate } : null;
+  editEvent(id, title, type, fromDate, time, location, intensity, notes);
 }
 
 // ── RECAP POST-EVENT MODAL ──────────────────────────
@@ -7070,6 +7262,9 @@ async function checkPendingRecaps() {
   try {
     const today = new Date(); today.setHours(0,0,0,0);
     // No more limit(1) — we want to chain through ALL pending recaps
+    // v62.6 — Exclure les events status 'cancelled' / 'postponed' (pas de récap demandé pour
+    // un match annulé pour cause de météo). Le filter neq évite la régression sur les
+    // events historiques NULL (default DB sera 'planned' mais le neq ne filtrera pas les NULL).
     const { data } = await sb.from('calendar_events')
       .select('*')
       .eq('user_id', currentUser.id)
@@ -7077,7 +7272,11 @@ async function checkPendingRecaps() {
       .lt('event_date', dateToStr(today))
       .in('event_type', ['match','competition','entrainement'])
       .order('event_date', { ascending: false });
-    const pending = (data || []).filter(e => !_skippedRecapIds.has(e.id));
+    const pending = (data || []).filter(e =>
+      !_skippedRecapIds.has(e.id) &&
+      e.event_status !== 'cancelled' &&
+      e.event_status !== 'postponed'
+    );
     if (pending.length === 0) return;
     // Don't show if another modal is open (profile, morning brief, recap already open)
     if (document.getElementById('profileModal')) return;
