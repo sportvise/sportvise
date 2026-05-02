@@ -791,6 +791,15 @@ const T = {
     eventModalEditTitle:"Modifier l'événement", eventModalEditSub:'Modifiez les détails de votre événement.',
     eventDuration:'Durée', eventTitlePlaceholder:'Ex: Match vs FC Sion',
     eventLocationPlaceholder:'Ex: Stade de la Tuilière, Lausanne', eventNotesPlaceholder:"Ex: Arriver 1h avant, échauffement spécial",
+    recurrenceLabel:'Répéter ?', recurrenceOnce:'Une fois', recurrenceWeekly:'Hebdo', recurrenceBiweekly:'2 sem.',
+    recurrenceDays:'Jours de la semaine', recurrenceUntil:'Jusqu\'au',
+    recurrenceCreated:'{n} événements créés', recurrenceTooMany:'Maximum 365 occurrences par série',
+    recurrenceBadge:'Série', recurrenceDeleteTitle:'Supprimer la série ?',
+    recurrenceDeleteHint:'Cet événement fait partie d\'une série récurrente.',
+    recurrenceDeleteOnly:'Cet événement seulement',
+    recurrenceDeleteAll:'Toute la série depuis cette date',
+    recurrenceSeriesDeleted:'{n} événements supprimés',
+    dayLetters:['D','L','M','M','J','V','S'],
     eventBtnAdd:'Ajouter →', eventBtnSave:'Enregistrer ✓',
     eventValidationError:'Veuillez remplir le titre et la date.', eventErrorPrefix:'Erreur:',
     eventToastModified:'✅ Événement modifié !', eventToastDeleted:'🗑 Événement supprimé', eventConfirmDelete:'Supprimer cet événement ?',
@@ -1155,6 +1164,15 @@ const T = {
     eventModalEditTitle:'Ereignis bearbeiten', eventModalEditSub:'Bearbeiten Sie die Details Ihres Ereignisses.',
     eventDuration:'Dauer', eventTitlePlaceholder:'Z. B. Spiel gegen FC Zürich',
     eventLocationPlaceholder:'Z. B. Stadion Letzigrund, Zürich', eventNotesPlaceholder:'Z. B. 1 Std. vorher ankommen, spezielles Aufwärmen',
+    recurrenceLabel:'Wiederholen?', recurrenceOnce:'Einmal', recurrenceWeekly:'Wöchentlich', recurrenceBiweekly:'Alle 2 Wo.',
+    recurrenceDays:'Wochentage', recurrenceUntil:'Bis zum',
+    recurrenceCreated:'{n} Termine erstellt', recurrenceTooMany:'Maximal 365 Wiederholungen pro Serie',
+    recurrenceBadge:'Serie', recurrenceDeleteTitle:'Serie löschen?',
+    recurrenceDeleteHint:'Dieser Termin gehört zu einer wiederkehrenden Serie.',
+    recurrenceDeleteOnly:'Nur dieser Termin',
+    recurrenceDeleteAll:'Ganze Serie ab diesem Datum',
+    recurrenceSeriesDeleted:'{n} Termine gelöscht',
+    dayLetters:['S','M','D','M','D','F','S'],
     eventBtnAdd:'Hinzufügen →', eventBtnSave:'Speichern ✓',
     eventValidationError:'Bitte füllen Sie Titel und Datum aus.', eventErrorPrefix:'Fehler:',
     eventToastModified:'✅ Ereignis aktualisiert!', eventToastDeleted:'🗑 Ereignis gelöscht', eventConfirmDelete:'Dieses Ereignis löschen?',
@@ -1519,6 +1537,15 @@ const T = {
     eventModalEditTitle:'Edit event', eventModalEditSub:"Edit your event's details.",
     eventDuration:'Duration', eventTitlePlaceholder:'E.g. Match vs FC Sion',
     eventLocationPlaceholder:'E.g. Stade de la Tuilière, Lausanne', eventNotesPlaceholder:'E.g. Arrive 1h before, special warm-up',
+    recurrenceLabel:'Repeat?', recurrenceOnce:'Once', recurrenceWeekly:'Weekly', recurrenceBiweekly:'Every 2 wks',
+    recurrenceDays:'Days of week', recurrenceUntil:'Until',
+    recurrenceCreated:'{n} events created', recurrenceTooMany:'Max 365 occurrences per series',
+    recurrenceBadge:'Series', recurrenceDeleteTitle:'Delete series?',
+    recurrenceDeleteHint:'This event is part of a recurring series.',
+    recurrenceDeleteOnly:'This event only',
+    recurrenceDeleteAll:'Whole series from this date',
+    recurrenceSeriesDeleted:'{n} events deleted',
+    dayLetters:['S','M','T','W','T','F','S'],
     eventBtnAdd:'Add →', eventBtnSave:'Save ✓',
     eventValidationError:'Please fill in the title and date.', eventErrorPrefix:'Error:',
     eventToastModified:'✅ Event updated!', eventToastDeleted:'🗑 Event deleted', eventConfirmDelete:'Delete this event?',
@@ -1883,6 +1910,15 @@ const T = {
     eventModalEditTitle:'Modifica evento', eventModalEditSub:'Modifichi i dettagli del Suo evento.',
     eventDuration:'Durata', eventTitlePlaceholder:'Es: Partita contro FC Lugano',
     eventLocationPlaceholder:'Es: Stadio di Cornaredo, Lugano', eventNotesPlaceholder:'Es: Arrivare 1h prima, riscaldamento speciale',
+    recurrenceLabel:'Ripeti?', recurrenceOnce:'Una volta', recurrenceWeekly:'Settimanale', recurrenceBiweekly:'Ogni 2 sett.',
+    recurrenceDays:'Giorni della settimana', recurrenceUntil:'Fino al',
+    recurrenceCreated:'{n} eventi creati', recurrenceTooMany:'Massimo 365 occorrenze per serie',
+    recurrenceBadge:'Serie', recurrenceDeleteTitle:'Eliminare la serie?',
+    recurrenceDeleteHint:'Questo evento fa parte di una serie ricorrente.',
+    recurrenceDeleteOnly:'Solo questo evento',
+    recurrenceDeleteAll:'Tutta la serie da questa data',
+    recurrenceSeriesDeleted:'{n} eventi eliminati',
+    dayLetters:['D','L','M','M','G','V','S'],
     eventBtnAdd:'Aggiungi →', eventBtnSave:'Salva ✓',
     eventValidationError:'Per favore compili titolo e data.', eventErrorPrefix:'Errore:',
     eventToastModified:'✅ Evento aggiornato!', eventToastDeleted:'🗑 Evento eliminato', eventConfirmDelete:'Eliminare questo evento?',
@@ -6274,7 +6310,10 @@ async function showDayDetail(dateStr) {
                 <div style="display:flex;align-items:center;gap:8px">
                   <div style="width:32px;height:32px;border-radius:8px;background:${t.color}20;display:flex;align-items:center;justify-content:center;font-size:16px">${t.emoji}</div>
                   <div>
-                    <div style="font-size:14px;font-weight:700;color:var(--text)">${e.title}</div>
+                    <div style="font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px">
+                      ${e.title}
+                      ${e.recurrence_group_id ? `<span title="${tLang.recurrenceBadge||'Série récurrente'}" style="font-size:11px;padding:1px 6px;border-radius:6px;background:${t.color}15;color:${t.color};font-weight:600">🔁 ${tLang.recurrenceBadge||'Série'}</span>` : ''}
+                    </div>
                     <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
                       <span style="font-size:11px;color:${t.color};font-weight:600">${eventTypeLabel(e.event_type)}</span>
                       <span style="font-size:10px;color:var(--muted)">·</span>
@@ -6284,7 +6323,7 @@ async function showDayDetail(dateStr) {
                 </div>
                 <div style="display:flex;gap:4px">
                   <button onclick="editEvent('${e.id}','${e.title.replace(/'/g,"\\'")}','${e.event_type}','${dateStr}','${e.event_time||''}','${(e.location||'').replace(/'/g,"\\'")}','${e.intensity||'moyenne'}','${(e.notes||'').replace(/'/g,"\\'")}')" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s" onmouseover="this.style.background='#f59e0b20';this.style.color='#f59e0b'" onmouseout="this.style.background='none';this.style.color='var(--muted)'">✏️</button>
-                  <button onclick="deleteEvent('${e.id}')" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s" onmouseover="this.style.background='#ef444420';this.style.color='#ef4444'" onmouseout="this.style.background='none';this.style.color='var(--muted)'">🗑</button>
+                  <button onclick="${e.recurrence_group_id ? `deleteEventSmart('${e.id}','${e.recurrence_group_id}','${dateStr}')` : `deleteEvent('${e.id}')`}" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s" onmouseover="this.style.background='#ef444420';this.style.color='#ef4444'" onmouseout="this.style.background='none';this.style.color='var(--muted)'">🗑</button>
                 </div>
               </div>
               ${e.event_time ? `<div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-bottom:4px">🕐 ${e.event_time.slice(0,5)}</div>` : ''}
@@ -6377,6 +6416,32 @@ function showAddEvent(dateStr) {
         <input type="text" class="form-input" id="evLocation" placeholder="${t.eventLocationPlaceholder}" />
       </div>
 
+      <!-- v62 RÉCURRENCE — section "Répéter ?" -->
+      <div class="form-field">
+        <label class="form-label">${t.recurrenceLabel || 'Répéter ?'}</label>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+          <button class="sport-btn selected" onclick="selectRecurrence(this,'once')" style="padding:10px 4px;font-size:11px">${t.recurrenceOnce || 'Une fois'}</button>
+          <button class="sport-btn" onclick="selectRecurrence(this,'weekly')" style="padding:10px 4px;font-size:11px">🔁 ${t.recurrenceWeekly || 'Hebdo'}</button>
+          <button class="sport-btn" onclick="selectRecurrence(this,'biweekly')" style="padding:10px 4px;font-size:11px">🔁 ${t.recurrenceBiweekly || '2 sem.'}</button>
+        </div>
+      </div>
+
+      <div id="recurrenceConfig" style="display:none">
+        <div class="form-field" id="recurrenceDaysField">
+          <label class="form-label">${t.recurrenceDays || 'Jours de la semaine'}</label>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
+            ${[1,2,3,4,5,6,0].map(d => {
+              const labels = (t.dayLetters || ['D','L','M','M','J','V','S']);
+              return `<button class="sport-btn" onclick="toggleRecurrenceDay(this,${d})" style="padding:8px 0;font-size:12px;font-weight:700">${labels[d]}</button>`;
+            }).join('')}
+          </div>
+        </div>
+        <div class="form-field">
+          <label class="form-label">${t.recurrenceUntil || 'Jusqu\'au'}</label>
+          <input type="date" class="form-input" id="evUntil" value="${(() => { const d = new Date(dateStr + 'T00:00:00'); d.setMonth(d.getMonth() + 3); return dateToStr(d); })()}" />
+        </div>
+      </div>
+
       <div class="form-field">
         <label class="form-label">${t.plannedIntensity}</label>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
@@ -6401,6 +6466,9 @@ function showAddEvent(dateStr) {
       </div>
     </div>
   `;
+  // v62: reset des state récurrence à chaque ouverture du modal
+  selectedRecurrence = 'once';
+  selectedRecurrenceDays = [];
   document.body.appendChild(modal);
   modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
 }
@@ -6418,6 +6486,73 @@ function selectIntensity(btn, level) {
   selectedIntensity = level;
 }
 
+// ── v62 RÉCURRENCE ─────────────────────────────────────
+// État de la section "Répéter ?" du modal Nouvel événement.
+// 'once' = single-shot (default), 'weekly' = hebdo multi-jours, 'biweekly' = toutes les 2 semaines.
+// selectedRecurrenceDays : array de numérique 0-6 (0=dim, 1=lun, …, 6=sam) pour pattern 'weekly'.
+let selectedRecurrence = 'once';
+let selectedRecurrenceDays = [];
+
+function selectRecurrence(btn, pattern) {
+  btn.closest('.form-field').querySelectorAll('.sport-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedRecurrence = pattern;
+  const config = document.getElementById('recurrenceConfig');
+  const daysField = document.getElementById('recurrenceDaysField');
+  if (!config) return;
+  if (pattern === 'once') {
+    config.style.display = 'none';
+  } else {
+    config.style.display = 'block';
+    // Pour biweekly, le champ "jours de la semaine" n'a pas de sens (on prend le jour de la date choisie + 14j)
+    if (daysField) daysField.style.display = pattern === 'weekly' ? 'block' : 'none';
+  }
+}
+
+function toggleRecurrenceDay(btn, day) {
+  const idx = selectedRecurrenceDays.indexOf(day);
+  if (idx >= 0) {
+    selectedRecurrenceDays.splice(idx, 1);
+    btn.classList.remove('selected');
+  } else {
+    selectedRecurrenceDays.push(day);
+    btn.classList.add('selected');
+  }
+}
+
+// expandRecurrence(startDateStr, recurrence) → array de date strings 'YYYY-MM-DD'.
+// recurrence = { pattern: 'weekly'|'biweekly', days: [0..6] (weekly only), until: 'YYYY-MM-DD' }
+// Pour 'weekly' : itère jour par jour entre start et until, inclut chaque date dont
+// getDay() est dans recurrence.days (pré-rempli avec le jour de start si vide).
+// Pour 'biweekly' : inclut start, +14j, +28j... jusqu'à until.
+// Cap 365 dans le caller (saveEvent), pas ici.
+function expandRecurrence(startDateStr, recurrence) {
+  const dates = [];
+  // Forcer T00:00:00 pour éviter les soucis de timezone (Safari interprète 'YYYY-MM-DD' comme UTC midnight)
+  const start = new Date(startDateStr + 'T00:00:00');
+  const until = new Date(recurrence.until + 'T23:59:59');
+  if (until < start) return [];
+
+  if (recurrence.pattern === 'biweekly') {
+    let d = new Date(start);
+    while (d <= until) {
+      dates.push(dateToStr(d));
+      d.setDate(d.getDate() + 14);
+    }
+  } else if (recurrence.pattern === 'weekly') {
+    let days = recurrence.days;
+    // Fallback : si aucun jour coché, on prend le jour de la date choisie
+    if (!days || days.length === 0) days = [start.getDay()];
+    const daysSet = new Set(days);
+    let d = new Date(start);
+    while (d <= until) {
+      if (daysSet.has(d.getDay())) dates.push(dateToStr(d));
+      d.setDate(d.getDate() + 1);
+    }
+  }
+  return dates;
+}
+
 async function saveEvent() {
   const t = T[currentLang] || T.fr;
   const title = document.getElementById('evTitle').value.trim();
@@ -6429,19 +6564,50 @@ async function saveEvent() {
 
   if (!title || !date) return alert(t.eventValidationError);
 
-  const { error } = await sb.from('calendar_events').insert({
+  // Base payload commun à toutes les occurrences (et au cas one-shot)
+  const basePayload = {
     user_id: currentUser.id,
     title,
     event_type: selectedEventType,
-    event_date: date,
     event_time: time,
     duration_minutes: duration,
     location,
     notes,
     intensity: selectedIntensity
-  });
+  };
 
-  if (error) return alert(t.eventErrorPrefix + ' ' + error.message);
+  // v62 — Récurrence : si selectedRecurrence != 'once', expanser et bulk insert
+  if (selectedRecurrence !== 'once') {
+    const until = document.getElementById('evUntil')?.value;
+    if (!until) return alert(t.eventValidationError);
+
+    const recurrence = {
+      pattern: selectedRecurrence,
+      days: selectedRecurrence === 'weekly' ? selectedRecurrenceDays : null,
+      until
+    };
+
+    const dates = expandRecurrence(date, recurrence);
+    if (dates.length === 0) return alert(t.eventValidationError);
+    if (dates.length > 365) return alert(t.recurrenceTooMany || 'Maximum 365 occurrences');
+
+    // crypto.randomUUID() dispo Safari 15.4+ / Chrome 92+ / Firefox 95+
+    const groupId = (typeof crypto !== 'undefined' && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : ('xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random()*16|0; return (c==='x'?r:(r&0x3)|0x8).toString(16); }));
+
+    const rows = dates.map(d => ({ ...basePayload, event_date: d, recurrence_group_id: groupId }));
+    const { error } = await sb.from('calendar_events').insert(rows);
+    if (error) return alert(t.eventErrorPrefix + ' ' + error.message);
+
+    const toastMsg = (t.recurrenceCreated || '{n} événements créés').replace('{n}', dates.length);
+    showToast('✅ ' + toastMsg);
+  } else {
+    // One-shot (existant)
+    const { error } = await sb.from('calendar_events').insert({ ...basePayload, event_date: date });
+    if (error) return alert(t.eventErrorPrefix + ' ' + error.message);
+  }
+
   document.getElementById('eventModal')?.remove();
   renderCalendar();
 }
@@ -6556,6 +6722,71 @@ async function deleteEvent(id) {
   calendarEvents = calendarEvents.filter(e => e.id !== id);
   document.getElementById('eventModal')?.remove();
   showToast(t.eventToastDeleted);
+  await renderCalendar();
+}
+
+// v62 — Suppression "smart" pour un event qui fait partie d'une série récurrente.
+// Affiche un mini-dialog : "Cet événement seulement" vs "Toute la série depuis cette date".
+// La 2e option DELETE WHERE recurrence_group_id = X AND event_date >= currentDate
+// (préserve l'historique RPE des occurrences passées + supprime futur en bulk).
+function deleteEventSmart(id, groupId, eventDate) {
+  const t = T[currentLang] || T.fr;
+  const existing = document.getElementById('seriesDeleteDialog');
+  if (existing) existing.remove();
+
+  const dialog = document.createElement('div');
+  dialog.id = 'seriesDeleteDialog';
+  dialog.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);z-index:10001;display:flex;align-items:center;justify-content:center;padding:20px';
+  dialog.innerHTML = `
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;max-width:380px;width:100%;box-shadow:0 24px 80px rgba(0,0,0,0.5)">
+      <div style="font-size:32px;text-align:center;margin-bottom:8px">🔁</div>
+      <div style="font-size:17px;font-weight:800;color:var(--text);text-align:center;margin-bottom:6px">${t.recurrenceDeleteTitle || 'Supprimer la série ?'}</div>
+      <div style="font-size:12px;color:var(--muted2);text-align:center;line-height:1.5;margin-bottom:18px">${t.recurrenceDeleteHint || 'Cet événement fait partie d\'une série récurrente.'}</div>
+
+      <button onclick="_doDeleteSeries('${id}',null,null)" style="width:100%;padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;margin-bottom:8px;transition:all 0.2s" onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">
+        ${t.recurrenceDeleteOnly || 'Cet événement seulement'}
+      </button>
+
+      <button onclick="_doDeleteSeries(null,'${groupId}','${eventDate}')" style="width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;margin-bottom:8px">
+        🗑 ${t.recurrenceDeleteAll || 'Toute la série depuis cette date'}
+      </button>
+
+      <button onclick="document.getElementById('seriesDeleteDialog')?.remove()" style="width:100%;padding:10px;border-radius:10px;border:none;background:transparent;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">
+        ${t.cancel || 'Annuler'}
+      </button>
+    </div>
+  `;
+  document.body.appendChild(dialog);
+  dialog.addEventListener('click', e => { if (e.target === dialog) dialog.remove(); });
+}
+
+// Helper interne — appelé depuis les boutons de _doDeleteSeries.
+// Si singleId fourni → delete unique. Si groupId+fromDate → delete bulk.
+async function _doDeleteSeries(singleId, groupId, fromDate) {
+  const t = T[currentLang] || T.fr;
+  document.getElementById('seriesDeleteDialog')?.remove();
+
+  if (singleId) {
+    // Suppression d'une occurrence seule
+    if (!confirm(t.eventConfirmDelete)) return;
+    await sb.from('calendar_events').delete().eq('id', singleId);
+    calendarEvents = calendarEvents.filter(e => e.id !== singleId);
+    showToast(t.eventToastDeleted);
+  } else if (groupId && fromDate) {
+    // Suppression bulk : toutes les occurrences de la série depuis fromDate (inclus)
+    const { data, error } = await sb.from('calendar_events')
+      .delete()
+      .eq('recurrence_group_id', groupId)
+      .gte('event_date', fromDate)
+      .select('id');
+    if (error) return alert(t.eventErrorPrefix + ' ' + error.message);
+    const n = (data || []).length;
+    const deletedIds = new Set((data || []).map(r => r.id));
+    calendarEvents = calendarEvents.filter(e => !deletedIds.has(e.id));
+    const msg = (t.recurrenceSeriesDeleted || '{n} événements supprimés').replace('{n}', n);
+    showToast('🗑 ' + msg);
+  }
+  document.getElementById('eventModal')?.remove();
   await renderCalendar();
 }
 
