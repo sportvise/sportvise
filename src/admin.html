@@ -64,6 +64,7 @@
   </div>
   <div style="display:flex;gap:10px;align-items:center">
     <button class="refresh-btn" onclick="loadStats()">🔄 Actualiser</button>
+    <a href="admin-usage.html" class="back-btn" style="border-color:#f59e0b40;color:#f59e0b">📊 API Usage →</a>
     <a href="dashboard.html" class="back-btn">← Dashboard athlète</a>
   </div>
 </div>
@@ -114,10 +115,14 @@ const SPORT_LABELS = {
   dance:'Danse', climbing:'Escalade', 'trail-running':'Trail / Running', other:'Autre'
 };
 
+// v60.5 — ADMIN_EMAILS aligné avec la whitelist côté serveur (admin-stats.js + admin-usage-stats.js)
+const ADMIN_EMAILS = ['thomas.castella1@gmail.com', 'sportvise.pro@gmail.com'];
+let _adminToken = null;
+
 async function checkAuth() {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { window.location.href = 'login.html'; return false; }
-  if (session.user.email !== 'sportvise.pro@gmail.com') {
+  if (!ADMIN_EMAILS.includes(session.user.email)) {
     document.getElementById('content').innerHTML = `
       <div class="error-box">
         <div style="font-size:32px;margin-bottom:12px">🚫</div>
@@ -127,6 +132,8 @@ async function checkAuth() {
       </div>`;
     return false;
   }
+  // v60.5: stocker le JWT pour les fetch suivants (Authorization Bearer obligatoire côté serveur).
+  _adminToken = session.access_token;
   return session.user.email;
 }
 
@@ -137,10 +144,11 @@ async function loadStats() {
   document.getElementById('content').innerHTML = '<div class="loading">⏳ Chargement des données...</div>';
 
   try {
+    // v60.5: GET + Authorization Bearer (migration sécurité, cf. admin-stats.js header).
+    // Avant : POST avec userEmail body (bypassable).
     const res = await fetch('/.netlify/functions/admin-stats', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userEmail: email })
+      method: 'GET',
+      headers: { 'Authorization': 'Bearer ' + _adminToken }
     });
 
     if (!res.ok) throw new Error('Erreur serveur ' + res.status);

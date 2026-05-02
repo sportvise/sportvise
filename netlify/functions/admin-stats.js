@@ -1,39 +1,102 @@
-// SPORTVISE — Admin Dashboard Function
-// Utilise la clé service_role pour accéder à toutes les données
+// SPORTVISE — Admin Dashboard Function (stats users)
+// Utilise la clé service_role pour accéder à toutes les données.
+//
+// v60.5 — MIGRATION SÉCURITÉ : JWT Bearer Auth obligatoire (pattern aligné avec
+// /chat v60 et admin-usage-stats.js v60.5). Avant : POST avec userEmail dans
+// body, bypassable en envoyant `{userEmail:"sportvise.pro@gmail.com"}` à
+// l'endpoint. Maintenant : Authorization Bearer <access_token> obligatoire,
+// validé via /auth/v1/user, email du JWT vérifié contre ADMIN_EMAILS.
 
-const ADMIN_EMAIL = 'sportvise.pro@gmail.com';
+const https = require('https');
+
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://ckikyvokurpehavjlkbc.supabase.co';
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
+
+const ADMIN_EMAILS = ['thomas.castella1@gmail.com', 'sportvise.pro@gmail.com'];
+
+// ─────────────────────────────────────────────────────────────
+// HTTP helper (vanilla node https — cohérent avec le reste des Netlify Functions)
+// ─────────────────────────────────────────────────────────────
+function httpRequest({ hostname, path, method, headers, body }) {
+  return new Promise((resolve, reject) => {
+    const opts = { hostname, path, method, headers: { ...headers } };
+    if (body && !opts.headers['Content-Length']) {
+      opts.headers['Content-Length'] = Buffer.byteLength(body);
+    }
+    const req = https.request(opts, (res) => {
+      let data = '';
+      res.on('data', (chunk) => (data += chunk));
+      res.on('end', () => {
+        let parsed = data;
+        try { parsed = data ? JSON.parse(data) : null; } catch (_) {}
+        resolve({ status: res.statusCode, data: parsed, raw: data });
+      });
+    });
+    req.on('error', reject);
+    if (body) req.write(body);
+    req.end();
+  });
+}
+
+function supabaseHost() {
+  return SUPABASE_URL.replace(/^https?:\/\//, '').replace(/\/$/, '');
+}
+
+// ─────────────────────────────────────────────────────────────
+// Auth: verify JWT + check ADMIN_EMAILS
+// ─────────────────────────────────────────────────────────────
+async function verifyAdmin(accessToken) {
+  if (!accessToken) return null;
+  try {
+    const res = await httpRequest({
+      hostname: supabaseHost(),
+      path: '/auth/v1/user',
+      method: 'GET',
+      headers: {
+        apikey: SUPABASE_SERVICE_KEY,
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    if (res.status !== 200 || !res.data?.email) return null;
+    const email = String(res.data.email).toLowerCase();
+    if (!ADMIN_EMAILS.includes(email)) return null;
+    return { id: res.data.id, email };
+  } catch (e) {
+    console.warn('[ADMIN-STATS] verifyAdmin error:', e.message);
+    return null;
+  }
+}
 
 exports.handler = async (event) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Content-Type': 'application/json'
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Content-Type': 'application/json',
+    'Cache-Control': 'no-store'
   };
 
   if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' };
-  if (event.httpMethod !== 'POST') return { statusCode: 405, headers, body: '' };
+  if (event.httpMethod !== 'GET') return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
+
+  if (!SUPABASE_SERVICE_KEY) {
+    return { statusCode: 500, headers, body: JSON.stringify({ error: 'Service key manquante' }) };
+  }
+
+  // Extract Bearer token + verify admin
+  const authHeader = event.headers.authorization || event.headers.Authorization || '';
+  const accessToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  const admin = await verifyAdmin(accessToken);
+  if (!admin) {
+    return { statusCode: 403, headers, body: JSON.stringify({ error: 'forbidden' }) };
+  }
 
   try {
-    const { userEmail } = JSON.parse(event.body || '{}');
-
-    // Vérification admin
-    if (userEmail !== ADMIN_EMAIL) {
-      return { statusCode: 403, headers, body: JSON.stringify({ error: 'Accès refusé' }) };
-    }
-
-    const SUPABASE_URL = process.env.SUPABASE_URL || 'https://ckikyvokurpehavjlkbc.supabase.co';
-    const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
-
-    if (!SERVICE_KEY) {
-      return { statusCode: 500, headers, body: JSON.stringify({ error: 'Service key manquante' }) };
-    }
-
     const fetchSB = async (path) => {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
         headers: {
-          'apikey': SERVICE_KEY,
-          'Authorization': `Bearer ${SERVICE_KEY}`,
+          'apikey': SUPABASE_SERVICE_KEY,
+          'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
           'Content-Type': 'application/json'
         }
       });
