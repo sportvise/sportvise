@@ -8,6 +8,10 @@
 // validé via /auth/v1/user, email du JWT vérifié contre ADMIN_EMAILS.
 
 const https = require('https');
+const { initSentry, captureError } = require('./_sentry');
+
+// v61.3 — observability serveur. No-op gracieux si SENTRY_DSN_SERVER absent.
+initSentry({ component: 'admin-stats', release: process.env.SPORTVISE_APP_V || 'v62.5' });
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://ckikyvokurpehavjlkbc.supabase.co';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
@@ -211,6 +215,7 @@ exports.handler = async (event) => {
 
   } catch (error) {
     console.error('Admin stats error:', error);
+    captureError(error, { context: { admin_email: admin.email }, level: 'error' });
     return { statusCode: 500, headers, body: JSON.stringify({ error: error.message }) };
   }
 };

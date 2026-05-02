@@ -27,6 +27,10 @@
 // Fallback inconnu : sonnet rate (cas le plus fréquent).
 
 const https = require('https');
+const { initSentry, captureError } = require('./_sentry');
+
+// v61.3 — observability serveur. No-op gracieux si SENTRY_DSN_SERVER absent.
+initSentry({ component: 'admin-usage-stats', release: process.env.SPORTVISE_APP_V || 'v62.5' });
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://ckikyvokurpehavjlkbc.supabase.co';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
@@ -267,6 +271,7 @@ exports.handler = async (event) => {
     return { statusCode: 200, headers, body: JSON.stringify(result) };
   } catch (err) {
     console.error('[ADMIN-USAGE] error:', err);
+    captureError(err, { context: { admin_email: admin.email }, level: 'error' });
     return { statusCode: 500, headers, body: JSON.stringify({ error: 'query_failed', detail: err.message }) };
   }
 };
