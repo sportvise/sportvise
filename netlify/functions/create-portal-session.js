@@ -2,6 +2,10 @@
 // Allows customers to manage/cancel their subscription
 
 const https = require('https');
+const { initSentry, captureError } = require('./_sentry');
+
+// v61.3 — observability serveur. No-op gracieux si SENTRY_DSN_SERVER absent.
+initSentry({ component: 'create-portal-session', release: process.env.SPORTVISE_APP_V || 'v62.5' });
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 
@@ -104,6 +108,7 @@ exports.handler = async (event) => {
 
   } catch (error) {
     console.error('Portal error:', error);
+    captureError(error, { level: 'error' });
     return { statusCode: 500, headers, body: JSON.stringify({ error: error.message }) };
   }
 };

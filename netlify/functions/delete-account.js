@@ -17,6 +17,10 @@
 // Le SUPABASE_SERVICE_KEY ne DOIT JAMAIS être exposé côté client.
 
 const https = require('https');
+const { initSentry, captureError } = require('./_sentry');
+
+// v61.3 — observability serveur. No-op gracieux si SENTRY_DSN_SERVER absent.
+initSentry({ component: 'delete-account', release: process.env.SPORTVISE_APP_V || 'v62.5' });
 
 // Fallback URL is the public Supabase project URL (already exposed in dashboard.html / login.html / admin.html).
 // Aligns with the convention in admin-stats.js / sports-data.js / stripe-webhook.js.
@@ -312,6 +316,7 @@ exports.handler = async (event) => {
 
   } catch (error) {
     console.error(`[DELETE_ACCOUNT] error for user ${userId}:`, error.message, error.stack);
+    captureError(error, { context: { user_id: userId }, level: 'error' });
     return {
       statusCode: 500,
       headers,

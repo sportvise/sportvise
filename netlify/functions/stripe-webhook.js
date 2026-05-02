@@ -3,6 +3,10 @@
 
 const crypto = require('crypto');
 const https = require('https');
+const { initSentry, captureError } = require('./_sentry');
+
+// v61.3 — observability serveur. No-op gracieux si SENTRY_DSN_SERVER absent.
+initSentry({ component: 'stripe-webhook', release: process.env.SPORTVISE_APP_V || 'v62.5' });
 
 // Supabase config
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://ckikyvokurpehavjlkbc.supabase.co';
@@ -551,6 +555,7 @@ exports.handler = async (event) => {
 
   } catch (err) {
     console.error('❌ Webhook handler error:', err);
+    captureError(err, { context: { event_type: stripeEvent?.type, event_id: stripeEvent?.id }, level: 'error' });
     return { statusCode: 500, body: `Webhook error: ${err.message}` };
   }
 };
