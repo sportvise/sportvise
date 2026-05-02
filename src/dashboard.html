@@ -897,6 +897,7 @@ const T = {
     briefPrediction:'Intelligence prédictive',
     briefEveningQ:'Comment s\'est passée ta journée,', briefMood:'Humeur', briefEnergy:'Énergie', briefSleep:'Sommeil (nuit dernière)',
     briefSave:'Enregistrer ✓', briefSaved:'Enregistré !', briefFullJournal:'Journal complet →', briefFillJournal:'Remplir mon journal',
+    briefJournalDone:'Journal du jour rempli', briefSeeJournal:'Voir →',
     briefToday:"Aujourd'hui", briefTomorrow:'Demain',
     // v47 — chat UI i18n (disclaimer, suggestions, export CSV)
     agentDisclaimer:'{name} est un assistant IA. Ses conseils ne remplacent pas l\'avis d\'un professionnel qualifié (médecin, avocat, comptable).',
@@ -1260,6 +1261,7 @@ const T = {
     briefPrediction:'Prädiktive Intelligenz',
     briefEveningQ:'Wie war dein Tag,', briefMood:'Stimmung', briefEnergy:'Energie', briefSleep:'Schlaf (letzte Nacht)',
     briefSave:'Speichern ✓', briefSaved:'Gespeichert!', briefFullJournal:'Volles Tagebuch →', briefFillJournal:'Tagebuch ausfüllen',
+    briefJournalDone:'Heutiges Tagebuch ausgefüllt', briefSeeJournal:'Ansehen →',
     briefToday:'Heute', briefTomorrow:'Morgen',
     // v47 — chat UI i18n (disclaimer, suggestions, export CSV)
     agentDisclaimer:'{name} ist ein KI-Assistent. Seine Ratschläge ersetzen nicht die Meinung eines qualifizierten Fachmanns (Arzt, Anwalt, Buchhalter).',
@@ -1623,6 +1625,7 @@ const T = {
     briefPrediction:'Predictive intelligence',
     briefEveningQ:'How was your day,', briefMood:'Mood', briefEnergy:'Energy', briefSleep:'Sleep (last night)',
     briefSave:'Save ✓', briefSaved:'Saved!', briefFullJournal:'Full journal →', briefFillJournal:'Fill my journal',
+    briefJournalDone:'Today\'s journal filled', briefSeeJournal:'View →',
     briefToday:'Today', briefTomorrow:'Tomorrow',
     // v47 — chat UI i18n (disclaimer, suggestions, export CSV)
     agentDisclaimer:'{name} is an AI assistant. Its advice does not replace the opinion of a qualified professional (doctor, lawyer, accountant).',
@@ -1986,6 +1989,7 @@ const T = {
     briefPrediction:'Intelligenza predittiva',
     briefEveningQ:'Com\'è andata la giornata,', briefMood:'Umore', briefEnergy:'Energia', briefSleep:'Sonno (scorsa notte)',
     briefSave:'Salva ✓', briefSaved:'Salvato!', briefFullJournal:'Diario completo →', briefFillJournal:'Compila il diario',
+    briefJournalDone:'Diario di oggi compilato', briefSeeJournal:'Visualizza →',
     briefToday:'Oggi', briefTomorrow:'Domani',
     // v47 — chat UI i18n (disclaimer, suggestions, export CSV)
     agentDisclaimer:'{name} è un assistente IA. I suoi consigli non sostituiscono il parere di un professionista qualificato (medico, avvocato, commercialista).',
@@ -6814,7 +6818,15 @@ async function saveRecap(eventId) {
   recapRpe = null;
   renderCalendar();
   // Chain to next pending recap if any (the saved one is now recap_done=true so it won't reappear)
-  setTimeout(() => { try { checkPendingRecaps(); } catch(e) { console.warn('saveRecap chain error:', e); } }, 600);
+  // v60.5: après la chaîne récap, déclencher showEveningBrief si plus aucun modal
+  // ouvert. Couvre l'edge case "user save/skip en <8s" qui empêchait le timer
+  // defer de re-trigger correctement le banner du soir.
+  setTimeout(async () => {
+    try { await checkPendingRecaps(); } catch(e) { console.warn('saveRecap chain error:', e); }
+    if (!document.getElementById('eventModal')) {
+      try { showEveningBrief(); } catch(_) {}
+    }
+  }, 600);
 }
 
 // ── AUTO RECAP CHECK ────────────────────────────────
@@ -6851,7 +6863,14 @@ function skipRecap(eventId) {
   _skippedRecapIds.add(eventId);
   document.getElementById('eventModal')?.remove();
   // Chain to the next pending recap (if any) after a short delay so the modal animation finishes.
-  setTimeout(() => { try { checkPendingRecaps(); } catch(e) { console.warn('skipRecap chain error:', e); } }, 350);
+  // v60.5: après la chaîne, déclencher showEveningBrief si plus aucun modal ouvert
+  // (cf. saveRecap pour la justification de l'edge case).
+  setTimeout(async () => {
+    try { await checkPendingRecaps(); } catch(e) { console.warn('skipRecap chain error:', e); }
+    if (!document.getElementById('eventModal')) {
+      try { showEveningBrief(); } catch(_) {}
+    }
+  }, 350);
 }
 
 // ── PROACTIVE AGENTS ────────────────────────────────
@@ -6930,6 +6949,29 @@ async function showMorningBrief(forceShow = false) {
     if (logErr) console.warn('[BRIEF] daily_log fetch error', logErr);
     const lastLog = recentLog && recentLog.length > 0 ? recentLog[0] : null;
     console.log('[BRIEF] daily_log fetched:', !!lastLog);
+
+    // v60.5: Detect if today's journal is already filled (mood + energy).
+    // Used to flip the "Remplir mon journal" CTA into a non-ambiguous "Journal
+    // rempli · Voir →" link, lifting the doubt when the brief reappears on a
+    // 2nd app open the same day. Reuse lastLog if its log_date is today
+    // (avoids a 2nd round-trip).
+    const journalFilledToday = !!(lastLog && lastLog.log_date === todayStr && lastLog.mood && lastLog.energy);
+    console.log('[BRIEF] journalFilledToday:', journalFilledToday);
+
+    // v60.5 — Mode Hybride : si journal du jour déjà rempli (cross-device via
+    // daily_log Supabase) ET pas forceShow → skip le brief entièrement.
+    // Cas d'usage : user remplit son journal le matin sur ordi, ouvre l'app sur
+    // iPhone l'après-midi → pas de re-affichage du brief (localStorage n'est pas
+    // partagé entre devices, donc le check précédent ne suffit pas seul).
+    // Le bouton "🌅 Voir le brief du jour" sur la page Journal (forceShow=true)
+    // continue à fonctionner pour re-ouvrir manuellement si besoin (pattern v56).
+    // On marque aussi le localStorage pour économiser le fetch DB lors des
+    // ouvertures suivantes du jour sur le même device.
+    if (journalFilledToday && !forceShow) {
+      console.log('[BRIEF] skipped — journal already filled today (cross-device)');
+      try { localStorage.setItem(briefKey, '1'); } catch(_) {}
+      return;
+    }
 
     // Build agent suggestions based on events + state
     const suggestions = [];
@@ -7126,9 +7168,18 @@ async function showMorningBrief(forceShow = false) {
         ` : ''}
 
         <!-- Journal CTA (v47) — accès direct au journal du jour depuis le brief matinal -->
-        <button onclick="closeMorningBrief();showPage('journal',null)" style="width:100%;padding:12px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text);font-weight:600;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;margin-bottom:10px;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px" onmouseover="this.style.background='var(--bg3)';this.style.borderColor='var(--gold)'" onmouseout="this.style.background='transparent';this.style.borderColor='var(--border)'">
-          📖 ${t.briefFillJournal||'Remplir mon journal'}
-        </button>
+        <!-- v60.5: bouton conditionnel — vert "✅ Journal rempli · Voir →" si daily_log
+             du jour déjà rempli (mood+energy), sinon état actuel "📖 Remplir mon journal".
+             Lève le doute "j'ai déjà rempli ?" sur les ré-ouvertures du brief. -->
+        ${journalFilledToday ? `
+          <button onclick="closeMorningBrief();showPage('journal',null)" style="width:100%;padding:12px;border-radius:12px;border:1px solid #10b98140;background:#10b98110;color:#10b981;font-weight:700;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;margin-bottom:10px;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px" onmouseover="this.style.background='#10b98120'" onmouseout="this.style.background='#10b98110'">
+            ✅ ${t.briefJournalDone||'Journal du jour rempli'} · ${t.briefSeeJournal||'Voir →'}
+          </button>
+        ` : `
+          <button onclick="closeMorningBrief();showPage('journal',null)" style="width:100%;padding:12px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text);font-weight:600;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;margin-bottom:10px;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px" onmouseover="this.style.background='var(--bg3)';this.style.borderColor='var(--gold)'" onmouseout="this.style.background='transparent';this.style.borderColor='var(--border)'">
+            📖 ${t.briefFillJournal||'Remplir mon journal'}
+          </button>
+        `}
 
         <!-- Close button -->
         <button onclick="this.style.opacity='0.7';this.textContent='👋 À plus tard !';var self=this;setTimeout(function(){closeMorningBrief()},250)" style="width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--gold),#d97706);color:#07091a;font-weight:800;font-size:14px;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='none'">
@@ -7167,6 +7218,17 @@ async function showEveningBrief() {
 
     // Only show after onboarding (v46: dual-check via isOnboardDone)
     if (!isOnboardDone()) return;
+
+    // v60.5: avoid stacking on top of the post-event recap modal (RPE flow).
+    // The recap is a "debt" the user must close (rate the past training/match) — let
+    // it take priority. Banner du soir + recap modal en simultané = superposition
+    // visuelle moche (banner 440px en bas + modal 460px plein écran). Defer 8s,
+    // ré-essai jusqu'à ce que le recap soit fermé (save/skip ferme #eventModal).
+    if (document.getElementById('eventModal')) {
+      console.log('[BRIEF] evening deferred — recap modal still visible');
+      setTimeout(() => { try { showEveningBrief(); } catch(_){} }, 8000);
+      return;
+    }
 
     // v48: avoid stacking on top of the morning brief if it's still open.
     // If user opens app late in the day (>18h) AND morning brief hasn't been

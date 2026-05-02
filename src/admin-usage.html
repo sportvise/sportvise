@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>SPORTVISE — Admin · API Usage</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#07091a;--bg2:#0d1127;--bg3:#111827;--border:#1e2d47;
+      --gold:#f59e0b;--green:#10b981;--red:#ef4444;--purple:#8b5cf6;
+      --cyan:#06b6d4;--text:#f1f5f9;--muted:#64748b;--muted2:#94a3b8;
+    }
+    body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;padding:24px}
+    .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:18px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:12px}
+    .logo{font-size:22px;font-weight:900;letter-spacing:3px;background:linear-gradient(135deg,#f59e0b,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .admin-badge{padding:4px 12px;background:#ef444415;border:1px solid #ef444430;border-radius:20px;font-size:11px;font-weight:700;color:#ef4444}
+    .range-tabs{display:inline-flex;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:4px}
+    .range-tab{padding:6px 14px;border-radius:7px;background:transparent;border:none;color:var(--muted2);font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif}
+    .range-tab.active{background:var(--gold);color:#07091a}
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+    .grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px}
+    @media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}.grid-2{grid-template-columns:1fr}}
+    .card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px}
+    .card-title{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}
+    .kpi{border-top:2px solid}
+    .kpi-val{font-size:28px;font-weight:900;margin:6px 0 4px}
+    .kpi-label{font-size:11px;color:var(--muted)}
+    .kpi-delta{font-size:11px;font-weight:600;margin-top:4px;color:var(--muted2)}
+    .table{width:100%;border-collapse:collapse}
+    .table th{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;padding:8px 10px;border-bottom:1px solid var(--border);text-align:left}
+    .table td{font-size:12px;padding:9px 10px;border-bottom:1px solid #1e2d4750;color:var(--muted2);font-variant-numeric:tabular-nums}
+    .table tr:hover td{background:#f59e0b08;color:var(--text)}
+    .table td:first-child{color:var(--text);font-weight:600}
+    .table td.num{text-align:right;font-family:'JetBrains Mono',monospace}
+    .chart-bars{display:flex;align-items:flex-end;gap:6px;height:120px;padding:6px 0}
+    .chart-bar{flex:1;border-radius:4px 4px 0 0;background:linear-gradient(180deg,#f59e0b,#d97706);min-height:3px;cursor:default;position:relative}
+    .chart-bar:hover{opacity:0.85}
+    .chart-bar:hover::after{content:attr(data-tt);position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--border);padding:6px 10px;border-radius:6px;color:var(--text);font-size:11px;white-space:nowrap;z-index:10;margin-bottom:4px}
+    .chart-labels{display:flex;gap:6px;margin-top:6px}
+    .chart-label{flex:1;font-size:9px;color:var(--muted);text-align:center}
+    .badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700}
+    .badge-success{background:#10b98115;color:var(--green)}
+    .badge-error{background:#ef444415;color:var(--red)}
+    .badge-cost{background:#f59e0b15;color:var(--gold)}
+    .loading{text-align:center;padding:60px;color:var(--muted);font-size:14px}
+    .error-box{background:#ef444415;border:1px solid #ef444330;border-radius:12px;padding:20px;text-align:center;color:#fca5a5}
+    .back-btn{padding:8px 16px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted2);font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;text-decoration:none;transition:all 0.2s}
+    .back-btn:hover{border-color:var(--gold);color:var(--gold)}
+    .refresh-btn{padding:8px 16px;background:linear-gradient(135deg,#f59e0b,#d97706);border:none;border-radius:8px;color:#07091a;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif}
+    .meta-line{font-size:11px;color:var(--muted);margin-top:6px}
+    .empty{padding:24px;text-align:center;color:var(--muted);font-size:13px}
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+    <div class="logo">SPORTVISE</div>
+    <div class="admin-badge">🔐 ADMIN · API USAGE</div>
+    <div style="font-size:12px;color:var(--muted)" id="lastUpdate"></div>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <div class="range-tabs">
+      <button class="range-tab" data-days="1">24h</button>
+      <button class="range-tab active" data-days="7">7j</button>
+      <button class="range-tab" data-days="14">14j</button>
+      <button class="range-tab" data-days="30">30j</button>
+    </div>
+    <button class="refresh-btn" onclick="loadStats()">🔄 Actualiser</button>
+    <a href="admin.html" class="back-btn">← Stats users</a>
+    <a href="dashboard.html" class="back-btn">← Dashboard</a>
+  </div>
+</div>
+
+<div id="content"><div class="loading">⏳ Chargement des données...</div></div>
+
+<script>
+const SUPABASE_URL = 'https://ckikyvokurpehavjlkbc.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNraWt5dm9rdXJwZWhhdmpsa2JjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMjE2MzgsImV4cCI6MjA5MTY5NzYzOH0.nbvRqNly8KnqlaInY62C9YOA5-32YxrFSavXyreCOYY';
+const ADMIN_EMAILS = ['thomas.castella1@gmail.com', 'sportvise.pro@gmail.com'];
+
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const AGENT_NAMES = {
+  marketing:'🎯 Alex',finance:'💶 Sophie',sponsors:'🤝 Marc',
+  contrats:'⚖️ Léa',physique:'🏋️ David',mental:'🧠 Emma',
+  nutrition:'🥗 Clara',comptabilite:'📊 Pierre',sommeil:'😴 Nora',
+  recuperation:'♻️ Julie',equipe:'💼 Lucas'
+};
+
+let currentDays = 7;
+let currentToken = null;
+
+// ─────────────────────────────────────────────────────────────
+// AUTH
+// ─────────────────────────────────────────────────────────────
+async function checkAuth() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { window.location.href = 'login.html'; return null; }
+  if (!ADMIN_EMAILS.includes(session.user.email)) {
+    document.getElementById('content').innerHTML = `
+      <div class="error-box">
+        <div style="font-size:32px;margin-bottom:12px">🚫</div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:8px">Accès refusé</div>
+        <div style="font-size:13px">Cette page est réservée à l'administrateur SPORTVISE.</div>
+        <a href="dashboard.html" style="display:inline-block;margin-top:16px;padding:10px 20px;background:var(--gold);color:#07091a;border-radius:8px;font-weight:700;text-decoration:none">← Retour au dashboard</a>
+      </div>`;
+    return null;
+  }
+  currentToken = session.access_token;
+  return session.user.email;
+}
+
+// ─────────────────────────────────────────────────────────────
+// FETCH + RENDER
+// ─────────────────────────────────────────────────────────────
+async function loadStats() {
+  const email = await checkAuth();
+  if (!email) return;
+  document.getElementById('content').innerHTML = '<div class="loading">⏳ Chargement des données...</div>';
+
+  try {
+    const res = await fetch('/.netlify/functions/admin-usage-stats?days=' + currentDays, {
+      method: 'GET',
+      headers: { 'Authorization': 'Bearer ' + currentToken }
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || ('HTTP ' + res.status));
+    }
+    const d = await res.json();
+    document.getElementById('lastUpdate').textContent =
+      'Mis à jour : ' + new Date().toLocaleTimeString('fr-CH') +
+      ' · ' + d.range.rowsFetched + ' rows · ' + d.range.days + 'j';
+    render(d);
+  } catch (err) {
+    document.getElementById('content').innerHTML = `
+      <div class="error-box">
+        <div style="font-size:28px;margin-bottom:8px">⚠️</div>
+        <div style="font-weight:700;margin-bottom:4px">Erreur de chargement</div>
+        <div style="font-size:13px">${err.message}</div>
+        <div style="font-size:11px;margin-top:8px;color:#94a3b8">Vérifie que la fonction admin-usage-stats est déployée et que SUPABASE_SERVICE_KEY est bien configurée dans Netlify.</div>
+      </div>`;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// RENDER
+// ─────────────────────────────────────────────────────────────
+function render(d) {
+  const s = d.summary;
+  const successPct = s.totalCalls ? (s.successRate * 100).toFixed(1) : '—';
+  const avgCostPerCall = s.totalCalls ? (s.totalCostUsd / s.totalCalls) : 0;
+  const projMonth = (s.totalCostUsd / Math.max(d.range.days, 1)) * 30;
+
+  // KPIs
+  const kpis = `
+    <div class="grid">
+      <div class="card kpi" style="border-top-color:#f59e0b">
+        <div class="kpi-label">Coût total ${d.range.days}j</div>
+        <div class="kpi-val" style="color:#f59e0b">$${s.totalCostUsd.toFixed(2)}</div>
+        <div class="kpi-delta">≈ $${avgCostPerCall.toFixed(4)} / appel · proj. mois ${projMonth.toFixed(2)}$</div>
+      </div>
+      <div class="card kpi" style="border-top-color:#06b6d4">
+        <div class="kpi-label">Appels totaux</div>
+        <div class="kpi-val" style="color:#06b6d4">${s.totalCalls}</div>
+        <div class="kpi-delta">${s.totalSuccess} OK · ${s.totalErrors} err · ${successPct}% success</div>
+      </div>
+      <div class="card kpi" style="border-top-color:#8b5cf6">
+        <div class="kpi-label">Tokens entrée</div>
+        <div class="kpi-val" style="color:#8b5cf6">${(s.totalInputTokens/1000).toFixed(1)}K</div>
+        <div class="kpi-delta">moyenne ${s.totalCalls ? Math.round(s.totalInputTokens/s.totalCalls) : 0} / appel</div>
+      </div>
+      <div class="card kpi" style="border-top-color:#10b981">
+        <div class="kpi-label">Tokens sortie</div>
+        <div class="kpi-val" style="color:#10b981">${(s.totalOutputTokens/1000).toFixed(1)}K</div>
+        <div class="kpi-delta">moyenne ${s.totalCalls ? Math.round(s.totalOutputTokens/s.totalCalls) : 0} / appel</div>
+      </div>
+    </div>`;
+
+  // Chart : conso par jour (bars)
+  const maxDay = Math.max(...d.byDay.map(x => x.calls), 1);
+  const dayChart = d.byDay.length === 0
+    ? '<div class="empty">Aucune donnée sur la période</div>'
+    : `<div class="chart-bars">
+        ${d.byDay.map(x => `
+          <div class="chart-bar"
+               style="height:${(x.calls / maxDay) * 100}%"
+               data-tt="${x.day} · ${x.calls} appels · $${x.costUsd.toFixed(3)}"></div>
+        `).join('')}
+       </div>
+       <div class="chart-labels">
+        ${d.byDay.map(x => `<div class="chart-label">${x.day.slice(5)}</div>`).join('')}
+       </div>`;
+
+  // Tables
+  const userTable = d.byUser.length === 0
+    ? '<div class="empty">Aucun user actif</div>'
+    : `<table class="table">
+        <thead><tr><th>User</th><th class="num">Appels</th><th class="num">Tok in</th><th class="num">Tok out</th><th class="num">Coût $</th><th class="num">Err</th></tr></thead>
+        <tbody>${d.byUser.map(u => `
+          <tr>
+            <td><code style="font-size:11px">${u.userId}</code></td>
+            <td class="num">${u.calls}</td>
+            <td class="num">${u.inTok}</td>
+            <td class="num">${u.outTok}</td>
+            <td class="num"><span class="badge badge-cost">$${u.costUsd.toFixed(3)}</span></td>
+            <td class="num">${u.errors > 0 ? `<span class="badge badge-error">${u.errors}</span>` : '0'}</td>
+          </tr>`).join('')}
+        </tbody>
+       </table>`;
+
+  const agentTable = d.byAgent.length === 0
+    ? '<div class="empty">Aucune donnée</div>'
+    : `<table class="table">
+        <thead><tr><th>Agent</th><th class="num">Appels</th><th class="num">Tok in</th><th class="num">Tok out</th><th class="num">Coût $</th></tr></thead>
+        <tbody>${d.byAgent.map(a => `
+          <tr>
+            <td>${AGENT_NAMES[a.agentId] || a.agentId}</td>
+            <td class="num">${a.calls}</td>
+            <td class="num">${a.inTok}</td>
+            <td class="num">${a.outTok}</td>
+            <td class="num"><span class="badge badge-cost">$${a.costUsd.toFixed(3)}</span></td>
+          </tr>`).join('')}
+        </tbody>
+       </table>`;
+
+  const modelTable = d.byModel.length === 0
+    ? '<div class="empty">Aucune donnée</div>'
+    : `<table class="table">
+        <thead><tr><th>Modèle</th><th class="num">Appels</th><th class="num">Tok in</th><th class="num">Tok out</th><th class="num">Coût $</th></tr></thead>
+        <tbody>${d.byModel.map(m => `
+          <tr>
+            <td><code style="font-size:11px">${m.model}</code></td>
+            <td class="num">${m.calls}</td>
+            <td class="num">${m.inTok}</td>
+            <td class="num">${m.outTok}</td>
+            <td class="num"><span class="badge badge-cost">$${m.costUsd.toFixed(3)}</span></td>
+          </tr>`).join('')}
+        </tbody>
+       </table>`;
+
+  const errorTable = d.byError.length === 0
+    ? '<div class="empty" style="color:var(--green)">✅ Aucune erreur sur la période</div>'
+    : `<table class="table">
+        <thead><tr><th>Code erreur</th><th class="num">Occurrences</th></tr></thead>
+        <tbody>${d.byError.map(e => `
+          <tr>
+            <td><code style="font-size:11px">${e.code}</code></td>
+            <td class="num"><span class="badge badge-error">${e.count}</span></td>
+          </tr>`).join('')}
+        </tbody>
+       </table>`;
+
+  const latencyTable = d.avgLatency.length === 0
+    ? '<div class="empty">Aucune donnée latence</div>'
+    : `<table class="table">
+        <thead><tr><th>Agent</th><th class="num">Latence moy. (ms)</th><th class="num">N appels</th></tr></thead>
+        <tbody>${d.avgLatency.slice(0, 12).map(l => `
+          <tr>
+            <td>${AGENT_NAMES[l.agentId] || l.agentId}</td>
+            <td class="num">${l.avgMs} ms</td>
+            <td class="num">${l.n}</td>
+          </tr>`).join('')}
+        </tbody>
+       </table>`;
+
+  // Compose
+  document.getElementById('content').innerHTML = `
+    ${kpis}
+
+    <div class="card">
+      <div class="card-title">📈 Conso par jour</div>
+      ${dayChart}
+    </div>
+
+    <div class="grid-2" style="margin-top:24px">
+      <div class="card">
+        <div class="card-title">👤 Top users</div>
+        ${userTable}
+        <div class="meta-line">user_id anonymisé en prefix 8 chars (privacy).</div>
+      </div>
+      <div class="card">
+        <div class="card-title">🤖 Conso par agent</div>
+        ${agentTable}
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">🧠 Conso par modèle</div>
+        ${modelTable}
+      </div>
+      <div class="card">
+        <div class="card-title">⏱️ Latence moyenne par agent</div>
+        ${latencyTable}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🚨 Erreurs (codes)</div>
+      ${errorTable}
+      <div class="meta-line">Codes possibles : auth_invalid, rate_limit_minute, rate_limit_day, claude_api_*, claude_network_error, message_too_long, unknown_agent, invalid_payload, api_key_missing.</div>
+    </div>
+
+    <div style="text-align:center;margin-top:24px;font-size:11px;color:var(--muted)">
+      Pricing Claude (mai 2026) : Haiku 4.5 $1/$5 · Sonnet 4.6 $3/$15 · Opus 4.6 $15/$75 / MTok.
+      Coûts approximatifs, à confirmer avec console Anthropic.
+    </div>`;
+}
+
+// ─────────────────────────────────────────────────────────────
+// RANGE TABS
+// ─────────────────────────────────────────────────────────────
+document.querySelectorAll('.range-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.range-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentDays = parseInt(btn.dataset.days, 10);
+    loadStats();
+  });
+});
+
+// initial load
+loadStats();
+</script>
+
+</body>
+</html>
