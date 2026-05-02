@@ -3,7 +3,7 @@
 
 const crypto = require('crypto');
 const https = require('https');
-const { initSentry, captureError } = require('./_sentry');
+const { initSentry, captureError, captureMessage } = require('./_sentry');
 
 // v61.3 — observability serveur. No-op gracieux si SENTRY_DSN_SERVER absent.
 initSentry({ component: 'stripe-webhook', release: process.env.SPORTVISE_APP_V || 'v62.5' });
@@ -102,6 +102,35 @@ function verifySignature(payload, sigHeader) {
 // ── FIND USER ID BY EMAIL ───────────────────────────
 // Strategy 1: Look in profiles table (if email column exists)
 // Strategy 2: Use Supabase Auth Admin API to find user by email
+
+// v61.4 — Récupère la langue préférée de l'user depuis profiles.lang.
+// Utilisé pour les events Stripe portal (subscription.updated/deleted, invoice.payment_failed)
+// qui n'ont pas de channel client_reference_id. Avant : fallback hardcoded 'fr'.
+// Maintenant : email → user_id → profiles.lang. Fallback 'fr' si introuvable ou erreur DB.
+async function getUserLangByEmail(email) {
+  const userId = await findUserIdByEmail(email);
+  if (!userId) return 'fr';
+  const supabaseHostName = SUPABASE_URL.replace('https://', '');
+  try {
+    const res = await httpsRequest({
+      hostname: supabaseHostName,
+      path: `/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}&select=lang`,
+      method: 'GET',
+      headers: {
+        'apikey': SUPABASE_SERVICE_KEY,
+        'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    if (res.status === 200 && Array.isArray(res.data) && res.data.length > 0) {
+      const lang = String(res.data[0]?.lang || 'fr').toLowerCase();
+      return ['fr','de','en','it'].includes(lang) ? lang : 'fr';
+    }
+  } catch (e) {
+    console.warn('[STRIPE-WEBHOOK] getUserLangByEmail error:', e.message);
+  }
+  return 'fr';
+}
 
 async function findUserIdByEmail(email) {
   const supabaseHost = SUPABASE_URL.replace('https://', '');
@@ -228,7 +257,14 @@ const EMAIL_TEMPLATES = {
     planAgents: { free: '3 agents IA', plus: '6 agents performance', pro: '11 agents IA (complet)' },
     ctaButton: 'Accéder à mon dashboard →',
     footerCountry: 'Suisse',
-    footerQuestions: 'Des questions ?'
+    footerQuestions: 'Des questions ?',
+    // v61.2 — payment failed
+    subjectFailed: 'SPORTVISE — Échec du paiement de votre abonnement',
+    titleFailed: 'Paiement en échec',
+    introFailed1: 'La dernière tentative de paiement de votre abonnement SPORTVISE a échoué.',
+    introFailed2: 'Cela peut être dû à une carte expirée, des fonds insuffisants, ou une opposition bancaire.',
+    ctaFailed: 'Mettre à jour ma carte →',
+    helpFailed: 'Stripe va automatiquement réessayer dans les prochains jours. Si aucune mise à jour n\'est faite, votre plan reviendra automatiquement à Free dans environ 2 semaines. Vous gardez tout votre historique.'
   },
 
   de: {
@@ -247,7 +283,14 @@ const EMAIL_TEMPLATES = {
     planAgents: { free: '3 KI-Agenten', plus: '6 Performance-Agenten', pro: '11 KI-Agenten (komplett)' },
     ctaButton: 'Zum Dashboard →',
     footerCountry: 'Schweiz',
-    footerQuestions: 'Fragen?'
+    footerQuestions: 'Fragen?',
+    // v61.2 — payment failed
+    subjectFailed: 'SPORTVISE — Zahlung Ihres Abonnements fehlgeschlagen',
+    titleFailed: 'Zahlung fehlgeschlagen',
+    introFailed1: 'Der letzte Zahlungsversuch für Ihr SPORTVISE-Abonnement ist fehlgeschlagen.',
+    introFailed2: 'Mögliche Gründe: abgelaufene Karte, unzureichende Mittel oder eine Bankrückbuchung.',
+    ctaFailed: 'Karte aktualisieren →',
+    helpFailed: 'Stripe wird in den nächsten Tagen automatisch erneut versuchen. Erfolgt keine Aktualisierung, wird Ihr Plan in etwa 2 Wochen automatisch auf Free zurückgesetzt. Ihr Verlauf bleibt erhalten.'
   },
 
   en: {
@@ -266,7 +309,14 @@ const EMAIL_TEMPLATES = {
     planAgents: { free: '3 AI agents', plus: '6 performance agents', pro: '11 AI agents (complete)' },
     ctaButton: 'Go to my dashboard →',
     footerCountry: 'Switzerland',
-    footerQuestions: 'Questions?'
+    footerQuestions: 'Questions?',
+    // v61.2 — payment failed
+    subjectFailed: 'SPORTVISE — Subscription payment failed',
+    titleFailed: 'Payment failed',
+    introFailed1: 'The latest payment attempt for your SPORTVISE subscription failed.',
+    introFailed2: 'This may be due to an expired card, insufficient funds, or a bank objection.',
+    ctaFailed: 'Update my card →',
+    helpFailed: 'Stripe will automatically retry in the next few days. If no update is made, your plan will automatically revert to Free in about 2 weeks. You keep your entire history.'
   },
 
   it: {
@@ -285,7 +335,14 @@ const EMAIL_TEMPLATES = {
     planAgents: { free: '3 agenti IA', plus: '6 agenti performance', pro: '11 agenti IA (completo)' },
     ctaButton: 'Vai alla mia dashboard →',
     footerCountry: 'Svizzera',
-    footerQuestions: 'Domande?'
+    footerQuestions: 'Domande?',
+    // v61.2 — payment failed
+    subjectFailed: 'SPORTVISE — Pagamento dell\'abbonamento fallito',
+    titleFailed: 'Pagamento fallito',
+    introFailed1: 'L\'ultimo tentativo di pagamento del Suo abbonamento SPORTVISE è fallito.',
+    introFailed2: 'Possibili cause: carta scaduta, fondi insufficienti o un\'opposizione bancaria.',
+    ctaFailed: 'Aggiornare la carta →',
+    helpFailed: 'Stripe riproverà automaticamente nei prossimi giorni. Se non viene effettuato alcun aggiornamento, il Suo piano tornerà automaticamente a Free in circa 2 settimane. Il Suo storico viene preservato.'
   }
 };
 
@@ -391,6 +448,78 @@ async function sendPlanChangeEmail(email, newPlan, previousPlan, lang) {
   }
 }
 
+// ── PAYMENT FAILED EMAIL (v61.2) ────────────────────
+// Envoyé sur invoice.payment_failed (CB expirée, fonds insuffisants, opposition).
+// Stripe retry 3-4 fois sur ~2 semaines puis envoie subscription.deleted (déjà géré).
+// Cet email donne au user une chance de mettre à jour sa carte AVANT le downgrade auto.
+// Couleur rouge/orange pour signaler urgence sans alarmer.
+
+function renderPaymentFailedHtml(t) {
+  return `<!DOCTYPE html>
+<html lang="${t.htmlLang}">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head>
+<body style="margin:0;padding:0;background:#f5f7fb;font-family:'Segoe UI',Arial,sans-serif">
+  <div style="max-width:580px;margin:0 auto;padding:32px 20px">
+    <div style="text-align:center;margin-bottom:32px">
+      <div style="font-size:28px;font-weight:900;letter-spacing:3px;background:linear-gradient(135deg,#f59e0b,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:inline-block">SPORTVISE</div>
+      <div style="color:#64748b;font-size:12px;margin-top:4px">${t.tagline}</div>
+    </div>
+    <div style="background:#0d1127;border:1px solid #1e2d47;border-radius:16px;padding:36px;margin-bottom:24px">
+      <div style="font-size:32px;margin-bottom:16px">⚠️</div>
+      <h1 style="color:#f1f5f9;font-size:22px;font-weight:800;margin:0 0 12px">${t.titleFailed}</h1>
+      <p style="color:#94a3b8;font-size:14px;line-height:1.6;margin:0 0 12px">${t.introFailed1}</p>
+      <p style="color:#94a3b8;font-size:14px;line-height:1.6;margin:0 0 20px">${t.introFailed2}</p>
+      <div style="text-align:center;margin-top:24px">
+        <a href="https://sportvise.ch/app/dashboard.html#abonnement" style="display:inline-block;padding:14px 36px;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-size:15px;font-weight:800;text-decoration:none;border-radius:10px">
+          ${t.ctaFailed}
+        </a>
+      </div>
+      <div style="background:#f59e0b10;border:1px solid #f59e0b30;border-radius:10px;padding:14px 16px;margin-top:24px">
+        <p style="color:#f59e0b;font-size:12px;line-height:1.6;margin:0">${t.helpFailed}</p>
+      </div>
+    </div>
+    <div style="text-align:center;color:#475569;font-size:11px;line-height:1.7">
+      <div>© 2026 SPORTVISE · ${t.footerCountry} 🇨🇭</div>
+      <div>${t.footerQuestions} <a href="mailto:info@sportvise.ch" style="color:#f59e0b;text-decoration:none">info@sportvise.ch</a></div>
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
+async function sendPaymentFailedEmail(email, lang) {
+  if (!RESEND_API_KEY) {
+    console.log('⚠️ RESEND_API_KEY not set, skipping payment_failed email');
+    return;
+  }
+  const t = EMAIL_TEMPLATES[lang] || EMAIL_TEMPLATES.fr;
+  try {
+    const emailBody = JSON.stringify({
+      from: 'SPORTVISE <info@sportvise.ch>',
+      to: [email],
+      subject: t.subjectFailed,
+      html: renderPaymentFailedHtml(t)
+    });
+    const res = await httpsRequest({
+      hostname: 'api.resend.com',
+      path: '/emails',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${RESEND_API_KEY}`,
+        'Content-Length': Buffer.byteLength(emailBody)
+      }
+    }, emailBody);
+    if (res.status < 300) {
+      console.log(`[STRIPE-WEBHOOK] payment_failed email sent lang=${t.htmlLang} to=${email}`);
+    } else {
+      console.error(`⚠️ Payment_failed email send failed: ${res.status} lang=${t.htmlLang}`, res.data);
+    }
+  } catch (e) {
+    console.error('⚠️ Payment_failed email send error:', e.message);
+  }
+}
+
 // ── CONFIRM REFERRAL ────────────────────────────────
 // When a user subscribes to a paid plan, check if they were referred
 // If so, update the referral status to 'confirmed'
@@ -472,6 +601,46 @@ exports.handler = async (event) => {
   const stripeEvent = JSON.parse(event.body);
   console.log(`📨 Stripe event: ${stripeEvent.type}`);
 
+  // v61.1 — Idempotence : si Stripe redelivere un event qu'on a déjà traité (timeout
+  // de notre 200, ou retry après 5xx transient), on évite de re-traiter (sinon double
+  // email "Plan Plus activé" + double confirmReferral). On INSERT dans processed_stripe_events
+  // avec Prefer:resolution=ignore-duplicates,return=representation. Si la row existe déjà
+  // (PK conflict sur event_id), PostgREST retourne body=[] (array vide). Sinon body=[{...}].
+  try {
+    const supabaseHostName = SUPABASE_URL.replace('https://', '');
+    const idempotencyRes = await httpsRequest({
+      hostname: supabaseHostName,
+      path: '/rest/v1/processed_stripe_events',
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_SERVICE_KEY,
+        'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=ignore-duplicates,return=representation'
+      }
+    }, JSON.stringify({ event_id: stripeEvent.id, event_type: stripeEvent.type }));
+
+    const wasNew = Array.isArray(idempotencyRes.data) && idempotencyRes.data.length > 0;
+    if (!wasNew && idempotencyRes.status < 300) {
+      // Already processed — return 200 sans re-traiter (Stripe stoppera les retries).
+      console.log(`[STRIPE-WEBHOOK] event ${stripeEvent.id} (${stripeEvent.type}) already processed, skipping`);
+      return { statusCode: 200, body: JSON.stringify({ received: true, idempotent: true }) };
+    }
+    if (idempotencyRes.status >= 300) {
+      // L'idempotency check a foiré (DB transient ?). Fail-open : on laisse passer
+      // pour ne pas bloquer le webhook. Sentry capture pour qu'on remarque si fréquent.
+      console.warn(`[STRIPE-WEBHOOK] idempotency insert failed status=${idempotencyRes.status} — proceeding (fail-open)`);
+      captureError(new Error(`Idempotency insert failed: ${idempotencyRes.status} ${JSON.stringify(idempotencyRes.data)}`), {
+        context: { event_id: stripeEvent.id, event_type: stripeEvent.type, status: idempotencyRes.status },
+        level: 'warning'
+      });
+    }
+  } catch (idempErr) {
+    // Network/parse error sur l'idempotency check. Fail-open + log Sentry.
+    console.warn('[STRIPE-WEBHOOK] idempotency check error:', idempErr.message, '— proceeding (fail-open)');
+    captureError(idempErr, { context: { event_id: stripeEvent.id, event_type: stripeEvent.type, phase: 'idempotency_check' }, level: 'warning' });
+  }
+
   try {
     switch (stripeEvent.type) {
 
@@ -520,15 +689,45 @@ exports.handler = async (event) => {
           if (priceAmount === 1200) plan = 'plus';
           else if (priceAmount === 2900) plan = 'pro';
 
-          // No client_reference_id channel for portal-driven updates → FR fallback.
+          // v61.4 — Lookup profiles.lang pour envoyer l'email dans la bonne langue
+          // (avant : fallback 'fr' hardcoded sur tous les events portail).
+          const lang = await getUserLangByEmail(email);
           await updateUserPlan(email, plan);
-          await sendPlanChangeEmail(email, plan, 'unknown', 'fr');
-          console.log(`✅ Subscription updated: ${email} → ${plan}`);
+          await sendPlanChangeEmail(email, plan, 'unknown', lang);
+          console.log(`✅ Subscription updated: ${email} → ${plan} (lang=${lang})`);
         } else if (subscription.status === 'canceled' || subscription.status === 'unpaid') {
+          const lang = await getUserLangByEmail(email);
           await updateUserPlan(email, 'free');
-          await sendPlanChangeEmail(email, 'free', 'unknown', 'fr');
-          console.log(`✅ Subscription ended: ${email} → free`);
+          await sendPlanChangeEmail(email, 'free', 'unknown', lang);
+          console.log(`✅ Subscription ended: ${email} → free (lang=${lang})`);
         }
+        break;
+      }
+
+      // v61.2 — Payment failed (CB expirée, fonds insuffisants, opposition).
+      // Stripe va retry 3-4 fois sur ~2 semaines puis envoie subscription.deleted.
+      // On envoie un email d'alerte mais on NE downgrade PAS le plan (laisse le retry agir).
+      case 'invoice.payment_failed': {
+        const invoice = stripeEvent.data.object;
+        // L'invoice a customer_email pour les factures one-shot, ou il faut fetch le customer
+        let email = invoice.customer_email;
+        if (!email && invoice.customer) {
+          const customer = await stripeApiGet(`/v1/customers/${invoice.customer}`);
+          email = customer?.email;
+        }
+        if (!email) {
+          console.error('❌ No email for invoice.payment_failed:', invoice.id);
+          break;
+        }
+        // v61.4 — Lookup profiles.lang pour envoyer l'email d'alerte dans la bonne langue
+        const lang = await getUserLangByEmail(email);
+        await sendPaymentFailedEmail(email, lang);
+        // Sentry warning pour tracker la fréquence des échecs en prod
+        captureMessage(`payment_failed for ${email}`, {
+          context: { invoice_id: invoice.id, customer_id: invoice.customer, attempt_count: invoice.attempt_count, amount_due: invoice.amount_due },
+          level: 'warning'
+        });
+        console.log(`⚠️ Payment failed: ${email} invoice=${invoice.id} attempt=${invoice.attempt_count}`);
         break;
       }
 
@@ -540,9 +739,11 @@ exports.handler = async (event) => {
         const email = customer?.email;
 
         if (email) {
+          // v61.4 — Lookup profiles.lang pour l'email de fin d'abonnement
+          const lang = await getUserLangByEmail(email);
           await updateUserPlan(email, 'free');
-          await sendPlanChangeEmail(email, 'free', 'unknown', 'fr');
-          console.log(`✅ Subscription deleted: ${email} → free`);
+          await sendPlanChangeEmail(email, 'free', 'unknown', lang);
+          console.log(`✅ Subscription deleted: ${email} → free (lang=${lang})`);
         }
         break;
       }
