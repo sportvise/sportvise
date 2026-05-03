@@ -720,7 +720,15 @@ exports.handler = async (event) => {
         }
 
         if (subscription.status === 'active') {
-          const priceAmount = subscription.items?.data?.[0]?.price?.unit_amount;
+          // v62.11 — fix P0 bug data[0] aveugle (cf. commentaire détaillé dans stripe-webhook.js).
+          // Récap : on scanne tous les items et on prend le plus récemment créé (max created),
+          // robuste à upgrade ET downgrade. Avant : data[0] aveugle → mauvais plan possible.
+          const items = subscription.items?.data || [];
+          const newestItem = items.reduce(
+            (latest, item) => (item.created || 0) > (latest?.created || 0) ? item : latest,
+            null
+          );
+          const priceAmount = newestItem?.price?.unit_amount;
           let plan = 'free';
           if (priceAmount === 1200) plan = 'plus';
           else if (priceAmount === 2900) plan = 'pro';
