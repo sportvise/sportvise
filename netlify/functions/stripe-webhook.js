@@ -684,7 +684,20 @@ exports.handler = async (event) => {
         }
 
         if (subscription.status === 'active') {
-          const priceAmount = subscription.items?.data?.[0]?.price?.unit_amount;
+          // v62.11 — fix P0 bug : avant on prenait subscription.items.data[0].price.unit_amount
+          // aveuglément. Quand un user swap son plan via le portal/admin, Stripe peut
+          // temporairement avoir 2 items dans la subscription (l'ancien marqué pour suppression +
+          // le nouveau actif). Si Stripe ordonnait l'ancien en data[0], on updatait au mauvais
+          // plan (ex: user paie Pro 29 CHF mais profiles.plan reste 'plus' → perte d'accès aux 5
+          // agents Pro malgré paiement). Découvert par checklist E2E v61.5 scénario #6.
+          // Fix : on prend l'item le plus récemment créé (max created) — qui est toujours le plan
+          // actif, que ce soit upgrade Plus→Pro ou downgrade Pro→Plus. Robuste aux deux sens.
+          const items = subscription.items?.data || [];
+          const newestItem = items.reduce(
+            (latest, item) => (item.created || 0) > (latest?.created || 0) ? item : latest,
+            null
+          );
+          const priceAmount = newestItem?.price?.unit_amount;
           let plan = 'free';
           if (priceAmount === 1200) plan = 'plus';
           else if (priceAmount === 2900) plan = 'pro';
