@@ -2437,6 +2437,15 @@ function isOnboardDone() {
 function showLucasWelcome() {
   // Don't show again if already completed (v46: dual-check via isOnboardDone)
   if (isOnboardDone()) return;
+  // v62.13 — guard double-spawn : un overlay est peut-être encore en cours de fade-out
+  // (finishOnboarding fait opacity:0 + 300ms remove). Si renderDashboard re-trigger
+  // showLucasWelcome dans cet intervalle, on aurait 2 overlays + 2 closures qui font
+  // diverger les state internes (step, data, window.* handlers). Reproduit en
+  // self-test 04/05 (cf. logs "step out of bounds: 5 / 6").
+  if (document.getElementById('lucasWelcomeOverlay')) {
+    console.log('[onboarding] showLucasWelcome skipped — overlay already exists');
+    return;
+  }
 
   const overlay = document.createElement('div');
   overlay.id = 'lucasWelcomeOverlay';
@@ -2444,6 +2453,7 @@ function showLucasWelcome() {
 
   let step = 0;
   let advancing = false; // v55 — debounce pour éviter le double-clic qui empile 2 setTimeout(step++) → crash steps[5]
+  let finishing = false; // v62.13 — debounce finishOnboarding (anti double-clic 'Parler à Sophie' avec await DB lent)
   const data = { sport: '', level: '', goal: '' };
 
   // v42 — Sources of truth are SPORTS_CATALOG / LEVELS_CATALOG / GOALS_CATALOG defined globally.
@@ -2520,6 +2530,11 @@ function showLucasWelcome() {
       // v42 — data.{sport,level,goal} are now canonical keys. The agent recommendation is driven
       // by GOALS_CATALOG.domain (mental / physique / financier / carriere); the summary line
       // displays localized labels via *Label() helpers.
+      // v62.13 — si l'agent recommandé est locké pour le plan actuel (ex: Sophie/finance pour
+      // un user Free qui choisit "Vivre de mon sport"), on remplace le CTA "Parler à Sophie"
+      // par "Découvrir le Plan Pro →" qui navigue vers la page abonnement (au lieu de naviguer
+      // vers une page lockée → renderLockedAgent → retour confus). Plus monétisant + évite le
+      // bug P0 reproduit en self-test 04/05.
       () => {
         const goalDom = goalDomain(data.goal); // 'physique' | 'mental' | 'financier' | 'carriere'
         const agentReco =
@@ -2528,6 +2543,11 @@ function showLucasWelcome() {
           : goalDom === 'financier' ? {key:'finance', name:'Sophie',emoji:'💶',desc:t.obAgentDescFinance}
           : data.goal === 'win-competitions' ? {key:'mental', name:'Emma', emoji:'🧠',desc:t.obAgentDescMental}
           : {key:'equipe',name:'Lucas',emoji:'💼',desc:t.obAgentDescCareer};
+
+        // v62.13 — détecte si l'agent recommandé est locké pour le plan actuel
+        const agentLocked = (typeof isAgentLocked === 'function') ? isAgentLocked(agentReco.key) : false;
+        const reqPlan = agentLocked && (typeof getRequiredPlan === 'function') ? getRequiredPlan(agentReco.key) : null;
+        const planName = reqPlan === 'plus' ? 'Plus' : 'Pro';
 
         return `
           <div style="text-align:center;padding:20px">
@@ -2540,13 +2560,16 @@ function showLucasWelcome() {
               <div style="font-size:12px;color:#64748b;margin-bottom:8px;text-transform:uppercase;font-weight:700;letter-spacing:0.5px">${t.obSummaryRecoLabel}</div>
               <div style="display:flex;align-items:center;gap:12px">
                 <div style="font-size:32px">${agentReco.emoji}</div>
-                <div>
-                  <div style="font-size:16px;font-weight:800;color:#f1f5f9">${agentReco.name}</div>
+                <div style="flex:1">
+                  <div style="font-size:16px;font-weight:800;color:#f1f5f9;display:flex;align-items:center;gap:6px">${agentReco.name}${agentLocked ? ' <span style="font-size:11px;color:#f59e0b;font-weight:700;background:#f59e0b18;padding:2px 7px;border-radius:6px;letter-spacing:0.3px">🔒 PLAN ' + planName.toUpperCase() + '</span>' : ''}</div>
                   <div style="font-size:12px;color:#94a3b8">${agentReco.desc}</div>
                 </div>
               </div>
             </div>
-            <button onclick="finishOnboarding('${agentReco.key}')" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;border:none;padding:14px 36px;border-radius:12px;font-weight:800;font-size:15px;cursor:pointer;font-family:'Inter',sans-serif;margin-bottom:8px;transition:transform 0.2s" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='none'">${(t.obSummaryCta||'').replace('{name}', agentReco.name)}</button>
+            ${agentLocked
+              ? `<button onclick="finishOnboarding('abonnement')" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;border:none;padding:14px 36px;border-radius:12px;font-weight:800;font-size:15px;cursor:pointer;font-family:'Inter',sans-serif;margin-bottom:8px;transition:transform 0.2s" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='none'">Découvrir le Plan ${planName} →</button>`
+              : `<button onclick="finishOnboarding('${agentReco.key}')" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;border:none;padding:14px 36px;border-radius:12px;font-weight:800;font-size:15px;cursor:pointer;font-family:'Inter',sans-serif;margin-bottom:8px;transition:transform 0.2s" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='none'">${(t.obSummaryCta||'').replace('{name}', agentReco.name)}</button>`
+            }
             <div><button onclick="finishOnboarding('dashboard')" style="background:none;border:none;color:#64748b;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;margin-top:6px">${t.obSummaryExplore}</button></div>
           </div>
         `;
@@ -2629,6 +2652,19 @@ function showLucasWelcome() {
   };
 
   window.finishOnboarding = async function(targetAgent) {
+    // v62.13 — anti double-clic (le bouton "Parler à Sophie" peut être cliqué 2 fois
+    // pendant les awaits DB qui prennent 200-500ms en nav privée Safari)
+    if (finishing) return;
+    finishing = true;
+
+    // v62.13 — RACE CONDITION FIX : marquer l'onboarding comme done IMMÉDIATEMENT
+    // (avant les awaits DB), pour qu'isOnboardDone() retourne true tout de suite.
+    // Avant ce fix : pendant les ~200-500ms d'await profiles/goals, si renderDashboard
+    // se déclenchait (ex: showPage('finance') → renderLockedAgent → retour dashboard),
+    // !isOnboardDone() était vrai → showLucasWelcome relancé → double-spawn d'overlay
+    // → step out of bounds 5/6 → app plantée, boutons morts (reproduit self-test 04/05).
+    try { localStorage.setItem(`sv_onboard_${currentUser.id}`, '1'); } catch(_) { /* localStorage indispo */ }
+
     // Save profile data to Supabase
     // v42 — data.sport/level/goal are canonical keys; we store them as-is (sportKey() is a no-op
     // for items already canonical, and normalises legacy/custom values otherwise).
@@ -2651,25 +2687,27 @@ function showLucasWelcome() {
       }
     } catch(e) { console.warn('Onboarding save error:', e); }
 
-    localStorage.setItem(`sv_onboard_${currentUser.id}`, '1');
     overlay.style.opacity = '0';
     overlay.style.transition = 'opacity 0.3s';
     setTimeout(() => {
       overlay.remove();
       if (targetAgent && targetAgent !== 'dashboard') {
         showPage(targetAgent, null);
-        // Auto-send a first message to the recommended agent
-        setTimeout(() => {
-          const input = document.getElementById('chatInput');
-          if (input) {
-            const tt = T[currentLang] || T.fr;
-            input.value = (tt.obAutoMsg||'')
-              .replace('{sport}', sportLabel(data.sport))
-              .replace('{level}', levelLabel(data.level))
-              .replace('{goal}',  goalLabel(data.goal));
-            sendMsg(targetAgent);
-          }
-        }, 500);
+        // v62.13 — auto-send seulement si c'est un vrai agent non-locké (sinon
+        // sendMsg cible une page non-chat → erreur silencieuse mais inutile)
+        if (AGENTS[targetAgent] && !isAgentLocked(targetAgent)) {
+          setTimeout(() => {
+            const input = document.getElementById('chatInput');
+            if (input) {
+              const tt = T[currentLang] || T.fr;
+              input.value = (tt.obAutoMsg||'')
+                .replace('{sport}', sportLabel(data.sport))
+                .replace('{level}', levelLabel(data.level))
+                .replace('{goal}',  goalLabel(data.goal));
+              sendMsg(targetAgent);
+            }
+          }, 500);
+        }
       } else {
         renderDashboard();
       }
@@ -3229,11 +3267,18 @@ async function init() {
   }
 
   // All deferred features wrapped in try/catch to prevent crash
-  // Morning Brief has PRIORITY — recaps show later (5s) to avoid overlap
-  setTimeout(() => { try { showMorningBrief(); } catch(e) { console.warn('showMorningBrief error:', e); } }, 1500);
+  // v62.13 — ORDRE INVERSÉ : récap pending = debt prioritaire (un user qui rouvre l'app
+  // après un match doit liquider son récap AVANT son journal). Sinon scénario reproduit
+  // 04/05 : brief s'ouvre → user clique 'Remplir le journal' → nav vers /journal → 3.5s
+  // après, checkPendingRecaps trouve récap pending et pop → user rempli récap → brief
+  // déjà fermé donc journal du matin manqué silencieusement (= streak cassée).
+  // Avec le nouvel ordre + guards symétriques (showMorningBrief defer si eventModal) +
+  // chainage saveRecap/skipRecap → showMorningBrief, l'enchaînement est : récap → brief
+  // → journal, naturel et sans race.
+  setTimeout(() => { try { checkPendingRecaps(); } catch(e) { console.warn('checkPendingRecaps error:', e); } }, 1500);
   setTimeout(() => { try { showPWABanner(); } catch(e) { console.warn('showPWABanner error:', e); } }, 1500);
-  setTimeout(() => { try { showEveningBrief(); } catch(e) { console.warn('showEveningBrief error:', e); } }, 2000);
-  setTimeout(() => { try { checkPendingRecaps(); } catch(e) { console.warn('checkPendingRecaps error:', e); } }, 5000);
+  setTimeout(() => { try { showMorningBrief(); } catch(e) { console.warn('showMorningBrief error:', e); } }, 2500);
+  setTimeout(() => { try { showEveningBrief(); } catch(e) { console.warn('showEveningBrief error:', e); } }, 3000);
   setTimeout(() => { try { scheduleProactiveNotifications(); } catch(e) { console.warn('scheduleProactiveNotifications error:', e); } }, 3000);
   setTimeout(() => { try { checkAppVersion(); } catch(e) { console.warn('checkAppVersion error:', e); } }, 5000);
 
@@ -4040,10 +4085,19 @@ async function saveProfile() {
   // Close modal
   document.getElementById('profileModal')?.remove();
 
-  // Refresh dashboard
-  showPage('dashboard', document.querySelector('[onclick*="dashboard"]'));
+  // v62.13 — rester sur la page d'origine au lieu de toujours rediriger vers le Dashboard.
+  // Avant : saveProfile redirigeait systématiquement vers /dashboard, ce qui était
+  // déroutant pour un user qui modifie son profil depuis la page Profil et veut juste
+  // voir sa modif appliquée. Reproduit en self-test 04/05.
+  // Comportement onboarding 1er login conservé : si currentPage non défini ou autre
+  // page peu pertinente, on retombe sur dashboard.
   const name = full_name;
   document.getElementById('userName').textContent = name;
+  if (currentPage === 'profil') {
+    renderProfilePage();
+  } else {
+    showPage('dashboard', document.querySelector('[onclick*="dashboard"]'));
+  }
 }
 
 // ── CLOSE MODAL ON OUTSIDE CLICK ────────────────────
@@ -5303,13 +5357,19 @@ async function getCalendarContext() {
   try {
     const today = new Date();
     today.setHours(0,0,0,0);
-    const in14days = new Date(today.getTime() + 14 * 86400000);
+    // v62.13 — fenêtre étendue 14j → 30j. Le 14j de v53 était prudent (sans agrégation,
+    // lister 30j d'events explosait le contexte). Avec v62.7 (séries agrégées) +
+    // v62.12 (granularité dates), 30j est le sweet spot : couvre la question
+    // naturelle "ce mois-ci" sans coût contexte significatif. Reproduit en self-test
+    // 04/05 : agent David disait "uniquement le 7 mai" alors qu'une série hebdo avait
+    // aussi des occurrences le 21 et 28 mai — toutes hors fenêtre 14j.
+    const inFutureWindow = new Date(today.getTime() + 30 * 86400000);
 
     const { data: events } = await sb.from('calendar_events')
       .select('*')
       .eq('user_id', currentUser.id)
       .gte('event_date', dateToStr(today))
-      .lte('event_date', dateToStr(in14days))
+      .lte('event_date', dateToStr(inFutureWindow))
       .order('event_date', { ascending: true });
 
     if (!events || events.length === 0) return '';
@@ -7416,13 +7476,21 @@ async function saveRecap(eventId) {
   recapRpe = null;
   renderCalendar();
   // Chain to next pending recap if any (the saved one is now recap_done=true so it won't reappear)
-  // v60.5: après la chaîne récap, déclencher showEveningBrief si plus aucun modal
-  // ouvert. Couvre l'edge case "user save/skip en <8s" qui empêchait le timer
-  // defer de re-trigger correctement le banner du soir.
+  // v60.5: après la chaîne récap, déclencher showEveningBrief si plus aucun modal ouvert.
+  // v62.13: aussi déclencher showMorningBrief si on est le matin (avant 18h). Couvre le
+  // scénario reproduit 04/05 : user ouvre l'app dimanche matin après match samedi soir →
+  // brief du jour s'ouvre → user clique "Remplir le journal" → checkPendingRecaps fire en
+  // background → récap pop par-dessus → user remplit récap → mais le brief était déjà fermé
+  // → journal du matin manqué. Avec ce chainage + ordre boot inversé (récap d'abord) +
+  // guard symétrique dans showMorningBrief, l'enchaînement devient toujours : récap → brief.
   setTimeout(async () => {
     try { await checkPendingRecaps(); } catch(e) { console.warn('saveRecap chain error:', e); }
     if (!document.getElementById('eventModal')) {
-      try { showEveningBrief(); } catch(_) {}
+      try {
+        const hour = new Date().getHours();
+        if (hour < 18) showMorningBrief();
+        else showEveningBrief();
+      } catch(_) {}
     }
   }, 600);
 }
@@ -7468,12 +7536,16 @@ function skipRecap(eventId) {
   _skippedRecapIds.add(eventId);
   document.getElementById('eventModal')?.remove();
   // Chain to the next pending recap (if any) after a short delay so the modal animation finishes.
-  // v60.5: après la chaîne, déclencher showEveningBrief si plus aucun modal ouvert
-  // (cf. saveRecap pour la justification de l'edge case).
+  // v60.5: après la chaîne, déclencher showEveningBrief si plus aucun modal ouvert.
+  // v62.13: aussi showMorningBrief si avant 18h (cf. saveRecap pour le scénario complet).
   setTimeout(async () => {
     try { await checkPendingRecaps(); } catch(e) { console.warn('skipRecap chain error:', e); }
     if (!document.getElementById('eventModal')) {
-      try { showEveningBrief(); } catch(_) {}
+      try {
+        const hour = new Date().getHours();
+        if (hour < 18) showMorningBrief();
+        else showEveningBrief();
+      } catch(_) {}
     }
   }, 350);
 }
@@ -7505,6 +7577,16 @@ async function showMorningBrief(forceShow = false) {
     // If a brief is already on screen, just bring it back into view (defensive)
     if (document.getElementById('morningBriefOverlay')) {
       console.log('[BRIEF] already in DOM — no-op');
+      return;
+    }
+
+    // v62.13: priorité récap. Si une modal récap est ouverte (eventModal = post-event recap
+    // modal), on defer pour que le récap se liquide d'abord. Reproduit en self-test 04/05 :
+    // sans ce guard, un récap pop pendant que le brief est ouvert pouvait écraser l'UX.
+    // Symétrique de la garde dans showEveningBrief (v60.5). Defer 8s + retry.
+    if (document.getElementById('eventModal')) {
+      console.log('[BRIEF] morning deferred — recap modal still visible');
+      setTimeout(() => { try { showMorningBrief(forceShow); } catch(_){} }, 8000);
       return;
     }
 
