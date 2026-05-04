@@ -602,7 +602,7 @@
     <button class="nav-item" onclick="showPage('progression',this)">📈 <span data-nav="progression">Progression</span></button>
     <button class="nav-item" onclick="showPage('favoris',this)">⭐ <span data-nav="favoris">Mes Favoris</span></button>
     <button class="nav-item" onclick="showPage('defis',this)">🏅 <span data-nav="defis">Défis</span></button>
-    <button class="nav-item" onclick="showPage('prepa-match',this)">⚡ <span data-nav="prepa-match">Prépa Match</span></button>
+    <button class="nav-item" onclick="showPage('prepa-match',this)">⚡ <span data-nav="prepa-match">Prépa Compétition</span></button>
     <div class="nav-section">👤 MON COMPTE</div>
     <button class="nav-item" onclick="showPage('parrainage',this)">🎁 <span data-nav="parrainage">Parrainage</span></button>
     <button class="nav-item" onclick="showPage('profil',this)">👤 <span data-nav="profil">Mon Profil</span></button>
@@ -828,6 +828,10 @@ const T = {
     saveFavoritesHint:'Quand un agent vous donne un bon conseil, cliquez sur ☆ pour le sauvegarder ici. Vous retrouverez facilement vos meilleurs conseils !',
     removeFavorites:'Retirer des favoris',
     confirmRemoveFavorite:'Retirer ce conseil de tes favoris ?',
+    deleteGoal:'Supprimer cet objectif',
+    confirmDeleteGoal:'Supprimer cet objectif définitivement ?',
+    goalSuggestions:'Suggestions (clique pour pré-remplir)',
+    goalDomainLabel:'Domaine',
     // Referral section
     referralTitle:'Gagnez 1 mois gratuit', yourUniqueLink:'Votre lien unique', copy:'📋 Copier', copied:'✅ Copié !',
     shareVia:'Partager via', shareWhatsApp:'💬 WhatsApp', shareEmail:'📧 Email', shareInstagram:'📸 Instagram',
@@ -846,7 +850,7 @@ const T = {
     currentPlan:'✅ PLAN ACTUEL', recommended:'⭐ RECOMMANDÉ',
     freePlan:'Free', freePlanDesc:'Découvrir SPORTVISE', freePlanFeatures:['3 agents IA (Lucas, Emma, Clara)','10 messages / jour','Dashboard + Fitness Score','Journal quotidien + Calendrier','Objectifs + Progression'],
     currentPlanBtn:'Plan actuel', backToFree:'Revenir au Free',
-    plusPlan:'Plus', plusPlanDesc:'Performer au max', plusPlanPrice:'CHF 12', plusPlanFeatures:['6 agents performance (+ David, Nora, Julie)','Messages illimités','Prépa Match (J-3 à Jour J)','Défis hebdomadaires','Récap hebdomadaire + Notifications'],
+    plusPlan:'Plus', plusPlanDesc:'Performer au max', plusPlanPrice:'CHF 12', plusPlanFeatures:['6 agents performance (+ David, Nora, Julie)','Messages illimités','Prépa Compétition (J-3 à Jour J)','Défis hebdomadaires','Récap hebdomadaire + Notifications'],
     upgradToPlus:'Passer au Plus →', plusNew:'Nouveau',
     proPlan:'Pro', proPlanDesc:'Carrière complète', proPlanPrice:'CHF 29', perMonth:'/mois',
     proPlanFeatures:['11 agents IA (+ Business complet)','Tout le plan Plus inclus','Export PDF (Media Kit, CV, Nutrition)','Rapport mensuel de progression','Support prioritaire'],
@@ -874,7 +878,7 @@ const T = {
       sommeil:'Nora — Sommeil', equipe:'Lucas — Manager', recuperation:'Julie — Récupération',
       calendrier:'Calendrier', favoris:'Mes Favoris', profil:'Mon Profil', abonnement:'Abonnement',
       objectifs:'Objectifs', journal:'Journal', progression:'Progression',
-      marketplace:'Programmes', defis:'Défis', 'prepa-match':'Prépa Match',
+      marketplace:'Programmes', defis:'Défis', 'prepa-match':'Prépa Compétition',
       parrainage:'Parrainage', connexions:'Connexions'
     },
     agentDescs: {
@@ -1212,6 +1216,10 @@ const T = {
     saveFavoritesHint:'Wenn Ihnen ein Agent gute Ratschläge gibt, klicken Sie auf ☆, um sie hier zu speichern. Sie finden Ihre besten Tipps leicht wieder!',
     removeFavorites:'Aus Favoriten entfernen',
     confirmRemoveFavorite:'Diesen Ratschlag aus den Favoriten entfernen?',
+    deleteGoal:'Dieses Ziel löschen',
+    confirmDeleteGoal:'Dieses Ziel endgültig löschen?',
+    goalSuggestions:'Vorschläge (zum Vorausfüllen klicken)',
+    goalDomainLabel:'Bereich',
     // Referral section
     referralTitle:'Verdienen Sie 1 kostenlosen Monat', yourUniqueLink:'Ihr eindeutiger Link', copy:'📋 Kopieren', copied:'✅ Kopiert!',
     shareVia:'Teilen über', shareWhatsApp:'💬 WhatsApp', shareEmail:'📧 E-Mail', shareInstagram:'📸 Instagram',
@@ -1230,7 +1238,7 @@ const T = {
     currentPlan:'✅ AKTUELLER PLAN', recommended:'⭐ EMPFOHLEN',
     freePlan:'Free', freePlanDesc:'SPORTVISE entdecken', freePlanFeatures:['3 KI-Agenten (Lucas, Emma, Clara)','10 Nachrichten / Tag','Dashboard + Fitness Score','Tagesbuch + Kalender','Ziele + Fortschritt'],
     currentPlanBtn:'Aktueller Plan', backToFree:'Zurück zu Free',
-    plusPlan:'Plus', plusPlanDesc:'Maximale Leistung', plusPlanPrice:'CHF 12', plusPlanFeatures:['6 Performance-Agenten (+ David, Nora, Julie)','Unbegrenzte Nachrichten','Match-Vorbereitung (T-3 bis Tag X)','Wöchentliche Herausforderungen','Wochenbericht + Benachrichtigungen'],
+    plusPlan:'Plus', plusPlanDesc:'Maximale Leistung', plusPlanPrice:'CHF 12', plusPlanFeatures:['6 Performance-Agenten (+ David, Nora, Julie)','Unbegrenzte Nachrichten','Wettkampf-Vorbereitung (T-3 bis Tag X)','Wöchentliche Herausforderungen','Wochenbericht + Benachrichtigungen'],
     upgradToPlus:'Upgrade auf Plus →', plusNew:'Neu',
     proPlan:'Pro', proPlanDesc:'Komplette Karriere', proPlanPrice:'CHF 29', perMonth:'/Monat',
     proPlanFeatures:['11 KI-Agenten (+ Business komplett)','Alles aus dem Plus-Plan','PDF-Export (Media Kit, CV, Ernährung)','Monatlicher Fortschrittsbericht','Vorrangiger Support'],
@@ -1258,7 +1266,7 @@ const T = {
       sommeil:'Nora — Schlaf', equipe:'Lucas — Sportmanager', recuperation:'Julie — Regeneration',
       calendrier:'Kalender', favoris:'Meine Favoriten', profil:'Mein Profil', abonnement:'Abonnement',
       objectifs:'Ziele', journal:'Tagebuch', progression:'Fortschritt',
-      marketplace:'Programme', defis:'Herausforderungen', 'prepa-match':'Match-Vorbereitung',
+      marketplace:'Programme', defis:'Herausforderungen', 'prepa-match':'Wettkampf-Vorbereitung',
       parrainage:'Empfehlung', connexions:'Verbindungen'
     },
     agentDescs: {
@@ -1596,6 +1604,10 @@ const T = {
     saveFavoritesHint:'When an agent gives you good advice, click ☆ to save it here. You\'ll easily find your best tips!',
     removeFavorites:'Remove from favorites',
     confirmRemoveFavorite:'Remove this advice from your favorites?',
+    deleteGoal:'Delete this goal',
+    confirmDeleteGoal:'Permanently delete this goal?',
+    goalSuggestions:'Suggestions (click to pre-fill)',
+    goalDomainLabel:'Domain',
     // Referral section
     referralTitle:'Earn 1 free month', yourUniqueLink:'Your unique link', copy:'📋 Copy', copied:'✅ Copied!',
     shareVia:'Share via', shareWhatsApp:'💬 WhatsApp', shareEmail:'📧 Email', shareInstagram:'📸 Instagram',
@@ -1614,7 +1626,7 @@ const T = {
     currentPlan:'✅ CURRENT PLAN', recommended:'⭐ RECOMMENDED',
     freePlan:'Free', freePlanDesc:'Discover SPORTVISE', freePlanFeatures:['3 AI agents (Lucas, Emma, Clara)','10 messages / day','Dashboard + Fitness Score','Daily journal + Calendar','Goals + Progression'],
     currentPlanBtn:'Current plan', backToFree:'Back to Free',
-    plusPlan:'Plus', plusPlanDesc:'Perform at your best', plusPlanPrice:'CHF 12', plusPlanFeatures:['6 performance agents (+ David, Nora, Julie)','Unlimited messages','Match Prep (D-3 to Match Day)','Weekly challenges','Weekly recap + Notifications'],
+    plusPlan:'Plus', plusPlanDesc:'Perform at your best', plusPlanPrice:'CHF 12', plusPlanFeatures:['6 performance agents (+ David, Nora, Julie)','Unlimited messages','Competition Prep (D-3 to Event Day)','Weekly challenges','Weekly recap + Notifications'],
     upgradToPlus:'Upgrade to Plus →', plusNew:'New',
     proPlan:'Pro', proPlanDesc:'Complete career', proPlanPrice:'CHF 29', perMonth:'/month',
     proPlanFeatures:['11 AI agents (+ full Business)','Everything in Plus included','PDF export (Media Kit, CV, Nutrition)','Monthly progress report','Priority support'],
@@ -1642,7 +1654,7 @@ const T = {
       sommeil:'Nora — Sleep', equipe:'Lucas — Sports Manager', recuperation:'Julie — Recovery',
       calendrier:'Calendar', favoris:'My Favorites', profil:'My Profile', abonnement:'Subscription',
       objectifs:'Goals', journal:'Log', progression:'Progression',
-      marketplace:'Programs', defis:'Challenges', 'prepa-match':'Match Prep',
+      marketplace:'Programs', defis:'Challenges', 'prepa-match':'Competition Prep',
       parrainage:'Referral', connexions:'Connections'
     },
     agentDescs: {
@@ -1980,6 +1992,10 @@ const T = {
     saveFavoritesHint:'Quando un agente ti dà un buon consiglio, clicca su ☆ per salvarlo qui. Troverai facilmente i tuoi migliori consigli!',
     removeFavorites:'Rimuovi dai preferiti',
     confirmRemoveFavorite:'Rimuovere questo consiglio dai preferiti?',
+    deleteGoal:'Elimina questo obiettivo',
+    confirmDeleteGoal:'Eliminare definitivamente questo obiettivo?',
+    goalSuggestions:'Suggerimenti (clicca per pre-compilare)',
+    goalDomainLabel:'Dominio',
     // Referral section
     referralTitle:'Guadagna 1 mese gratuito', yourUniqueLink:'Il tuo link univoco', copy:'📋 Copia', copied:'✅ Copiato!',
     shareVia:'Condividi tramite', shareWhatsApp:'💬 WhatsApp', shareEmail:'📧 Email', shareInstagram:'📸 Instagram',
@@ -1998,7 +2014,7 @@ const T = {
     currentPlan:'✅ PIANO ATTUALE', recommended:'⭐ CONSIGLIATO',
     freePlan:'Free', freePlanDesc:'Scopri SPORTVISE', freePlanFeatures:['3 agenti IA (Lucas, Emma, Clara)','10 messaggi / giorno','Dashboard + Fitness Score','Diario quotidiano + Calendario','Obiettivi + Progressione'],
     currentPlanBtn:'Piano attuale', backToFree:'Torna a Free',
-    plusPlan:'Plus', plusPlanDesc:'Prestazione al massimo', plusPlanPrice:'CHF 12', plusPlanFeatures:['6 agenti performance (+ David, Nora, Julie)','Messaggi illimitati','Prep Match (G-3 al Giorno X)','Sfide settimanali','Riepilogo settimanale + Notifiche'],
+    plusPlan:'Plus', plusPlanDesc:'Prestazione al massimo', plusPlanPrice:'CHF 12', plusPlanFeatures:['6 agenti performance (+ David, Nora, Julie)','Messaggi illimitati','Prep Competizione (G-3 al Giorno X)','Sfide settimanali','Riepilogo settimanale + Notifiche'],
     upgradToPlus:'Passa a Plus →', plusNew:'Nuovo',
     proPlan:'Pro', proPlanDesc:'Carriera completa', proPlanPrice:'CHF 29', perMonth:'/mese',
     proPlanFeatures:['11 agenti IA (+ Business completo)','Tutto il piano Plus incluso','Export PDF (Media Kit, CV, Nutrizione)','Report mensile di progressione','Supporto prioritario'],
@@ -2026,7 +2042,7 @@ const T = {
       sommeil:'Nora — Sonno', equipe:'Lucas — Manager Sportivo', recuperation:'Julie — Recupero',
       calendrier:'Calendario', favoris:'I miei Preferiti', profil:'Il mio Profilo', abonnement:'Abbonamento',
       objectifs:'Obiettivi', journal:'Diario', progression:'Progressione',
-      marketplace:'Programmi', defis:'Sfide', 'prepa-match':'Prep Match',
+      marketplace:'Programmi', defis:'Sfide', 'prepa-match':'Prep Competizione',
       parrainage:'Referral', connexions:'Connessioni'
     },
     agentDescs: {
@@ -2347,6 +2363,34 @@ const GOALS_CATALOG = [
   { key:'manage-career',     icon:'📈', domain:'carriere',  labels:{fr:'Gérer ma carrière',         de:'Karriere managen',               en:'Manage my career',     it:'Gestire la mia carriera'},  legacy:['Gérer ma carrière'] },
 ];
 
+// v62.16 — Architecture hybride : 4 macro-domaines (DB inchangée) + suggestions par sous-thème.
+// Les sous-thèmes ne sont PAS stockés en DB (pour ne pas casser le data model existant), ils
+// servent uniquement à enrichir l'UI de la modal "Ajouter un objectif" via des chips de
+// suggestions cliquables qui pré-remplissent (titre + domaine). L'utilisateur peut toujours
+// taper un titre libre + choisir manuellement un domain s'il préfère. Décision Thomas 04/05.
+const GOAL_SUGGESTIONS = [
+  // Physique
+  { domain:'physique', icon:'💪', label:{fr:'Gagner en force',          de:'Kraft aufbauen',           en:'Build strength',        it:'Aumentare la forza'} },
+  { domain:'physique', icon:'🏃', label:{fr:'Améliorer mon endurance',  de:'Ausdauer verbessern',      en:'Improve endurance',     it:'Migliorare la resistenza'} },
+  { domain:'physique', icon:'⚡', label:{fr:'Gagner en vitesse',         de:'Schneller werden',          en:'Get faster',            it:'Aumentare la velocità'} },
+  { domain:'physique', icon:'🥗', label:{fr:'Améliorer mon alimentation',de:'Ernährung optimieren',     en:'Improve nutrition',     it:'Migliorare la nutrizione'} },
+  { domain:'physique', icon:'😴', label:{fr:'Mieux dormir',              de:'Besser schlafen',          en:'Sleep better',          it:'Dormire meglio'} },
+  { domain:'physique', icon:'♻️', label:{fr:'Optimiser ma récupération', de:'Erholung optimieren',      en:'Optimize recovery',     it:'Ottimizzare il recupero'} },
+  // Mental
+  { domain:'mental',   icon:'🎯', label:{fr:'Gérer mieux le stress',     de:'Stress besser bewältigen', en:'Manage stress better',  it:'Gestire meglio lo stress'} },
+  { domain:'mental',   icon:'💪', label:{fr:'Renforcer ma confiance',    de:'Selbstvertrauen stärken',  en:'Build confidence',      it:'Rafforzare la fiducia'} },
+  { domain:'mental',   icon:'🧘', label:{fr:'Améliorer ma concentration',de:'Konzentration verbessern', en:'Improve focus',         it:'Migliorare la concentrazione'} },
+  // Financier
+  { domain:'financier',icon:'🇨🇭', label:{fr:'Optimiser mes impôts',     de:'Steuern optimieren',       en:'Optimize my taxes',     it:'Ottimizzare le imposte'} },
+  { domain:'financier',icon:'🏦', label:{fr:'Ouvrir un pilier 3a',       de:'Säule 3a eröffnen',         en:'Open a pillar 3a',      it:'Aprire un pilastro 3a'} },
+  { domain:'financier',icon:'💼', label:{fr:'Gérer mon budget',          de:'Budget managen',           en:'Manage my budget',      it:'Gestire il mio budget'} },
+  // Carrière (sous-thèmes : sponsors, contrats, marketing, transferts)
+  { domain:'carriere', icon:'🤝', label:{fr:'Trouver des sponsors',      de:'Sponsoren finden',         en:'Find sponsors',         it:'Trovare sponsor'} },
+  { domain:'carriere', icon:'⚖️', label:{fr:'Négocier mon contrat',      de:'Vertrag verhandeln',       en:'Negotiate my contract', it:'Negoziare il mio contratto'} },
+  { domain:'carriere', icon:'🎯', label:{fr:'Booster ma visibilité',     de:'Sichtbarkeit erhöhen',     en:'Boost my visibility',   it:'Aumentare la visibilità'} },
+  { domain:'carriere', icon:'🔄', label:{fr:'Préparer un transfert',     de:'Transfer vorbereiten',     en:'Prepare a transfer',    it:'Preparare un trasferimento'} },
+];
+
 // ── i18n HELPERS ────────────────────────────────────
 // Soft-lookup: accepts either a canonical key or a legacy FR label, returns the catalog item.
 function _catalogFind(catalog, value) {
@@ -2459,7 +2503,7 @@ function showLucasWelcome() {
 
   const overlay = document.createElement('div');
   overlay.id = 'lucasWelcomeOverlay';
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;animation:fadeIn 0.4s ease';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;animation:fadeIn 0.4s ease';
 
   let step = 0;
   let advancing = false; // v55 — debounce pour éviter le double-clic qui empile 2 setTimeout(step++) → crash steps[5]
@@ -3546,7 +3590,7 @@ function scheduleMatchReminder() {
 
     var evt = result.data[0];
     if (Notification.permission === 'granted') {
-      new Notification('SPORTVISE ⚡ Prépa Match', {
+      new Notification('SPORTVISE ⚡ Prépa Compétition', {
         body: evt.title + ' est demain ! Consulte ton plan de préparation J-1 pour être au top.',
         icon: '/icons/icon-192.png',
         badge: '/icons/icon-192.png',
@@ -4178,9 +4222,9 @@ async function showPage(page, el) {
     if (userPlan === 'free') { renderLockedFeature('Défis', '🏅', 'Relève des défis hebdomadaires, partage tes stats et gagne des badges.', 'plus'); }
     else { renderDefis(); }
   } else if (page === 'prepa-match') {
-    document.getElementById('pageTitle').textContent = '⚡ Prépa Match';
+    document.getElementById('pageTitle').textContent = '⚡ Prépa Compétition';
     document.getElementById('pageSubtitle').textContent = (T[currentLang]?.pagePrepaSubtitle) || 'Plan de préparation coordonné par tes agents IA';
-    if (userPlan === 'free') { renderLockedFeature('Prépa Match', '⚡', 'Plan de préparation J-3 à Jour J coordonné par David, Emma, Clara, Nora et Julie.', 'plus'); }
+    if (userPlan === 'free') { renderLockedFeature('Prépa Compétition', '⚡', 'Plan de préparation J-3 à Jour J coordonné par David, Emma, Clara, Nora et Julie.', 'plus'); }
     else { renderPrepaMatch(); }
   } else if (page === 'connexions') {
     document.getElementById('pageTitle').textContent = '🔗 ' + ((T[currentLang]?.connexions) || 'Connexions');
@@ -4696,7 +4740,7 @@ function renderLockedFeature(featureName, emoji, description, requiredPlan) {
     + '<p style="color:var(--muted);font-size:14px;max-width:420px;line-height:1.6;margin-bottom:24px">' + description + '</p>'
     + '<div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;max-width:360px;width:100%;margin-bottom:20px">'
     + '<div style="font-size:13px;font-weight:700;color:' + planColor + ';margin-bottom:4px">Plan ' + planName + ' — CHF ' + planPrice + '/mois</div>'
-    + '<div style="font-size:11px;color:var(--muted);margin-bottom:16px">' + (requiredPlan === 'plus' ? 'Performance complète : 6 agents + messages illimités + Prépa Match + Défis' : 'Carrière complète : 11 agents + exports PDF + rapport mensuel') + '</div>'
+    + '<div style="font-size:11px;color:var(--muted);margin-bottom:16px">' + (requiredPlan === 'plus' ? 'Performance complète : 6 agents + messages illimités + Prépa Compétition + Défis' : 'Carrière complète : 11 agents + exports PDF + rapport mensuel') + '</div>'
     + '<button onclick="showPage(\'abonnement\',document.querySelector(\'[onclick*=abonnement]\'))" style="width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,' + planColor + ',' + planColor + 'cc);color:' + (requiredPlan === 'plus' ? '#fff' : '#07091a') + ';font-weight:700;font-size:14px;cursor:pointer;font-family:\'Inter\',sans-serif">Passer au ' + planName + ' →</button>'
     + '</div>'
     + '<button onclick="showPage(\'dashboard\',document.querySelector(\'[onclick*=dashboard]\'))" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;text-decoration:underline;font-family:\'Inter\',sans-serif">← Retour au Dashboard</button>'
@@ -9165,12 +9209,40 @@ async function getWeather(location, date) {
 // ── GOAL MODAL & HELPERS ────────────────────────────
 function showAddGoalModal() {
   const t = T[currentLang];
+  const lang = currentLang;
   const modal = document.createElement('div');
   modal.id = 'addGoalModal';
-  modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:1000';
+  modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;z-index:1000';
+
+  // v62.16 — chips de suggestions groupées par macro-thème (architecture hybride)
+  const macroThemes = [
+    { domain:'physique',  icon:'💪', label:t.physical || 'Physique' },
+    { domain:'mental',    icon:'🧠', label:t.mental   || 'Mental' },
+    { domain:'financier', icon:'💰', label:t.financial|| 'Financier' },
+    { domain:'carriere',  icon:'🚀', label:t.career   || 'Carrière' },
+  ];
+  const suggestionsHTML = macroThemes.map(m => {
+    const items = GOAL_SUGGESTIONS.filter(s => s.domain === m.domain);
+    if (items.length === 0) return '';
+    const chips = items.map(s => {
+      const lbl = (s.label[lang] || s.label.fr || '').replace(/'/g, "\\'");
+      return `<button type="button" onclick="fillGoalSuggestion('${s.domain}','${lbl}')" style="padding:6px 10px;border-radius:14px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;display:inline-flex;align-items:center;gap:4px;margin:3px" onmouseover="this.style.borderColor='#f59e0b';this.style.background='#f59e0b15'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--bg)'">${s.icon} ${s.label[lang] || s.label.fr}</button>`;
+    }).join('');
+    return `<div style="margin-bottom:8px">
+      <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">${m.icon} ${m.label}</div>
+      <div style="margin:-3px">${chips}</div>
+    </div>`;
+  }).join('');
+
   modal.innerHTML = `
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;width:90%;max-width:500px;max-height:90vh;overflow-y:auto">
       <h2 style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:16px">${t.addGoal || 'Add Goal'}</h2>
+
+      <div class="form-field" style="margin-bottom:14px">
+        <label class="form-label" style="display:block;margin-bottom:6px">💡 ${t.goalSuggestions || 'Suggestions (clique pour pré-remplir)'}</label>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px;max-height:220px;overflow-y:auto">${suggestionsHTML}</div>
+      </div>
+
       <div class="form-field">
         <label class="form-label">${t.goalTitle}</label>
         <input type="text" id="goalTitle" class="form-input" placeholder="Ex: Gagner CHF 5000 en sponsors" />
@@ -9180,7 +9252,7 @@ function showAddGoalModal() {
         <textarea id="goalDesc" class="form-input" style="min-height:60px;resize:vertical" placeholder="Description..."></textarea>
       </div>
       <div class="form-field">
-        <label class="form-label">${t.financial || 'Domain'}</label>
+        <label class="form-label">${t.goalDomainLabel || 'Domaine'}</label>
         <select id="goalDomain" class="form-select">
           <option value="financier">💰 ${t.financial || 'Financial'}</option>
           <option value="physique">💪 ${t.physical || 'Physical'}</option>
@@ -9217,6 +9289,16 @@ function cancelGoalModal() {
   document.getElementById('addGoalModal')?.remove();
 }
 
+// v62.16 — fill goal title + select domain quand l'user clique sur une suggestion chip.
+// Préserve la valeur si l'user avait déjà commencé à taper, mais override le domain.
+function fillGoalSuggestion(domain, label) {
+  const titleEl = document.getElementById('goalTitle');
+  const domainEl = document.getElementById('goalDomain');
+  if (titleEl) titleEl.value = label;
+  if (domainEl) domainEl.value = domain;
+  if (titleEl) titleEl.focus();
+}
+
 async function saveGoal() {
   const title = document.getElementById('goalTitle').value.trim();
   const desc = document.getElementById('goalDesc').value.trim();
@@ -9248,6 +9330,17 @@ async function updateGoalValue(goalId) {
 async function completeGoal(goalId) {
   const { error } = await sb.from('goals').update({ status: 'completed' }).eq('id', goalId);
   if (!error) renderGoals();
+}
+
+// v62.15 — fonction de suppression d'un objectif (manquante avant). Reproduit en
+// self-test 04/05 : un user qui crée un goal par erreur ne peut pas le retirer.
+async function deleteGoal(goalId) {
+  const t = T[currentLang] || T.fr;
+  const msg = t.confirmDeleteGoal || 'Supprimer cet objectif définitivement ?';
+  if (!confirm(msg)) return;
+  const { error } = await sb.from('goals').delete().eq('id', goalId);
+  if (!error) renderGoals();
+  else { console.warn('[GOAL] delete error:', error); showToast('⚠️ ' + (t.errSave || 'Erreur')); }
 }
 
 function scrollToGoals(domain) {
@@ -9410,6 +9503,7 @@ async function renderGoals() {
                       <div style="display:flex;gap:6px;margin-top:8px">
                         <button onclick="updateGoalValue('${g.id}')" style="flex:1;padding:4px 8px;border-radius:4px;background:var(--border);border:none;color:var(--text);font-size:10px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">📝 Mettre à jour</button>
                         ${g.status==='active'?`<button onclick="completeGoal('${g.id}')" style="flex:1;padding:4px 8px;border-radius:4px;background:#10b98115;border:1px solid #10b98130;color:#10b981;font-size:10px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">✓ Complété</button>`:''}
+                        <button onclick="deleteGoal('${g.id}')" title="${t.deleteGoal||'Supprimer'}" style="padding:4px 10px;border-radius:4px;background:#ef444412;border:1px solid #ef444425;color:#ef4444;font-size:10px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif" onmouseover="this.style.background='#ef444425'" onmouseout="this.style.background='#ef444412'">🗑️</button>
                       </div>
                     </div>
                   `;
@@ -10394,7 +10488,7 @@ async function renderPrepaMatch() {
     document.getElementById('mainContent').innerHTML = '<div style="max-width:700px;margin:0 auto;text-align:center;padding:60px 20px">' +
       '<div style="font-size:56px;margin-bottom:16px">⚡</div>' +
       '<h2 style="font-size:22px;font-weight:800;color:var(--text);margin-bottom:8px">Aucun match prévu</h2>' +
-      '<p style="color:var(--muted);margin-bottom:24px;font-size:14px">Ajoute un match ou une compétition dans ton calendrier pour activer le mode Prépa Match.</p>' +
+      '<p style="color:var(--muted);margin-bottom:24px;font-size:14px">Ajoute un match ou une compétition dans ton calendrier pour activer le mode Prépa Compétition.</p>' +
       '<button onclick="showPage(\'calendrier\',null)" class="btn btn-gold" style="font-family:Inter,sans-serif">📅 Aller au calendrier</button>' +
     '</div>';
     return;
@@ -11261,23 +11355,12 @@ function renderConnexions() {
       stravaStatus + stravaActions +
     '</div>' +
 
-    '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;opacity:0.6">' +
-      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">' +
-        '<div style="width:44px;height:44px;border-radius:12px;background:#000;display:flex;align-items:center;justify-content:center;font-size:20px">⌚</div>' +
-        '<div><h3 style="margin:0;color:var(--text)">Garmin Connect</h3><div style="font-size:12px;color:var(--muted)">' + (t.connGarminTagline || 'Montres Garmin, santé, sommeil') + '</div></div>' +
-        '<span style="margin-left:auto;background:var(--border);color:var(--muted);padding:4px 12px;border-radius:20px;font-size:12px">' + soon + '</span>' +
-      '</div>' +
-      '<p style="color:var(--muted);font-size:13px">' + (t.connGarminDesc || "L'intégration Garmin Connect arrive prochainement pour synchroniser données de santé, sommeil et entraînements.") + '</p>' +
-    '</div>' +
-
-    '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:24px;opacity:0.6">' +
-      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">' +
-        '<div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#ff2d55,#ff6482);display:flex;align-items:center;justify-content:center;font-size:20px">❤️</div>' +
-        '<div><h3 style="margin:0;color:var(--text)">Apple Santé</h3><div style="font-size:12px;color:var(--muted)">' + (t.connAppleTagline || 'Données de santé, activité quotidienne') + '</div></div>' +
-        '<span style="margin-left:auto;background:var(--border);color:var(--muted);padding:4px 12px;border-radius:20px;font-size:12px">' + soon + '</span>' +
-      '</div>' +
-      '<p style="color:var(--muted);font-size:13px">' + (t.connAppleDesc || "Intégration Apple Santé pour synchroniser tes données de santé et d'activité depuis ton iPhone/Apple Watch.") + '</p>' +
-    '</div>' +
+    // v62.16 — Garmin Connect et Apple Santé retirés. Garmin n'a pas d'API publique
+    // gratuite (enterprise tier $$$). Apple Santé (HealthKit) requiert une app native iOS,
+    // impossible depuis une PWA web. Strava reste comme prochaine intégration via Strava
+    // OAuth (sprint dédié post-soft-launch). Pour Garmin, workaround via export TCX/GPX
+    // manuel. La majorité des utilisateurs Garmin ont aussi un compte Strava qui se sync
+    // automatiquement avec Garmin → brancher Strava débloque la majorité des cas Garmin.
 
     '<div id="stravaActivities" style="margin-top:24px"></div>' +
   '</div>';
