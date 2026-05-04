@@ -587,8 +587,14 @@
     <button class="nav-item" onclick="showPage('nutrition',this)">🥗 <span data-nav="nutrition">Clara — Nutrition</span></button>
     <button class="nav-item" onclick="showPage('sommeil',this)">😴 <span data-nav="sommeil">Nora — Sommeil</span></button>
     <button class="nav-item" onclick="showPage('recuperation',this)">♻️ <span data-nav="recuperation">Julie — Récupération</span></button>
-    <div class="nav-section">🏪 MARKETPLACE</div>
-    <button class="nav-item" onclick="showPage('marketplace',this)">🏪 <span data-nav="marketplace">Programmes</span></button>
+    <!-- v62.14 — Marketplace cachée temporairement pour soft launch. Les 6 programmes pré-écrits
+         actuels (statiques, mêmes pour tous) contredisent le pitch SPORTVISE 'agents qui se
+         souviennent et personnalisent'. Refonte prévue post-soft-launch : PDF programme
+         professionnel sur mesure généré dynamiquement par chaque agent (cf. task #34).
+         La page reste en DOM/code accessible via /marketplace si un user connaît l'URL,
+         mais retirée de la nav. -->
+    <div class="nav-section" style="display:none">🏪 MARKETPLACE</div>
+    <button class="nav-item" style="display:none" onclick="showPage('marketplace',this)">🏪 <span data-nav="marketplace">Programmes</span></button>
     <div class="nav-section">📋 MON ESPACE PERSONNEL</div>
     <button class="nav-item" onclick="showPage('calendrier',this)">📅 <span data-nav="calendrier">Calendrier</span></button>
     <button class="nav-item" onclick="showPage('objectifs',this)">🎯 <span data-nav="objectifs">Objectifs</span></button>
@@ -821,6 +827,7 @@ const T = {
     noFavoritesYet:'Aucun favori pour le moment',
     saveFavoritesHint:'Quand un agent vous donne un bon conseil, cliquez sur ☆ pour le sauvegarder ici. Vous retrouverez facilement vos meilleurs conseils !',
     removeFavorites:'Retirer des favoris',
+    confirmRemoveFavorite:'Retirer ce conseil de tes favoris ?',
     // Referral section
     referralTitle:'Gagnez 1 mois gratuit', yourUniqueLink:'Votre lien unique', copy:'📋 Copier', copied:'✅ Copié !',
     shareVia:'Partager via', shareWhatsApp:'💬 WhatsApp', shareEmail:'📧 Email', shareInstagram:'📸 Instagram',
@@ -1204,6 +1211,7 @@ const T = {
     noFavoritesYet:'Noch keine Favoriten',
     saveFavoritesHint:'Wenn Ihnen ein Agent gute Ratschläge gibt, klicken Sie auf ☆, um sie hier zu speichern. Sie finden Ihre besten Tipps leicht wieder!',
     removeFavorites:'Aus Favoriten entfernen',
+    confirmRemoveFavorite:'Diesen Ratschlag aus den Favoriten entfernen?',
     // Referral section
     referralTitle:'Verdienen Sie 1 kostenlosen Monat', yourUniqueLink:'Ihr eindeutiger Link', copy:'📋 Kopieren', copied:'✅ Kopiert!',
     shareVia:'Teilen über', shareWhatsApp:'💬 WhatsApp', shareEmail:'📧 E-Mail', shareInstagram:'📸 Instagram',
@@ -1587,6 +1595,7 @@ const T = {
     noFavoritesYet:'No favorites yet',
     saveFavoritesHint:'When an agent gives you good advice, click ☆ to save it here. You\'ll easily find your best tips!',
     removeFavorites:'Remove from favorites',
+    confirmRemoveFavorite:'Remove this advice from your favorites?',
     // Referral section
     referralTitle:'Earn 1 free month', yourUniqueLink:'Your unique link', copy:'📋 Copy', copied:'✅ Copied!',
     shareVia:'Share via', shareWhatsApp:'💬 WhatsApp', shareEmail:'📧 Email', shareInstagram:'📸 Instagram',
@@ -1970,6 +1979,7 @@ const T = {
     noFavoritesYet:'Nessun preferito ancora',
     saveFavoritesHint:'Quando un agente ti dà un buon consiglio, clicca su ☆ per salvarlo qui. Troverai facilmente i tuoi migliori consigli!',
     removeFavorites:'Rimuovi dai preferiti',
+    confirmRemoveFavorite:'Rimuovere questo consiglio dai preferiti?',
     // Referral section
     referralTitle:'Guadagna 1 mese gratuito', yourUniqueLink:'Il tuo link univoco', copy:'📋 Copia', copied:'✅ Copiato!',
     shareVia:'Condividi tramite', shareWhatsApp:'💬 WhatsApp', shareEmail:'📧 Email', shareInstagram:'📸 Instagram',
@@ -4998,7 +5008,7 @@ async function renderFavoris() {
     const color = agent ? agent.color : '#f59e0b';
     const date = new Date(f.created_at).toLocaleDateString('fr-CH', { day:'2-digit', month:'short', year:'numeric' });
     return `
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:18px;border-left:3px solid ${color}">
+      <div data-fav-card="${f.id}" data-agent="${f.agent_id}" onclick="goToFavoriteAgent('${f.agent_id}')" style="background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:18px;border-left:3px solid ${color};cursor:pointer;transition:all 0.2s" onmouseover="this.style.borderColor='${color}50'" onmouseout="this.style.borderColor='var(--border)'">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
           <div style="display:flex;align-items:center;gap:10px">
             <span style="font-size:20px">${emoji}</span>
@@ -5007,11 +5017,11 @@ async function renderFavoris() {
               <div style="font-size:10px;color:var(--muted)">${date}</div>
             </div>
           </div>
-          <button onclick="removeFavorite('${f.id}',this.closest('[style]'))" title="${t.removeFavorites}"
-            style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px;color:var(--muted);transition:all 0.2s;font-family:'Inter',sans-serif"
-            onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444'"
-            onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
-            ✕
+          <button onclick="event.stopPropagation();confirmRemoveFavorite('${f.id}','${f.agent_id}',this.closest('[data-fav-card]'))" title="${t.removeFavorites}"
+            style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:6px 10px;cursor:pointer;font-size:14px;color:var(--muted);transition:all 0.2s;font-family:'Inter',sans-serif"
+            onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444';this.style.background='#ef444415'"
+            onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)';this.style.background='transparent'">
+            🗑️
           </button>
         </div>
         <div style="font-size:13px;line-height:1.7;color:var(--muted2)">${formatText(f.content)}</div>
@@ -5030,8 +5040,29 @@ async function renderFavoris() {
   `;
 }
 
-async function removeFavorite(favId, cardEl) {
+// v62.14 — wrapper avec confirmation (UX retour Thomas self-test 04/05)
+function confirmRemoveFavorite(favId, agentId, cardEl) {
+  const t = T[currentLang] || T.fr;
+  const msg = t.confirmRemoveFavorite || 'Retirer ce conseil de tes favoris ?';
+  if (!confirm(msg)) return;
+  removeFavorite(favId, cardEl, agentId);
+}
+
+// v62.14 — nav vers le chat de l'agent du favori (avant : click sur card = no-op)
+function goToFavoriteAgent(agentId) {
+  if (!agentId) return;
+  const btn = document.querySelector(`[onclick*="showPage('${agentId}'"]`);
+  showPage(agentId, btn);
+}
+
+async function removeFavorite(favId, cardEl, agentId) {
   await sb.from('favorites').delete().eq('id', favId);
+  // v62.14 — invalider le cache chat de l'agent concerné pour que l'étoile favori
+  // se synchronise au prochain affichage du chat (avant : étoile pleine restait
+  // visible dans le chat même après suppression depuis page Favoris).
+  if (agentId && typeof chats !== 'undefined' && chats[agentId]) {
+    delete chats[agentId];
+  }
   if (cardEl) {
     cardEl.style.opacity = '0';
     cardEl.style.transform = 'translateX(-20px)';
@@ -5039,7 +5070,9 @@ async function removeFavorite(favId, cardEl) {
     setTimeout(() => {
       cardEl.remove();
       // Check if no more favorites
-      const remaining = document.querySelectorAll('#mainContent [style*="border-left:3px"]');
+      // v62.14 — sélecteur fiable via data-fav-card (avant : '[style*="border-left:3px"]'
+      // était fragile et redécoupait selon les attributs style)
+      const remaining = document.querySelectorAll('#mainContent [data-fav-card]');
       if (remaining.length === 0) renderFavoris();
     }, 300);
   }
@@ -9375,8 +9408,8 @@ async function renderGoals() {
                         ${daysLeft !== null ? `<span>${daysLeft > 0 ? daysLeft + ' jours' : 'Aujourd\'hui'}</span>` : ''}
                       </div>
                       <div style="display:flex;gap:6px;margin-top:8px">
-                        <button onclick="updateGoalValue(${g.id})" style="flex:1;padding:4px 8px;border-radius:4px;background:var(--border);border:none;color:var(--text);font-size:10px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">📝 Mettre à jour</button>
-                        ${g.status==='active'?`<button onclick="completeGoal(${g.id})" style="flex:1;padding:4px 8px;border-radius:4px;background:#10b98115;border:1px solid #10b98130;color:#10b981;font-size:10px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">✓ Complété</button>`:''}
+                        <button onclick="updateGoalValue('${g.id}')" style="flex:1;padding:4px 8px;border-radius:4px;background:var(--border);border:none;color:var(--text);font-size:10px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">📝 Mettre à jour</button>
+                        ${g.status==='active'?`<button onclick="completeGoal('${g.id}')" style="flex:1;padding:4px 8px;border-radius:4px;background:#10b98115;border:1px solid #10b98130;color:#10b981;font-size:10px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">✓ Complété</button>`:''}
                       </div>
                     </div>
                   `;
