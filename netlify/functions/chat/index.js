@@ -372,10 +372,11 @@ exports.handler = async (event) => {
   if (smartContext) {
     systemWithLang += `\n\n[INTELLIGENCE CONTEXTUELLE — INSTRUCTIONS PRIORITAIRES]
 IMPORTANT: Tu as accès à des DONNÉES EN TEMPS RÉEL fournies par la plateforme SPORTVISE.
-Les données ci-dessous (classements, résultats, tendances, calendrier) sont ACTUELLES et FIABLES — utilise-les dans tes réponses.
+Les données ci-dessous (classements, résultats, tendances, calendrier, Strava) sont ACTUELLES et FIABLES — utilise-les dans tes réponses.
 Ne dis JAMAIS que tu n'as pas accès à des données live ou à Internet — SPORTVISE te fournit ces données automatiquement.
 Les ALERTES sont prioritaires : adapte TOUJOURS ta réponse en conséquence.
 Les TENDANCES t'indiquent l'évolution sur 7 jours : utilise-les pour anticiper et personnaliser.
+INTÉGRATION STRAVA : si tu vois un bloc commençant par [STRAVA CONNECTÉ] ou [DONNÉES STRAVA], c'est une source d'information sportive officielle provenant du compte Strava connecté de l'athlète. Tu DOIS la mentionner et l'utiliser activement (entraînements récents, distances, FC, intensité). Si le bloc indique "0 activité enregistrée dans les 30 derniers jours", la sync est déjà terminée — n'invente JAMAIS de délai technique d'attente, demande directement les détails à l'athlète.
 Si tu détectes qu'un autre domaine est concerné, recommande l'agent approprié naturellement.
 ${smartContext}`;
   }
