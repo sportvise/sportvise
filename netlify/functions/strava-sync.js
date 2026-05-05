@@ -16,8 +16,10 @@ exports.handler = async (event) => {
     const { access_token, after, per_page } = JSON.parse(event.body);
     if (!access_token) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing access_token' }) };
 
-    // Default: last 14 days of activities
-    const afterTimestamp = after || Math.floor((Date.now() - 14 * 86400000) / 1000);
+    // Default: last 30 days of activities (v62.20 — étendu de 14 → 30j pour couvrir
+    // intersaison courte. Skieurs en été, joueurs blessés, sportifs en repos planifié, etc.
+    // Rate limit Strava : 100 req/15min + 1000 req/jour par app — restent largement OK.)
+    const afterTimestamp = after || Math.floor((Date.now() - 30 * 86400000) / 1000);
     const limit = Math.min(per_page || 30, 50);
 
     // Fetch activities from Strava
