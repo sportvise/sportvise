@@ -3361,7 +3361,7 @@ async function init() {
 // It cleans caches, reloads ONCE, and uses a retry counter to prevent infinite loops.
 // ⚠️  IMPORTANT : cette constante DOIT correspondre à src/version.json (.version).
 //     Si tu bumps version.json, bump APP_V au même nombre — sinon boucle de reload.
-const APP_V = '62.20';
+const APP_V = '62.21';
 async function checkAppVersion() {
   try {
     const res = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
@@ -11270,14 +11270,22 @@ function getStravaContext() {
   // v62.20 — Si Strava connecté mais aucune activité dans la fenêtre 30j, retourner un signal
   // explicite pour que l'agent sache que Strava EST branché mais sans données récentes,
   // plutôt que de retourner '' qui le ferait conclure (à tort) que Strava n'est pas connecté.
+  // v62.21 — Renforcement anti-hallucination : David inventait un "délai technique de
+  // synchronisation 15-30 min" alors que la sync est instantanée. Le signal est maintenant
+  // explicite contre ce pattern + interdit de proposer d'attendre.
   if (!activities.length) {
     if (conn && conn.access_token) {
       const athleteName = (conn.athlete && conn.athlete.firstname)
         ? conn.athlete.firstname + (conn.athlete.lastname ? ' ' + conn.athlete.lastname : '')
         : '';
-      return '\n[STRAVA CONNECTÉ' + (athleteName ? ' — athlète: ' + athleteName : '') + ' — aucune activité enregistrée dans les 30 derniers jours. ' +
-             'Pas de données GPS/FC/distance/intensité disponibles. ' +
-             'Si l\'utilisateur évoque ses entraînements, demande-lui les détails directement.]\n';
+      return '\n[STRAVA CONNECTÉ' + (athleteName ? ' — athlète: ' + athleteName : '') + ']\n' +
+             '0 activité enregistrée par l\'utilisateur sur Strava dans les 30 derniers jours. ' +
+             'IMPORTANT — La synchronisation Strava est instantanée. Il N\'Y A PAS de délai technique de sync. ' +
+             'Si 0 activités = l\'utilisateur n\'a tout simplement rien enregistré sur Strava récemment ' +
+             '(intersaison, blessure, repos, ou simplement n\'utilise pas Strava activement). ' +
+             'NE PAS demander à l\'utilisateur d\'attendre que la sync se termine — elle est déjà terminée. ' +
+             'Si l\'utilisateur évoque ses entraînements, demande-lui directement les détails ' +
+             '(type d\'activité, durée, intensité ressentie, distance) sans inventer de délai.\n';
     }
     return '';
   }
