@@ -928,6 +928,8 @@ const T = {
     briefPrediction:'Intelligence prédictive',
     briefEveningQ:'Comment s\'est passée ta journée,', briefMood:'Humeur', briefEnergy:'Énergie', briefSleep:'Sommeil (nuit dernière)',
     briefSave:'Enregistrer ✓', briefSaved:'Enregistré !', briefFullJournal:'Journal complet →', briefFillJournal:'Remplir mon journal',
+    briefEnrichedTitle:'Brief enrichi', briefEnrichedSubtitle:'Vu ce que tu viens de me dire, je te suggère :',
+    briefEnrichedReasonSleep:'Ton sommeil à {val}/5 — Nora a des conseils', briefEnrichedReasonMood:'Ton moral à {val}/5 — Emma peut t\'aider', briefEnrichedReasonPain:'Tu as logué une douleur à {val}/5 — Julie peut adapter ta récup',
     briefJournalDone:'Journal du jour rempli', briefSeeJournal:'Voir →',
     briefToday:"Aujourd'hui", briefTomorrow:'Demain',
     // v47 — chat UI i18n (disclaimer, suggestions, export CSV)
@@ -1316,6 +1318,8 @@ const T = {
     briefPrediction:'Prädiktive Intelligenz',
     briefEveningQ:'Wie war dein Tag,', briefMood:'Stimmung', briefEnergy:'Energie', briefSleep:'Schlaf (letzte Nacht)',
     briefSave:'Speichern ✓', briefSaved:'Gespeichert!', briefFullJournal:'Volles Tagebuch →', briefFillJournal:'Tagebuch ausfüllen',
+    briefEnrichedTitle:'Aktualisiertes Briefing', briefEnrichedSubtitle:'Basierend auf Deinen frischen Daten:',
+    briefEnrichedReasonSleep:'Dein Schlaf bei {val}/5 — Nora hat Tipps', briefEnrichedReasonMood:'Deine Stimmung bei {val}/5 — Emma kann helfen', briefEnrichedReasonPain:'Du hast Schmerzen bei {val}/5 erfasst — Julie passt Deine Erholung an',
     briefJournalDone:'Heutiges Tagebuch ausgefüllt', briefSeeJournal:'Ansehen →',
     briefToday:'Heute', briefTomorrow:'Morgen',
     // v47 — chat UI i18n (disclaimer, suggestions, export CSV)
@@ -1704,6 +1708,8 @@ const T = {
     briefPrediction:'Predictive intelligence',
     briefEveningQ:'How was your day,', briefMood:'Mood', briefEnergy:'Energy', briefSleep:'Sleep (last night)',
     briefSave:'Save ✓', briefSaved:'Saved!', briefFullJournal:'Full journal →', briefFillJournal:'Fill my journal',
+    briefEnrichedTitle:'Enriched brief', briefEnrichedSubtitle:'Based on what you just told me:',
+    briefEnrichedReasonSleep:'Your sleep at {val}/5 — Nora has tips', briefEnrichedReasonMood:'Your mood at {val}/5 — Emma can help', briefEnrichedReasonPain:'You logged pain at {val}/5 — Julie can adjust your recovery',
     briefJournalDone:'Today\'s journal filled', briefSeeJournal:'View →',
     briefToday:'Today', briefTomorrow:'Tomorrow',
     // v47 — chat UI i18n (disclaimer, suggestions, export CSV)
@@ -2092,6 +2098,8 @@ const T = {
     briefPrediction:'Intelligenza predittiva',
     briefEveningQ:'Com\'è andata la giornata,', briefMood:'Umore', briefEnergy:'Energia', briefSleep:'Sonno (scorsa notte)',
     briefSave:'Salva ✓', briefSaved:'Salvato!', briefFullJournal:'Diario completo →', briefFillJournal:'Compila il diario',
+    briefEnrichedTitle:'Brief arricchito', briefEnrichedSubtitle:'In base a quanto mi hai appena detto:',
+    briefEnrichedReasonSleep:'Il tuo sonno a {val}/5 — Nora ha consigli', briefEnrichedReasonMood:'Il tuo umore a {val}/5 — Emma può aiutarti', briefEnrichedReasonPain:'Hai registrato un dolore a {val}/5 — Julie può adattare il recupero',
     briefJournalDone:'Diario di oggi compilato', briefSeeJournal:'Visualizza →',
     briefToday:'Oggi', briefTomorrow:'Domani',
     // v47 — chat UI i18n (disclaimer, suggestions, export CSV)
@@ -3349,7 +3357,7 @@ async function init() {
 // It cleans caches, reloads ONCE, and uses a retry counter to prevent infinite loops.
 // ⚠️  IMPORTANT : cette constante DOIT correspondre à src/version.json (.version).
 //     Si tu bumps version.json, bump APP_V au même nombre — sinon boucle de reload.
-const APP_V = '56';
+const APP_V = '62.18';
 async function checkAppVersion() {
   try {
     const res = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
@@ -7627,6 +7635,73 @@ function skipRecap(eventId) {
   }, 350);
 }
 
+// ── BRIEF ENRICHI (post-saveJournal) — v62.17 ────────────────
+// Quand l'user vient de remplir son journal, on rejoue une mini-suggestion
+// d'agent ciblée sur les valeurs faibles qu'il vient de logger (sommeil ≤ 2,
+// mood/motivation ≤ 3, pain ≥ 3). Évite que les données fraîches "tombent
+// dans le vide" — boucle d'apprentissage active vs collecte passive.
+// Résout le finding self-test 05/05 : flow brief→"Remplir journal"→save
+// laissait l'user sur le journal sans nouvelle reco contextuelle, alors que
+// le morningBrief lui-même est verrouillé 24h via localStorage.
+function computeJournalDrivenSuggestions(payload, t) {
+  // payload = le row daily_log fraîchement upserté (cf. saveJournal)
+  // t = bloc i18n actif (T[currentLang] || T.fr)
+  const sugg = [];
+  if (!payload) return sugg;
+
+  // Sommeil ≤ 2/5 → Nora (sommeil)
+  if (payload.sleep_quality != null && payload.sleep_quality <= 2) {
+    sugg.push({
+      page: 'sommeil',
+      name: 'Nora', emoji: '😴', color: '#a78bfa',
+      reason: (t.briefEnrichedReasonSleep || 'Ton sommeil à {val}/5 mérite qu\'on en parle').replace('{val}', payload.sleep_quality)
+    });
+  }
+  // Mood OU motivation ≤ 3 → Emma (mental). On affiche la valeur la plus basse.
+  const moodLow = payload.mood != null && payload.mood <= 3 ? payload.mood : null;
+  const motivLow = payload.motivation != null && payload.motivation <= 3 ? payload.motivation : null;
+  if (moodLow != null || motivLow != null) {
+    const lo = Math.min(moodLow ?? 5, motivLow ?? 5);
+    sugg.push({
+      page: 'mental',
+      name: 'Emma', emoji: '🧠', color: '#06b6d4',
+      reason: (t.briefEnrichedReasonMood || 'Ton moral à {val}/5 — Emma peut t\'aider').replace('{val}', lo)
+    });
+  }
+  // Pain ≥ 3/5 → Julie (récupération)
+  if (payload.pain_level != null && payload.pain_level >= 3) {
+    sugg.push({
+      page: 'recuperation',
+      name: 'Julie', emoji: '♻️', color: '#14b8a6',
+      reason: (t.briefEnrichedReasonPain || 'Tu as logué une douleur à {val}/5 — Julie peut adapter ta récup').replace('{val}', payload.pain_level)
+    });
+  }
+  return sugg;
+}
+
+function renderEnrichedBriefCardHTML(suggestions, t) {
+  if (!suggestions || suggestions.length === 0) return '';
+  const buttonsHTML = suggestions.map(s => `
+    <button onclick="this.style.background='${s.color}30';this.style.border='1px solid ${s.color}';this.querySelector('.enriched-arrow').textContent='✓';var b=this;setTimeout(function(){showPage('${s.page}',null)},250)" style="display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border-radius:12px;border:1px solid ${s.color}25;background:${s.color}08;cursor:pointer;transition:all 0.2s;font-family:'Inter',sans-serif;text-align:left;margin-bottom:8px" onmouseover="this.style.background='${s.color}15';this.style.transform='translateY(-1px)'" onmouseout="this.style.background='${s.color}08';this.style.transform='none'">
+      <div style="width:40px;height:40px;border-radius:12px;background:${s.color}20;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${s.emoji}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;color:var(--text)">${s.name}</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.4">${s.reason}</div>
+      </div>
+      <div class="enriched-arrow" style="color:${s.color};font-size:16px;flex-shrink:0;transition:all 0.2s">→</div>
+    </button>
+  `).join('');
+  return `
+    <div id="enrichedBriefCard" style="background:linear-gradient(135deg,#f59e0b10,#d9770610);border:1px solid #f59e0b40;border-radius:14px;padding:16px;margin-bottom:16px;transition:opacity 0.3s ease">
+      <div style="font-size:11px;font-weight:800;color:#f59e0b;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:4px;display:flex;align-items:center;gap:6px">
+        ✨ ${t.briefEnrichedTitle || 'Brief enrichi'}
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.4">${t.briefEnrichedSubtitle || 'Vu ce que tu viens de me dire, je te suggère :'}</div>
+      ${buttonsHTML}
+    </div>
+  `;
+}
+
 // ── PROACTIVE AGENTS ────────────────────────────────
 // ── MORNING BRIEF — Daily intelligent briefing modal ──
 // IMPORTANT — historique du bug : avant v30 le `localStorage.setItem(briefKey, '1')` était posé
@@ -9416,10 +9491,34 @@ async function saveJournal() {
   _journalEditMode = false;
   showToast('✅ ' + (t.journalSaved || 'Journal enregistré'));
   await renderJournal();
-  // Smooth scroll to the history block so the new entry is immediately visible
+
+  // v62.17 — Brief enrichi : rejoue une mini-suggestion d'agent ciblée sur
+  // les valeurs faibles fraîchement loggées (sommeil≤2, mood/motiv≤3, pain≥3).
+  // Boucle la boucle brief→journal→reco au lieu de laisser les données fraîches
+  // sans capitalisation immédiate. Insertion en haut du wrapper mainContent
+  // (au-dessus du briefBackBtn et du summaryBlock).
+  let _enrichedShown = false;
+  try {
+    const enriched = computeJournalDrivenSuggestions(payload, t);
+    if (enriched.length > 0) {
+      const cardHTML = renderEnrichedBriefCardHTML(enriched, t);
+      const wrapper = document.querySelector('#mainContent > div');
+      if (wrapper && cardHTML) {
+        wrapper.insertAdjacentHTML('afterbegin', cardHTML);
+        _enrichedShown = true;
+      }
+    }
+  } catch (e) {
+    console.warn('[ENRICHED-BRIEF] inject failed:', e);
+  }
+
+  // Smooth scroll : si carte enrichie affichée → on scrolle vers elle (priorité
+  // à la nouvelle reco fraîche). Sinon vers l'historique comme avant.
   setTimeout(() => {
-    const hist = document.getElementById('journalHistory');
-    if (hist) hist.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const target = _enrichedShown
+      ? document.getElementById('enrichedBriefCard')
+      : document.getElementById('journalHistory');
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, 150);
 }
 
