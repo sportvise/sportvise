@@ -3361,7 +3361,7 @@ async function init() {
 // It cleans caches, reloads ONCE, and uses a retry counter to prevent infinite loops.
 // ⚠️  IMPORTANT : cette constante DOIT correspondre à src/version.json (.version).
 //     Si tu bumps version.json, bump APP_V au même nombre — sinon boucle de reload.
-const APP_V = '62.19';
+const APP_V = '62.20';
 async function checkAppVersion() {
   try {
     const res = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
@@ -11263,9 +11263,24 @@ function displayStravaActivities(activities, weekStats) {
 }
 
 function getStravaContext() {
+  const conn = getStravaConnection();
   const activities = JSON.parse(localStorage.getItem(`sv_strava_act_${currentUser.id}`) || '[]');
   const syncInfo = JSON.parse(localStorage.getItem(`sv_strava_sync_${currentUser.id}`) || '{}');
-  if (!activities.length) return '';
+
+  // v62.20 — Si Strava connecté mais aucune activité dans la fenêtre 30j, retourner un signal
+  // explicite pour que l'agent sache que Strava EST branché mais sans données récentes,
+  // plutôt que de retourner '' qui le ferait conclure (à tort) que Strava n'est pas connecté.
+  if (!activities.length) {
+    if (conn && conn.access_token) {
+      const athleteName = (conn.athlete && conn.athlete.firstname)
+        ? conn.athlete.firstname + (conn.athlete.lastname ? ' ' + conn.athlete.lastname : '')
+        : '';
+      return '\n[STRAVA CONNECTÉ' + (athleteName ? ' — athlète: ' + athleteName : '') + ' — aucune activité enregistrée dans les 30 derniers jours. ' +
+             'Pas de données GPS/FC/distance/intensité disponibles. ' +
+             'Si l\'utilisateur évoque ses entraînements, demande-lui les détails directement.]\n';
+    }
+    return '';
+  }
 
   const recent = activities.slice(0, 10);
   let ctx = '\n[DONNÉES STRAVA — Dernière sync: ' + (syncInfo.last_sync || 'inconnue') + ']\n';
