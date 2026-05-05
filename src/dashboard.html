@@ -3361,7 +3361,7 @@ async function init() {
 // It cleans caches, reloads ONCE, and uses a retry counter to prevent infinite loops.
 // ⚠️  IMPORTANT : cette constante DOIT correspondre à src/version.json (.version).
 //     Si tu bumps version.json, bump APP_V au même nombre — sinon boucle de reload.
-const APP_V = '62.21';
+const APP_V = '62.23';
 async function checkAppVersion() {
   try {
     const res = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
@@ -5965,7 +5965,12 @@ ACTUALITÉ HOCKEY SUISSE 2026 — FRIBOURG-GOTTÉRON CHAMPION DE LA NATIONAL LEA
         calendar: calendarContext,
         goals: goalsContext,
         dailyLog: dailyLogContext,
-        smartContext: smartContext + stravaContext + sportsDataContext,
+        // v62.22 — stravaContext repositionné EN TÊTE (vs milieu) du smartContext.
+        // Recency/primacy bias des LLM : poids attentionnel max en début et fin de prompt.
+        // Haiku 4.5 ratait le signal [STRAVA CONNECTÉ] quand il était noyé au milieu d'un
+        // smartContext de plusieurs Ko (calendrier+tendances+sports data). Sonnet 4.6 le
+        // captait. Mettre Strava en tête ramène les 2 modèles au même niveau de fiabilité.
+        smartContext: stravaContext + smartContext + sportsDataContext,
         style: `${dateContext}\n\n${agentPrompt}\n\n${baseStyle}\n${referralInstruction}`,
         // v45 — backend uses userEmail to opt-in beta users on the Sonnet model
         // (env var AI_MODEL_BETA_USERS). Falls back silently to Haiku if absent.
@@ -6444,7 +6449,18 @@ async function renderCalendar() {
 
   // Next event for countdown
   // v62.6 — exclure les events cancelled/postponed du countdown "prochain événement"
-  const nextEvent = calendarEvents.find(e => new Date(e.event_date) >= today && e.event_status !== 'cancelled' && e.event_status !== 'postponed');
+  // v62.23 — fix bug countdown négatif. Avant : `new Date(event_date) >= today` comparait
+  // la date seule à minuit du jour, donc un event à 17:00 restait "next" jusqu'à minuit
+  // → countdown affichait "-1 HEURES / -39 MIN" en vert pour un event passé. Maintenant
+  // on compare le datetime complet (event_date + event_time) au moment réel "now".
+  // Garde 2h de fenêtre tolérance pour afficher l'event en cours plutôt que sauter au suivant.
+  const _now_v62_23 = new Date();
+  const _TWO_HOURS_MS = 2 * 3600000;
+  const nextEvent = calendarEvents.find(e => {
+    if (e.event_status === 'cancelled' || e.event_status === 'postponed') return false;
+    const evDateTime = new Date(e.event_date + (e.event_time ? 'T' + e.event_time : 'T00:00:00'));
+    return (evDateTime - _now_v62_23) > -_TWO_HOURS_MS;
+  });
 
   // Past events needing recap
   const needsRecap = calendarEvents.filter(e => {
@@ -6480,20 +6496,31 @@ async function renderCalendar() {
       ${nextEvent ? (() => {
         const evDate = new Date(nextEvent.event_date + (nextEvent.event_time ? 'T' + nextEvent.event_time : 'T00:00:00'));
         const diff = evDate - new Date();
-        const days = Math.floor(diff / 86400000);
-        const hours = Math.floor((diff % 86400000) / 3600000);
-        const mins = Math.floor((diff % 3600000) / 60000);
+        // v62.23 — détection état "EN COURS" si diff <= 0 (event commencé) et dans la
+        // fenêtre 2h. Au-delà de 2h écoulées, l'event tombe dans needsRecap (filter
+        // event_date < today). Affichage : valeurs absolues + label "EN COURS · DEPUIS"
+        // au lieu de "PROCHAIN ÉVÉNEMENT", couleur orange (vif) pour différencier.
+        const isInProgress = diff <= 0;
+        const absDiff = Math.abs(diff);
+        const days = Math.floor(absDiff / 86400000);
+        const hours = Math.floor((absDiff % 86400000) / 3600000);
+        const mins = Math.floor((absDiff % 3600000) / 60000);
         const et = EVENT_TYPES[nextEvent.event_type] || EVENT_TYPES.autre;
         const localeCode = ({fr:'fr-CH',de:'de-CH',en:'en-GB',it:'it-CH'})[currentLang] || 'fr-CH';
+        // Label dynamique selon état (fallback FR si i18n pas encore mis à jour)
+        const headerLabel = isInProgress
+          ? ({fr:'Événement en cours · depuis',de:'Ereignis läuft · seit',en:'Event in progress · since',it:'Evento in corso · da'})[currentLang] || 'Événement en cours · depuis'
+          : t.nextEvent;
+        const accentColor = isInProgress ? '#f59e0b' : et.color;
         return `
-        <div style="background:linear-gradient(135deg,${et.color}15,${et.color}05);border:1px solid ${et.color}30;border-radius:14px;padding:20px;margin-bottom:16px;text-align:center">
-          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">${t.nextEvent}</div>
+        <div style="background:linear-gradient(135deg,${accentColor}15,${accentColor}05);border:1px solid ${accentColor}30;border-radius:14px;padding:20px;margin-bottom:16px;text-align:center">
+          <div style="font-size:11px;font-weight:700;color:${isInProgress ? accentColor : 'var(--muted)'};text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">${headerLabel}</div>
           <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:4px">${et.emoji} ${nextEvent.title}</div>
           <div style="font-size:11px;color:var(--muted);margin-bottom:14px">${nextEvent.location ? nextEvent.location + ' · ' : ''}${new Date(nextEvent.event_date).toLocaleDateString(localeCode,{weekday:'long',day:'numeric',month:'long'})}${nextEvent.event_time ? ' ' + (t.dashPrepaAt||'à') + ' ' + nextEvent.event_time.slice(0,5) : ''}</div>
           <div style="display:flex;justify-content:center;gap:12px">
-            ${days > 0 ? `<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 16px;min-width:60px"><div style="font-size:24px;font-weight:900;color:${et.color}">${days}</div><div style="font-size:9px;color:var(--muted);font-weight:600">${t.days}</div></div>` : ''}
-            <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 16px;min-width:60px"><div style="font-size:24px;font-weight:900;color:${et.color}">${hours}</div><div style="font-size:9px;color:var(--muted);font-weight:600">${t.hours}</div></div>
-            <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 16px;min-width:60px"><div style="font-size:24px;font-weight:900;color:${et.color}">${mins}</div><div style="font-size:9px;color:var(--muted);font-weight:600">${t.mins}</div></div>
+            ${days > 0 ? `<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 16px;min-width:60px"><div style="font-size:24px;font-weight:900;color:${accentColor}">${days}</div><div style="font-size:9px;color:var(--muted);font-weight:600">${t.days}</div></div>` : ''}
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 16px;min-width:60px"><div style="font-size:24px;font-weight:900;color:${accentColor}">${hours}</div><div style="font-size:9px;color:var(--muted);font-weight:600">${t.hours}</div></div>
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 16px;min-width:60px"><div style="font-size:24px;font-weight:900;color:${accentColor}">${mins}</div><div style="font-size:9px;color:var(--muted);font-weight:600">${t.mins}</div></div>
           </div>
         </div>`;
       })() : ''}
@@ -6583,8 +6610,11 @@ function renderMonthView(today) {
     const hasEvents = dayEvts.length > 0;
     const maxIntensity = dayEvts.reduce((max, e) => { const v = e.intensity === 'intense' ? 3 : e.intensity === 'legere' ? 1 : 2; return v > max ? v : max; }, 0);
     // v62.12: intensité plus visible — couleur de base + dérivés (bg subtil + border renforcée)
+    // v62.23: fond bumped de '14' (8% alpha, quasi invisible pour orange/moyenne sur fond
+    // clair) à '30' (~19% alpha) pour rendre l'intensité réellement lisible. Vérifié sur
+    // les 2 thèmes (light + dark). Border reste à '70' (44%) qui était déjà OK.
     const intensityColor = maxIntensity === 3 ? '#ef4444' : maxIntensity === 1 ? '#84cc16' : maxIntensity === 2 ? '#f59e0b' : null;
-    const intensityBg = intensityColor ? intensityColor + '14' : 'transparent';      // fond très léger (~8% alpha)
+    const intensityBg = intensityColor ? intensityColor + '30' : 'transparent';      // fond visible (~19% alpha)
     const intensityBorder = intensityColor ? intensityColor + '70' : 'transparent';  // border bien visible (~44% alpha)
     const restBg = isToday ? 'linear-gradient(135deg,#f59e0b20,#d9770610)' : (hasEvents ? intensityBg : 'transparent');
 
