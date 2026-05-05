@@ -44,6 +44,24 @@ function stripeApiGet(path) {
   }).then(r => r.data);
 }
 
+// v62.18 — POST helper for Stripe API (form-urlencoded), used to create balance_transactions
+// for referral bonus attribution. Stripe expects flat key=value pairs (not JSON).
+function stripeApiPost(path, params) {
+  const formBody = Object.entries(params)
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+    .join('&');
+  return httpsRequest({
+    hostname: 'api.stripe.com',
+    path: path,
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${STRIPE_SECRET_KEY}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Length': Buffer.byteLength(formBody)
+    }
+  }, formBody);
+}
+
 // ── PLAN DETECTION ──────────────────────────────────
 
 async function getPlanFromSession(session) {
@@ -528,10 +546,10 @@ async function confirmReferral(email) {
   const supabaseHost = SUPABASE_URL.replace('https://', '');
 
   try {
-    // Find pending referral for this email
+    // v62.18 — select étendu pour permettre l'attribution du bonus (referred_id + idempotence flags)
     const refRes = await httpsRequest({
       hostname: supabaseHost,
-      path: `/rest/v1/referrals?referred_email=eq.${encodeURIComponent(email)}&status=eq.pending&select=id,referrer_id`,
+      path: `/rest/v1/referrals?referred_email=eq.${encodeURIComponent(email)}&status=eq.pending&select=id,referrer_id,referred_id,referrer_bonus_applied_at,referred_bonus_applied_at`,
       method: 'GET',
       headers: {
         'apikey': SUPABASE_SERVICE_KEY,
@@ -558,12 +576,122 @@ async function confirmReferral(email) {
       }, updateBody);
 
       console.log(`🎁 Referral confirmed for ${email} (referrer: ${referral.referrer_id})`);
-      return referral.referrer_id;
+      // v62.18 — return l'objet referral complet (vs juste referrer_id) pour que le caller
+      // puisse enchaîner applyReferralBonus pour referrer + referred avec idempotence.
+      return referral;
     }
   } catch (e) {
     console.log('⚠️ Referral confirmation error:', e.message);
   }
   return null;
+}
+
+// v62.18 — REFERRAL BONUS ATTRIBUTION ─────────────────
+// Approche : on crée un balance_transaction négatif (= crédit) sur le customer Stripe
+// du montant équivalent à 1 mois de son plan. Stripe applique automatiquement le crédit
+// à la prochaine facture, c'est cumulatif (empilable), visible côté dashboard customer,
+// et ne demande PAS de coupon préconfigué (vs approche `discounts: [{coupon: ...}]`).
+// Idempotence : on update referrals.{who}_bonus_applied_at pour ne pas double-attribuer
+// si le webhook re-fire.
+
+function planToPriceCents(plan) {
+  // Aligné avec getPlanFromSession + handler customer.subscription.updated (CHF cents).
+  if (plan === 'plus') return 1200;
+  if (plan === 'pro') return 2900;
+  return null;
+}
+
+async function findStripeCustomerByEmail(email) {
+  try {
+    const res = await stripeApiGet(`/v1/customers?email=${encodeURIComponent(email)}&limit=1`);
+    if (res && Array.isArray(res.data) && res.data.length > 0) return res.data[0];
+  } catch (e) {
+    console.warn(`⚠️ findStripeCustomerByEmail error for ${email}:`, e.message);
+  }
+  return null;
+}
+
+async function getProfileByUserId(userId) {
+  const supabaseHostName = SUPABASE_URL.replace('https://', '');
+  try {
+    const res = await httpsRequest({
+      hostname: supabaseHostName,
+      path: `/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}&select=email,plan,full_name,lang`,
+      method: 'GET',
+      headers: {
+        'apikey': SUPABASE_SERVICE_KEY,
+        'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    if (res.status === 200 && Array.isArray(res.data) && res.data.length > 0) return res.data[0];
+  } catch (e) {
+    console.warn(`⚠️ getProfileByUserId error for ${userId}:`, e.message);
+  }
+  return null;
+}
+
+async function applyReferralBonus({ stripeCustomerId, plan, who, referralId, contextEmail }) {
+  const priceCents = planToPriceCents(plan);
+  if (!priceCents) {
+    // Cas Free user : pas de subscription Stripe, pas de bonus immédiat possible.
+    // Action manuelle requise (Thomas check 1× / sem post-launch).
+    console.log(`⚠️ [REFERRAL] ${who} ${contextEmail} on plan='${plan}' — bonus pending manual (no paid sub)`);
+    captureMessage(`Referral bonus pending manual: ${who} ${contextEmail} not on paid plan`, {
+      context: { referral_id: referralId, who, plan, email: contextEmail },
+      level: 'warning'
+    });
+    return false;
+  }
+  if (!stripeCustomerId) {
+    console.log(`⚠️ [REFERRAL] ${who} ${contextEmail} — no Stripe customer ID, bonus pending manual`);
+    captureMessage(`Referral bonus pending manual: ${who} ${contextEmail} has no Stripe customer`, {
+      context: { referral_id: referralId, who, plan, email: contextEmail },
+      level: 'warning'
+    });
+    return false;
+  }
+  try {
+    const res = await stripeApiPost(
+      `/v1/customers/${stripeCustomerId}/balance_transactions`,
+      {
+        amount: -priceCents,           // négatif = crédit pour le customer
+        currency: 'chf',
+        description: `Bonus parrainage SPORTVISE (referral ${referralId}, ${who})`
+      }
+    );
+    if (res.status >= 200 && res.status < 300 && res.data?.id) {
+      // Idempotence : marquer la row referrals avec le timestamp d'application
+      const supabaseHostName = SUPABASE_URL.replace('https://', '');
+      const colName = who === 'referrer' ? 'referrer_bonus_applied_at' : 'referred_bonus_applied_at';
+      const updateBody = JSON.stringify({ [colName]: new Date().toISOString() });
+      await httpsRequest({
+        hostname: supabaseHostName,
+        path: `/rest/v1/referrals?id=eq.${referralId}`,
+        method: 'PATCH',
+        headers: {
+          'apikey': SUPABASE_SERVICE_KEY,
+          'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(updateBody)
+        }
+      }, updateBody);
+      console.log(`🎁 [REFERRAL] Applied -${priceCents}cts CHF bonus to ${who} (cust=${stripeCustomerId}, email=${contextEmail}, txn=${res.data.id})`);
+      return true;
+    } else {
+      const bodyPreview = typeof res.data === 'string' ? res.data.slice(0, 300) : JSON.stringify(res.data).slice(0, 300);
+      console.error(`❌ [REFERRAL] Stripe balance_transaction failed for ${who}: status=${res.status} body=${bodyPreview}`);
+      captureError(new Error(`Stripe balance_transaction failed: ${res.status}`), {
+        context: { referral_id: referralId, who, stripe_customer_id: stripeCustomerId, status: res.status, body: bodyPreview },
+        level: 'error'
+      });
+      return false;
+    }
+  } catch (e) {
+    console.error(`❌ [REFERRAL] applyReferralBonus error for ${who}:`, e.message);
+    captureError(e, { context: { referral_id: referralId, who, stripe_customer_id: stripeCustomerId }, level: 'error' });
+    return false;
+  }
 }
 
 // ── MAIN HANDLER ────────────────────────────────────
@@ -661,10 +789,61 @@ exports.handler = async (event) => {
         await updateUserPlan(customerEmail, plan);
         await sendPlanChangeEmail(customerEmail, plan, 'free', lang);
 
-        // Confirm referral if this user was referred
-        const referrerId = await confirmReferral(customerEmail);
-        if (referrerId) {
-          console.log(`🎁 Referral bonus: referrer ${referrerId} earned 1 month for referring ${customerEmail}`);
+        // v62.18 — Confirm referral + apply bonus to both parties via Stripe customer_balance.
+        // confirmReferral() returns the full referral row (or null). We then apply 1 month bonus
+        // to (a) the referred user (who just paid — we have their session.customer directly),
+        // and (b) the referrer (looked up via profiles.email → Stripe customers?email=).
+        // Idempotence is enforced via referrals.{referrer,referred}_bonus_applied_at timestamps :
+        // si déjà set, on skip pour éviter la double-attribution sur un re-fire webhook.
+        const referral = await confirmReferral(customerEmail);
+        if (referral) {
+          console.log(`🎁 Referral confirmed for ${customerEmail} (referrer=${referral.referrer_id}) — applying bonuses`);
+
+          // Apply bonus to referred (le filleul vient de payer, on a son customer Stripe en main)
+          if (!referral.referred_bonus_applied_at && session.customer) {
+            await applyReferralBonus({
+              stripeCustomerId: session.customer,
+              plan,
+              who: 'referred',
+              referralId: referral.id,
+              contextEmail: customerEmail
+            });
+          } else if (referral.referred_bonus_applied_at) {
+            console.log(`ℹ️ [REFERRAL] referred bonus already applied at ${referral.referred_bonus_applied_at} — skip (idempotence)`);
+          }
+
+          // Apply bonus to referrer (lookup via profiles.email → Stripe customer)
+          if (!referral.referrer_bonus_applied_at) {
+            const referrerProfile = await getProfileByUserId(referral.referrer_id);
+            if (referrerProfile?.email) {
+              const referrerCustomer = await findStripeCustomerByEmail(referrerProfile.email);
+              if (referrerCustomer?.id) {
+                await applyReferralBonus({
+                  stripeCustomerId: referrerCustomer.id,
+                  // Si plan parrain inconnu, on retombe sur 'plus' (le plus bas plan payant) — borne
+                  // basse défensive pour ne pas suroffrir si la donnée DB est out-of-sync.
+                  plan: referrerProfile.plan && referrerProfile.plan !== 'free' ? referrerProfile.plan : 'plus',
+                  who: 'referrer',
+                  referralId: referral.id,
+                  contextEmail: referrerProfile.email
+                });
+              } else {
+                console.log(`⚠️ [REFERRAL] No Stripe customer for referrer ${referrerProfile.email} (Free user) — bonus pending manual`);
+                captureMessage(`Referral bonus pending: referrer ${referrerProfile.email} has no Stripe customer (Free user)`, {
+                  context: { referral_id: referral.id, referrer_id: referral.referrer_id },
+                  level: 'info'
+                });
+              }
+            } else {
+              console.log(`⚠️ [REFERRAL] No profile or email for referrer ${referral.referrer_id} — bonus skipped`);
+              captureMessage(`Referral bonus skip: referrer profile/email not found`, {
+                context: { referral_id: referral.id, referrer_id: referral.referrer_id },
+                level: 'warning'
+              });
+            }
+          } else {
+            console.log(`ℹ️ [REFERRAL] referrer bonus already applied at ${referral.referrer_bonus_applied_at} — skip (idempotence)`);
+          }
         }
 
         console.log(`✅ Checkout completed: ${customerEmail} → ${plan} (lang=${lang})`);
