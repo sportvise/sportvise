@@ -930,6 +930,7 @@ const T = {
     briefSave:'Enregistrer ✓', briefSaved:'Enregistré !', briefFullJournal:'Journal complet →', briefFillJournal:'Remplir mon journal',
     briefEnrichedTitle:'Brief enrichi', briefEnrichedSubtitle:'Vu ce que tu viens de me dire, je te suggère :',
     briefEnrichedReasonSleep:'Ton sommeil à {val}/5 — Nora a des conseils', briefEnrichedReasonMood:'Ton moral à {val}/5 — Emma peut t\'aider', briefEnrichedReasonPain:'Tu as logué une douleur à {val}/5 — Julie peut adapter ta récup',
+    welcomeCardTitle:'Ton analyse de bienvenue', welcomeCardDismiss:'Fermer', welcomeCardAction:'Cette semaine', welcomeCardComingUp:'À venir',
     briefJournalDone:'Journal du jour rempli', briefSeeJournal:'Voir →',
     briefToday:"Aujourd'hui", briefTomorrow:'Demain',
     // v47 — chat UI i18n (disclaimer, suggestions, export CSV)
@@ -1321,6 +1322,7 @@ const T = {
     briefSave:'Speichern ✓', briefSaved:'Gespeichert!', briefFullJournal:'Volles Tagebuch →', briefFillJournal:'Tagebuch ausfüllen',
     briefEnrichedTitle:'Aktualisiertes Briefing', briefEnrichedSubtitle:'Basierend auf Deinen frischen Daten:',
     briefEnrichedReasonSleep:'Dein Schlaf bei {val}/5 — Nora hat Tipps', briefEnrichedReasonMood:'Deine Stimmung bei {val}/5 — Emma kann helfen', briefEnrichedReasonPain:'Du hast Schmerzen bei {val}/5 erfasst — Julie passt Deine Erholung an',
+    welcomeCardTitle:'Deine Begrüssungsanalyse', welcomeCardDismiss:'Schliessen', welcomeCardAction:'Diese Woche', welcomeCardComingUp:'Kommt bald',
     briefJournalDone:'Heutiges Tagebuch ausgefüllt', briefSeeJournal:'Ansehen →',
     briefToday:'Heute', briefTomorrow:'Morgen',
     // v47 — chat UI i18n (disclaimer, suggestions, export CSV)
@@ -1712,6 +1714,7 @@ const T = {
     briefSave:'Save ✓', briefSaved:'Saved!', briefFullJournal:'Full journal →', briefFillJournal:'Fill my journal',
     briefEnrichedTitle:'Enriched brief', briefEnrichedSubtitle:'Based on what you just told me:',
     briefEnrichedReasonSleep:'Your sleep at {val}/5 — Nora has tips', briefEnrichedReasonMood:'Your mood at {val}/5 — Emma can help', briefEnrichedReasonPain:'You logged pain at {val}/5 — Julie can adjust your recovery',
+    welcomeCardTitle:'Your welcome analysis', welcomeCardDismiss:'Close', welcomeCardAction:'This week', welcomeCardComingUp:'Coming up',
     briefJournalDone:'Today\'s journal filled', briefSeeJournal:'View →',
     briefToday:'Today', briefTomorrow:'Tomorrow',
     // v47 — chat UI i18n (disclaimer, suggestions, export CSV)
@@ -2102,6 +2105,7 @@ const T = {
     briefEveningQ:'Com\'è andata la giornata,', briefMood:'Umore', briefEnergy:'Energia', briefSleep:'Sonno (scorsa notte)',
     briefSave:'Salva ✓', briefSaved:'Salvato!', briefFullJournal:'Diario completo →', briefFillJournal:'Compila il diario',
     briefEnrichedTitle:'Brief arricchito', briefEnrichedSubtitle:'In base a quanto mi hai appena detto:',
+    welcomeCardTitle:'La tua analisi di benvenuto', welcomeCardDismiss:'Chiudi', welcomeCardAction:'Questa settimana', welcomeCardComingUp:'Prossimamente',
     briefEnrichedReasonSleep:'Il tuo sonno a {val}/5 — Nora ha consigli', briefEnrichedReasonMood:'Il tuo umore a {val}/5 — Emma può aiutarti', briefEnrichedReasonPain:'Hai registrato un dolore a {val}/5 — Julie può adattare il recupero',
     briefJournalDone:'Diario di oggi compilato', briefSeeJournal:'Visualizza →',
     briefToday:'Oggi', briefTomorrow:'Domani',
@@ -2431,6 +2435,18 @@ function goalLabel(value, lang)   { return _label(GOALS_CATALOG,   value, lang |
 function goalKey(value)           { return _key(GOALS_CATALOG,     value); }
 function goalDomain(value)        { const it = _catalogFind(GOALS_CATALOG, value); return it ? it.domain : 'carriere'; }
 
+// v62.25 — XSS-safe HTML escaping. Used by IA-generated content (welcome card)
+// and any dynamic insertion of user/external strings into innerHTML. Defense in depth.
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 // ── QUICK ONBOARDING ────────────────────────────────
 async function quickOnboard(field, value, btn) {
   // Instant feedback
@@ -2752,6 +2768,25 @@ function showLucasWelcome() {
         });
       }
     } catch(e) { console.warn('Onboarding save error:', e); }
+
+    // v62.25 — Generate welcome card in background. Don't await — user gets dashboard
+    // immediately, card appears 2-4s later via fade-in. Errors are silent (fallback handled
+    // server-side, retroactive retry on next renderDashboard if 1st attempt failed).
+    try {
+      const sportKeyVal = sportKey(data.sport) || data.sport;
+      generateWelcomeCardAsync({
+        sport_key:  sportKeyVal,
+        sport_label: sportLabel(data.sport),
+        sport_raw:  sportKeyVal === 'other' ? (data.sport || '') : '',
+        level_key:  levelKey(data.level),
+        level_label: levelLabel(data.level),
+        goal_key:   data.goal,
+        goal_label: goalLabel(data.goal),
+        goal_domain: goalDomain(data.goal),
+        lang:       currentLang,
+        first_name: ((currentUser?.user_metadata?.full_name || userProfile?.full_name || '') + '').split(' ')[0]
+      });
+    } catch(e) { console.warn('[WELCOME-CARD] generate trigger error:', e); }
 
     overlay.style.opacity = '0';
     overlay.style.transition = 'opacity 0.3s';
@@ -3361,7 +3396,7 @@ async function init() {
 // It cleans caches, reloads ONCE, and uses a retry counter to prevent infinite loops.
 // ⚠️  IMPORTANT : cette constante DOIT correspondre à src/version.json (.version).
 //     Si tu bumps version.json, bump APP_V au même nombre — sinon boucle de reload.
-const APP_V = '62.24';
+const APP_V = '62.25';
 async function checkAppVersion() {
   try {
     const res = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
@@ -4710,6 +4745,45 @@ async function renderDashboard() {
   // dont le cache a été vidé (profile.sport est renseigné en DB)
   if (totalMsgs === 0 && !isOnboardDone()) {
     setTimeout(() => showLucasWelcome(), 800);
+  }
+
+  // v62.25 — Welcome card display + retroactive retry
+  // Injecte la carte de bienvenue si elle existe en DB et que l'user est dans la fenêtre 7j.
+  // Si user récent ET pas de carte (ou carte fallback) → déclenche generation rétroactive
+  // (rattrape les générations échouées au signup). Tout est best-effort, jamais bloquant.
+  if (isOnboardDone()) {
+    (async () => {
+      try {
+        const wc = await loadWelcomeCardForDisplay();
+        if (wc.card && wc.isWithinWindow) {
+          injectWelcomeCard(wc.card);
+        }
+        if (wc.shouldRegenerate && userProfile?.sport && userProfile?.level) {
+          // Rebuild payload from userProfile + first goal (best effort)
+          let firstGoal = null;
+          try {
+            const { data } = await sb.from('goals')
+              .select('title, domain')
+              .eq('user_id', currentUser.id)
+              .order('created_at', { ascending: true })
+              .limit(1);
+            firstGoal = data?.[0] || null;
+          } catch(_) {}
+          generateWelcomeCardAsync({
+            sport_key:   sportKey(userProfile.sport),
+            sport_label: sportLabel(userProfile.sport),
+            sport_raw:   '',
+            level_key:   levelKey(userProfile.level),
+            level_label: levelLabel(userProfile.level),
+            goal_key:    firstGoal ? goalKey(firstGoal.title) : '',
+            goal_label:  firstGoal?.title || '',
+            goal_domain: firstGoal?.domain || '',
+            lang:        currentLang,
+            first_name:  ((currentUser?.user_metadata?.full_name || userProfile?.full_name || '') + '').split(' ')[0]
+          });
+        }
+      } catch(e) { console.warn('[WELCOME-CARD] dashboard hook error:', e); }
+    })();
   }
 }
 
@@ -7700,6 +7774,151 @@ function skipRecap(eventId) {
       } catch(_) {}
     }
   }, 350);
+}
+
+// ── WELCOME CARD (post-onboarding) — v62.25 ──────────────────
+// Quick Win #1 onboarding : juste après finishOnboarding(), on déclenche un appel
+// async à la fonction Netlify /welcome-analysis qui génère via Sonnet 4.6 une carte
+// d'analyse personnalisée (headline + 3 key points + weekly action + 2 agents teasers).
+// La carte apparaît sur le dashboard avec fade-in 2-4s post-onboarding (timing API).
+// Persistance : profiles.welcome_card_json (DB) + localStorage (race cond Safari nav privée).
+// Affichage : 7 jours post-signup tant que pas dismissed (bouton X).
+// Spec : SPEC_v62.25_welcome_card_lucas.md
+const _WELCOME_CARD_WINDOW_MS = 7 * 86400000; // 7 jours
+
+async function generateWelcomeCardAsync(payload) {
+  try {
+    const session = await sb.auth.getSession();
+    const token = session?.data?.session?.access_token;
+    if (!token) return;
+    const res = await fetch('/.netlify/functions/welcome-analysis', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) { console.warn('[WELCOME-CARD] API error:', res.status); return; }
+    const card = await res.json();
+    if (!card || !card.headline) return;
+    // Cache local pour cohérence si l'user revient au dashboard avant DB visible
+    try { localStorage.setItem(`sv_welcome_card_${currentUser.id}`, JSON.stringify(card)); } catch(_) {}
+    // Si on est sur le dashboard et que la carte n'est pas déjà rendue → inject avec fade-in
+    if (document.getElementById('mainContent') && !document.getElementById('welcomeCard')) {
+      injectWelcomeCard(card);
+    }
+  } catch(e) {
+    console.warn('[WELCOME-CARD] generate error:', e);
+  }
+}
+
+// Returns { card, shouldRegenerate, isWithinWindow }
+//  - card : JSON ou null (lit DB en priorité, fallback localStorage)
+//  - shouldRegenerate : true si user récent ET (pas de carte OU carte fallback)
+//  - isWithinWindow : true si user < 7j ET pas dismissed
+async function loadWelcomeCardForDisplay() {
+  const userId = currentUser?.id;
+  const createdAt = currentUser?.created_at ? new Date(currentUser.created_at).getTime() : null;
+  const ageMs = createdAt ? (Date.now() - createdAt) : Infinity;
+  const isWithinWindow = ageMs < _WELCOME_CARD_WINDOW_MS;
+
+  let card = null;
+  let dismissedAt = null;
+
+  // 1. Try localStorage first (fast, no DB roundtrip)
+  try {
+    const cached = localStorage.getItem(`sv_welcome_card_${userId}`);
+    if (cached) card = JSON.parse(cached);
+    if (localStorage.getItem(`sv_welcome_card_dismissed_${userId}`)) dismissedAt = 'local';
+  } catch(_) {}
+
+  // 2. DB lookup for source of truth (overrides localStorage if defined)
+  try {
+    const { data, error } = await sb
+      .from('profiles')
+      .select('welcome_card_json, welcome_card_dismissed_at')
+      .eq('id', userId)
+      .maybeSingle();
+    if (!error && data) {
+      if (data.welcome_card_json) card = data.welcome_card_json;
+      if (data.welcome_card_dismissed_at) dismissedAt = data.welcome_card_dismissed_at;
+    }
+  } catch(e) { console.warn('[WELCOME-CARD] DB load error:', e); }
+
+  // If user dismissed → don't show
+  const effectiveWindow = isWithinWindow && !dismissedAt;
+  const shouldRegenerate = isWithinWindow && (!card || card._fallback === true);
+
+  return { card, shouldRegenerate, isWithinWindow: effectiveWindow };
+}
+
+function renderWelcomeCardHTML(card, t) {
+  if (!card || !card.headline) return '';
+  const teasersHTML = (card.agents_teaser || []).map(a => `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#f59e0b08;border-radius:10px;margin-bottom:6px">
+      <div style="font-size:11px;font-weight:700;color:var(--text);min-width:48px">${escapeHtml(a.name)}</div>
+      <div style="font-size:11px;color:var(--muted);flex:1;line-height:1.4">${escapeHtml(a.tease)}</div>
+    </div>
+  `).join('');
+  const wa = card.weekly_action || {};
+  const keyPointsHTML = (card.key_points || []).map(p => `
+    <div style="display:flex;gap:8px;font-size:12px;color:var(--text);line-height:1.5;margin-bottom:4px">
+      <span style="color:#f59e0b;flex-shrink:0">•</span>
+      <span>${escapeHtml(p)}</span>
+    </div>
+  `).join('');
+  return `
+    <div id="welcomeCard" style="background:linear-gradient(135deg,#f59e0b15,#d9770615);border:1px solid #f59e0b50;border-radius:14px;padding:18px;margin-bottom:16px;position:relative;opacity:0;transform:translateY(-8px);transition:opacity 0.4s ease, transform 0.4s ease">
+      <button onclick="dismissWelcomeCard()" aria-label="${escapeHtml(t.welcomeCardDismiss || 'Fermer')}" style="position:absolute;top:10px;right:10px;background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px 8px;line-height:1;font-family:'Inter',sans-serif">×</button>
+      <div style="font-size:11px;font-weight:800;color:#f59e0b;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px;padding-right:32px">
+        ✨ ${escapeHtml(t.welcomeCardTitle || 'Ton analyse de bienvenue')}
+      </div>
+      <div style="font-size:14px;color:var(--text);line-height:1.5;margin-bottom:14px;font-weight:600">${escapeHtml(card.headline)}</div>
+      ${keyPointsHTML ? `<div style="margin-bottom:14px">${keyPointsHTML}</div>` : ''}
+      ${wa.text ? `
+      <button onclick="welcomeActionGo('${escapeHtml(wa.agent_id || 'dashboard')}')" style="display:block;width:100%;padding:12px 14px;border-radius:10px;border:1px solid #f59e0b40;background:#f59e0b15;color:var(--text);font-size:12px;font-weight:600;cursor:pointer;text-align:left;font-family:'Inter',sans-serif;margin-bottom:14px;line-height:1.4" onmouseover="this.style.background='#f59e0b25'" onmouseout="this.style.background='#f59e0b15'">
+        <span style="color:#f59e0b;font-weight:700">${escapeHtml(t.welcomeCardAction || 'Cette semaine')} →</span> ${escapeHtml(wa.text)}
+      </button>
+      ` : ''}
+      ${teasersHTML ? `
+      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-weight:700">${escapeHtml(t.welcomeCardComingUp || 'À venir')}</div>
+      ${teasersHTML}
+      ` : ''}
+    </div>
+  `;
+}
+
+function injectWelcomeCard(card) {
+  const t = T[currentLang] || T.fr;
+  const wrapper = document.querySelector('#mainContent > div') || document.getElementById('mainContent');
+  if (!wrapper) return;
+  // Avoid double-inject
+  if (document.getElementById('welcomeCard')) return;
+  wrapper.insertAdjacentHTML('afterbegin', renderWelcomeCardHTML(card, t));
+  // Trigger fade-in next paint
+  requestAnimationFrame(() => {
+    const el = document.getElementById('welcomeCard');
+    if (el) { el.style.opacity = '1'; el.style.transform = 'translateY(0)'; }
+  });
+}
+
+async function dismissWelcomeCard() {
+  const el = document.getElementById('welcomeCard');
+  if (el) {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(-8px)';
+    setTimeout(() => el.remove(), 400);
+  }
+  try { localStorage.setItem(`sv_welcome_card_dismissed_${currentUser.id}`, '1'); } catch(_) {}
+  try {
+    await sb.from('profiles').update({ welcome_card_dismissed_at: new Date().toISOString() }).eq('id', currentUser.id);
+  } catch(e) { console.warn('[WELCOME-CARD] dismiss DB error:', e); }
+}
+
+function welcomeActionGo(agentId) {
+  if (!agentId || agentId === 'dashboard') return;
+  if (agentId === 'journal') return showPage('journal', null);
+  if (agentId === 'calendar' || agentId === 'agenda') return showPage('agenda', null);
+  if (typeof AGENTS !== 'undefined' && AGENTS[agentId]) return showPage(agentId, null);
+  // Fallback : reste sur le dashboard
 }
 
 // ── BRIEF ENRICHI (post-saveJournal) — v62.17 ────────────────
