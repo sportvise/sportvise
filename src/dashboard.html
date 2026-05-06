@@ -606,7 +606,7 @@
     <div class="nav-section">👤 MON COMPTE</div>
     <button class="nav-item" onclick="showPage('parrainage',this)">🎁 <span data-nav="parrainage">Parrainage</span></button>
     <button class="nav-item" onclick="showPage('profil',this)">👤 <span data-nav="profil">Mon Profil</span></button>
-    <button class="nav-item" onclick="showPage('connexions',this)">🔗 <span data-nav="connexions">Connexions</span></button>
+    <button class="nav-item" onclick="showPage('connexions',this)">🔗 <span data-nav="connexions">Synchronisation Strava</span></button>
     <button class="nav-item" onclick="showPage('abonnement',this)">💳 <span data-nav="abonnement">Abonnement</span></button>
   </nav>
   <div class="sidebar-footer">
@@ -879,7 +879,7 @@ const T = {
       calendrier:'Calendrier', favoris:'Mes Favoris', profil:'Mon Profil', abonnement:'Abonnement',
       objectifs:'Objectifs', journal:'Journal', progression:'Progression',
       marketplace:'Programmes', defis:'Défis', 'prepa-match':'Prépa Compétition',
-      parrainage:'Parrainage', connexions:'Connexions'
+      parrainage:'Parrainage', connexions:'Synchronisation Strava'
     },
     agentDescs: {
       marketing:'Stratégie réseaux sociaux, media kit, visibilité',
@@ -954,7 +954,7 @@ const T = {
     jLabelMood:'Humeur', jLabelEnergy:'Énergie', jLabelScore:'Score',
     refDescription:"Pour chaque ami qui s'inscrit avec ton lien et choisit un plan payant, <strong style=\"color:var(--gold)\">tu reçois 1 mois offert</strong> — et ton ami aussi !",
     refStatsConfirmed:'Parrainages confirmés', refStatsMonthsEarned:'Mois offerts gagnés',
-    connexionsHeroSubtitle:"Connecte tes services pour enrichir l'analyse de tes agents IA.",
+    connexionsHeroSubtitle:"Synchronise tes activités Strava pour enrichir l'analyse de tes agents IA.",
     connStravaTagline:'Entraînements, courses, vélo, natation', connStravaDesc:"Connecte ton compte Strava pour synchroniser tes entraînements (course, vélo, natation, etc.) — tes agents IA analyseront tes données réelles pour des recommandations sur mesure.",
     connStravaConnect:'Connecter Strava', connStravaConnected:'Connecté', connStravaSync:'Synchroniser', connStravaDisconnect:'Déconnecter', connStravaSyncedAt:'Dernière sync', connStravaNoActivities:'Aucune activité synchronisée. Clique sur "Synchroniser" pour récupérer tes données Strava.', connStravaSyncing:'Synchronisation...', connStravaSummary:'Résumé de la période', connStravaActivities:'Activités', connStravaDuration:'Durée totale', connStravaDistance:'Distance', connStravaCalories:'Calories', connStravaAvgHR:'FC moy. (bpm)', connStravaIntLight:'Léger', connStravaIntMed:'Moyen', connStravaIntHigh:'Intense',
     connGarminTagline:'Montres Garmin, santé, sommeil', connGarminDesc:"L'intégration Garmin Connect arrive prochainement pour synchroniser données de santé, sommeil et entraînements.",
@@ -1270,7 +1270,7 @@ const T = {
       calendrier:'Kalender', favoris:'Meine Favoriten', profil:'Mein Profil', abonnement:'Abonnement',
       objectifs:'Ziele', journal:'Tagebuch', progression:'Fortschritt',
       marketplace:'Programme', defis:'Herausforderungen', 'prepa-match':'Wettkampf-Vorbereitung',
-      parrainage:'Empfehlung', connexions:'Verbindungen'
+      parrainage:'Empfehlung', connexions:'Strava-Synchronisierung'
     },
     agentDescs: {
       marketing:'Social-Media-Strategie, Media-Kit, Sichtbarkeit',
@@ -1345,7 +1345,7 @@ const T = {
     jLabelMood:'Stimmung', jLabelEnergy:'Energie', jLabelScore:'Score',
     refDescription:"Für jeden Freund, der sich mit Ihrem Link anmeldet und einen kostenpflichtigen Plan wählt, <strong style=\"color:var(--gold)\">erhalten Sie 1 Gratismonat</strong> — und Ihr Freund auch!",
     refStatsConfirmed:'Bestätigte Empfehlungen', refStatsMonthsEarned:'Gewonnene Gratismonate',
-    connexionsHeroSubtitle:'Verbinde deine Dienste, um die Analyse deiner KI-Agenten zu verbessern.',
+    connexionsHeroSubtitle:'Synchronisiere deine Strava-Aktivitäten, um die Analyse deiner KI-Agenten zu verbessern.',
     connStravaTagline:'Trainings, Läufe, Rad, Schwimmen', connStravaDesc:'Verbinde dein Strava-Konto, um deine Trainings zu synchronisieren (Laufen, Radfahren, Schwimmen usw.) — deine KI-Agenten analysieren deine echten Trainingsdaten für massgeschneiderte Empfehlungen.',
     connStravaConnect:'Strava verbinden', connStravaConnected:'Verbunden', connStravaSync:'Synchronisieren', connStravaDisconnect:'Trennen', connStravaSyncedAt:'Letzte Sync', connStravaNoActivities:'Keine synchronisierten Aktivitäten. Klicke auf "Synchronisieren", um deine Strava-Daten abzurufen.', connStravaSyncing:'Synchronisierung...', connStravaSummary:'Zusammenfassung des Zeitraums', connStravaActivities:'Aktivitäten', connStravaDuration:'Gesamtdauer', connStravaDistance:'Distanz', connStravaCalories:'Kalorien', connStravaAvgHR:'Ø HF (bpm)', connStravaIntLight:'Locker', connStravaIntMed:'Mittel', connStravaIntHigh:'Intensiv',
     connGarminTagline:'Garmin-Uhren, Gesundheit, Schlaf', connGarminDesc:'Die Garmin Connect-Integration kommt bald, um Gesundheits-, Schlaf- und Trainingsdaten zu synchronisieren.',
@@ -1661,7 +1661,7 @@ const T = {
       calendrier:'Calendar', favoris:'My Favorites', profil:'My Profile', abonnement:'Subscription',
       objectifs:'Goals', journal:'Log', progression:'Progression',
       marketplace:'Programs', defis:'Challenges', 'prepa-match':'Competition Prep',
-      parrainage:'Referral', connexions:'Connections'
+      parrainage:'Referral', connexions:'Strava Sync'
     },
     agentDescs: {
       marketing:'Social media strategy, media kit, visibility',
@@ -1736,7 +1736,7 @@ const T = {
     jLabelMood:'Mood', jLabelEnergy:'Energy', jLabelScore:'Score',
     refDescription:"For each friend who signs up with your link and picks a paid plan, <strong style=\"color:var(--gold)\">you get 1 free month</strong> — and your friend too!",
     refStatsConfirmed:'Confirmed referrals', refStatsMonthsEarned:'Free months earned',
-    connexionsHeroSubtitle:'Connect your services to enrich your AI agents\' analysis.',
+    connexionsHeroSubtitle:'Sync your Strava activities to enrich your AI agents\' analysis.',
     connStravaTagline:'Workouts, runs, cycling, swimming', connStravaDesc:'Connect your Strava account to sync your workouts (running, cycling, swimming, etc.) — your AI agents will analyse your real training data for tailored recommendations.',
     connStravaConnect:'Connect Strava', connStravaConnected:'Connected', connStravaSync:'Sync', connStravaDisconnect:'Disconnect', connStravaSyncedAt:'Last sync', connStravaNoActivities:'No synced activities. Click "Sync" to fetch your Strava data.', connStravaSyncing:'Syncing...', connStravaSummary:'Period summary', connStravaActivities:'Activities', connStravaDuration:'Total duration', connStravaDistance:'Distance', connStravaCalories:'Calories', connStravaAvgHR:'Avg HR (bpm)', connStravaIntLight:'Light', connStravaIntMed:'Medium', connStravaIntHigh:'Intense',
     connGarminTagline:'Garmin watches, health, sleep', connGarminDesc:'Garmin Connect integration is coming soon to sync health, sleep and workout data.',
@@ -2052,7 +2052,7 @@ const T = {
       calendrier:'Calendario', favoris:'I miei Preferiti', profil:'Il mio Profilo', abonnement:'Abbonamento',
       objectifs:'Obiettivi', journal:'Diario', progression:'Progressione',
       marketplace:'Programmi', defis:'Sfide', 'prepa-match':'Prep Competizione',
-      parrainage:'Referral', connexions:'Connessioni'
+      parrainage:'Referral', connexions:'Sincronizzazione Strava'
     },
     agentDescs: {
       marketing:'Strategia social media, media kit, visibilità',
@@ -2127,7 +2127,7 @@ const T = {
     jLabelMood:'Umore', jLabelEnergy:'Energia', jLabelScore:'Punteggio',
     refDescription:"Per ogni amico che si iscrive con il tuo link e sceglie un piano a pagamento, <strong style=\"color:var(--gold)\">ricevi 1 mese gratis</strong> — e anche il tuo amico!",
     refStatsConfirmed:'Referral confermati', refStatsMonthsEarned:'Mesi gratis guadagnati',
-    connexionsHeroSubtitle:"Connetti i tuoi servizi per arricchire l'analisi dei tuoi agenti IA.",
+    connexionsHeroSubtitle:"Sincronizza le tue attività Strava per arricchire l'analisi dei tuoi agenti IA.",
     connStravaTagline:'Allenamenti, corse, ciclismo, nuoto', connStravaDesc:'Collega il tuo account Strava per sincronizzare i tuoi allenamenti (corsa, ciclismo, nuoto, ecc.) — i tuoi agenti IA analizzeranno i tuoi dati reali per consigli su misura.',
     connStravaConnect:'Collega Strava', connStravaConnected:'Collegato', connStravaSync:'Sincronizza', connStravaDisconnect:'Scollega', connStravaSyncedAt:'Ultima sync', connStravaNoActivities:'Nessuna attività sincronizzata. Clicca su "Sincronizza" per recuperare i tuoi dati Strava.', connStravaSyncing:'Sincronizzazione...', connStravaSummary:'Riepilogo del periodo', connStravaActivities:'Attività', connStravaDuration:'Durata totale', connStravaDistance:'Distanza', connStravaCalories:'Calorie', connStravaAvgHR:'FC media (bpm)', connStravaIntLight:'Leggero', connStravaIntMed:'Medio', connStravaIntHigh:'Intenso',
     connGarminTagline:'Orologi Garmin, salute, sonno', connGarminDesc:"L'integrazione Garmin Connect arriva presto per sincronizzare dati di salute, sonno e allenamenti.",
@@ -3361,7 +3361,7 @@ async function init() {
 // It cleans caches, reloads ONCE, and uses a retry counter to prevent infinite loops.
 // ⚠️  IMPORTANT : cette constante DOIT correspondre à src/version.json (.version).
 //     Si tu bumps version.json, bump APP_V au même nombre — sinon boucle de reload.
-const APP_V = '62.23';
+const APP_V = '62.24';
 async function checkAppVersion() {
   try {
     const res = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
@@ -4239,7 +4239,7 @@ async function showPage(page, el) {
     if (userPlan === 'free') { renderLockedFeature('Prépa Compétition', '⚡', 'Plan de préparation J-3 à Jour J coordonné par David, Emma, Clara, Nora et Julie.', 'plus'); }
     else { renderPrepaMatch(); }
   } else if (page === 'connexions') {
-    document.getElementById('pageTitle').textContent = '🔗 ' + ((T[currentLang]?.connexions) || 'Connexions');
+    document.getElementById('pageTitle').textContent = '🔗 ' + ((T[currentLang]?.navLabels?.connexions) || 'Synchronisation Strava');
     document.getElementById('pageSubtitle').textContent = (T[currentLang]?.pageConnSubtitle) || 'Connecte tes apps sportives pour importer tes données';
     renderConnexions();
   } else if (page === 'marketplace') {
@@ -11560,8 +11560,8 @@ function renderConnexions() {
   }
 
   document.getElementById('mainContent').innerHTML = '<div style="max-width:700px;margin:0 auto">' +
-    '<h2 style="color:var(--accent);margin-bottom:8px">🔗 ' + (t.connexions || 'Connexions') + '</h2>' +
-    '<p style="color:var(--muted);margin-bottom:24px">' + (t.connexionsHeroSubtitle || "Connecte tes services pour enrichir l'analyse de tes agents IA.") + '</p>' +
+    '<h2 style="color:var(--accent);margin-bottom:8px">🔗 ' + (t.navLabels?.connexions || 'Synchronisation Strava') + '</h2>' +
+    '<p style="color:var(--muted);margin-bottom:24px">' + (t.connexionsHeroSubtitle || "Synchronise tes activités Strava pour enrichir l'analyse de tes agents IA.") + '</p>' +
 
     '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px">' +
       '<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">' +
