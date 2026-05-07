@@ -931,6 +931,20 @@ const T = {
     briefEnrichedTitle:'Brief enrichi', briefEnrichedSubtitle:'Vu ce que tu viens de me dire, je te suggère :',
     briefEnrichedReasonSleep:'Ton sommeil à {val}/5 — Nora a des conseils', briefEnrichedReasonMood:'Ton moral à {val}/5 — Emma peut t\'aider', briefEnrichedReasonPain:'Tu as logué une douleur à {val}/5 — Julie peut adapter ta récup',
     welcomeCardTitle:'Ton analyse de bienvenue', welcomeCardDismiss:'Fermer', welcomeCardAction:'Cette semaine', welcomeCardComingUp:'À venir',
+    // v62.26 — Quick Win #2 : pre-fill calendrier semaine type (events suggérés)
+    suggBadge:'Suggéré', suggBadgeTooltip:'Événement suggéré automatiquement après ton onboarding — confirme, modifie ou supprime.',
+    suggConfirmTooltip:'Confirmer cet événement', suggConfirmedToast:'Événement confirmé', suggConfirmError:'Erreur lors de la confirmation',
+    suggNoteFromOnboarding:'Événement suggéré automatiquement après ton onboarding. Confirme ou modifie selon ta vraie semaine.',
+    // Titres des templates par sport (3 events × ~22 sports → mutualisés)
+    suggTitleTechTraining:'Entraînement technique', suggTitlePhysicalSession:'Séance physique', suggTitleWeekendMatch:'Match',
+    suggTitleIceTraining:'Entraînement sur glace', suggTitleSnowTraining:'Entraînement neige', suggTitleLongSession:'Séance longue',
+    suggTitleMatchOrTournament:'Match / Tournoi', suggTitleTempoRide:'Sortie tempo', suggTitleIntervals:'Fractionné', suggTitleLongRide:'Sortie longue',
+    suggTitleEnduranceSession:'Séance endurance', suggTitleSpeedSession:'Séance vitesse', suggTitleEasyRun:'Footing récup', suggTitleLongRun:'Sortie longue',
+    suggTitleStrengthSession:'Renforcement', suggTitleFullRoutine:'Enchaînement complet', suggTitlePractice:'Practice', suggTitlePuttingSession:'Practice + putting',
+    suggTitleCourseRound:'Parcours', suggTitleSwimSession:'Natation', suggTitleBikeSession:'Vélo', suggTitleTechSparring:'Technique + sparring',
+    suggTitleTechCardio:'Technique + cardio', suggTitleTechClass:'Cours technique', suggTitleStrengthFlex:'Renfo + souplesse',
+    suggTitleChoreoRehearsal:'Répétition chorégraphie', suggTitleBoulder:'Bloc', suggTitleLongRoute:'Voie longue',
+    suggTitleMainTraining:'Entraînement principal', suggTitleComplementarySession:'Séance complémentaire',
     briefJournalDone:'Journal du jour rempli', briefSeeJournal:'Voir →',
     briefToday:"Aujourd'hui", briefTomorrow:'Demain',
     // v47 — chat UI i18n (disclaimer, suggestions, export CSV)
@@ -1323,6 +1337,19 @@ const T = {
     briefEnrichedTitle:'Aktualisiertes Briefing', briefEnrichedSubtitle:'Basierend auf Deinen frischen Daten:',
     briefEnrichedReasonSleep:'Dein Schlaf bei {val}/5 — Nora hat Tipps', briefEnrichedReasonMood:'Deine Stimmung bei {val}/5 — Emma kann helfen', briefEnrichedReasonPain:'Du hast Schmerzen bei {val}/5 erfasst — Julie passt Deine Erholung an',
     welcomeCardTitle:'Deine Begrüssungsanalyse', welcomeCardDismiss:'Schliessen', welcomeCardAction:'Diese Woche', welcomeCardComingUp:'Kommt bald',
+    // v62.26 — Quick Win #2 : pre-fill calendrier semaine type
+    suggBadge:'Vorschlag', suggBadgeTooltip:'Automatisch vorgeschlagenes Ereignis nach Deinem Onboarding — bestätige, ändere oder lösche es.',
+    suggConfirmTooltip:'Ereignis bestätigen', suggConfirmedToast:'Ereignis bestätigt', suggConfirmError:'Fehler bei der Bestätigung',
+    suggNoteFromOnboarding:'Automatisch vorgeschlagenes Ereignis nach Deinem Onboarding. Bestätige oder passe es an Deine echte Woche an.',
+    suggTitleTechTraining:'Technisches Training', suggTitlePhysicalSession:'Krafttraining', suggTitleWeekendMatch:'Spiel',
+    suggTitleIceTraining:'Eistraining', suggTitleSnowTraining:'Schneetraining', suggTitleLongSession:'Lange Einheit',
+    suggTitleMatchOrTournament:'Spiel / Turnier', suggTitleTempoRide:'Tempo-Ausfahrt', suggTitleIntervals:'Intervalltraining', suggTitleLongRide:'Lange Ausfahrt',
+    suggTitleEnduranceSession:'Ausdauer-Einheit', suggTitleSpeedSession:'Schnelligkeit', suggTitleEasyRun:'Lockerer Lauf', suggTitleLongRun:'Lange Strecke',
+    suggTitleStrengthSession:'Kraftaufbau', suggTitleFullRoutine:'Komplette Übung', suggTitlePractice:'Trainingsplatz', suggTitlePuttingSession:'Practice + Putten',
+    suggTitleCourseRound:'Platzrunde', suggTitleSwimSession:'Schwimmen', suggTitleBikeSession:'Radfahren', suggTitleTechSparring:'Technik + Sparring',
+    suggTitleTechCardio:'Technik + Cardio', suggTitleTechClass:'Tanzkurs', suggTitleStrengthFlex:'Kraft + Beweglichkeit',
+    suggTitleChoreoRehearsal:'Choreografie-Probe', suggTitleBoulder:'Bouldern', suggTitleLongRoute:'Lange Route',
+    suggTitleMainTraining:'Haupttraining', suggTitleComplementarySession:'Zusatzeinheit',
     briefJournalDone:'Heutiges Tagebuch ausgefüllt', briefSeeJournal:'Ansehen →',
     briefToday:'Heute', briefTomorrow:'Morgen',
     // v47 — chat UI i18n (disclaimer, suggestions, export CSV)
@@ -1715,6 +1742,19 @@ const T = {
     briefEnrichedTitle:'Enriched brief', briefEnrichedSubtitle:'Based on what you just told me:',
     briefEnrichedReasonSleep:'Your sleep at {val}/5 — Nora has tips', briefEnrichedReasonMood:'Your mood at {val}/5 — Emma can help', briefEnrichedReasonPain:'You logged pain at {val}/5 — Julie can adjust your recovery',
     welcomeCardTitle:'Your welcome analysis', welcomeCardDismiss:'Close', welcomeCardAction:'This week', welcomeCardComingUp:'Coming up',
+    // v62.26 — Quick Win #2 : pre-fill calendar week template
+    suggBadge:'Suggested', suggBadgeTooltip:'Auto-suggested event from your onboarding — confirm, edit or delete.',
+    suggConfirmTooltip:'Confirm this event', suggConfirmedToast:'Event confirmed', suggConfirmError:'Error confirming event',
+    suggNoteFromOnboarding:'Auto-suggested event from your onboarding. Confirm or adjust it to match your real week.',
+    suggTitleTechTraining:'Technical training', suggTitlePhysicalSession:'Physical session', suggTitleWeekendMatch:'Match',
+    suggTitleIceTraining:'Ice training', suggTitleSnowTraining:'Snow training', suggTitleLongSession:'Long session',
+    suggTitleMatchOrTournament:'Match / Tournament', suggTitleTempoRide:'Tempo ride', suggTitleIntervals:'Intervals', suggTitleLongRide:'Long ride',
+    suggTitleEnduranceSession:'Endurance session', suggTitleSpeedSession:'Speed session', suggTitleEasyRun:'Easy run', suggTitleLongRun:'Long run',
+    suggTitleStrengthSession:'Strength', suggTitleFullRoutine:'Full routine', suggTitlePractice:'Practice', suggTitlePuttingSession:'Practice + putting',
+    suggTitleCourseRound:'Course round', suggTitleSwimSession:'Swim', suggTitleBikeSession:'Bike', suggTitleTechSparring:'Technique + sparring',
+    suggTitleTechCardio:'Technique + cardio', suggTitleTechClass:'Dance class', suggTitleStrengthFlex:'Strength + flexibility',
+    suggTitleChoreoRehearsal:'Choreography rehearsal', suggTitleBoulder:'Bouldering', suggTitleLongRoute:'Long route',
+    suggTitleMainTraining:'Main training', suggTitleComplementarySession:'Complementary session',
     briefJournalDone:'Today\'s journal filled', briefSeeJournal:'View →',
     briefToday:'Today', briefTomorrow:'Tomorrow',
     // v47 — chat UI i18n (disclaimer, suggestions, export CSV)
@@ -2106,6 +2146,19 @@ const T = {
     briefSave:'Salva ✓', briefSaved:'Salvato!', briefFullJournal:'Diario completo →', briefFillJournal:'Compila il diario',
     briefEnrichedTitle:'Brief arricchito', briefEnrichedSubtitle:'In base a quanto mi hai appena detto:',
     welcomeCardTitle:'La tua analisi di benvenuto', welcomeCardDismiss:'Chiudi', welcomeCardAction:'Questa settimana', welcomeCardComingUp:'Prossimamente',
+    // v62.26 — Quick Win #2 : pre-fill calendario settimana tipo
+    suggBadge:'Suggerito', suggBadgeTooltip:'Evento suggerito automaticamente dopo il tuo onboarding — conferma, modifica o elimina.',
+    suggConfirmTooltip:'Conferma questo evento', suggConfirmedToast:'Evento confermato', suggConfirmError:'Errore durante la conferma',
+    suggNoteFromOnboarding:'Evento suggerito automaticamente dopo il tuo onboarding. Conferma o modifica in base alla tua vera settimana.',
+    suggTitleTechTraining:'Allenamento tecnico', suggTitlePhysicalSession:'Sessione fisica', suggTitleWeekendMatch:'Partita',
+    suggTitleIceTraining:'Allenamento sul ghiaccio', suggTitleSnowTraining:'Allenamento sulla neve', suggTitleLongSession:'Sessione lunga',
+    suggTitleMatchOrTournament:'Partita / Torneo', suggTitleTempoRide:'Uscita tempo', suggTitleIntervals:'Frazionato', suggTitleLongRide:'Uscita lunga',
+    suggTitleEnduranceSession:'Sessione resistenza', suggTitleSpeedSession:'Sessione velocità', suggTitleEasyRun:'Corsa di recupero', suggTitleLongRun:'Corsa lunga',
+    suggTitleStrengthSession:'Forza', suggTitleFullRoutine:'Routine completa', suggTitlePractice:'Practice', suggTitlePuttingSession:'Practice + putting',
+    suggTitleCourseRound:'Giro di campo', suggTitleSwimSession:'Nuoto', suggTitleBikeSession:'Bici', suggTitleTechSparring:'Tecnica + sparring',
+    suggTitleTechCardio:'Tecnica + cardio', suggTitleTechClass:'Lezione tecnica', suggTitleStrengthFlex:'Forza + flessibilità',
+    suggTitleChoreoRehearsal:'Prova coreografia', suggTitleBoulder:'Boulder', suggTitleLongRoute:'Via lunga',
+    suggTitleMainTraining:'Allenamento principale', suggTitleComplementarySession:'Sessione complementare',
     briefEnrichedReasonSleep:'Il tuo sonno a {val}/5 — Nora ha consigli', briefEnrichedReasonMood:'Il tuo umore a {val}/5 — Emma può aiutarti', briefEnrichedReasonPain:'Hai registrato un dolore a {val}/5 — Julie può adattare il recupero',
     briefJournalDone:'Diario di oggi compilato', briefSeeJournal:'Visualizza →',
     briefToday:'Oggi', briefTomorrow:'Domani',
@@ -2788,6 +2841,15 @@ function showLucasWelcome() {
       });
     } catch(e) { console.warn('[WELCOME-CARD] generate trigger error:', e); }
 
+    // v62.26 — Quick Win #2 : pre-fill calendrier semaine type (3 events suggérés
+    // sur la semaine prochaine selon le sport). Idempotent côté backend (skip si
+    // l'user a déjà des events is_suggested). Fire-and-forget — .catch() sur la promesse
+    // car prefillSuggestedWeek est async (un try/catch sync ne capture pas les rejects).
+    prefillSuggestedWeek({
+      sportKey: sportKey(data.sport) || data.sport,
+      levelKey: levelKey(data.level)
+    }).catch(e => console.warn('[PREFILL-WEEK] trigger error:', e));
+
     overlay.style.opacity = '0';
     overlay.style.transition = 'opacity 0.3s';
     setTimeout(() => {
@@ -3396,7 +3458,7 @@ async function init() {
 // It cleans caches, reloads ONCE, and uses a retry counter to prevent infinite loops.
 // ⚠️  IMPORTANT : cette constante DOIT correspondre à src/version.json (.version).
 //     Si tu bumps version.json, bump APP_V au même nombre — sinon boucle de reload.
-const APP_V = '62.25';
+const APP_V = '62.26';
 async function checkAppVersion() {
   try {
     const res = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
@@ -6817,15 +6879,16 @@ async function showDayDetail(dateStr) {
           const t = EVENT_TYPES[e.event_type] || EVENT_TYPES.autre;
           const intens = INTENSITY[e.intensity||'moyenne'];
           return `
-            <div style="background:${t.color}08;border:1px solid ${t.color}25;border-radius:12px;padding:16px;margin-bottom:10px;${e.event_status === 'cancelled' ? 'opacity:0.55' : ''}">
+            <div style="background:${t.color}08;border:${e.is_suggested ? '1px dashed' : '1px solid'} ${t.color}${e.is_suggested ? '50' : '25'};border-radius:12px;padding:16px;margin-bottom:10px;${e.event_status === 'cancelled' ? 'opacity:0.55' : (e.is_suggested ? 'opacity:0.85' : '')}">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
                 <div style="display:flex;align-items:center;gap:8px">
                   <div style="width:32px;height:32px;border-radius:8px;background:${t.color}20;display:flex;align-items:center;justify-content:center;font-size:16px">${t.emoji}</div>
                   <div>
-                    <div style="font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px;${e.event_status === 'cancelled' ? 'text-decoration:line-through' : ''}">
+                    <div style="font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px;flex-wrap:wrap;${e.event_status === 'cancelled' ? 'text-decoration:line-through' : ''}">
                       ${e.title}
                       ${e.event_status === 'cancelled' ? `<span style="font-size:10px;padding:1px 6px;border-radius:6px;background:#ef444415;color:#ef4444;font-weight:700;text-decoration:none">Ø ${tLang.eventStatusCancelled || 'Annulé'}</span>` : ''}
                       ${e.recurrence_group_id ? `<span title="${tLang.recurrenceBadge||'Série récurrente'}" style="font-size:11px;padding:1px 6px;border-radius:6px;background:${t.color}15;color:${t.color};font-weight:600;text-decoration:none">🔁 ${tLang.recurrenceBadge||'Série'}</span>` : ''}
+                      ${e.is_suggested ? `<span title="${tLang.suggBadgeTooltip||'Événement suggéré automatiquement après ton onboarding'}" style="font-size:11px;padding:1px 6px;border-radius:6px;background:#f59e0b20;color:#f59e0b;font-weight:700;text-decoration:none">✨ ${tLang.suggBadge||'Suggéré'}</span>` : ''}
                     </div>
                     <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
                       <span style="font-size:11px;color:${t.color};font-weight:600">${eventTypeLabel(e.event_type)}</span>
@@ -6835,6 +6898,7 @@ async function showDayDetail(dateStr) {
                   </div>
                 </div>
                 <div style="display:flex;gap:4px">
+                  ${e.is_suggested ? `<button onclick="confirmSuggestedEvent('${e.id}')" title="${tLang.suggConfirmTooltip||'Confirmer cet événement'}" style="background:none;border:none;color:#3b82f6;font-size:16px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s" onmouseover="this.style.background='#3b82f620';this.style.color='#3b82f6'" onmouseout="this.style.background='none';this.style.color='#3b82f6'">✓</button>` : ''}
                   <button onclick="${e.recurrence_group_id ? `editEventSmart('${e.id}','${e.recurrence_group_id}','${dateStr}','${e.title.replace(/'/g,"\\'")}','${e.event_type}','${e.event_time||''}','${(e.location||'').replace(/'/g,"\\'")}','${e.intensity||'moyenne'}','${(e.notes||'').replace(/'/g,"\\'")}')` : `editEvent('${e.id}','${e.title.replace(/'/g,"\\'")}','${e.event_type}','${dateStr}','${e.event_time||''}','${(e.location||'').replace(/'/g,"\\'")}','${e.intensity||'moyenne'}','${(e.notes||'').replace(/'/g,"\\'")}')`}" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s" onmouseover="this.style.background='#f59e0b20';this.style.color='#f59e0b'" onmouseout="this.style.background='none';this.style.color='var(--muted)'">✏️</button>
                   <button onclick="duplicateEvent('${e.id}')" title="${tLang.eventDuplicate || 'Dupliquer'}" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s" onmouseover="this.style.background='#06b6d420';this.style.color='#06b6d4'" onmouseout="this.style.background='none';this.style.color='var(--muted)'">📋</button>
                   <button onclick="toggleEventStatus('${e.id}')" title="${e.event_status === 'cancelled' ? (tLang.eventStatusReactivate || 'Réactiver') : (tLang.eventStatusCancel || 'Annuler')}" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s" onmouseover="this.style.background='#64748b20';this.style.color='#94a3b8'" onmouseout="this.style.background='none';this.style.color='var(--muted)'">${e.event_status === 'cancelled' ? '↩️' : 'Ø'}</button>
@@ -7256,6 +7320,8 @@ async function updateEvent(id) {
   }
 
   // Mode classique (single event) — comportement existant
+  // v62.26 : reset is_suggested=false dès qu'un event est édité (s'il était suggéré).
+  // L'édition implique que l'user prend possession de l'event → badge "Suggéré" disparaît.
   const { error } = await sb.from('calendar_events').update({
     title,
     event_type: selectedEventType,
@@ -7263,7 +7329,8 @@ async function updateEvent(id) {
     event_time: time,
     location,
     notes,
-    intensity: selectedIntensity
+    intensity: selectedIntensity,
+    is_suggested: false
   }).eq('id', id);
 
   if (error) return alert(t.eventErrorPrefix + ' ' + error.message);
@@ -7919,6 +7986,236 @@ function welcomeActionGo(agentId) {
   if (agentId === 'calendar' || agentId === 'agenda') return showPage('agenda', null);
   if (typeof AGENTS !== 'undefined' && AGENTS[agentId]) return showPage(agentId, null);
   // Fallback : reste sur le dashboard
+}
+
+// ── PREFILL SUGGESTED WEEK (post-onboarding) — v62.26 ──────────
+// Quick Win #2 : pre-fill le calendrier avec une semaine type pré-remplie
+// selon le sport choisi (3 events). Insertion sur la SEMAINE PROCHAINE
+// (lundi → dimanche) pour que la "semaine en cours" reste l'espace de l'user.
+// Events marqués is_suggested=true → badge "Suggéré" + bouton 1-clic Confirmer
+// dans showDayDetail. Idempotent : skip si l'user a déjà des events is_suggested.
+//
+// Mapping sport → 3 events. Day offsets relatifs au lundi prochain (0=lundi, 6=dim).
+// Intensity de base : pour amateur/competition. Beginner → bump down 1 cran ;
+// semipro/professional/elite → bump up 1 cran (capped à 'intense').
+const SUGGESTED_WEEK_TEMPLATES = {
+  football: [
+    { dayOffset: 1, type: 'entrainement', intensity: 'intense',  time: '19:30', duration: 90, titleKey: 'suggTitleTechTraining' },
+    { dayOffset: 3, type: 'entrainement', intensity: 'moyenne',  time: '19:30', duration: 90, titleKey: 'suggTitlePhysicalSession' },
+    { dayOffset: 5, type: 'match',        intensity: 'intense',  time: '15:00', duration: 90, titleKey: 'suggTitleWeekendMatch' }
+  ],
+  hockey: [
+    { dayOffset: 1, type: 'entrainement', intensity: 'intense',  time: '19:30', duration: 90, titleKey: 'suggTitleIceTraining' },
+    { dayOffset: 3, type: 'entrainement', intensity: 'moyenne',  time: '19:30', duration: 60, titleKey: 'suggTitlePhysicalSession' },
+    { dayOffset: 5, type: 'match',        intensity: 'intense',  time: '19:00', duration: 90, titleKey: 'suggTitleWeekendMatch' }
+  ],
+  skiing: [
+    { dayOffset: 1, type: 'entrainement', intensity: 'moyenne',  time: '18:30', duration: 90, titleKey: 'suggTitlePhysicalSession' },
+    { dayOffset: 5, type: 'entrainement', intensity: 'intense',  time: '09:00', duration: 240, titleKey: 'suggTitleSnowTraining' },
+    { dayOffset: 6, type: 'entrainement', intensity: 'intense',  time: '09:00', duration: 240, titleKey: 'suggTitleLongSession' }
+  ],
+  tennis: [
+    { dayOffset: 1, type: 'entrainement', intensity: 'moyenne',  time: '18:00', duration: 75, titleKey: 'suggTitleTechTraining' },
+    { dayOffset: 3, type: 'entrainement', intensity: 'moyenne',  time: '18:00', duration: 60, titleKey: 'suggTitlePhysicalSession' },
+    { dayOffset: 5, type: 'match',        intensity: 'intense',  time: '14:00', duration: 90, titleKey: 'suggTitleMatchOrTournament' }
+  ],
+  padel: [
+    { dayOffset: 1, type: 'entrainement', intensity: 'moyenne',  time: '18:30', duration: 90, titleKey: 'suggTitleTechTraining' },
+    { dayOffset: 3, type: 'entrainement', intensity: 'moyenne',  time: '18:30', duration: 60, titleKey: 'suggTitlePhysicalSession' },
+    { dayOffset: 5, type: 'match',        intensity: 'intense',  time: '14:00', duration: 90, titleKey: 'suggTitleMatchOrTournament' }
+  ],
+  cycling: [
+    { dayOffset: 1, type: 'entrainement', intensity: 'moyenne',  time: '18:00', duration: 90, titleKey: 'suggTitleTempoRide' },
+    { dayOffset: 3, type: 'entrainement', intensity: 'intense',  time: '18:00', duration: 75, titleKey: 'suggTitleIntervals' },
+    { dayOffset: 6, type: 'entrainement', intensity: 'moyenne',  time: '09:00', duration: 180, titleKey: 'suggTitleLongRide' }
+  ],
+  swimming: [
+    { dayOffset: 0, type: 'entrainement', intensity: 'moyenne',  time: '18:30', duration: 60, titleKey: 'suggTitleTechTraining' },
+    { dayOffset: 2, type: 'entrainement', intensity: 'intense',  time: '18:30', duration: 75, titleKey: 'suggTitleEnduranceSession' },
+    { dayOffset: 4, type: 'entrainement', intensity: 'intense',  time: '18:30', duration: 60, titleKey: 'suggTitleSpeedSession' }
+  ],
+  athletics: [
+    { dayOffset: 1, type: 'entrainement', intensity: 'intense',  time: '18:30', duration: 60, titleKey: 'suggTitleIntervals' },
+    { dayOffset: 3, type: 'entrainement', intensity: 'legere',   time: '18:30', duration: 45, titleKey: 'suggTitleEasyRun' },
+    { dayOffset: 6, type: 'entrainement', intensity: 'moyenne',  time: '09:00', duration: 90,  titleKey: 'suggTitleLongRun' }
+  ],
+  basketball: [
+    { dayOffset: 1, type: 'entrainement', intensity: 'intense',  time: '19:00', duration: 90, titleKey: 'suggTitleTechTraining' },
+    { dayOffset: 3, type: 'entrainement', intensity: 'moyenne',  time: '19:00', duration: 75, titleKey: 'suggTitlePhysicalSession' },
+    { dayOffset: 5, type: 'match',        intensity: 'intense',  time: '17:00', duration: 90, titleKey: 'suggTitleWeekendMatch' }
+  ],
+  volleyball: [
+    { dayOffset: 1, type: 'entrainement', intensity: 'intense',  time: '19:30', duration: 90, titleKey: 'suggTitleTechTraining' },
+    { dayOffset: 3, type: 'entrainement', intensity: 'moyenne',  time: '19:30', duration: 75, titleKey: 'suggTitlePhysicalSession' },
+    { dayOffset: 5, type: 'match',        intensity: 'intense',  time: '15:00', duration: 90, titleKey: 'suggTitleWeekendMatch' }
+  ],
+  floorball: [
+    { dayOffset: 1, type: 'entrainement', intensity: 'intense',  time: '19:30', duration: 90, titleKey: 'suggTitleTechTraining' },
+    { dayOffset: 3, type: 'entrainement', intensity: 'moyenne',  time: '19:30', duration: 60, titleKey: 'suggTitlePhysicalSession' },
+    { dayOffset: 5, type: 'match',        intensity: 'intense',  time: '17:00', duration: 90, titleKey: 'suggTitleWeekendMatch' }
+  ],
+  handball: [
+    { dayOffset: 1, type: 'entrainement', intensity: 'intense',  time: '19:30', duration: 90, titleKey: 'suggTitleTechTraining' },
+    { dayOffset: 3, type: 'entrainement', intensity: 'moyenne',  time: '19:30', duration: 60, titleKey: 'suggTitlePhysicalSession' },
+    { dayOffset: 5, type: 'match',        intensity: 'intense',  time: '17:00', duration: 90, titleKey: 'suggTitleWeekendMatch' }
+  ],
+  gymnastics: [
+    { dayOffset: 0, type: 'entrainement', intensity: 'moyenne',  time: '17:30', duration: 120, titleKey: 'suggTitleTechTraining' },
+    { dayOffset: 2, type: 'entrainement', intensity: 'intense',  time: '17:30', duration: 90,  titleKey: 'suggTitleStrengthSession' },
+    { dayOffset: 4, type: 'entrainement', intensity: 'intense',  time: '17:30', duration: 120, titleKey: 'suggTitleFullRoutine' }
+  ],
+  rugby: [
+    { dayOffset: 1, type: 'entrainement', intensity: 'intense',  time: '19:30', duration: 90, titleKey: 'suggTitleTechTraining' },
+    { dayOffset: 3, type: 'entrainement', intensity: 'moyenne',  time: '19:30', duration: 75, titleKey: 'suggTitlePhysicalSession' },
+    { dayOffset: 5, type: 'match',        intensity: 'intense',  time: '15:00', duration: 90, titleKey: 'suggTitleWeekendMatch' }
+  ],
+  golf: [
+    { dayOffset: 1, type: 'entrainement', intensity: 'legere',   time: '17:00', duration: 90,  titleKey: 'suggTitlePractice' },
+    { dayOffset: 3, type: 'entrainement', intensity: 'moyenne',  time: '17:00', duration: 90,  titleKey: 'suggTitlePuttingSession' },
+    { dayOffset: 5, type: 'entrainement', intensity: 'moyenne',  time: '09:00', duration: 240, titleKey: 'suggTitleCourseRound' }
+  ],
+  triathlon: [
+    { dayOffset: 1, type: 'entrainement', intensity: 'intense',  time: '18:00', duration: 60, titleKey: 'suggTitleSwimSession' },
+    { dayOffset: 3, type: 'entrainement', intensity: 'moyenne',  time: '18:00', duration: 90, titleKey: 'suggTitleBikeSession' },
+    { dayOffset: 5, type: 'entrainement', intensity: 'moyenne',  time: '09:00', duration: 90, titleKey: 'suggTitleLongRun' }
+  ],
+  boxing: [
+    { dayOffset: 0, type: 'entrainement', intensity: 'intense',  time: '19:00', duration: 90, titleKey: 'suggTitleTechSparring' },
+    { dayOffset: 2, type: 'entrainement', intensity: 'moyenne',  time: '19:00', duration: 75, titleKey: 'suggTitlePhysicalSession' },
+    { dayOffset: 4, type: 'entrainement', intensity: 'intense',  time: '19:00', duration: 90, titleKey: 'suggTitleTechCardio' }
+  ],
+  'martial-arts': [
+    { dayOffset: 0, type: 'entrainement', intensity: 'intense',  time: '19:00', duration: 90, titleKey: 'suggTitleTechSparring' },
+    { dayOffset: 2, type: 'entrainement', intensity: 'moyenne',  time: '19:00', duration: 75, titleKey: 'suggTitlePhysicalSession' },
+    { dayOffset: 4, type: 'entrainement', intensity: 'intense',  time: '19:00', duration: 90, titleKey: 'suggTitleTechCardio' }
+  ],
+  dance: [
+    { dayOffset: 1, type: 'entrainement', intensity: 'moyenne',  time: '19:00', duration: 90,  titleKey: 'suggTitleTechClass' },
+    { dayOffset: 3, type: 'entrainement', intensity: 'moyenne',  time: '19:00', duration: 60,  titleKey: 'suggTitleStrengthFlex' },
+    { dayOffset: 5, type: 'entrainement', intensity: 'intense',  time: '14:00', duration: 120, titleKey: 'suggTitleChoreoRehearsal' }
+  ],
+  climbing: [
+    { dayOffset: 1, type: 'entrainement', intensity: 'moyenne',  time: '18:30', duration: 120, titleKey: 'suggTitleBoulder' },
+    { dayOffset: 3, type: 'entrainement', intensity: 'intense',  time: '18:30', duration: 60,  titleKey: 'suggTitleStrengthSession' },
+    { dayOffset: 5, type: 'entrainement', intensity: 'moyenne',  time: '10:00', duration: 240, titleKey: 'suggTitleLongRoute' }
+  ],
+  'trail-running': [
+    { dayOffset: 1, type: 'entrainement', intensity: 'intense',  time: '18:30', duration: 60, titleKey: 'suggTitleIntervals' },
+    { dayOffset: 3, type: 'entrainement', intensity: 'legere',   time: '18:30', duration: 45, titleKey: 'suggTitleEasyRun' },
+    { dayOffset: 6, type: 'entrainement', intensity: 'moyenne',  time: '09:00', duration: 120, titleKey: 'suggTitleLongRun' }
+  ],
+  // Catch-all for "other" or unknown sport
+  other: [
+    { dayOffset: 1, type: 'entrainement', intensity: 'moyenne',  time: '18:30', duration: 90, titleKey: 'suggTitleMainTraining' },
+    { dayOffset: 3, type: 'entrainement', intensity: 'moyenne',  time: '18:30', duration: 60, titleKey: 'suggTitleComplementarySession' },
+    { dayOffset: 5, type: 'entrainement', intensity: 'intense',  time: '10:00', duration: 90, titleKey: 'suggTitleLongSession' }
+  ]
+};
+
+// Adjust intensity according to user level
+//   beginner / amateur → bump down 1 cran
+//   competition       → keep base
+//   semipro / professional / elite → bump up 1 cran (capped at 'intense')
+function adjustIntensityForLevel(baseIntensity, levelKey) {
+  const order = ['legere', 'moyenne', 'intense'];
+  const idx = order.indexOf(baseIntensity);
+  if (idx < 0) return 'moyenne';
+  let bump = 0;
+  if (levelKey === 'beginner' || levelKey === 'amateur') bump = -1;
+  if (levelKey === 'semipro' || levelKey === 'professional' || levelKey === 'elite') bump = +1;
+  const newIdx = Math.max(0, Math.min(order.length - 1, idx + bump));
+  return order[newIdx];
+}
+
+// Returns the date of next Monday (YYYY-MM-DD) in local time
+function nextMondayStr() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  // getDay(): 0=Sunday, 1=Monday, ..., 6=Saturday
+  // Days until next Monday: if today=Mon, next Mon is in 7 days; else days remaining + Mon
+  const dow = d.getDay();
+  const daysUntilNextMonday = dow === 1 ? 7 : (8 - dow) % 7;
+  // (8 - dow) % 7 : Sun=1, Tue=6, Wed=5, ... but we want Mon→7 special-cased above
+  d.setDate(d.getDate() + (daysUntilNextMonday || 7));
+  return dateToStr(d);
+}
+
+// Add N days to a YYYY-MM-DD string, return new YYYY-MM-DD
+function addDaysToDateStr(dateStr, n) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  dt.setDate(dt.getDate() + n);
+  return dateToStr(dt);
+}
+
+// Main entry : insert the suggested week template into calendar_events.
+// Idempotent : if user already has any is_suggested event, skip silently.
+async function prefillSuggestedWeek({ sportKey: sport, levelKey: level }) {
+  if (!sport || !currentUser?.id) return;
+  const t = T[currentLang] || T.fr;
+
+  // Idempotence check : if user already has suggested events, do nothing
+  try {
+    const { data: existing, error: chkErr } = await sb
+      .from('calendar_events')
+      .select('id')
+      .eq('user_id', currentUser.id)
+      .eq('is_suggested', true)
+      .limit(1);
+    if (chkErr) { console.warn('[PREFILL-WEEK] idempotence check error:', chkErr); return; }
+    if (existing && existing.length > 0) {
+      console.log('[PREFILL-WEEK] user already has suggested events, skip');
+      return;
+    }
+  } catch (e) { console.warn('[PREFILL-WEEK] check exception:', e); return; }
+
+  const template = SUGGESTED_WEEK_TEMPLATES[sport] || SUGGESTED_WEEK_TEMPLATES.other;
+  const monday = nextMondayStr();
+
+  const rows = template.map(slot => ({
+    user_id: currentUser.id,
+    title: t[slot.titleKey] || slot.titleKey,
+    event_type: slot.type,
+    event_date: addDaysToDateStr(monday, slot.dayOffset),
+    event_time: slot.time,
+    duration_minutes: slot.duration,
+    intensity: adjustIntensityForLevel(slot.intensity, level),
+    notes: t.suggNoteFromOnboarding || 'Événement suggéré automatiquement après ton onboarding. Confirme ou modifie selon ta vraie semaine.',
+    is_suggested: true
+  }));
+
+  try {
+    const { error } = await sb.from('calendar_events').insert(rows);
+    if (error) { console.warn('[PREFILL-WEEK] insert error:', error); return; }
+    console.log('[PREFILL-WEEK] inserted', rows.length, 'suggested events for sport=' + sport + ' level=' + level);
+  } catch (e) { console.warn('[PREFILL-WEEK] insert exception:', e); }
+}
+
+// Confirm a single suggested event (called from showDayDetail "✓" button)
+// Sets is_suggested=false → event becomes a normal user event.
+async function confirmSuggestedEvent(eventId) {
+  if (!eventId) return;
+  const t = T[currentLang] || T.fr;
+  try {
+    const { error } = await sb.from('calendar_events')
+      .update({ is_suggested: false })
+      .eq('id', eventId)
+      .eq('user_id', currentUser.id);
+    if (error) { showToast('⚠️ ' + (t.suggConfirmError || 'Erreur lors de la confirmation')); return; }
+    showToast('✅ ' + (t.suggConfirmedToast || 'Événement confirmé'));
+    // P0-1 fix : capturer dateStr AVANT loadCalendarEvents (qui rebuild calendarEvents),
+    // puis re-rendre la modal du jour pour permettre confirmation des autres suggested events
+    // sans avoir à re-cliquer sur la case du jour. Friction × 3 évitée sur mobile.
+    const ev = calendarEvents.find(e => e.id === eventId);
+    const dateStr = ev?.event_date;
+    await loadCalendarEvents();
+    document.getElementById('eventModal')?.remove();
+    if (typeof renderCalendar === 'function') renderCalendar();
+    if (dateStr && typeof showDayDetail === 'function') showDayDetail(dateStr);
+  } catch (e) {
+    console.warn('[SUGG-CONFIRM] exception:', e);
+    showToast('⚠️ ' + (t.suggConfirmError || 'Erreur lors de la confirmation'));
+  }
 }
 
 // ── BRIEF ENRICHI (post-saveJournal) — v62.17 ────────────────
