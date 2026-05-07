@@ -931,6 +931,18 @@ const T = {
     briefEnrichedTitle:'Brief enrichi', briefEnrichedSubtitle:'Vu ce que tu viens de me dire, je te suggère :',
     briefEnrichedReasonSleep:'Ton sommeil à {val}/5 — Nora a des conseils', briefEnrichedReasonMood:'Ton moral à {val}/5 — Emma peut t\'aider', briefEnrichedReasonPain:'Tu as logué une douleur à {val}/5 — Julie peut adapter ta récup',
     welcomeCardTitle:'Ton analyse de bienvenue', welcomeCardDismiss:'Fermer', welcomeCardAction:'Cette semaine', welcomeCardComingUp:'À venir',
+    // v62.27 — Check-in 30s (Quick Win #3)
+    checkinCardTitle:'Check-in du jour', checkinCardSubtitle:'30 secondes pour aider tes coachs à mieux te conseiller.', checkinCardCTA:'Faire mon check-in', checkinCardLater:'Plus tard',
+    checkinModalTitle:'Comment vas-tu aujourd\'hui ?', checkinSliderEnergy:'Énergie', checkinSliderMood:'Humeur', checkinSliderPain:'Douleurs',
+    checkinEnergyLow:'Épuisé', checkinEnergyHigh:'Au top', checkinMoodLow:'Difficile', checkinMoodHigh:'Excellente', checkinPainNone:'Aucune', checkinPainHigh:'Fortes',
+    checkinSubmit:'Enregistrer ✓', checkinCancel:'Annuler', checkinSavedToast:'✅ Check-in enregistré · Tes coachs s\'adapteront', checkinErrorToast:'⚠️ Erreur — réessaye',
+    // v62.27 — Kickoff messages quand l'agent prend la parole depuis le brief enrichi
+    kickoffSleepLow:'Hey, tu m\'as logué un sommeil à {val}/5 — c\'est rude. Dis-moi ce qui se passe : tu n\'arrives pas à t\'endormir, tu te réveilles, ou tu es tendu·e avant un match ?',
+    kickoffMoodLow:'Je vois que ton moral est à {val}/5 aujourd\'hui. Qu\'est-ce qui pèse le plus en ce moment — la pression des résultats, la fatigue, ou autre chose ?',
+    kickoffPainHigh:'Tu m\'as logué une douleur à {val}/5. Avant qu\'on regarde la récup, dis-moi : où ça fait mal, depuis quand, et est-ce que ça t\'empêche de t\'entraîner normalement ?',
+    // v62.28 — Weekly insight (Idée 3 STRATEGIE)
+    weeklyInsightCardTitle:'Ta semaine par {agent}', weeklyInsightDismiss:'Fermer', weeklyInsightAction:'Pour la semaine prochaine', weeklyInsightTalkButton:'Parler à {agent} →',
+    kickoffWeeklyInsight:'Tu as vu ma synthèse de ta semaine ? J\'aimerais qu\'on creuse {focus}. Dis-moi ce que tu en penses.',
     // v62.26 — Quick Win #2 : pre-fill calendrier semaine type (events suggérés)
     suggBadge:'Suggéré', suggBadgeTooltip:'Événement suggéré automatiquement après ton onboarding — confirme, modifie ou supprime.',
     suggConfirmTooltip:'Confirmer cet événement', suggConfirmedToast:'Événement confirmé', suggConfirmError:'Erreur lors de la confirmation',
@@ -1337,6 +1349,18 @@ const T = {
     briefEnrichedTitle:'Aktualisiertes Briefing', briefEnrichedSubtitle:'Basierend auf Deinen frischen Daten:',
     briefEnrichedReasonSleep:'Dein Schlaf bei {val}/5 — Nora hat Tipps', briefEnrichedReasonMood:'Deine Stimmung bei {val}/5 — Emma kann helfen', briefEnrichedReasonPain:'Du hast Schmerzen bei {val}/5 erfasst — Julie passt Deine Erholung an',
     welcomeCardTitle:'Deine Begrüssungsanalyse', welcomeCardDismiss:'Schliessen', welcomeCardAction:'Diese Woche', welcomeCardComingUp:'Kommt bald',
+    // v62.27 — Check-in 30s (Quick Win #3)
+    checkinCardTitle:'Heutiger Check-in', checkinCardSubtitle:'30 Sekunden, damit deine Coaches dich besser beraten können.', checkinCardCTA:'Check-in starten', checkinCardLater:'Später',
+    checkinModalTitle:'Wie geht\'s dir heute?', checkinSliderEnergy:'Energie', checkinSliderMood:'Stimmung', checkinSliderPain:'Schmerzen',
+    checkinEnergyLow:'Erschöpft', checkinEnergyHigh:'Topfit', checkinMoodLow:'Schwierig', checkinMoodHigh:'Ausgezeichnet', checkinPainNone:'Keine', checkinPainHigh:'Stark',
+    checkinSubmit:'Speichern ✓', checkinCancel:'Abbrechen', checkinSavedToast:'✅ Check-in gespeichert · Deine Coaches passen sich an', checkinErrorToast:'⚠️ Fehler — nochmal versuchen',
+    // v62.27 — Kickoff messages
+    kickoffSleepLow:'Hey, du hast deinen Schlaf mit {val}/5 protokolliert — das ist hart. Sag mir, was los ist: kannst du nicht einschlafen, wachst du auf, oder bist du vor einem Spiel angespannt?',
+    kickoffMoodLow:'Ich sehe, dass deine Stimmung heute bei {val}/5 ist. Was belastet dich gerade am meisten — der Ergebnisdruck, die Müdigkeit, oder etwas anderes?',
+    kickoffPainHigh:'Du hast Schmerzen mit {val}/5 protokolliert. Bevor wir uns die Erholung anschauen, sag mir: wo tut es weh, seit wann, und hindert es dich am normalen Training?',
+    // v62.28 — Weekly insight
+    weeklyInsightCardTitle:'Deine Woche von {agent}', weeklyInsightDismiss:'Schliessen', weeklyInsightAction:'Für die nächste Woche', weeklyInsightTalkButton:'Mit {agent} sprechen →',
+    kickoffWeeklyInsight:'Hast du meine Wochenübersicht gesehen? Ich möchte {focus} vertiefen. Sag mir, was du davon hältst.',
     // v62.26 — Quick Win #2 : pre-fill calendrier semaine type
     suggBadge:'Vorschlag', suggBadgeTooltip:'Automatisch vorgeschlagenes Ereignis nach Deinem Onboarding — bestätige, ändere oder lösche es.',
     suggConfirmTooltip:'Ereignis bestätigen', suggConfirmedToast:'Ereignis bestätigt', suggConfirmError:'Fehler bei der Bestätigung',
@@ -1742,6 +1766,18 @@ const T = {
     briefEnrichedTitle:'Enriched brief', briefEnrichedSubtitle:'Based on what you just told me:',
     briefEnrichedReasonSleep:'Your sleep at {val}/5 — Nora has tips', briefEnrichedReasonMood:'Your mood at {val}/5 — Emma can help', briefEnrichedReasonPain:'You logged pain at {val}/5 — Julie can adjust your recovery',
     welcomeCardTitle:'Your welcome analysis', welcomeCardDismiss:'Close', welcomeCardAction:'This week', welcomeCardComingUp:'Coming up',
+    // v62.27 — Check-in 30s (Quick Win #3)
+    checkinCardTitle:'Today\'s check-in', checkinCardSubtitle:'30 seconds to help your coaches advise you better.', checkinCardCTA:'Start check-in', checkinCardLater:'Later',
+    checkinModalTitle:'How are you today?', checkinSliderEnergy:'Energy', checkinSliderMood:'Mood', checkinSliderPain:'Pain',
+    checkinEnergyLow:'Drained', checkinEnergyHigh:'Peak', checkinMoodLow:'Tough', checkinMoodHigh:'Excellent', checkinPainNone:'None', checkinPainHigh:'Strong',
+    checkinSubmit:'Save ✓', checkinCancel:'Cancel', checkinSavedToast:'✅ Check-in saved · Your coaches will adapt', checkinErrorToast:'⚠️ Error — try again',
+    // v62.27 — Kickoff messages
+    kickoffSleepLow:'Hey, you logged your sleep at {val}/5 — that\'s rough. Tell me what\'s going on: trouble falling asleep, waking up, or feeling tense before a match?',
+    kickoffMoodLow:'I see your mood is at {val}/5 today. What\'s weighing on you the most right now — results pressure, fatigue, or something else?',
+    kickoffPainHigh:'You logged pain at {val}/5. Before we look at recovery, tell me: where does it hurt, since when, and is it stopping you from training normally?',
+    // v62.28 — Weekly insight
+    weeklyInsightCardTitle:'Your week by {agent}', weeklyInsightDismiss:'Close', weeklyInsightAction:'For next week', weeklyInsightTalkButton:'Talk to {agent} →',
+    kickoffWeeklyInsight:'Did you see my week summary? I\'d like us to dig into {focus}. Tell me what you think.',
     // v62.26 — Quick Win #2 : pre-fill calendar week template
     suggBadge:'Suggested', suggBadgeTooltip:'Auto-suggested event from your onboarding — confirm, edit or delete.',
     suggConfirmTooltip:'Confirm this event', suggConfirmedToast:'Event confirmed', suggConfirmError:'Error confirming event',
@@ -2146,6 +2182,18 @@ const T = {
     briefSave:'Salva ✓', briefSaved:'Salvato!', briefFullJournal:'Diario completo →', briefFillJournal:'Compila il diario',
     briefEnrichedTitle:'Brief arricchito', briefEnrichedSubtitle:'In base a quanto mi hai appena detto:',
     welcomeCardTitle:'La tua analisi di benvenuto', welcomeCardDismiss:'Chiudi', welcomeCardAction:'Questa settimana', welcomeCardComingUp:'Prossimamente',
+    // v62.27 — Check-in 30s (Quick Win #3)
+    checkinCardTitle:'Check-in di oggi', checkinCardSubtitle:'30 secondi per aiutare i tuoi coach a consigliarti meglio.', checkinCardCTA:'Inizia il check-in', checkinCardLater:'Più tardi',
+    checkinModalTitle:'Come stai oggi?', checkinSliderEnergy:'Energia', checkinSliderMood:'Umore', checkinSliderPain:'Dolori',
+    checkinEnergyLow:'Esausto', checkinEnergyHigh:'Al top', checkinMoodLow:'Difficile', checkinMoodHigh:'Eccellente', checkinPainNone:'Nessuno', checkinPainHigh:'Forti',
+    checkinSubmit:'Salva ✓', checkinCancel:'Annulla', checkinSavedToast:'✅ Check-in salvato · I tuoi coach si adatteranno', checkinErrorToast:'⚠️ Errore — riprova',
+    // v62.27 — Kickoff messages
+    kickoffSleepLow:'Hey, hai registrato un sonno a {val}/5 — è dura. Dimmi cosa sta succedendo: non riesci ad addormentarti, ti svegli, o sei teso prima di una partita?',
+    kickoffMoodLow:'Vedo che il tuo morale è a {val}/5 oggi. Cosa ti pesa di più in questo momento — la pressione dei risultati, la stanchezza, o qualcos\'altro?',
+    kickoffPainHigh:'Hai registrato un dolore a {val}/5. Prima di guardare il recupero, dimmi: dove fa male, da quando, e ti impedisce di allenarti normalmente?',
+    // v62.28 — Weekly insight
+    weeklyInsightCardTitle:'La tua settimana da {agent}', weeklyInsightDismiss:'Chiudi', weeklyInsightAction:'Per la settimana prossima', weeklyInsightTalkButton:'Parla con {agent} →',
+    kickoffWeeklyInsight:'Hai visto il mio riassunto della settimana? Vorrei approfondire {focus}. Dimmi cosa ne pensi.',
     // v62.26 — Quick Win #2 : pre-fill calendario settimana tipo
     suggBadge:'Suggerito', suggBadgeTooltip:'Evento suggerito automaticamente dopo il tuo onboarding — conferma, modifica o elimina.',
     suggConfirmTooltip:'Conferma questo evento', suggConfirmedToast:'Evento confermato', suggConfirmError:'Errore durante la conferma',
@@ -3458,7 +3506,7 @@ async function init() {
 // It cleans caches, reloads ONCE, and uses a retry counter to prevent infinite loops.
 // ⚠️  IMPORTANT : cette constante DOIT correspondre à src/version.json (.version).
 //     Si tu bumps version.json, bump APP_V au même nombre — sinon boucle de reload.
-const APP_V = '62.26';
+const APP_V = '62.28';
 async function checkAppVersion() {
   try {
     const res = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
@@ -4847,6 +4895,43 @@ async function renderDashboard() {
       } catch(e) { console.warn('[WELCOME-CARD] dashboard hook error:', e); }
     })();
   }
+
+  // v62.28 — Weekly insight display (Idée 3 STRATEGIE)
+  // Lazy-load au 1er render dashboard de la semaine courante. Cache hit DB →
+  // affiche directement. Sinon → trigger generation Netlify (fire-and-forget).
+  // Injection en 2ème position si welcome card présente, sinon en 1ère.
+  // Setimeout 200ms pour séquencer après welcome card, AVANT check-in card.
+  if (isOnboardDone()) {
+    setTimeout(async () => {
+      try {
+        const wi = await loadWeeklyInsightForDisplay();
+        if (wi.insight) {
+          injectWeeklyInsightCard(wi.insight);
+        }
+        if (wi.shouldRegenerate) {
+          // Best-effort generation (3-6s typique). Si succès, injectWeeklyInsightCard
+          // est appelée automatiquement en fin de generateWeeklyInsightAsync.
+          generateWeeklyInsightAsync(currentLang).catch(e =>
+            console.warn('[WEEKLY-INSIGHT] regen trigger error:', e)
+          );
+        }
+      } catch(e) { console.warn('[WEEKLY-INSIGHT] dashboard hook error:', e); }
+    }, 200);
+  }
+
+  // v62.27 — Check-in 30s display (Quick Win #3)
+  // Affiche la carte check-in si l'user n'a pas encore de daily_log aujourd'hui
+  // ET n'a pas dismissé pour la journée. Best-effort, jamais bloquant. Injectée
+  // APRÈS welcome card et weekly insight → 3ème position max le lundi.
+  // P1-3 fix : setTimeout 250ms pour laisser welcome+insight s'injecter avant.
+  if (isOnboardDone()) {
+    setTimeout(async () => {
+      try {
+        const shouldShow = await loadCheckinStateForToday();
+        if (shouldShow) injectCheckinCard();
+      } catch(e) { console.warn('[CHECKIN-30S] dashboard hook error:', e); }
+    }, 350);
+  }
 }
 
 // ── LOCKED AGENT PAGE ──────────────────────────────
@@ -4951,6 +5036,46 @@ async function renderChat(page) {
       } catch(e) {}
     }
   }
+
+  // v62.27 — Journal kickoff message
+  // Si l'user vient d'arriver sur cette page chat depuis le brief enrichi
+  // (saveJournal ou submitQuickCheckin), on injecte une bulle agent contextuelle
+  // qui mentionne explicitement le signal observé (sommeil/humeur/douleur).
+  // Évite le bug "chat ouvre vide" rapporté en observation 07/05.
+  // Le sessionStorage est consommé en one-shot pour ne pas spam à chaque retour.
+  // P2-4 : TTL 5 min — si l'user clique le bouton mais arrive sur un agent
+  // verrouillé (renderLockedFeature consume pas le sessionStorage), le kickoff
+  // périmé serait ré-injecté à un upgrade ultérieur. TTL évite ce ghost.
+  try {
+    const kickoffRaw = sessionStorage.getItem('sv_journal_kickoff');
+    if (kickoffRaw) {
+      const kickoff = JSON.parse(kickoffRaw);
+      const KICKOFF_TTL_MS = 5 * 60 * 1000;
+      const isStale = kickoff && kickoff._ts && (Date.now() - kickoff._ts > KICKOFF_TTL_MS);
+      if (isStale) {
+        sessionStorage.removeItem('sv_journal_kickoff');
+      } else if (kickoff && kickoff.page === page) {
+        const introMsg = buildJournalKickoffMessage(kickoff, T[currentLang] || T.fr);
+        if (introMsg) {
+          chats[page] = chats[page] || [];
+          chats[page].push({ from:'agent', text: introMsg, ts: now() });
+          // Persistance DB best-effort (fire-and-forget avec .catch)
+          sb.from('messages').insert({
+            user_id: currentUser.id,
+            agent_id: page,
+            role: 'agent',
+            content: introMsg
+          }).then(({error}) => {
+            if (error) console.warn('[KICKOFF] DB insert error:', error);
+          }).catch(e => console.warn('[KICKOFF] insert exception:', e));
+          // Cache aussi en localStorage (cohérent avec le reste de renderChat)
+          try { localStorage.setItem(`sv_cache_${currentUser.id}_${page}`, JSON.stringify(chats[page].slice(-50))); } catch(_) {}
+        }
+      }
+      // Consume one-shot peu importe si match ou non
+      sessionStorage.removeItem('sv_journal_kickoff');
+    }
+  } catch(e) { console.warn('[KICKOFF] processing error:', e); }
   // Proactive messages removed — replaced by Morning Brief modal
 
   const t = T[currentLang];
@@ -7988,6 +8113,492 @@ function welcomeActionGo(agentId) {
   // Fallback : reste sur le dashboard
 }
 
+// ── CHECK-IN 30S (Quick Win #3) — v62.27 ───────────────────────
+// Carte persistante en haut du dashboard (couleur cyan #0ea5e9 distincte du gold welcome)
+// quand l'user n'a pas encore de daily_log pour aujourd'hui. Modal avec 3 sliders 1-5
+// (énergie/humeur/douleur). Submit upsert daily_log avec is_quick=true. Coexiste avec
+// le journal long (même table, flag distingue source).
+//
+// Helper : date YYYY-MM-DD locale (pas UTC pour éviter cross-timezone bugs)
+function _checkinTodayKey() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+}
+
+// Détermine si la carte doit s'afficher : pas de log existant ET pas de dismiss aujourd'hui
+async function loadCheckinStateForToday() {
+  if (!currentUser?.id) return false;
+  const today = _checkinTodayKey();
+
+  // P1-4 fix : cleanup des keys dismiss périmées (best-effort, jamais bloquant).
+  // Évite l'accumulation au long terme dans localStorage (1 key par jour de dismiss).
+  try {
+    const prefix = `sv_checkin_dismissed_${currentUser.id}_`;
+    const todayKey = prefix + today;
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(prefix) && k !== todayKey) localStorage.removeItem(k);
+    }
+  } catch(_) {}
+
+  // 1. Dismiss localStorage (par jour) — early exit
+  try {
+    const dismissedKey = `sv_checkin_dismissed_${currentUser.id}_${today}`;
+    if (localStorage.getItem(dismissedKey) === '1') return false;
+  } catch(_) { /* localStorage indispo → on continue */ }
+
+  // 2. DB check : si une row existe déjà pour today (peu importe is_quick), pas de carte
+  try {
+    const { data, error } = await sb.from('daily_log')
+      .select('id')
+      .eq('user_id', currentUser.id)
+      .eq('log_date', today)
+      .limit(1);
+    if (error) { console.warn('[CHECKIN-30S] state fetch error:', error); return false; }
+    return !data || data.length === 0;
+  } catch(e) {
+    console.warn('[CHECKIN-30S] state fetch exception:', e);
+    return false;
+  }
+}
+
+// Injecte la carte cyan en haut de #mainContent (après welcome card si présente)
+function injectCheckinCard() {
+  const t = T[currentLang] || T.fr;
+  const wrapper = document.querySelector('#mainContent > div') || document.getElementById('mainContent');
+  if (!wrapper) return;
+  if (document.getElementById('checkinCard')) return; // double-inject guard
+
+  // P1-6 fix : hiérarchie 3 cartes (welcome > weekly insight > checkin).
+  // Cherche d'abord weekly insight (s'inserte après), puis welcome (après),
+  // puis afterbegin du wrapper. Évite l'inversion DOM si welcome arrive en dernier.
+  const insightEl = document.getElementById('weeklyInsightCard');
+  const welcomeEl = document.getElementById('welcomeCard');
+  const html = `
+    <div id="checkinCard" style="background:linear-gradient(135deg,#0ea5e915,#0284c715);border:1px solid #0ea5e950;border-radius:14px;padding:18px;margin-bottom:16px;position:relative;opacity:0;transform:translateY(-8px);transition:opacity 0.4s ease, transform 0.4s ease">
+      <div style="font-size:11px;font-weight:800;color:#0ea5e9;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px">
+        ✨ ${escapeHtml(t.checkinCardTitle || 'Check-in du jour')}
+      </div>
+      <div style="font-size:13px;color:var(--text);line-height:1.5;margin-bottom:14px">${escapeHtml(t.checkinCardSubtitle || '30 secondes pour aider tes coachs à mieux te conseiller.')}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="openCheckinModal()" style="flex:1;min-width:160px;padding:12px 14px;border-radius:10px;border:1px solid #0ea5e940;background:#0ea5e9;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif" onmouseover="this.style.background='#0284c7'" onmouseout="this.style.background='#0ea5e9'">${escapeHtml(t.checkinCardCTA || 'Faire mon check-in')} →</button>
+        <button onclick="dismissCheckinCardToday()" style="padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:none;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">${escapeHtml(t.checkinCardLater || 'Plus tard')}</button>
+      </div>
+    </div>
+  `;
+
+  // P1-6 fix : ordre de priorité d'ancrage (insight > welcome > top)
+  if (insightEl) {
+    insightEl.insertAdjacentHTML('afterend', html);
+  } else if (welcomeEl) {
+    welcomeEl.insertAdjacentHTML('afterend', html);
+  } else {
+    wrapper.insertAdjacentHTML('afterbegin', html);
+  }
+
+  requestAnimationFrame(() => {
+    const el = document.getElementById('checkinCard');
+    if (el) { el.style.opacity = '1'; el.style.transform = 'translateY(0)'; }
+  });
+}
+
+// Dismiss la carte pour la journée uniquement (réapparaît demain)
+function dismissCheckinCardToday() {
+  const el = document.getElementById('checkinCard');
+  if (el) {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(-8px)';
+    setTimeout(() => el.remove(), 400);
+  }
+  try {
+    if (currentUser?.id) {
+      const today = _checkinTodayKey();
+      localStorage.setItem(`sv_checkin_dismissed_${currentUser.id}_${today}`, '1');
+    }
+  } catch(_) {}
+}
+
+// Ouvre la modal 3 sliders. Pattern modal codebase (overlay + panel centré).
+function openCheckinModal() {
+  if (document.getElementById('checkinModal')) return; // double-open guard
+  const t = T[currentLang] || T.fr;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'checkinModal';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;font-family:Inter,sans-serif';
+  overlay.innerHTML = `
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;max-width:420px;width:100%;max-height:90vh;overflow-y:auto" role="dialog" aria-modal="true" aria-labelledby="checkinModalTitle">
+      <div id="checkinModalTitle" style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:6px">${escapeHtml(t.checkinModalTitle || 'Comment vas-tu aujourd\'hui ?')}</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:20px">≈ 30 secondes</div>
+
+      ${_renderCheckinSlider('energy', t.checkinSliderEnergy || 'Énergie', '😴', '🔥', t.checkinEnergyLow || 'Épuisé', t.checkinEnergyHigh || 'Au top')}
+      ${_renderCheckinSlider('mood', t.checkinSliderMood || 'Humeur', '😞', '😄', t.checkinMoodLow || 'Difficile', t.checkinMoodHigh || 'Excellente')}
+      ${_renderCheckinSlider('pain', t.checkinSliderPain || 'Douleurs', '✅', '🤕', t.checkinPainNone || 'Aucune', t.checkinPainHigh || 'Fortes')}
+
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button onclick="closeCheckinModal()" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--border);background:none;color:var(--text);font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">${escapeHtml(t.checkinCancel || 'Annuler')}</button>
+        <button id="checkinSubmitBtn" onclick="submitQuickCheckin()" style="flex:2;padding:12px;border-radius:10px;border:none;background:#0ea5e9;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif" onmouseover="this.style.background='#0284c7'" onmouseout="this.style.background='#0ea5e9'">${escapeHtml(t.checkinSubmit || 'Enregistrer ✓')}</button>
+      </div>
+    </div>
+  `;
+
+  // Click outside ferme la modal
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) closeCheckinModal();
+  });
+  // Escape key ferme la modal
+  overlay._escHandler = function(e) { if (e.key === 'Escape') closeCheckinModal(); };
+  document.addEventListener('keydown', overlay._escHandler);
+
+  document.body.appendChild(overlay);
+
+  // P1-1 fix : binder oninput via addEventListener au lieu d'attribut inline.
+  // Évite toute surface d'injection si `field` devient dynamique.
+  overlay.querySelectorAll('input[type="range"][data-checkin-field]').forEach(input => {
+    input.addEventListener('input', function() {
+      const field = this.getAttribute('data-checkin-field');
+      const valEl = document.getElementById('checkinVal_' + field);
+      if (valEl) valEl.textContent = this.value + ' / 5';
+    });
+  });
+}
+
+// Helper interne pour rendre un slider 1-5
+// P1-1 fix : `field` doit être alphanumérique uniquement (callers hardcodés : 'energy'/'mood'/'pain').
+// L'oninput inline a été remplacé par addEventListener post-mount dans openCheckinModal pour
+// éviter toute injection HTML via field si un futur caller venait à passer une valeur dynamique.
+function _renderCheckinSlider(field, label, lowEmoji, highEmoji, lowLabel, highLabel) {
+  return `
+    <div style="margin-bottom:18px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:13px;font-weight:700;color:var(--text)">${escapeHtml(label)}</span>
+        <span id="checkinVal_${field}" style="font-size:12px;font-weight:600;color:#0ea5e9">3 / 5</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:18px;flex-shrink:0" aria-hidden="true">${lowEmoji}</span>
+        <input type="range" id="checkinInput_${field}" data-checkin-field="${escapeHtml(field)}" min="1" max="5" step="1" value="3" aria-label="${escapeHtml(label)}" style="flex:1;height:6px;accent-color:#0ea5e9;cursor:pointer">
+        <span style="font-size:18px;flex-shrink:0" aria-hidden="true">${highEmoji}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px">
+        <span style="font-size:10px;color:var(--muted)">${escapeHtml(lowLabel)}</span>
+        <span style="font-size:10px;color:var(--muted)">${escapeHtml(highLabel)}</span>
+      </div>
+    </div>
+  `;
+}
+
+function closeCheckinModal() {
+  const el = document.getElementById('checkinModal');
+  if (!el) return;
+  if (el._escHandler) document.removeEventListener('keydown', el._escHandler);
+  el.remove();
+}
+
+// Submit : upsert daily_log avec energy/mood/pain_level + is_quick=true
+async function submitQuickCheckin() {
+  const t = T[currentLang] || T.fr;
+  const btn = document.getElementById('checkinSubmitBtn');
+  if (btn && btn.disabled) return; // double-tap guard
+  if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; btn.textContent = '⏳'; }
+
+  // Lecture sliders avec parse + clamp défensif (1-5)
+  const clamp = v => Math.max(1, Math.min(5, parseInt(v, 10) || 3));
+  const energy = clamp(document.getElementById('checkinInput_energy')?.value);
+  const mood = clamp(document.getElementById('checkinInput_mood')?.value);
+  const pain = clamp(document.getElementById('checkinInput_pain')?.value);
+
+  const today = _checkinTodayKey();
+
+  try {
+    if (!currentUser?.id) throw new Error('No user');
+
+    // P0-1 fix : pattern upsert atomique (cohérent avec saveJournal v2 ligne ~10298)
+    // évite race condition entre check-in et journal long sur le même log_date.
+    // is_quick est posé seulement à la 1ère insertion (n'écrase pas un journal long pré-existant).
+    const { data: existing } = await sb.from('daily_log')
+      .select('id').eq('user_id', currentUser.id).eq('log_date', today).maybeSingle();
+
+    const payload = {
+      user_id: currentUser.id,
+      log_date: today,
+      energy,
+      mood,
+      pain_level: pain
+    };
+    if (!existing) payload.is_quick = true;
+
+    const { error } = await sb.from('daily_log')
+      .upsert(payload, { onConflict: 'user_id,log_date' });
+    if (error) throw error;
+
+    showToast(t.checkinSavedToast || '✅ Check-in enregistré · Tes coachs s\'adapteront');
+    closeCheckinModal();
+
+    // Remove la carte avec fade-out
+    const card = document.getElementById('checkinCard');
+    if (card) {
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(-8px)';
+      setTimeout(() => card.remove(), 400);
+    }
+
+    // v62.27 — déclenche le brief enrichi (cohérence avec saveJournal v62.17).
+    // Le payload contient les 3 sliders du check-in → computeJournalDrivenSuggestions
+    // peut détecter mood ≤ 3 ou pain ≥ 3 et suggérer Emma/Julie. Sleep n'est pas
+    // dans le check-in 30s donc Nora n'apparaîtra que via le journal long.
+    // Injection en haut du #mainContent > div (au-dessus de la welcome card si présente).
+    // P1-7 fix code review : remplace toujours par la carte la plus fraîche
+    // (au lieu de skip si une ancienne carte est encore là). Cohérent avec le
+    // raisonnement "nouvelle saisie = nouvelles recos prioritaires".
+    try {
+      const enriched = computeJournalDrivenSuggestions(payload, t);
+      if (enriched.length > 0) {
+        const cardHTML = renderEnrichedBriefCardHTML(enriched, t);
+        const wrapper = document.querySelector('#mainContent > div');
+        if (wrapper && cardHTML) {
+          document.getElementById('enrichedBriefCard')?.remove();
+          wrapper.insertAdjacentHTML('afterbegin', cardHTML);
+          bindEnrichedBriefCardHandlers();
+          setTimeout(() => {
+            const target = document.getElementById('enrichedBriefCard');
+            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 200);
+        }
+      }
+    } catch (e) {
+      console.warn('[CHECKIN-30S] enriched brief inject failed:', e);
+    }
+  } catch(e) {
+    console.warn('[CHECKIN-30S] submit error:', e);
+    showToast(t.checkinErrorToast || '⚠️ Erreur — réessaye');
+    if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.textContent = t.checkinSubmit || 'Enregistrer ✓'; }
+  }
+}
+
+// ── WEEKLY INSIGHT (Idée 3 STRATEGIE) — v62.28 ─────────────────
+// Coach insight hebdomadaire signé par un agent en rotation. Lazy-load au 1er
+// login de la semaine ISO. Carte purple #a855f7 dans le dashboard. Synergie
+// directe avec check-in 30s v62.27 (les sliders remplissent les 7 derniers
+// jours qui alimentent le prompt Sonnet). Spec : SPEC_v62.28_weekly_insight.md
+//
+// ISO week (Mon-Sun, 8601). Helper aligné sur la function backend.
+function _isoWeek(date) {
+  const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+}
+
+// Détermine si on doit afficher la carte (cache DB ou trigger fetch)
+async function loadWeeklyInsightForDisplay() {
+  if (!currentUser?.id) return { insight: null, shouldRegenerate: false };
+  const currentWeek = _isoWeek(new Date());
+
+  // P1-4 fix : cleanup des keys localStorage périmées (semaines précédentes)
+  // best-effort, jamais bloquant. Pattern aligné sur loadCheckinStateForToday.
+  try {
+    const prefix = `sv_weekly_insight_dismissed_${currentUser.id}_`;
+    const todayKey = prefix + currentWeek;
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(prefix) && k !== todayKey) localStorage.removeItem(k);
+    }
+  } catch(_) {}
+
+  // P1-4 fix : early exit via localStorage si dismiss cette semaine (évite 1 requête DB)
+  try {
+    if (localStorage.getItem(`sv_weekly_insight_dismissed_${currentUser.id}_${currentWeek}`) === '1') {
+      return { insight: null, shouldRegenerate: false };
+    }
+  } catch(_) {}
+
+  try {
+    const { data, error } = await sb.from('profiles')
+      .select('weekly_insight_json, weekly_insight_iso_week, weekly_insight_dismissed_at')
+      .eq('id', currentUser.id)
+      .maybeSingle();
+    if (error || !data) return { insight: null, shouldRegenerate: true };
+
+    const ins = data.weekly_insight_json;
+    const sameWeek = data.weekly_insight_iso_week === currentWeek;
+
+    // Dismissed cette semaine ? → pas afficher
+    if (sameWeek && data.weekly_insight_dismissed_at) {
+      return { insight: null, shouldRegenerate: false };
+    }
+
+    // Cache hit non-fallback : afficher
+    if (ins && sameWeek && !ins._fallback) {
+      return { insight: ins, shouldRegenerate: false };
+    }
+
+    // Pas d'insight pour cette semaine OU fallback → trigger regen
+    return { insight: ins && sameWeek ? ins : null, shouldRegenerate: true };
+  } catch(e) {
+    console.warn('[WEEKLY-INSIGHT] load error:', e);
+    return { insight: null, shouldRegenerate: true };
+  }
+}
+
+// Génère l'insight via la Netlify function (fire-and-forget, latence ~3-6s)
+// P1-2 fix : flag module-scope pour bloquer 2nd appel simultané (évite double facturation Anthropic).
+let _weeklyInsightInflight = false;
+async function generateWeeklyInsightAsync(lang) {
+  if (!currentUser?.id) return;
+  if (_weeklyInsightInflight) return;
+  _weeklyInsightInflight = true;
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const accessToken = session?.access_token;
+    if (!accessToken) { console.warn('[WEEKLY-INSIGHT] no access token'); return; }
+
+    const res = await fetch('/.netlify/functions/weekly-insight', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`
+      },
+      body: JSON.stringify({
+        lang: lang || currentLang || 'fr',
+        userPlan: typeof userPlan !== 'undefined' ? userPlan : 'free' // P0-2 fix : filtre pool agents
+      })
+    });
+    if (!res.ok) {
+      console.warn('[WEEKLY-INSIGHT] HTTP', res.status);
+      return;
+    }
+    const json = await res.json();
+    if (json.insight) {
+      // P0-1 fix : avant d'injecter post-regen, re-vérifier que la carte n'a pas
+      // été dismissed entre temps (cas race : user clique × pendant les 3-6s de
+      // génération). Si dismiss DB ou localStorage présent → ne pas réinjecter.
+      const wasDismissed = await _checkInsightDismissed(currentUser.id, _isoWeek(new Date()));
+      if (!wasDismissed && !document.getElementById('weeklyInsightCard')) {
+        injectWeeklyInsightCard(json.insight);
+      }
+    }
+  } catch(e) {
+    console.warn('[WEEKLY-INSIGHT] generate error:', e);
+  } finally {
+    _weeklyInsightInflight = false;
+  }
+}
+
+// P0-1 helper : check si l'user a dismiss la carte entre temps (DB ou local)
+async function _checkInsightDismissed(userId, isoWeek) {
+  try {
+    if (localStorage.getItem(`sv_weekly_insight_dismissed_${userId}_${isoWeek}`) === '1') return true;
+  } catch(_) {}
+  try {
+    const { data } = await sb.from('profiles')
+      .select('weekly_insight_dismissed_at, weekly_insight_iso_week')
+      .eq('id', userId)
+      .maybeSingle();
+    if (data?.weekly_insight_dismissed_at && data.weekly_insight_iso_week === isoWeek) return true;
+  } catch(_) {}
+  return false;
+}
+
+// Render carte purple #a855f7
+function renderWeeklyInsightCardHTML(insight, t) {
+  if (!insight || !insight.headline) return '';
+  const titleTpl = t.weeklyInsightCardTitle || 'Ta semaine par {agent}';
+  const title = titleTpl.replace('{agent}', escapeHtml(insight.agent_name || ''));
+  const observationsHTML = (insight.observations || []).map(o => `
+    <div style="display:flex;gap:8px;font-size:12px;color:var(--text);line-height:1.5;margin-bottom:6px">
+      <span style="color:#a855f7;flex-shrink:0">•</span>
+      <span>${escapeHtml(o)}</span>
+    </div>
+  `).join('');
+  const talkBtnTpl = t.weeklyInsightTalkButton || 'Parler à {agent} →';
+  const talkBtn = talkBtnTpl.replace('{agent}', escapeHtml(insight.agent_name || ''));
+  // Stocke l'insight headline pour passer en focus au kickoff lors du click
+  const focusText = (insight.headline || '').slice(0, 60);
+
+  return `
+    <div id="weeklyInsightCard" style="background:linear-gradient(135deg,#a855f715,#7c3aed15);border:1px solid #a855f750;border-radius:14px;padding:18px;margin-bottom:16px;position:relative;opacity:0;transform:translateY(-8px);transition:opacity 0.4s ease, transform 0.4s ease">
+      <button onclick="dismissWeeklyInsight()" aria-label="${escapeHtml(t.weeklyInsightDismiss || 'Fermer')}" style="position:absolute;top:10px;right:10px;background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px 8px;line-height:1;font-family:'Inter',sans-serif">×</button>
+      <div style="font-size:11px;font-weight:800;color:#a855f7;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px;padding-right:32px">
+        ✨ ${title} ${escapeHtml(insight.agent_emoji || '')}
+      </div>
+      <div style="font-size:14px;color:var(--text);line-height:1.5;margin-bottom:14px;font-weight:600">${escapeHtml(insight.headline)}</div>
+      ${observationsHTML ? `<div style="margin-bottom:14px">${observationsHTML}</div>` : ''}
+      ${insight.recommendation ? `
+      <div style="background:#a855f708;border:1px solid #a855f725;border-radius:10px;padding:12px 14px;margin-bottom:14px">
+        <div style="font-size:10px;color:#a855f7;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px">💡 ${escapeHtml(t.weeklyInsightAction || 'Pour la semaine prochaine')}</div>
+        <div style="font-size:12px;color:var(--text);line-height:1.5">${escapeHtml(insight.recommendation)}</div>
+      </div>
+      ` : ''}
+      <button data-weekly-talk-btn="1" data-weekly-agent="${escapeHtml(insight.agent_id || '')}" data-weekly-focus="${escapeHtml(focusText)}" style="display:block;width:100%;padding:12px 14px;border-radius:10px;border:1px solid #a855f740;background:#a855f7;color:#fff;font-size:13px;font-weight:700;cursor:pointer;text-align:center;font-family:'Inter',sans-serif" onmouseover="this.style.background='#7c3aed'" onmouseout="this.style.background='#a855f7'">${talkBtn}</button>
+    </div>
+  `;
+}
+
+function injectWeeklyInsightCard(insight) {
+  const t = T[currentLang] || T.fr;
+  const wrapper = document.querySelector('#mainContent > div') || document.getElementById('mainContent');
+  if (!wrapper) return;
+  if (document.getElementById('weeklyInsightCard')) return; // double-inject guard
+
+  const html = renderWeeklyInsightCardHTML(insight, t);
+  if (!html) return;
+
+  // Hiérarchie : welcome card > weekly insight > checkin card. On insère
+  // APRÈS welcome card si présente, sinon en haut. Le checkin card s'insère
+  // après nous (ou en haut si on est absent).
+  const welcomeEl = document.getElementById('welcomeCard');
+  if (welcomeEl) {
+    welcomeEl.insertAdjacentHTML('afterend', html);
+  } else {
+    wrapper.insertAdjacentHTML('afterbegin', html);
+  }
+
+  // Bind talk button (data-attributes pattern, cohérent avec brief enrichi v62.27)
+  const card = document.getElementById('weeklyInsightCard');
+  if (card) {
+    const btn = card.querySelector('button[data-weekly-talk-btn]');
+    if (btn) btn.addEventListener('click', weeklyInsightTalk);
+  }
+
+  requestAnimationFrame(() => {
+    const el = document.getElementById('weeklyInsightCard');
+    if (el) { el.style.opacity = '1'; el.style.transform = 'translateY(0)'; }
+  });
+}
+
+// Click "Parler à {agent}" → kickoff message via le pattern v62.27
+function weeklyInsightTalk(e) {
+  const btn = e.currentTarget || e.target;
+  const agent = btn.getAttribute('data-weekly-agent');
+  const focus = btn.getAttribute('data-weekly-focus') || '';
+  if (!agent) return;
+  try {
+    sessionStorage.setItem('sv_journal_kickoff', JSON.stringify({
+      page: agent,
+      type: 'weekly_insight',
+      value: 0, // pas de chiffre pour ce kickoff
+      focus,    // contexte additionnel pour buildJournalKickoffMessage
+      _ts: Date.now()
+    }));
+  } catch(_) {}
+  showPage(agent, null);
+}
+
+async function dismissWeeklyInsight() {
+  const el = document.getElementById('weeklyInsightCard');
+  if (el) {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(-8px)';
+    setTimeout(() => el.remove(), 400);
+  }
+  try { localStorage.setItem(`sv_weekly_insight_dismissed_${currentUser.id}_${_isoWeek(new Date())}`, '1'); } catch(_) {}
+  try {
+    await sb.from('profiles')
+      .update({ weekly_insight_dismissed_at: new Date().toISOString() })
+      .eq('id', currentUser.id);
+  } catch(e) { console.warn('[WEEKLY-INSIGHT] dismiss DB error:', e); }
+}
+
 // ── PREFILL SUGGESTED WEEK (post-onboarding) — v62.26 ──────────
 // Quick Win #2 : pre-fill le calendrier avec une semaine type pré-remplie
 // selon le sport choisi (3 events). Insertion sur la SEMAINE PROCHAINE
@@ -8227,8 +8838,11 @@ async function confirmSuggestedEvent(eventId) {
 // laissait l'user sur le journal sans nouvelle reco contextuelle, alors que
 // le morningBrief lui-même est verrouillé 24h via localStorage.
 function computeJournalDrivenSuggestions(payload, t) {
-  // payload = le row daily_log fraîchement upserté (cf. saveJournal)
+  // payload = le row daily_log fraîchement upserté (cf. saveJournal et submitQuickCheckin v62.27)
   // t = bloc i18n actif (T[currentLang] || T.fr)
+  // v62.27 — chaque suggestion porte aussi `type` et `value` pour permettre à
+  // buildJournalKickoffMessage de générer un message d'intro contextuel quand
+  // l'user clique le bouton (cf. fix "agent ouvre chat vide").
   const sugg = [];
   if (!payload) return sugg;
 
@@ -8237,6 +8851,7 @@ function computeJournalDrivenSuggestions(payload, t) {
     sugg.push({
       page: 'sommeil',
       name: 'Nora', emoji: '😴', color: '#a78bfa',
+      type: 'sleep', value: payload.sleep_quality,
       reason: (t.briefEnrichedReasonSleep || 'Ton sommeil à {val}/5 mérite qu\'on en parle').replace('{val}', payload.sleep_quality)
     });
   }
@@ -8248,6 +8863,7 @@ function computeJournalDrivenSuggestions(payload, t) {
     sugg.push({
       page: 'mental',
       name: 'Emma', emoji: '🧠', color: '#06b6d4',
+      type: 'mood', value: lo,
       reason: (t.briefEnrichedReasonMood || 'Ton moral à {val}/5 — Emma peut t\'aider').replace('{val}', lo)
     });
   }
@@ -8256,20 +8872,57 @@ function computeJournalDrivenSuggestions(payload, t) {
     sugg.push({
       page: 'recuperation',
       name: 'Julie', emoji: '♻️', color: '#14b8a6',
+      type: 'pain', value: payload.pain_level,
       reason: (t.briefEnrichedReasonPain || 'Tu as logué une douleur à {val}/5 — Julie peut adapter ta récup').replace('{val}', payload.pain_level)
     });
   }
   return sugg;
 }
 
+// v62.27 — Construit le message d'intro contextuel posté par l'agent au moment où
+// l'user atterrit sur sa page chat depuis le brief enrichi. Évite le syndrome
+// "chat ouvert vide alors que je viens de remplir mon journal" rapporté en
+// observation 07/05. Templates hardcodés × 4 langs, 0 appel API, latence nulle.
+function buildJournalKickoffMessage(kickoff, t) {
+  if (!kickoff || !kickoff.type) return null;
+  // v62.28 — type 'weekly_insight' : kickoff via la carte hebdo, pas de val numérique
+  // mais un focus textuel (headline insight tronqué à 60 chars).
+  if (kickoff.type === 'weekly_insight') {
+    const tpl = t.kickoffWeeklyInsight;
+    if (!tpl) return null;
+    const focus = String(kickoff.focus || '').slice(0, 100);
+    // Si pas de focus, on fallback sur "ces observations" (générique mais OK)
+    const safeFocus = focus || 'ces observations';
+    return tpl.replace('{focus}', safeFocus);
+  }
+  // Types data-driven (sleep/mood/pain) : value numérique requise
+  if (kickoff.value == null) return null;
+  // P0-3 fix code review : clamp défensif strict (0-5).
+  const v = String(Math.max(0, Math.min(5, parseInt(kickoff.value, 10) || 0)));
+  let tpl = null;
+  if (kickoff.type === 'sleep') tpl = t.kickoffSleepLow;
+  else if (kickoff.type === 'mood') tpl = t.kickoffMoodLow;
+  else if (kickoff.type === 'pain') tpl = t.kickoffPainHigh;
+  if (!tpl) {
+    // P1-6 fix code review : warn si un nouveau type est ajouté sans extension.
+    console.warn('[KICKOFF] unknown signal type:', kickoff.type);
+    return null;
+  }
+  return tpl.replace('{val}', v);
+}
+
 function renderEnrichedBriefCardHTML(suggestions, t) {
   if (!suggestions || suggestions.length === 0) return '';
+  // P0-2 fix code review : data-attributes + addEventListener post-mount via
+  // bindEnrichedBriefCardHandlers() au lieu d'onclick inline avec interpolation.
+  // Cohérent avec le pattern checkin sliders (P1-1 fix). Élimine la dette XSS
+  // latente si demain `s.name`/`s.reason` venaient à contenir du contenu user.
   const buttonsHTML = suggestions.map(s => `
-    <button onclick="this.style.background='${s.color}30';this.style.border='1px solid ${s.color}';this.querySelector('.enriched-arrow').textContent='✓';var b=this;setTimeout(function(){showPage('${s.page}',null)},250)" style="display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border-radius:12px;border:1px solid ${s.color}25;background:${s.color}08;cursor:pointer;transition:all 0.2s;font-family:'Inter',sans-serif;text-align:left;margin-bottom:8px" onmouseover="this.style.background='${s.color}15';this.style.transform='translateY(-1px)'" onmouseout="this.style.background='${s.color}08';this.style.transform='none'">
-      <div style="width:40px;height:40px;border-radius:12px;background:${s.color}20;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${s.emoji}</div>
+    <button data-enriched-btn="1" data-enriched-page="${escapeHtml(s.page)}" data-enriched-type="${escapeHtml(s.type || '')}" data-enriched-value="${typeof s.value === 'number' ? s.value : ''}" data-enriched-color="${escapeHtml(s.color)}" style="display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border-radius:12px;border:1px solid ${s.color}25;background:${s.color}08;cursor:pointer;transition:all 0.2s;font-family:'Inter',sans-serif;text-align:left;margin-bottom:8px" onmouseover="this.style.background='${s.color}15';this.style.transform='translateY(-1px)'" onmouseout="this.style.background='${s.color}08';this.style.transform='none'">
+      <div style="width:40px;height:40px;border-radius:12px;background:${s.color}20;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${escapeHtml(s.emoji)}</div>
       <div style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:700;color:var(--text)">${s.name}</div>
-        <div style="font-size:11px;color:var(--muted);line-height:1.4">${s.reason}</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text)">${escapeHtml(s.name)}</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.4">${escapeHtml(s.reason)}</div>
       </div>
       <div class="enriched-arrow" style="color:${s.color};font-size:16px;flex-shrink:0;transition:all 0.2s">→</div>
     </button>
@@ -8277,12 +8930,41 @@ function renderEnrichedBriefCardHTML(suggestions, t) {
   return `
     <div id="enrichedBriefCard" style="background:linear-gradient(135deg,#f59e0b10,#d9770610);border:1px solid #f59e0b40;border-radius:14px;padding:16px;margin-bottom:16px;transition:opacity 0.3s ease">
       <div style="font-size:11px;font-weight:800;color:#f59e0b;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:4px;display:flex;align-items:center;gap:6px">
-        ✨ ${t.briefEnrichedTitle || 'Brief enrichi'}
+        ✨ ${escapeHtml(t.briefEnrichedTitle || 'Brief enrichi')}
       </div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.4">${t.briefEnrichedSubtitle || 'Vu ce que tu viens de me dire, je te suggère :'}</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.4">${escapeHtml(t.briefEnrichedSubtitle || 'Vu ce que tu viens de me dire, je te suggère :')}</div>
       ${buttonsHTML}
     </div>
   `;
+}
+
+// v62.27 — Bind les handlers click sur les boutons brief enrichi (post-mount).
+// Appelé via MutationObserver global ou directement après chaque insertAdjacentHTML
+// du brief enrichi (saveJournal + submitQuickCheckin).
+function bindEnrichedBriefCardHandlers() {
+  const card = document.getElementById('enrichedBriefCard');
+  if (!card) return;
+  card.querySelectorAll('button[data-enriched-btn]').forEach(btn => {
+    if (btn._enrichedBound) return; // double-bind guard
+    btn._enrichedBound = true;
+    btn.addEventListener('click', function() {
+      const page = this.getAttribute('data-enriched-page');
+      const type = this.getAttribute('data-enriched-type');
+      const valRaw = this.getAttribute('data-enriched-value');
+      const value = (valRaw !== '' && valRaw != null) ? parseInt(valRaw, 10) : null;
+      const color = this.getAttribute('data-enriched-color');
+      try {
+        sessionStorage.setItem('sv_journal_kickoff', JSON.stringify({
+          page, type, value, _ts: Date.now()
+        }));
+      } catch(_) {}
+      this.style.background = color + '30';
+      this.style.border = '1px solid ' + color;
+      const arrow = this.querySelector('.enriched-arrow');
+      if (arrow) arrow.textContent = '✓';
+      setTimeout(() => showPage(page, null), 250);
+    });
+  });
 }
 
 // ── PROACTIVE AGENTS ────────────────────────────────
@@ -10087,7 +10769,12 @@ async function saveJournal() {
       const cardHTML = renderEnrichedBriefCardHTML(enriched, t);
       const wrapper = document.querySelector('#mainContent > div');
       if (wrapper && cardHTML) {
+        // v62.27 P1-7 fix : retire l'éventuelle carte précédente (ex. issue d'un
+        // check-in 30s) pour afficher la carte la plus fraîche. Symétrie avec
+        // submitQuickCheckin.
+        document.getElementById('enrichedBriefCard')?.remove();
         wrapper.insertAdjacentHTML('afterbegin', cardHTML);
+        bindEnrichedBriefCardHandlers();
         _enrichedShown = true;
       }
     }
