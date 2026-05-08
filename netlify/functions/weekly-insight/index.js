@@ -541,8 +541,14 @@ exports.handler = async (event) => {
   const currentIsoWeek = getISOWeek(now);
   const force = !!payload.force;
 
+  // v62.29 fix : si la lang du cache JSON ne match pas la lang demandée,
+  // on régénère systématiquement (sinon user en EN voit du contenu FR cached
+  // d'avant changement de langue). C'est le bug rapporté en self-test 07/05.
+  const cachedLang = profile?.weekly_insight_json?._lang || null;
+  const langMismatch = cachedLang && cachedLang !== lang;
+
   // Cache check
-  if (!force && profile?.weekly_insight_json && profile.weekly_insight_iso_week === currentIsoWeek) {
+  if (!force && !langMismatch && profile?.weekly_insight_json && profile.weekly_insight_iso_week === currentIsoWeek) {
     if (!profile.weekly_insight_json._fallback) {
       // Cache hit non-fallback
       return {
@@ -559,6 +565,9 @@ exports.handler = async (event) => {
         body: JSON.stringify({ insight: profile.weekly_insight_json, cached: true })
       };
     }
+  }
+  if (langMismatch) {
+    console.log('[WEEKLY-INSIGHT] lang mismatch cache=' + cachedLang + ' requested=' + lang + ' → regen');
   }
 
   // ─── Generate ───
@@ -595,6 +604,7 @@ exports.handler = async (event) => {
       insight.agent_emoji = agent.emoji;
       insight._iso_week = currentIsoWeek;
       insight._generated_at = now.toISOString();
+      insight._lang = lang; // v62.29 fix : permet au cache check de détecter mismatch lang
       insight._fallback = false;
     }
   }
@@ -610,6 +620,7 @@ exports.handler = async (event) => {
     insight = buildFallbackInsight(lang, agent);
     insight._iso_week = currentIsoWeek;
     insight._generated_at = now.toISOString();
+    insight._lang = lang; // v62.29 fix : pareil pour le fallback hardcoded
     modelUsed = 'fallback';
   }
 
