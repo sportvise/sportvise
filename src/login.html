@@ -53,6 +53,98 @@
       align-items: center; justify-content: center;
       padding: 24px;
     }
+    /* v62.35 — Layout 2 colonnes (proof + form) sur desktop */
+    .layout-2col {
+      width: 100%; max-width: 980px;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 32px;
+      position: relative; z-index: 1;
+    }
+    .proof-col { width: 100%; max-width: 460px; text-align: center; }
+    .form-col { width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; }
+    @media (min-width: 920px) {
+      body { justify-content: flex-start; padding: 56px 24px 32px; }
+      .layout-2col {
+        flex-direction: row; align-items: flex-start;
+        gap: 56px;
+      }
+      .proof-col { text-align: left; flex: 1; max-width: 480px; padding-top: 12px; }
+      .form-col { flex: 0 0 400px; }
+      .logo-mobile-only { display: none; }
+    }
+    /* Proof column elements (v62.35) */
+    .proof-tagline {
+      font-size: 22px; font-weight: 700; line-height: 1.35;
+      margin: 14px 0 26px; color: var(--text); letter-spacing: -0.3px;
+    }
+    .proof-tagline strong { color: var(--gold); }
+    .proof-demo {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 14px; padding: 18px 18px 16px;
+      margin-bottom: 24px; text-align: left;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.25);
+    }
+    .demo-header {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 14px; padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .demo-avatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .demo-agent { font-size: 14px; font-weight: 700; color: var(--text); }
+    .demo-status { font-size: 11px; color: var(--green); margin-top: 2px; display: flex; align-items: center; gap: 5px; }
+    .demo-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; }
+    .demo-context {
+      display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;
+    }
+    .demo-chip {
+      font-size: 11px; padding: 4px 9px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 12px; color: var(--gold); font-weight: 600;
+      white-space: nowrap;
+    }
+    .demo-message {
+      font-size: 13px; line-height: 1.65; color: var(--text);
+    }
+    .proof-agents { margin-bottom: 22px; text-align: left; }
+    @media (max-width: 919px) { .proof-agents { text-align: center; } }
+    .proof-agents-label {
+      font-size: 10px; text-transform: uppercase; letter-spacing: 1.4px;
+      color: var(--muted); margin-bottom: 10px; font-weight: 700;
+    }
+    .proof-agents-row {
+      display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-start;
+    }
+    @media (max-width: 919px) { .proof-agents-row { justify-content: center; } }
+    .agent-dot {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; border: 2px solid var(--bg2);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .proof-badges {
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    @media (max-width: 919px) {
+      .proof-badges { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+    }
+    .proof-badge {
+      display: flex; align-items: center; gap: 9px;
+      font-size: 12px; color: #94a3b8;
+      padding: 8px 12px; background: var(--bg2);
+      border: 1px solid var(--border); border-radius: 8px;
+    }
+    .proof-badge-icon {
+      font-size: 14px; line-height: 1;
+    }
+    /* Hide duplicate logo on desktop (logo lives in proof-col) */
+    .logo-mobile-only {
+      display: block;
+    }
     body::before {
       content: ''; position: fixed; top: 0; left: 50%; transform: translateX(-50%);
       width: 600px; height: 500px;
@@ -162,8 +254,60 @@
   <button onclick="setLangPage('it')" id="lp-it" title="Italiano">🇮🇹</button>
 </div>
 
-<div class="logo">SPORTVISE</div>
-<div class="tagline" data-i18n="tagline">🇨🇭 Management Sportif IA · Suisse</div>
+<div class="layout-2col">
+
+  <!-- PROOF COLUMN (v62.35 — onboarding wow-factor) -->
+  <div class="proof-col">
+    <div class="logo">SPORTVISE</div>
+    <div class="proof-tagline" data-i18n="proofTagline">11 agents IA qui se souviennent de <strong>chaque entraînement</strong>.</div>
+
+    <!-- Mini conversation demo : démontre l'injection contextuelle (le moat) -->
+    <div class="proof-demo">
+      <div class="demo-header">
+        <div class="demo-avatar">💼</div>
+        <div>
+          <div class="demo-agent" data-i18n="demoAgent">Lucas — Manager Sportif</div>
+          <div class="demo-status" data-i18n="demoStatus">Lit ton dossier avant chaque réponse</div>
+        </div>
+      </div>
+      <div class="demo-context">
+        <span class="demo-chip" data-i18n="demoChipCal">📅 Match dim 14h</span>
+        <span class="demo-chip" data-i18n="demoChipRpe">💪 RPE 7.8 hier</span>
+        <span class="demo-chip" data-i18n="demoChipClub">⚽ FC Lausanne M19</span>
+        <span class="demo-chip" data-i18n="demoChipTrend">📊 Tendance fatigue +</span>
+      </div>
+      <div class="demo-message" data-i18n="demoMessage">Avant ton match dimanche, je te suggère : réunion courte avec le coach mardi pour clarifier ton statut, refus de toute négociation contrat avant le week-end (tu es vulnérable), et plan B prêt si l'offre verbale reste floue. Côté physique, ton RPE indique de lever le pied d'ici samedi.</div>
+    </div>
+
+    <!-- 11 agents dots -->
+    <div class="proof-agents">
+      <div class="proof-agents-label" data-i18n="proofAgentsLabel">+ 10 autres agents experts</div>
+      <div class="proof-agents-row">
+        <span class="agent-dot" style="background:#6366f1" title="Alex">🎯</span>
+        <span class="agent-dot" style="background:#10b981" title="Marc">🤝</span>
+        <span class="agent-dot" style="background:#ef4444" title="Léa">⚖️</span>
+        <span class="agent-dot" style="background:#06b6d4" title="Sophie">💶</span>
+        <span class="agent-dot" style="background:#ec4899" title="Pierre">📊</span>
+        <span class="agent-dot" style="background:#fbbf24" title="David">🏋️</span>
+        <span class="agent-dot" style="background:#9333ea" title="Emma">🧠</span>
+        <span class="agent-dot" style="background:#22c55e" title="Clara">🥗</span>
+        <span class="agent-dot" style="background:#0ea5e9" title="Nora">😴</span>
+        <span class="agent-dot" style="background:#f97316" title="Julie">💆</span>
+      </div>
+    </div>
+
+    <!-- Trust badges -->
+    <div class="proof-badges">
+      <div class="proof-badge"><span class="proof-badge-icon">🇨🇭</span><span data-i18n="proofBadge1">Données hébergées en Suisse · nLPD</span></div>
+      <div class="proof-badge"><span class="proof-badge-icon">🔒</span><span data-i18n="proofBadge2">Aucune carte de crédit requise</span></div>
+      <div class="proof-badge"><span class="proof-badge-icon">✓</span><span data-i18n="proofBadge3">30 jours satisfait ou remboursé</span></div>
+    </div>
+  </div>
+
+  <!-- FORM COLUMN (existing card preserved 100%) -->
+  <div class="form-col">
+    <div class="logo logo-mobile-only">SPORTVISE</div>
+    <div class="tagline" data-i18n="tagline">🇨🇭 Management Sportif IA · Suisse</div>
 
 <div class="card">
   <div class="tabs">
@@ -261,11 +405,27 @@
   <a href="legal_fr.html" data-legal-section="legal" data-i18n="footerLinkLegal" style="color:var(--muted);text-decoration:none">Mentions légales</a>
 </div>
 
+  </div><!-- /.form-col -->
+</div><!-- /.layout-2col -->
+
 <script>
   // ── I18N ──────────────────────────────────────────
   const i18n = {
     fr: {
       tagline:"🇨🇭 Management Sportif IA · Suisse",
+      // v62.35 — Onboarding proof column
+      proofTagline:"11 agents IA qui se souviennent de <strong>chaque entraînement</strong>.",
+      demoAgent:"Lucas — Manager Sportif",
+      demoStatus:"Lit ton dossier avant chaque réponse",
+      demoChipCal:"📅 Match dim 14h",
+      demoChipRpe:"💪 RPE 7.8 hier",
+      demoChipClub:"⚽ FC Lausanne M19",
+      demoChipTrend:"📊 Tendance fatigue +",
+      demoMessage:"Avant ton match dimanche, je te suggère : réunion courte avec le coach mardi pour clarifier ton statut, refus de toute négociation contrat avant le week-end (tu es vulnérable), et plan B prêt si l'offre verbale reste floue. Côté physique, ton RPE indique de lever le pied d'ici samedi.",
+      proofAgentsLabel:"+ 10 autres agents experts",
+      proofBadge1:"Données hébergées en Suisse · nLPD",
+      proofBadge2:"Aucune carte de crédit requise",
+      proofBadge3:"30 jours satisfait ou remboursé",
       tabLogin:"Se connecter", tabSignup:"Créer un compte",
       lblEmail:"Email", lblPassword:"Mot de passe",
       lblNewPassword:"Nouveau mot de passe", lblConfirmPassword:"Confirmer le mot de passe",
@@ -297,6 +457,19 @@
     },
     de: {
       tagline:"🇨🇭 KI-Sportmanagement · Schweiz",
+      // v62.35 — Onboarding proof column
+      proofTagline:"11 KI-Agenten, die sich an <strong>jedes Training</strong> erinnern.",
+      demoAgent:"Lucas — Sportmanager",
+      demoStatus:"Liest dein Dossier vor jeder Antwort",
+      demoChipCal:"📅 Spiel Sonntag 14:00",
+      demoChipRpe:"💪 RPE 7.8 gestern",
+      demoChipClub:"⚽ FC Lausanne M19",
+      demoChipTrend:"📊 Trend Müdigkeit +",
+      demoMessage:"Vor deinem Spiel am Sonntag schlage ich vor: kurzes Gespräch mit dem Trainer am Dienstag, um deinen Status zu klären, keine Vertragsverhandlung vor dem Wochenende (du bist verletzlich), und ein Plan B bereit, falls das mündliche Angebot vage bleibt. Körperlich zeigt dein RPE, ab Samstag etwas zurückzunehmen.",
+      proofAgentsLabel:"+ 10 weitere Experten-Agenten",
+      proofBadge1:"Daten in der Schweiz gehostet · DSG",
+      proofBadge2:"Keine Kreditkarte erforderlich",
+      proofBadge3:"30 Tage Geld-zurück-Garantie",
       tabLogin:"Anmelden", tabSignup:"Konto erstellen",
       lblEmail:"E-Mail", lblPassword:"Passwort",
       lblNewPassword:"Neues Passwort", lblConfirmPassword:"Passwort bestätigen",
@@ -327,6 +500,19 @@
     },
     en: {
       tagline:"🇨🇭 AI Sports Management · Switzerland",
+      // v62.35 — Onboarding proof column
+      proofTagline:"11 AI agents that remember <strong>every training session</strong>.",
+      demoAgent:"Lucas — Sports Manager",
+      demoStatus:"Reads your file before each reply",
+      demoChipCal:"📅 Match Sun 2pm",
+      demoChipRpe:"💪 RPE 7.8 yesterday",
+      demoChipClub:"⚽ FC Lausanne U19",
+      demoChipTrend:"📊 Fatigue trend +",
+      demoMessage:"Ahead of Sunday's match, I suggest: short meeting with the coach Tuesday to clarify your status, no contract negotiation before the weekend (you're vulnerable), and a plan B ready if the verbal offer stays vague. Physically, your RPE points to easing off from Saturday onwards.",
+      proofAgentsLabel:"+ 10 more expert agents",
+      proofBadge1:"Data hosted in Switzerland · FADP",
+      proofBadge2:"No credit card required",
+      proofBadge3:"30-day money-back guarantee",
       tabLogin:"Log in", tabSignup:"Create account",
       lblEmail:"Email", lblPassword:"Password",
       lblNewPassword:"New password", lblConfirmPassword:"Confirm password",
@@ -357,6 +543,19 @@
     },
     it: {
       tagline:"🇨🇭 Gestione Sportiva IA · Svizzera",
+      // v62.35 — Onboarding proof column
+      proofTagline:"11 agenti IA che si ricordano di <strong>ogni allenamento</strong>.",
+      demoAgent:"Lucas — Manager Sportivo",
+      demoStatus:"Legge il tuo dossier prima di ogni risposta",
+      demoChipCal:"📅 Partita dom 14:00",
+      demoChipRpe:"💪 RPE 7.8 ieri",
+      demoChipClub:"⚽ FC Lausanne U19",
+      demoChipTrend:"📊 Tendenza fatica +",
+      demoMessage:"Prima della partita di domenica, ti suggerisco: incontro breve con l'allenatore martedì per chiarire il tuo status, rifiuto di ogni negoziazione contrattuale prima del weekend (sei vulnerabile), e un piano B pronto se l'offerta verbale resta vaga. Sul piano fisico, il tuo RPE indica di rallentare a partire da sabato.",
+      proofAgentsLabel:"+ 10 altri agenti esperti",
+      proofBadge1:"Dati ospitati in Svizzera · LPD",
+      proofBadge2:"Nessuna carta di credito richiesta",
+      proofBadge3:"30 giorni soddisfatti o rimborsati",
       tabLogin:"Accedi", tabSignup:"Crea account",
       lblEmail:"Email", lblPassword:"Password",
       lblNewPassword:"Nuova password", lblConfirmPassword:"Conferma password",
