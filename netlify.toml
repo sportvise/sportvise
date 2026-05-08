@@ -4,6 +4,18 @@
   functions = "netlify/functions"
 
 # Cache headers — static HTML pages: no cache (always fresh)
+# v62.33 — règle "/" ajoutée car "/*.html" ne matche PAS "/" (URL sans extension).
+# Bug découvert par tests/smoke.test.mjs : la landing ne recevait ni X-Frame-Options
+# ni X-Content-Type-Options ni le cache-control voulu.
+[[headers]]
+  for = "/"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Cache-Control = "no-cache, no-store, must-revalidate, max-age=0"
+    Pragma = "no-cache"
+    Expires = "0"
+
 [[headers]]
   for = "/*.html"
   [headers.values]
