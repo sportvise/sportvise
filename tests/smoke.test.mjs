@@ -139,6 +139,32 @@ async function main() {
     expectStatus(terms, 200, `GET /terms_${lang}.html`);
   }
 
+  // ── 4.5 Pages localisées séparées /de/ /en/ /it/ (v62.34) ──
+  section('Pages localisées (v62.34)');
+  const langExpect = {
+    de: { lang: 'de-CH', titleHas: 'KI-Sportmanagement', canonicalHas: '/de/' },
+    en: { lang: 'en',    titleHas: 'AI Sports Management', canonicalHas: '/en/' },
+    it: { lang: 'it-CH', titleHas: 'Sport Management IA',  canonicalHas: '/it/' }
+  };
+  for (const [lang, exp] of Object.entries(langExpect)) {
+    const variant = await getResponse(`/${lang}/`);
+    expectStatus(variant, 200, `GET /${lang}/`);
+    if (!variant.error) {
+      const langMatch = variant.text.match(/<html lang="([^"]+)"/);
+      if (langMatch && langMatch[1] === exp.lang) ok(`/${lang}/ html lang → ${exp.lang}`);
+      else fail(`/${lang}/ html lang → ${langMatch ? langMatch[1] : 'MISSING'} (attendu ${exp.lang})`);
+
+      if (variant.text.includes(exp.titleHas)) ok(`/${lang}/ title contient "${exp.titleHas}"`);
+      else fail(`/${lang}/ title ne contient pas "${exp.titleHas}"`);
+
+      if (variant.text.includes(`href="https://sportvise.ch${exp.canonicalHas}"`)) ok(`/${lang}/ canonical → ${exp.canonicalHas}`);
+      else fail(`/${lang}/ canonical incorrecte (attendu ${exp.canonicalHas})`);
+
+      if (variant.text.includes(`window.__svInitialLang='${lang}'`)) ok(`/${lang}/ __svInitialLang injecté`);
+      else fail(`/${lang}/ __svInitialLang absent`);
+    }
+  }
+
   // ── 5. Headers de sécurité ──
   section('Headers sécurité (netlify.toml)');
   expectHeader(landing, 'x-frame-options', /^DENY$/i, '/ X-Frame-Options DENY');
