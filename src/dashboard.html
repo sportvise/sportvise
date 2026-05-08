@@ -930,6 +930,27 @@ const T = {
     briefSave:'Enregistrer ✓', briefSaved:'Enregistré !', briefFullJournal:'Journal complet →', briefFillJournal:'Remplir mon journal',
     briefEnrichedTitle:'Brief enrichi', briefEnrichedSubtitle:'Vu ce que tu viens de me dire, je te suggère :',
     briefEnrichedReasonSleep:'Ton sommeil à {val}/5 — Nora a des conseils', briefEnrichedReasonMood:'Ton moral à {val}/5 — Emma peut t\'aider', briefEnrichedReasonPain:'Tu as logué une douleur à {val}/5 — Julie peut adapter ta récup',
+    // v62.31 — i18n suggestions agents brief enrichi (fix mélange EN/FR)
+    briefSuggestionMental:'Prépare ta routine mentale pour {title} ({when})',
+    briefSuggestionNutrition:'Optimise ta nutrition avant {title} ({when})',
+    briefSuggestionPhysique:'Adapte ta prépa physique pour {title} ({when})',
+    briefSuggestionTraining:'Prépare ta séance : {title} ({when})',
+    briefWhenToday:'aujourd\'hui', briefWhenTomorrow:'demain', briefWhenInDays:'dans {n} jours',
+    // v62.31 — i18n notifications PWA + messages proactifs (fix audit total)
+    notifTomorrowEventTitle:'SPORTVISE ⚡ Prépa compétition',
+    notifTomorrowEventBody:'{title} est demain ! Consulte ton plan de préparation J-1 pour être au top.',
+    kickoffMentalMatchTomorrow:'{name}, tu as "{title}" demain{atTime}. On prépare ta routine mentale d\'avant-match ?',
+    kickoffNutritionMatchTomorrow:'Match demain ! Je t\'ai préparé des recommandations nutrition pour ce soir et demain matin. Tu veux les voir ?',
+    kickoffSleepMatchTomorrow:'N\'oublie pas : une bonne nuit de sommeil fait toute la différence avant {title}. Coupe les écrans 1h avant de dormir.',
+    kickoffPhysiqueTrainingTomorrow:'Entraînement demain{atTime} ! Tu veux qu\'on optimise ta séance ?',
+    kickoffPhysiqueTrainingTomorrowPain:'Entraînement demain{atTime} ! Je vois que tu avais des douleurs récemment — on adapte l\'intensité ?',
+    kickoffLowMoodEnergy:'{name}, j\'ai remarqué que ton {what} était bas récemment. C\'est normal, ça arrive à tous les athlètes. On en parle ?',
+    kickoffLowMoodWhat:'moral', kickoffLowEnergyWhat:'énergie',
+    kickoffInjury:'Je vois que tu as des douleurs significatives. Ne force pas ! Je peux te proposer un protocole de récupération adapté.',
+    kickoffInactivity:'{name}, ça fait quelques jours sans activité dans ton calendrier. Tu veux qu\'on planifie une séance légère pour garder le rythme ?',
+    kickoffAtTimeFmt:' à {time}',
+    kickoffCtaMental:'Préparer mon mental →', kickoffCtaNutrition:'Voir mes repas →', kickoffCtaSleep:'Conseils sommeil →',
+    kickoffCtaTraining:'Préparer ma séance →', kickoffCtaEmma:'Parler avec Emma →', kickoffCtaRecovery:'Protocole récup →', kickoffCtaPlanSession:'Planifier une séance →',
     welcomeCardTitle:'Ton analyse de bienvenue', welcomeCardDismiss:'Fermer', welcomeCardAction:'Cette semaine', welcomeCardComingUp:'À venir',
     // v62.27 — Check-in 30s (Quick Win #3)
     checkinCardTitle:'Check-in du jour', checkinCardSubtitle:'30 secondes pour aider tes coachs à mieux te conseiller.', checkinCardCTA:'Faire mon check-in', checkinCardLater:'Plus tard',
@@ -1348,6 +1369,27 @@ const T = {
     briefSave:'Speichern ✓', briefSaved:'Gespeichert!', briefFullJournal:'Volles Tagebuch →', briefFillJournal:'Tagebuch ausfüllen',
     briefEnrichedTitle:'Aktualisiertes Briefing', briefEnrichedSubtitle:'Basierend auf Deinen frischen Daten:',
     briefEnrichedReasonSleep:'Dein Schlaf bei {val}/5 — Nora hat Tipps', briefEnrichedReasonMood:'Deine Stimmung bei {val}/5 — Emma kann helfen', briefEnrichedReasonPain:'Du hast Schmerzen bei {val}/5 erfasst — Julie passt Deine Erholung an',
+    // v62.31 — i18n suggestions agents brief enrichi (fix Mischung EN/DE)
+    briefSuggestionMental:'Bereite deine mentale Routine für {title} ({when}) vor',
+    briefSuggestionNutrition:'Optimiere deine Ernährung vor {title} ({when})',
+    briefSuggestionPhysique:'Passe deine körperliche Vorbereitung für {title} ({when}) an',
+    briefSuggestionTraining:'Bereite deine Einheit vor: {title} ({when})',
+    briefWhenToday:'heute', briefWhenTomorrow:'morgen', briefWhenInDays:'in {n} Tagen',
+    // v62.31 — i18n PWA-Benachrichtigungen + proaktive Nachrichten
+    notifTomorrowEventTitle:'SPORTVISE ⚡ Wettkampfvorbereitung',
+    notifTomorrowEventBody:'{title} ist morgen! Schau dir deinen J-1-Vorbereitungsplan an, um in Topform zu sein.',
+    kickoffMentalMatchTomorrow:'{name}, du hast "{title}" morgen{atTime}. Bereiten wir deine mentale Routine vor dem Match vor?',
+    kickoffNutritionMatchTomorrow:'Match morgen! Ich habe Ernährungsempfehlungen für heute Abend und morgen früh vorbereitet. Willst du sie sehen?',
+    kickoffSleepMatchTomorrow:'Vergiss nicht: eine gute Nachtruhe macht den ganzen Unterschied vor {title}. Schalte die Bildschirme 1 h vor dem Schlafengehen aus.',
+    kickoffPhysiqueTrainingTomorrow:'Training morgen{atTime}! Willst du, dass wir deine Einheit optimieren?',
+    kickoffPhysiqueTrainingTomorrowPain:'Training morgen{atTime}! Ich sehe, du hattest kürzlich Schmerzen — passen wir die Intensität an?',
+    kickoffLowMoodEnergy:'{name}, mir ist aufgefallen, dass deine {what} kürzlich niedrig war. Das ist normal, es passiert allen Athleten. Reden wir darüber?',
+    kickoffLowMoodWhat:'Stimmung', kickoffLowEnergyWhat:'Energie',
+    kickoffInjury:'Ich sehe, du hast erhebliche Schmerzen. Überlaste dich nicht! Ich kann dir ein passendes Erholungsprotokoll vorschlagen.',
+    kickoffInactivity:'{name}, du warst ein paar Tage ohne Aktivität in deinem Kalender. Willst du, dass wir eine leichte Einheit planen, um den Rhythmus zu halten?',
+    kickoffAtTimeFmt:' um {time}',
+    kickoffCtaMental:'Mental vorbereiten →', kickoffCtaNutrition:'Meine Mahlzeiten ansehen →', kickoffCtaSleep:'Schlaftipps →',
+    kickoffCtaTraining:'Meine Einheit vorbereiten →', kickoffCtaEmma:'Mit Emma sprechen →', kickoffCtaRecovery:'Erholungsprotokoll →', kickoffCtaPlanSession:'Einheit planen →',
     welcomeCardTitle:'Deine Begrüssungsanalyse', welcomeCardDismiss:'Schliessen', welcomeCardAction:'Diese Woche', welcomeCardComingUp:'Kommt bald',
     // v62.27 — Check-in 30s (Quick Win #3)
     checkinCardTitle:'Heutiger Check-in', checkinCardSubtitle:'30 Sekunden, damit deine Coaches dich besser beraten können.', checkinCardCTA:'Check-in starten', checkinCardLater:'Später',
@@ -1765,6 +1807,27 @@ const T = {
     briefSave:'Save ✓', briefSaved:'Saved!', briefFullJournal:'Full journal →', briefFillJournal:'Fill my journal',
     briefEnrichedTitle:'Enriched brief', briefEnrichedSubtitle:'Based on what you just told me:',
     briefEnrichedReasonSleep:'Your sleep at {val}/5 — Nora has tips', briefEnrichedReasonMood:'Your mood at {val}/5 — Emma can help', briefEnrichedReasonPain:'You logged pain at {val}/5 — Julie can adjust your recovery',
+    // v62.31 — i18n agent suggestions enriched brief (mixed EN/FR fix)
+    briefSuggestionMental:'Prepare your mental routine for {title} ({when})',
+    briefSuggestionNutrition:'Optimize your nutrition before {title} ({when})',
+    briefSuggestionPhysique:'Adapt your physical prep for {title} ({when})',
+    briefSuggestionTraining:'Prep your session: {title} ({when})',
+    briefWhenToday:'today', briefWhenTomorrow:'tomorrow', briefWhenInDays:'in {n} days',
+    // v62.31 — i18n PWA notifications + proactive messages
+    notifTomorrowEventTitle:'SPORTVISE ⚡ Competition prep',
+    notifTomorrowEventBody:'{title} is tomorrow! Check your J-1 prep plan to be at your best.',
+    kickoffMentalMatchTomorrow:'{name}, you have "{title}" tomorrow{atTime}. Shall we prepare your pre-match mental routine?',
+    kickoffNutritionMatchTomorrow:'Match tomorrow! I\'ve prepared nutrition recommendations for tonight and tomorrow morning. Want to see them?',
+    kickoffSleepMatchTomorrow:'Don\'t forget: a good night\'s sleep makes all the difference before {title}. Switch off screens 1h before bed.',
+    kickoffPhysiqueTrainingTomorrow:'Training tomorrow{atTime}! Want me to help optimize your session?',
+    kickoffPhysiqueTrainingTomorrowPain:'Training tomorrow{atTime}! I see you\'ve had some pain recently — shall we adjust the intensity?',
+    kickoffLowMoodEnergy:'{name}, I noticed your {what} has been low recently. It\'s normal, every athlete goes through it. Want to talk about it?',
+    kickoffLowMoodWhat:'mood', kickoffLowEnergyWhat:'energy',
+    kickoffInjury:'I see you have significant pain. Don\'t push it! I can suggest a tailored recovery protocol.',
+    kickoffInactivity:'{name}, it\'s been a few days without activity in your calendar. Want me to plan a light session to keep the rhythm?',
+    kickoffAtTimeFmt:' at {time}',
+    kickoffCtaMental:'Prep my mental →', kickoffCtaNutrition:'See my meals →', kickoffCtaSleep:'Sleep tips →',
+    kickoffCtaTraining:'Prep my session →', kickoffCtaEmma:'Talk to Emma →', kickoffCtaRecovery:'Recovery protocol →', kickoffCtaPlanSession:'Plan a session →',
     welcomeCardTitle:'Your welcome analysis', welcomeCardDismiss:'Close', welcomeCardAction:'This week', welcomeCardComingUp:'Coming up',
     // v62.27 — Check-in 30s (Quick Win #3)
     checkinCardTitle:'Today\'s check-in', checkinCardSubtitle:'30 seconds to help your coaches advise you better.', checkinCardCTA:'Start check-in', checkinCardLater:'Later',
@@ -2181,6 +2244,27 @@ const T = {
     briefEveningQ:'Com\'è andata la giornata,', briefMood:'Umore', briefEnergy:'Energia', briefSleep:'Sonno (scorsa notte)',
     briefSave:'Salva ✓', briefSaved:'Salvato!', briefFullJournal:'Diario completo →', briefFillJournal:'Compila il diario',
     briefEnrichedTitle:'Brief arricchito', briefEnrichedSubtitle:'In base a quanto mi hai appena detto:',
+    // v62.31 — i18n suggerimenti agenti brief arricchito (fix mix EN/IT)
+    briefSuggestionMental:'Prepara la tua routine mentale per {title} ({when})',
+    briefSuggestionNutrition:'Ottimizza la tua nutrizione prima di {title} ({when})',
+    briefSuggestionPhysique:'Adatta la tua preparazione fisica per {title} ({when})',
+    briefSuggestionTraining:'Prepara la tua sessione: {title} ({when})',
+    briefWhenToday:'oggi', briefWhenTomorrow:'domani', briefWhenInDays:'fra {n} giorni',
+    // v62.31 — i18n notifiche PWA + messaggi proattivi
+    notifTomorrowEventTitle:'SPORTVISE ⚡ Preparazione gara',
+    notifTomorrowEventBody:'{title} è domani! Consulta il tuo piano di preparazione J-1 per essere al top.',
+    kickoffMentalMatchTomorrow:'{name}, hai "{title}" domani{atTime}. Prepariamo la tua routine mentale pre-partita?',
+    kickoffNutritionMatchTomorrow:'Partita domani! Ti ho preparato delle raccomandazioni nutrizionali per stasera e domani mattina. Vuoi vederle?',
+    kickoffSleepMatchTomorrow:'Non dimenticare: una buona nottata di sonno fa tutta la differenza prima di {title}. Spegni gli schermi 1 h prima di dormire.',
+    kickoffPhysiqueTrainingTomorrow:'Allenamento domani{atTime}! Vuoi che ottimizziamo la tua sessione?',
+    kickoffPhysiqueTrainingTomorrowPain:'Allenamento domani{atTime}! Vedo che hai avuto dei dolori di recente — adattiamo l\'intensità?',
+    kickoffLowMoodEnergy:'{name}, ho notato che il tuo {what} era basso di recente. È normale, capita a tutti gli atleti. Ne parliamo?',
+    kickoffLowMoodWhat:'umore', kickoffLowEnergyWhat:'energia',
+    kickoffInjury:'Vedo che hai dolori significativi. Non forzare! Posso proporti un protocollo di recupero adatto.',
+    kickoffInactivity:'{name}, sono qualche giorno senza attività nel tuo calendario. Vuoi che pianifichiamo una sessione leggera per mantenere il ritmo?',
+    kickoffAtTimeFmt:' alle {time}',
+    kickoffCtaMental:'Preparare il mio mentale →', kickoffCtaNutrition:'Vedere i miei pasti →', kickoffCtaSleep:'Consigli sonno →',
+    kickoffCtaTraining:'Preparare la mia sessione →', kickoffCtaEmma:'Parlare con Emma →', kickoffCtaRecovery:'Protocollo recupero →', kickoffCtaPlanSession:'Pianificare una sessione →',
     welcomeCardTitle:'La tua analisi di benvenuto', welcomeCardDismiss:'Chiudi', welcomeCardAction:'Questa settimana', welcomeCardComingUp:'Prossimamente',
     // v62.27 — Check-in 30s (Quick Win #3)
     checkinCardTitle:'Check-in di oggi', checkinCardSubtitle:'30 secondi per aiutare i tuoi coach a consigliarti meglio.', checkinCardCTA:'Inizia il check-in', checkinCardLater:'Più tardi',
@@ -3506,7 +3590,7 @@ async function init() {
 // It cleans caches, reloads ONCE, and uses a retry counter to prevent infinite loops.
 // ⚠️  IMPORTANT : cette constante DOIT correspondre à src/version.json (.version).
 //     Si tu bumps version.json, bump APP_V au même nombre — sinon boucle de reload.
-const APP_V = '62.30';
+const APP_V = '62.31';
 async function checkAppVersion() {
   try {
     const res = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
@@ -3747,8 +3831,12 @@ function scheduleMatchReminder() {
 
     var evt = result.data[0];
     if (Notification.permission === 'granted') {
-      new Notification('SPORTVISE ⚡ Prépa Compétition', {
-        body: evt.title + ' est demain ! Consulte ton plan de préparation J-1 pour être au top.',
+      // v62.31 fix : i18n notification PWA J-1
+      const tNotif = T[currentLang] || T.fr;
+      const notifTitle = tNotif.notifTomorrowEventTitle || 'SPORTVISE ⚡ Prépa compétition';
+      const notifBody = (tNotif.notifTomorrowEventBody || '{title} est demain ! Consulte ton plan de préparation J-1 pour être au top.').replace('{title}', evt.title || '');
+      new Notification(notifTitle, {
+        body: notifBody,
         icon: '/icons/icon-192.png',
         badge: '/icons/icon-192.png',
         tag: 'match-reminder'
@@ -9148,30 +9236,39 @@ async function showMorningBrief(forceShow = false) {
     };
 
     // Analyze events and suggest agents
+    // v62.31 fix : suggestions traduites selon currentLang (avant : hardcodé FR)
+    const tLang = T[currentLang] || T.fr;
     const addedAgents = new Set();
     futureEvents.forEach(evt => {
       const d = new Date(evt.event_date);
       const diff = Math.round((d - today) / 86400000);
-      const when = diff === 0 ? "aujourd'hui" : diff === 1 ? 'demain' : `dans ${diff} jours`;
+      const when = diff === 0
+        ? (tLang.briefWhenToday || "aujourd'hui")
+        : diff === 1
+          ? (tLang.briefWhenTomorrow || 'demain')
+          : (tLang.briefWhenInDays || 'dans {n} jours').replace('{n}', diff);
       const isMatch = evt.event_type === 'match' || evt.event_type === 'competition';
       const isTraining = evt.event_type === 'entrainement';
+      const fmtSuggestion = (tpl, fallback) => (tLang[tpl] || fallback)
+        .replace('{title}', evt.title || '')
+        .replace('{when}', when);
 
       if (isMatch) {
         if (!addedAgents.has('mental')) {
-          suggestions.push({ page: 'mental', ...agentInfo.mental, reason: `Prépare ta routine mentale pour ${evt.title} (${when})` });
+          suggestions.push({ page: 'mental', ...agentInfo.mental, reason: fmtSuggestion('briefSuggestionMental', 'Prépare ta routine mentale pour {title} ({when})') });
           addedAgents.add('mental');
         }
         if (!addedAgents.has('nutrition')) {
-          suggestions.push({ page: 'nutrition', ...agentInfo.nutrition, reason: `Optimise ta nutrition avant ${evt.title} (${when})` });
+          suggestions.push({ page: 'nutrition', ...agentInfo.nutrition, reason: fmtSuggestion('briefSuggestionNutrition', 'Optimise ta nutrition avant {title} ({when})') });
           addedAgents.add('nutrition');
         }
         if (!addedAgents.has('physique')) {
-          suggestions.push({ page: 'physique', ...agentInfo.physique, reason: `Adapte ta prépa physique pour ${evt.title} (${when})` });
+          suggestions.push({ page: 'physique', ...agentInfo.physique, reason: fmtSuggestion('briefSuggestionPhysique', 'Adapte ta prépa physique pour {title} ({when})') });
           addedAgents.add('physique');
         }
       }
       if (isTraining && !addedAgents.has('physique')) {
-        suggestions.push({ page: 'physique', ...agentInfo.physique, reason: `Prépare ta séance : ${evt.title} (${when})` });
+        suggestions.push({ page: 'physique', ...agentInfo.physique, reason: fmtSuggestion('briefSuggestionTraining', 'Prépare ta séance : {title} ({when})') });
         addedAgents.add('physique');
       }
       // Sponsor/contract meetings
@@ -9630,58 +9727,86 @@ function closeEveningBrief() {
     const lastLog = recentLog && recentLog.length > 0 ? recentLog[0] : null;
 
     const messages = [];
+    // v62.31 fix : tous les messages proactifs i18n-ed selon currentLang
+    const tProactive = T[currentLang] || T.fr;
+    const fmtProactive = (key, fallback, vars) => {
+      let str = tProactive[key] || fallback;
+      Object.entries(vars || {}).forEach(([k, v]) => { str = str.split('{' + k + '}').join(v); });
+      return str;
+    };
+    const fmtAtTime = (time) => time
+      ? (tProactive.kickoffAtTimeFmt || ' à {time}').replace('{time}', time)
+      : '';
 
     // TOMORROW: Match or competition
     const tomorrowMatch = (tomorrowEvents || []).find(e => e.event_type === 'match' || e.event_type === 'competition');
     if (tomorrowMatch) {
+      const atTime = fmtAtTime(tomorrowMatch.event_time);
       messages.push({
         agent: 'Emma',
         emoji: '🧠',
         color: '#06b6d4',
         page: 'mental',
-        text: `${name}, tu as "${tomorrowMatch.title}" demain${tomorrowMatch.event_time ? ' à ' + tomorrowMatch.event_time : ''}. On prépare ta routine mentale d'avant-match ?`,
-        cta: 'Préparer mon mental →'
+        text: fmtProactive('kickoffMentalMatchTomorrow',
+          '{name}, tu as "{title}" demain{atTime}. On prépare ta routine mentale d\'avant-match ?',
+          { name, title: tomorrowMatch.title, atTime }),
+        cta: tProactive.kickoffCtaMental || 'Préparer mon mental →'
       });
       messages.push({
         agent: 'Clara',
         emoji: '🥗',
         color: '#84cc16',
         page: 'nutrition',
-        text: `Match demain ! Je t'ai préparé des recommandations nutrition pour ce soir et demain matin. Tu veux les voir ?`,
-        cta: 'Voir mes repas →'
+        text: fmtProactive('kickoffNutritionMatchTomorrow',
+          'Match demain ! Je t\'ai préparé des recommandations nutrition pour ce soir et demain matin. Tu veux les voir ?', {}),
+        cta: tProactive.kickoffCtaNutrition || 'Voir mes repas →'
       });
       messages.push({
         agent: 'Nora',
         emoji: '😴',
         color: '#a78bfa',
         page: 'sommeil',
-        text: `N'oublie pas : une bonne nuit de sommeil fait toute la différence avant ${tomorrowMatch.title}. Coupe les écrans 1h avant de dormir.`,
-        cta: 'Conseils sommeil →'
+        text: fmtProactive('kickoffSleepMatchTomorrow',
+          'N\'oublie pas : une bonne nuit de sommeil fait toute la différence avant {title}. Coupe les écrans 1h avant de dormir.',
+          { title: tomorrowMatch.title }),
+        cta: tProactive.kickoffCtaSleep || 'Conseils sommeil →'
       });
     }
 
     // TOMORROW: Training
     const tomorrowTraining = (tomorrowEvents || []).find(e => e.event_type === 'entrainement');
     if (tomorrowTraining && !tomorrowMatch) {
+      const atTime = fmtAtTime(tomorrowTraining.event_time);
+      const hasPain = lastLog && lastLog.pain_level >= 3;
       messages.push({
         agent: 'David',
         emoji: '🏋️',
         color: '#ef4444',
         page: 'physique',
-        text: `Entraînement demain${tomorrowTraining.event_time ? ' à ' + tomorrowTraining.event_time : ''} ! ${lastLog && lastLog.pain_level >= 3 ? 'Je vois que tu avais des douleurs récemment — on adapte l\'intensité ?' : 'Tu veux qu\'on optimise ta séance ?'}`,
-        cta: 'Préparer ma séance →'
+        text: fmtProactive(
+          hasPain ? 'kickoffPhysiqueTrainingTomorrowPain' : 'kickoffPhysiqueTrainingTomorrow',
+          hasPain
+            ? 'Entraînement demain{atTime} ! Je vois que tu avais des douleurs récemment — on adapte l\'intensité ?'
+            : 'Entraînement demain{atTime} ! Tu veux qu\'on optimise ta séance ?',
+          { atTime }),
+        cta: tProactive.kickoffCtaTraining || 'Préparer ma séance →'
       });
     }
 
     // LOW MOOD/ENERGY detected from last log
     if (lastLog && (lastLog.mood <= 3 || lastLog.energy <= 3)) {
+      const what = lastLog.mood <= 3
+        ? (tProactive.kickoffLowMoodWhat || 'moral')
+        : (tProactive.kickoffLowEnergyWhat || 'énergie');
       messages.push({
         agent: 'Emma',
         emoji: '🧠',
         color: '#06b6d4',
         page: 'mental',
-        text: `${name}, j'ai remarqué que ton ${lastLog.mood <= 3 ? 'moral' : 'énergie'} était bas récemment. C'est normal, ça arrive à tous les athlètes. On en parle ?`,
-        cta: 'Parler avec Emma →'
+        text: fmtProactive('kickoffLowMoodEnergy',
+          '{name}, j\'ai remarqué que ton {what} était bas récemment. C\'est normal, ça arrive à tous les athlètes. On en parle ?',
+          { name, what }),
+        cta: tProactive.kickoffCtaEmma || 'Parler avec Emma →'
       });
     }
 
@@ -9692,8 +9817,9 @@ function closeEveningBrief() {
         emoji: '♻️',
         color: '#14b8a6',
         page: 'recuperation',
-        text: `Je vois que tu as des douleurs significatives. Ne force pas ! Je peux te proposer un protocole de récupération adapté.`,
-        cta: 'Protocole récup →'
+        text: fmtProactive('kickoffInjury',
+          'Je vois que tu as des douleurs significatives. Ne force pas ! Je peux te proposer un protocole de récupération adapté.', {}),
+        cta: tProactive.kickoffCtaRecovery || 'Protocole récup →'
       });
     }
 
@@ -9708,8 +9834,10 @@ function closeEveningBrief() {
         emoji: '🏋️',
         color: '#ef4444',
         page: 'physique',
-        text: `${name}, ça fait quelques jours sans activité dans ton calendrier. Tu veux qu'on planifie une séance légère pour garder le rythme ?`,
-        cta: 'Planifier une séance →'
+        text: fmtProactive('kickoffInactivity',
+          '{name}, ça fait quelques jours sans activité dans ton calendrier. Tu veux qu\'on planifie une séance légère pour garder le rythme ?',
+          { name }),
+        cta: tProactive.kickoffCtaPlanSession || 'Planifier une séance →'
       });
     }
 
@@ -13494,6 +13622,11 @@ document.addEventListener('keydown', (e) => {
     toggleTheme();
     return;
   }
+
+  // v62.31 fix : ignorer les single-letter shortcuts si Ctrl/Cmd/Alt est pressé
+  // (= l'utilisateur veut copier/coller/recharger/etc., pas naviguer dans l'app).
+  // Évite que Cmd+C dans un message chat déclenche la nav Calendar.
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
 
   // Number shortcuts for quick agent access (1-9, 0)
   const agentKeys = ['equipe','marketing','sponsors','contrats','finance','comptabilite','physique','mental','nutrition','sommeil','recuperation'];
