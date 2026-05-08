@@ -144,6 +144,124 @@ if (fs.existsSync(iconsDir)) {
   console.log('  ✅ Icons copied');
 }
 
+// ── 2.5. Generate localized landing variants /de/ /en/ /it/ (v62.34) ─────
+// Audit risque 2.2 #6 : Google indexait /index.html (FR) pour toutes les
+// langues. En générant des URLs canoniques distinctes par langue avec
+// meta tags traduits, Google indexe 4 langues séparément = surface SEO ×4.
+//
+// Stratégie : on lit le dist/index.html déjà processé (CSS/JS hashés),
+// on remplace les meta + canonical + lang attribute pour chaque variante,
+// et on injecte un <script>window.__svInitialLang='xx';</script> qui
+// déclenche setLangPage() au boot pour pré-régler la langue côté client.
+//
+const LANG_VARIANTS = {
+  de: {
+    htmlLang: 'de-CH',
+    title: 'SPORTVISE — KI-Sportmanagement · Schweiz · 11 Experten-Agenten',
+    description: 'KI-Sportmanagement für die Schweiz — 11 Experten-Agenten (Physis, Mental, Finanzen, Sponsoren, Verträge), kontextualisierte Ratschläge zu Kalender und Tagebuch. Ab CHF 0/Monat.',
+    keywords: 'KI-Coach Schweiz, Sportmanagement Schweiz, KI-Agent Athlet, Online-Konditionstraining, Sportsponsoring Schweiz, Sportlerbesteuerung Schweiz, Sportvertrag Schweiz',
+    ogTitle: 'SPORTVISE — 11 KI-Agenten für den Schweizer Athleten',
+    ogDescription: 'KI-Sportmanagement, gedacht für die Schweiz. Physis, Mental, Finanzen, Sponsoren, Verträge — 11 Experten-Agenten, die sich an jedes Training erinnern. Ab CHF 0/Monat.',
+    ogLocale: 'de_CH',
+    canonicalUrl: 'https://sportvise.ch/de/',
+    canonicalPath: '/de/'
+  },
+  en: {
+    htmlLang: 'en',
+    title: 'SPORTVISE — AI Sports Management · Switzerland · 11 Expert Agents',
+    description: 'AI sports management designed for Switzerland — 11 expert agents (physical, mental, finance, sponsors, contracts), advice contextualized to your calendar and journal. From CHF 0/month.',
+    keywords: 'AI coach Switzerland, sports management Switzerland, AI agent athlete, online physical preparation, sports sponsors Switzerland, athlete tax Switzerland, sports contract Switzerland',
+    ogTitle: 'SPORTVISE — 11 AI agents for the Swiss athlete',
+    ogDescription: 'AI sports management designed for Switzerland. Physical, mental, finance, sponsors, contracts — 11 expert agents who remember every training session. From CHF 0/month.',
+    ogLocale: 'en_US',
+    canonicalUrl: 'https://sportvise.ch/en/',
+    canonicalPath: '/en/'
+  },
+  it: {
+    htmlLang: 'it-CH',
+    title: 'SPORTVISE — Sport Management IA · Svizzera · 11 agenti esperti',
+    description: 'Sport management IA pensato per la Svizzera — 11 agenti esperti (fisico, mentale, finanza, sponsor, contratti), consigli contestualizzati al tuo calendario e diario. Da CHF 0/mese.',
+    keywords: 'coach IA Svizzera, sport management Svizzera, agente IA atleta, preparazione fisica online, sponsor sportivi Svizzera, fiscalità atleta Svizzera, contratto sportivo Svizzera',
+    ogTitle: 'SPORTVISE — 11 agenti IA per l\'atleta svizzero',
+    ogDescription: 'Sport management IA pensato per la Svizzera. Fisico, mentale, finanza, sponsor, contratti — 11 agenti esperti che si ricordano di ogni allenamento. Da CHF 0/mese.',
+    ogLocale: 'it_CH',
+    canonicalUrl: 'https://sportvise.ch/it/',
+    canonicalPath: '/it/'
+  }
+};
+
+// Re-read the freshly written dist/index.html (FR default, already has hashed CSS/JS refs)
+const baseLanding = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
+
+Object.entries(LANG_VARIANTS).forEach(([lang, cfg]) => {
+  let v = baseLanding;
+
+  // 1. <html lang="fr"> → <html lang="xx-CH">
+  v = v.replace(/<html lang="[^"]*">/, `<html lang="${cfg.htmlLang}">`);
+
+  // 2. <title>...</title>
+  v = v.replace(/<title>[^<]*<\/title>/, `<title>${cfg.title}</title>`);
+
+  // 3. <meta name="description">
+  v = v.replace(
+    /<meta name="description" content="[^"]*"\s*\/?>/,
+    `<meta name="description" content="${cfg.description}" />`
+  );
+
+  // 4. <meta name="keywords">
+  v = v.replace(
+    /<meta name="keywords" content="[^"]*"\s*\/?>/,
+    `<meta name="keywords" content="${cfg.keywords}" />`
+  );
+
+  // 5. <link rel="canonical">
+  v = v.replace(
+    /<link rel="canonical" href="[^"]*"\s*\/?>/,
+    `<link rel="canonical" href="${cfg.canonicalUrl}" />`
+  );
+
+  // 6. og:title / og:description / og:url / og:locale
+  v = v.replace(
+    /<meta property="og:title" content="[^"]*"\s*\/?>/,
+    `<meta property="og:title" content="${cfg.ogTitle}" />`
+  );
+  v = v.replace(
+    /<meta property="og:description" content="[^"]*"\s*\/?>/,
+    `<meta property="og:description" content="${cfg.ogDescription}" />`
+  );
+  v = v.replace(
+    /<meta property="og:url" content="[^"]*"\s*\/?>/,
+    `<meta property="og:url" content="${cfg.canonicalUrl}" />`
+  );
+  v = v.replace(
+    /<meta property="og:locale" content="[^"]*"\s*\/?>/,
+    `<meta property="og:locale" content="${cfg.ogLocale}" />`
+  );
+
+  // 7. twitter:title / twitter:description
+  v = v.replace(
+    /<meta name="twitter:title" content="[^"]*"\s*\/?>/,
+    `<meta name="twitter:title" content="${cfg.ogTitle}" />`
+  );
+  v = v.replace(
+    /<meta name="twitter:description" content="[^"]*"\s*\/?>/,
+    `<meta name="twitter:description" content="${cfg.ogDescription}" />`
+  );
+
+  // 8. Inject window.__svInitialLang BEFORE the i18n script (so setLangPage applies at boot)
+  // We inject it just before the closing </head> tag.
+  v = v.replace(
+    /<\/head>/,
+    `<script>window.__svInitialLang='${lang}';</script>\n</head>`
+  );
+
+  // Write to dist/{lang}/index.html
+  const langDir = path.join(DIST, lang);
+  fs.mkdirSync(langDir, { recursive: true });
+  fs.writeFileSync(path.join(langDir, 'index.html'), v);
+  console.log(`  ✅ /${lang}/index.html generated (${Math.round(v.length / 1024)}KB)`);
+});
+
 // ── 3. Summary ──────────────────────────────────────
 const distFiles = [];
 function listFiles(dir, prefix = '') {

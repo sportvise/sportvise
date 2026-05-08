@@ -43,11 +43,12 @@
   <meta name="generator" content="SPORTVISE" />
 
   <!-- Canonical & alternate languages (SEO multilingue) -->
+  <!-- v62.34 — pages localisées dédiées /de/ /en/ /it/ générées au build par build.js -->
   <link rel="canonical" href="https://sportvise.ch/" />
   <link rel="alternate" hreflang="fr-CH" href="https://sportvise.ch/" />
-  <link rel="alternate" hreflang="de-CH" href="https://sportvise.ch/" />
-  <link rel="alternate" hreflang="en" href="https://sportvise.ch/" />
-  <link rel="alternate" hreflang="it-CH" href="https://sportvise.ch/" />
+  <link rel="alternate" hreflang="de-CH" href="https://sportvise.ch/de/" />
+  <link rel="alternate" hreflang="en" href="https://sportvise.ch/en/" />
+  <link rel="alternate" hreflang="it-CH" href="https://sportvise.ch/it/" />
   <link rel="alternate" hreflang="x-default" href="https://sportvise.ch/" />
 
   <!-- Open Graph (Facebook / LinkedIn / WhatsApp / iMessage preview) -->
@@ -981,9 +982,28 @@
   let currentLang = 'fr';
 
   function setLangPage(lang) {
+    if (!i18n[lang]) return;
+
+    // v62.34 — sur la landing localisée, navigate vers l'URL canonique de la langue.
+    // /  ↔  /de/  ↔  /en/  ↔  /it/   (chaque URL a ses meta SEO traduites au build).
+    // Sur les autres pages (privacy, terms, login, dashboard), on garde le toggle client-side.
+    try {
+      const p = location.pathname.replace(/\/index\.html$/, '/');
+      const onLanding = (p === '/' || /^\/(de|en|it)\/$/.test(p));
+      if (onLanding) {
+        const target = (lang === 'fr') ? '/' : ('/' + lang + '/');
+        if (p !== target) {
+          // Persiste avant navigate (cohérent avec login.html / dashboard.html)
+          try { localStorage.setItem('sv_lang', lang); } catch(e) {}
+          location.assign(target);
+          return;
+        }
+        // Déjà sur la bonne URL : on continue avec le rendu client-side ci-dessous.
+      }
+    } catch(e) { /* fallback : toggle client-side ci-dessous */ }
+
     currentLang = lang;
     const texts = i18n[lang];
-    if (!texts) return;
 
     // Update all data-i18n elements
     document.querySelectorAll('[data-i18n]').forEach(el => {
@@ -1010,10 +1030,19 @@
     try { localStorage.setItem('sv_lang', lang); } catch(e) {}
   }
 
-  // Restore the user's previously chosen language on load
+  // Restore the user's previously chosen language on load.
+  // Priority order (v62.34) :
+  //   1. window.__svInitialLang — injecté par build.js pour /de/ /en/ /it/ variants (URL-driven)
+  //   2. localStorage 'sv_lang' — choix explicite précédent de l'utilisateur (cross-page)
+  //   3. default 'fr' (déjà appliqué via let currentLang = 'fr')
   try {
-    const saved = localStorage.getItem('sv_lang');
-    if (saved && i18n[saved]) setLangPage(saved);
+    const urlLang = window.__svInitialLang;
+    if (urlLang && i18n[urlLang]) {
+      setLangPage(urlLang);
+    } else {
+      const saved = localStorage.getItem('sv_lang');
+      if (saved && i18n[saved]) setLangPage(saved);
+    }
   } catch(e) {}
 </script>
 </body>
