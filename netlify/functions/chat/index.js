@@ -27,7 +27,7 @@
 //   AI_MODEL_DEFAULT, AI_MODEL_BETA, AI_MODEL_BETA_USERS (existants)
 
 const https = require('https');
-const { SPORTS_SUISSE, CALENDRIERS_SUISSE, AGENTS } = require("./agents-data");
+const { SPORTS_SUISSE, CALENDRIERS_SUISSE, AGENTS, GARDE_FOUS_GLOBAUX } = require("./agents-data");
 const { initSentry, captureError } = require('../_sentry');
 
 // v61.3 — observability serveur. No-op gracieux si SENTRY_DSN_SERVER absent.
@@ -352,7 +352,9 @@ exports.handler = async (event) => {
   const dateInstruction = `[DATE DU JOUR : ${todayLabel} (${todayIso}). Utilise cette date pour TOUS tes raisonnements temporels (J-1, demain, semaine prochaine, etc.). Ne te fie jamais à ta date d'entraînement.]`;
 
   // Build enriched system prompt with athlete memory.
-  let systemWithLang = (modelConfig.systemPrefix || '') + agent.system + '\n\n' + langInstruction + '\n\n' + dateInstruction;
+  // v62.29.5 (Phase 0 audit) : GARDE_FOUS_GLOBAUX appliqués à chaque agent
+  // (posture conseiller expert, garde-fous santé/juridique/financier, ton CH).
+  let systemWithLang = (modelConfig.systemPrefix || '') + agent.system + (GARDE_FOUS_GLOBAUX || '') + '\n\n' + langInstruction + '\n\n' + dateInstruction;
 
   if (profile) {
     systemWithLang += `\n\n[PROFIL ATHLÈTE - utilise ces infos pour personnaliser chaque réponse]\n${profile}`;
