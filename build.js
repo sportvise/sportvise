@@ -98,10 +98,37 @@ if (allMatches.length > 0) {
   mainScriptMatch = allMatches[0];
   mainScriptContent = mainScriptMatch.content.trim();
 
-  const jsHash = hash(mainScriptContent);
+  // ── v63.0 refactor — concatenate src/js/*.js modules at the start of the bundle ──
+  // The dashboard.html source references global vars (T_FR, T_DE, …) declared in module
+  // files. Those must be defined BEFORE the main script body runs, hence we prepend
+  // them. Single bundle hash preserved (cache strategy unchanged), only source code
+  // is now organized in separate files.
+  const modulesDir = path.join(SRC, 'js');
+  let modulesContent = '';
+  if (fs.existsSync(modulesDir)) {
+    // Sort alphabetically for deterministic order. If interdependencies arise later,
+    // switch to an explicit ordered list here.
+    const moduleFiles = fs.readdirSync(modulesDir)
+      .filter(f => f.endsWith('.js'))
+      .sort();
+    moduleFiles.forEach(f => {
+      const src = fs.readFileSync(path.join(modulesDir, f), 'utf8');
+      modulesContent += `\n// ═══════════════════════════════════════\n`;
+      modulesContent += `// MODULE INJECTED BY BUILD.JS : src/js/${f}\n`;
+      modulesContent += `// ═══════════════════════════════════════\n`;
+      modulesContent += src.trim() + '\n';
+    });
+    if (moduleFiles.length > 0) {
+      console.log(`  ✅ Modules concatenated → ${moduleFiles.length} files (${Math.round(modulesContent.length/1024)}KB)`);
+      moduleFiles.forEach(f => console.log(`     • ${f}`));
+    }
+  }
+  const finalScriptContent = modulesContent + '\n' + mainScriptContent;
+
+  const jsHash = hash(finalScriptContent);
   const jsFilename = `app.${jsHash}.js`;
-  fs.writeFileSync(path.join(DIST, 'assets', jsFilename), mainScriptContent);
-  console.log(`  ✅ JS extracted  → assets/${jsFilename} (${Math.round(mainScriptContent.length/1024)}KB)`);
+  fs.writeFileSync(path.join(DIST, 'assets', jsFilename), finalScriptContent);
+  console.log(`  ✅ JS extracted  → assets/${jsFilename} (${Math.round(finalScriptContent.length/1024)}KB)`);
 
   // Replace the big script block with an external reference
   dashboardWithoutCSS = dashboardWithoutCSS.replace(
