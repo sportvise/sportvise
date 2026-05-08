@@ -1,0 +1,26 @@
+# SPORTVISE — robots.txt
+# https://sportvise.ch
+
+User-agent: *
+Allow: /
+
+# Pages internes / admin / outils dev — pas d'indexation
+Disallow: /admin.html
+Disallow: /admin-usage.html
+Disallow: /nuke.html
+Disallow: /dashboard.html
+
+# Bots IA — autorisés (visibilité dans réponses ChatGPT/Claude/Perplexity)
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://sportvise.ch/sitemap.xml

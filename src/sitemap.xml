@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <!-- Page d'accueil — landing publique -->
+  <url>
+    <loc>https://sportvise.ch/</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="fr-CH" href="https://sportvise.ch/" />
+    <xhtml:link rel="alternate" hreflang="de-CH" href="https://sportvise.ch/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://sportvise.ch/" />
+    <xhtml:link rel="alternate" hreflang="it-CH" href="https://sportvise.ch/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://sportvise.ch/" />
+  </url>
+
+  <!-- Connexion -->
+  <url>
+    <loc>https://sportvise.ch/login.html</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Politique de confidentialité (4 langues) -->
+  <url>
+    <loc>https://sportvise.ch/privacy_fr.html</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="fr-CH" href="https://sportvise.ch/privacy_fr.html" />
+    <xhtml:link rel="alternate" hreflang="de-CH" href="https://sportvise.ch/privacy_de.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://sportvise.ch/privacy_en.html" />
+    <xhtml:link rel="alternate" hreflang="it-CH" href="https://sportvise.ch/privacy_it.html" />
+  </url>
+  <url>
+    <loc>https://sportvise.ch/privacy_de.html</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://sportvise.ch/privacy_en.html</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://sportvise.ch/privacy_it.html</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <!-- CGU (4 langues) -->
+  <url>
+    <loc>https://sportvise.ch/terms_fr.html</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="fr-CH" href="https://sportvise.ch/terms_fr.html" />
+    <xhtml:link rel="alternate" hreflang="de-CH" href="https://sportvise.ch/terms_de.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://sportvise.ch/terms_en.html" />
+    <xhtml:link rel="alternate" hreflang="it-CH" href="https://sportvise.ch/terms_it.html" />
+  </url>
+  <url>
+    <loc>https://sportvise.ch/terms_de.html</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://sportvise.ch/terms_en.html</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://sportvise.ch/terms_it.html</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <!-- Mentions légales (4 langues) -->
+  <url>
+    <loc>https://sportvise.ch/legal_fr.html</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.2</priority>
+    <xhtml:link rel="alternate" hreflang="fr-CH" href="https://sportvise.ch/legal_fr.html" />
+    <xhtml:link rel="alternate" hreflang="de-CH" href="https://sportvise.ch/legal_de.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://sportvise.ch/legal_en.html" />
+    <xhtml:link rel="alternate" hreflang="it-CH" href="https://sportvise.ch/legal_it.html" />
+  </url>
+  <url>
+    <loc>https://sportvise.ch/legal_de.html</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  <url>
+    <loc>https://sportvise.ch/legal_en.html</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  <url>
+    <loc>https://sportvise.ch/legal_it.html</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.2</priority>
+  </url>
+
+</urlset>
