@@ -818,7 +818,7 @@ const T = {
     eventDuplicate:'Dupliquer',
     dayLetters:['D','L','M','M','J','V','S'],
     eventBtnAdd:'Ajouter →', eventBtnSave:'Enregistrer ✓',
-    eventValidationError:'Veuillez remplir le titre et la date.', eventErrorPrefix:'Erreur:',
+    eventValidationError:'Remplis le titre et la date.', eventErrorPrefix:'Erreur:',
     eventToastModified:'✅ Événement modifié !', eventToastDeleted:'🗑 Événement supprimé', eventConfirmDelete:'Supprimer cet événement ?',
     save:'Sauvegarder', cancel:'Annuler', delete:'Supprimer', skip:'Passer', yes:'Oui', no:'Non',
     // Event modal
@@ -3696,7 +3696,7 @@ function showPWABanner() {
             <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">📲</div>
             <div>
               <div style="font-weight:700;font-size:14px">Installer SPORTVISE</div>
-              <div style="font-size:12px;color:var(--muted);margin-top:2px">Accès rapide depuis votre écran d'accueil</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:2px">Accès rapide depuis ton écran d'accueil</div>
             </div>
           </div>
           <button onclick="dismissPWABanner()" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:0 0 0 8px;line-height:1">✕</button>
@@ -4424,7 +4424,7 @@ async function showPage(page, el) {
   document.getElementById('agentBadge').style.display = agent ? 'inline-flex' : 'none';
   if (page === 'dashboard') {
     document.getElementById('pageTitle').textContent = '🏠 Dashboard';
-    document.getElementById('pageSubtitle').textContent = (T[currentLang]?.pageDashSubtitle) || "Vue d'ensemble de votre carrière";
+    document.getElementById('pageSubtitle').textContent = (T[currentLang]?.pageDashSubtitle) || "Vue d'ensemble de ta carrière";
     renderDashboard();
   } else if (page === 'favoris') {
     document.getElementById('pageTitle').textContent = '⭐ Mes Favoris';
@@ -4444,7 +4444,7 @@ async function showPage(page, el) {
     renderCalendar();
   } else if (page === 'abonnement') {
     document.getElementById('pageTitle').textContent = '💳 Abonnement';
-    document.getElementById('pageSubtitle').textContent = (T[currentLang]?.pageSubSubtitle) || 'Gérez votre plan SPORTVISE';
+    document.getElementById('pageSubtitle').textContent = (T[currentLang]?.pageSubSubtitle) || 'Gère ton plan SPORTVISE';
     renderAbonnement();
   } else if (page === 'objectifs') {
     const t = T[currentLang];
@@ -4454,7 +4454,7 @@ async function showPage(page, el) {
   } else if (page === 'journal') {
     const t = T[currentLang];
     document.getElementById('pageTitle').textContent = '📓 ' + (t.journal || 'Journal');
-    document.getElementById('pageSubtitle').textContent = t.pageJournalSubtitle || 'Suivez votre forme au quotidien';
+    document.getElementById('pageSubtitle').textContent = t.pageJournalSubtitle || 'Suis ta forme au quotidien';
     renderJournal();
   } else if (page === 'progression') {
     const t = T[currentLang];
@@ -4559,7 +4559,7 @@ async function renderDashboard() {
         ${checkItem(step1Done, t.step1)}
         ${checkItem(step2Done, step2Done ? `${t.step2} : <strong style="color:var(--gold)">${sport}</strong>` : t.step2 + ' — <a href="#" onclick="showPage(\'profil\',null)" style="color:var(--gold)">' + (t.dashCheckComplete||'Compléter →') + '</a>')}
         ${checkItem(step3Done, step3Done ? (t.dashCheckAgentDone||'Premier agent consulté ✅') : t.step3)}
-        ${checkItem(step4Done, step4Done ? `${t.dashCheckLevelDone||'Niveau renseigné :'} <strong style="color:var(--gold)">${levelLabel(userProfile?.level)}</strong>` : (t.dashCheckLevelTodo||'Renseignez votre niveau dans votre profil'))}
+        ${checkItem(step4Done, step4Done ? `${t.dashCheckLevelDone||'Niveau renseigné :'} <strong style="color:var(--gold)">${levelLabel(userProfile?.level)}</strong>` : (t.dashCheckLevelTodo||'Renseigne ton niveau dans ton profil'))}
       </div>
       <div style="text-align:center;flex-shrink:0">
         <div style="font-size:36px">${allDone ? '🏆' : doneCount >= 2 ? '🥈' : '🥉'}</div>
@@ -5952,7 +5952,7 @@ async function sendMsg(page) {
     const limitMsg = `<div style="background:#f59e0b15;border:1px solid #f59e0b30;border-radius:12px;padding:16px;margin:12px 0;text-align:center">
       <div style="font-size:20px;margin-bottom:8px">🔒</div>
       <div style="font-weight:700;margin-bottom:4px">Limite atteinte</div>
-      <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Vous avez utilisé vos ${FREE_MSG_LIMIT} messages gratuits aujourd'hui.</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Tu as utilisé tes ${FREE_MSG_LIMIT} messages gratuits aujourd'hui.</div>
       <button onclick="showPage('abonnement',document.querySelector('[onclick*=abonnement]'))" style="padding:10px 24px;border-radius:8px;border:none;background:#06b6d4;color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif">Passer au Plus — CHF 12/mois →</button>
     </div>`;
     msgs.innerHTML += limitMsg;
@@ -6934,7 +6934,7 @@ async function renderCalendar() {
             <div style="font-size:22px">${et.emoji}</div>
             <div>
               <div style="font-size:13px;font-weight:700;color:var(--text)">${(t.recapEvent || 'Comment s\'est passé "{title}" ?').replace('{title}', e.title)}</div>
-              <div style="font-size:11px;color:var(--muted)">${t.addRecapPrompt || "Ajoutez votre récap pour que vos agents s'améliorent"}</div>
+              <div style="font-size:11px;color:var(--muted)">${t.addRecapPrompt || "Ajoute ton récap pour que tes agents s'améliorent"}</div>
             </div>
           </div>
           <button onclick="showRecapModal('${e.id}','${e.title.replace(/'/g,"\\'")}','${e.event_type}','${e.event_date}')"
@@ -11033,7 +11033,7 @@ async function renderGoals() {
           <div style="background:var(--bg3);border:1px dashed var(--border);border-radius:12px;padding:32px;text-align:center">
             <div style="font-size:32px;margin-bottom:12px">🎯</div>
             <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">${t.noGoalsYet}</div>
-            <div style="font-size:12px;color:var(--muted);margin-bottom:16px">Créez votre premier objectif pour suivre votre progression</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:16px">Crée ton premier objectif pour suivre ta progression</div>
             <button onclick="showAddGoalModal()" style="padding:10px 20px;border-radius:8px;background:linear-gradient(135deg,#f59e0b,#d97706);border:none;color:#07091a;font-weight:700;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif">Ajouter un objectif</button>
           </div>
         ` : `
@@ -12986,7 +12986,7 @@ function renderConnexions() {
 // ── ABONNEMENT ──────────────────────────────────────
 async function cancelSubscription() {
   const t = T[currentLang];
-  if (!confirm(t.cancelConfirm || 'Êtes-vous sûr de vouloir résilier votre abonnement ? Vous passerez au plan Free.')) return;
+  if (!confirm(t.cancelConfirm || 'Tu es sûr de vouloir résilier ton abonnement ? Tu passeras au plan Free.')) return;
 
   try {
     showToast('⏳ Redirection vers le portail de gestion...');
@@ -13449,7 +13449,7 @@ function generatePlanNutrition() {
   let y = 58;
   doc.setFontSize(10);
   doc.setTextColor(80, 80, 80);
-  doc.text('Ce plan est un guide general. Adaptez les portions a votre poids, intensite et objectifs.', 20, y);
+  doc.text('Ce plan est un guide general. Adapte les portions a ton poids, intensite et objectifs.', 20, y);
   doc.text('Consultez un(e) nutritionniste pour un plan personnalise complet.', 20, y + 5);
   y += 15;
 
