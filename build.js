@@ -118,7 +118,8 @@ console.log(`  ✅ dashboard.html → dist/ (${Math.round(dashboardWithoutCSS.le
 // Whitelist for non-html static files; HTML files are auto-globbed below
 // (so freshly-generated legal pages — privacy_*.html, terms_*.html, legal_*.html — ship without
 //  needing a build.js change every time a language is added).
-const copyStatic = ['sw.js', 'manifest.json', 'version.json'];
+// v62.32 SEO base : robots.txt, sitemap.xml, og-image.png ajoutés.
+const copyStatic = ['sw.js', 'manifest.json', 'version.json', 'robots.txt', 'sitemap.xml', 'og-image.png'];
 copyStatic.forEach(f => {
   const src = path.join(SRC, f);
   if (fs.existsSync(src)) {
