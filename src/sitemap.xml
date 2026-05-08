@@ -2,16 +2,55 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
 
-  <!-- Page d'accueil — landing publique -->
+  <!-- Page d'accueil — landing publique (FR par défaut) -->
   <url>
     <loc>https://sportvise.ch/</loc>
     <lastmod>2026-05-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="fr-CH" href="https://sportvise.ch/" />
-    <xhtml:link rel="alternate" hreflang="de-CH" href="https://sportvise.ch/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://sportvise.ch/" />
-    <xhtml:link rel="alternate" hreflang="it-CH" href="https://sportvise.ch/" />
+    <xhtml:link rel="alternate" hreflang="de-CH" href="https://sportvise.ch/de/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://sportvise.ch/en/" />
+    <xhtml:link rel="alternate" hreflang="it-CH" href="https://sportvise.ch/it/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://sportvise.ch/" />
+  </url>
+
+  <!-- Page d'accueil — variante allemande (v62.34) -->
+  <url>
+    <loc>https://sportvise.ch/de/</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="fr-CH" href="https://sportvise.ch/" />
+    <xhtml:link rel="alternate" hreflang="de-CH" href="https://sportvise.ch/de/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://sportvise.ch/en/" />
+    <xhtml:link rel="alternate" hreflang="it-CH" href="https://sportvise.ch/it/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://sportvise.ch/" />
+  </url>
+
+  <!-- Page d'accueil — variante anglaise (v62.34) -->
+  <url>
+    <loc>https://sportvise.ch/en/</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="fr-CH" href="https://sportvise.ch/" />
+    <xhtml:link rel="alternate" hreflang="de-CH" href="https://sportvise.ch/de/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://sportvise.ch/en/" />
+    <xhtml:link rel="alternate" hreflang="it-CH" href="https://sportvise.ch/it/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://sportvise.ch/" />
+  </url>
+
+  <!-- Page d'accueil — variante italienne (v62.34) -->
+  <url>
+    <loc>https://sportvise.ch/it/</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="fr-CH" href="https://sportvise.ch/" />
+    <xhtml:link rel="alternate" hreflang="de-CH" href="https://sportvise.ch/de/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://sportvise.ch/en/" />
+    <xhtml:link rel="alternate" hreflang="it-CH" href="https://sportvise.ch/it/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://sportvise.ch/" />
   </url>
 
