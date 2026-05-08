@@ -208,6 +208,119 @@ async function main() {
     }
   }
 
+  // ── 10. Auth flow réel (opt-in via env vars) — v62.36 ──
+  // Teste que l'app métier marche : login Supabase → JWT → /chat avec auth → 200 + JSON.
+  // OPT-IN car (a) consomme 1 appel Anthropic ≈ $0.005-0.01 par run, (b) nécessite credentials.
+  //
+  // Activation : exporter avant la commande
+  //   export SV_TEST_EMAIL=thomas.castella1@gmail.com
+  //   export SV_TEST_PASSWORD='ton_mot_de_passe_test'
+  //   node tests/smoke.test.mjs
+  //
+  // Si les 2 vars sont absentes, on skip avec un warning explicatif.
+  section('Auth flow réel (opt-in via env vars)');
+  const testEmail = process.env.SV_TEST_EMAIL;
+  const testPassword = process.env.SV_TEST_PASSWORD;
+  if (!testEmail || !testPassword) {
+    warn('SV_TEST_EMAIL ou SV_TEST_PASSWORD absents → flow auth skippé');
+    warn('Pour activer : export SV_TEST_EMAIL=… SV_TEST_PASSWORD=… puis relancer');
+  } else {
+    const SUPABASE_URL = 'https://ckikyvokurpehavjlkbc.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNraWt5dm9rdXJwZWhhdmpsa2JjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMjE2MzgsImV4cCI6MjA5MTY5NzYzOH0.nbvRqNly8KnqlaInY62C9YOA5-32YxrFSavXyreCOYY';
+
+    // Step 10a: Supabase password grant
+    let accessToken = null;
+    try {
+      const ac = new AbortController();
+      const t = setTimeout(() => ac.abort(), TIMEOUT_MS);
+      const authRes = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_ANON_KEY, 'content-type': 'application/json' },
+        body: JSON.stringify({ email: testEmail, password: testPassword }),
+        signal: ac.signal
+      });
+      clearTimeout(t);
+      const authBody = await authRes.json();
+      if (authRes.status === 200 && authBody.access_token) {
+        accessToken = authBody.access_token;
+        ok(`Supabase login → 200 (token ${accessToken.slice(0, 12)}…, user ${authBody.user?.email || '?'})`);
+      } else {
+        fail(`Supabase login → ${authRes.status} ${authBody.error_description || authBody.msg || JSON.stringify(authBody).slice(0, 80)}`);
+      }
+    } catch (e) {
+      fail(`Supabase login : crash → ${e.message}`);
+    }
+
+    // Step 10b: /chat avec JWT — endpoint critique métier
+    if (accessToken) {
+      try {
+        const ac2 = new AbortController();
+        const t2 = setTimeout(() => ac2.abort(), TIMEOUT_MS * 2); // 30s pour Claude API
+        const chatRes = await fetch(`${BASE}/.netlify/functions/chat`, {
+          method: 'POST',
+          headers: {
+            'authorization': `Bearer ${accessToken}`,
+            'content-type': 'application/json'
+          },
+          body: JSON.stringify({
+            agentId: 'physique',
+            message: 'ping smoke test (réponds juste "ok" pour minimiser les tokens)',
+            lang: 'fr'
+          }),
+          signal: ac2.signal
+        });
+        clearTimeout(t2);
+        const chatText = await chatRes.text();
+        if (chatRes.status === 200) {
+          try {
+            const chatBody = JSON.parse(chatText);
+            const reply = chatBody.reply || chatBody.message || chatBody.content || '';
+            if (reply.length > 0) {
+              ok(`/chat avec JWT → 200, reply ${reply.length} chars (preview: "${reply.slice(0, 40)}…")`);
+            } else {
+              fail(`/chat → 200 mais reply vide ou champ inattendu (keys: ${Object.keys(chatBody).join(',')})`);
+            }
+          } catch (e) {
+            fail(`/chat → 200 mais JSON invalide : ${e.message}`);
+          }
+        } else if (chatRes.status === 429) {
+          warn(`/chat → 429 rate-limited (compte test a atteint son quota — OK, l'auth marche)`);
+        } else {
+          fail(`/chat → ${chatRes.status} (attendu 200 ou 429), body : ${chatText.slice(0, 120)}`);
+        }
+      } catch (e) {
+        fail(`/chat avec JWT : crash → ${e.message}`);
+      }
+    }
+
+    // Step 10c: /weekly-insight avec JWT (read-only, pas d'effet de bord)
+    if (accessToken) {
+      try {
+        const ac3 = new AbortController();
+        const t3 = setTimeout(() => ac3.abort(), TIMEOUT_MS * 2);
+        const wiRes = await fetch(`${BASE}/.netlify/functions/weekly-insight`, {
+          method: 'POST',
+          headers: {
+            'authorization': `Bearer ${accessToken}`,
+            'content-type': 'application/json'
+          },
+          body: JSON.stringify({ lang: 'fr' }),
+          signal: ac3.signal
+        });
+        clearTimeout(t3);
+        if (wiRes.status === 200 || wiRes.status === 429 || wiRes.status === 204) {
+          ok(`/weekly-insight avec JWT → ${wiRes.status} (200/204/429 acceptables)`);
+        } else if (wiRes.status === 400) {
+          warn(`/weekly-insight → 400 (probablement payload incomplet — endpoint vivant)`);
+        } else {
+          fail(`/weekly-insight → ${wiRes.status} (attendu 200/204/429)`);
+        }
+      } catch (e) {
+        fail(`/weekly-insight avec JWT : crash → ${e.message}`);
+      }
+    }
+  }
+
   // ── Récap ──
   console.log(`\n\x1b[1m── Récap ───────────\x1b[0m`);
   console.log(`  Passes  : \x1b[32m${passes}\x1b[0m`);
