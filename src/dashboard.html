@@ -10816,9 +10816,9 @@ async function cancelSubscription() {
 // Voir doc STRIPE_DASHBOARD_v63.5.md pour les étapes Dashboard.
 const STRIPE_LINKS = {
   plus_monthly: 'https://buy.stripe.com/00w14p3B721JetFavS6AM00',                  // ✓ Existant 12 CHF/mois
-  plus_annual:  'https://buy.stripe.com/PLACEHOLDER_PLUS_ANNUAL_120CHF',           // TODO Thomas — 120 CHF/an
-  pro_monthly:  'https://buy.stripe.com/PLACEHOLDER_PRO_MONTHLY_19CHF',            // TODO Thomas — 19 CHF/mois (remplace 28E00ldbHayf99lbzW6AM01 à 29 CHF)
-  pro_annual:   'https://buy.stripe.com/PLACEHOLDER_PRO_ANNUAL_190CHF',            // TODO Thomas — 190 CHF/an
+  plus_annual:  'https://buy.stripe.com/8x214p9Zv0XF3P1bzW6AM05',                  // 120 CHF/an (créé v63.5.1, 09/05/2026)
+  pro_monthly:  'https://buy.stripe.com/3cI00lefL0XFfxJ47u6AM04',                  // 19 CHF/mois (remplace l'ancien 28E00ldbHayf99lbzW6AM01 à 29 CHF, créé v63.5.1)
+  pro_annual:   'https://buy.stripe.com/28E6oJ1sZfSzdpBavS6AM06',                  // 190 CHF/an (créé v63.5.1, 09/05/2026)
 };
 // Cycle billing — partagé avec sessionStorage pour cohérence cross-page (landing → dashboard)
 let currentBillingCycle = (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('sv_billing_cycle')) || 'monthly';
