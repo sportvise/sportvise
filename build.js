@@ -59,6 +59,21 @@ if (appVersion) {
   }
 }
 
+// v63.3.0 — Inject VAPID public key from env var (Web Push brief matinal).
+// Si VAPID_PUBLIC_KEY n'est pas défini en env (build local sans env vars Netlify),
+// le placeholder __SV_VAPID_PUBLIC_KEY__ reste et push-subscribe.js le détecte pour
+// silencieusement désactiver les features push.
+const vapidPublicKey = process.env.VAPID_PUBLIC_KEY || '';
+if (vapidPublicKey) {
+  const placeholder = '__SV_VAPID_PUBLIC_KEY__';
+  if (dashboardRaw.includes(placeholder)) {
+    dashboardRaw = dashboardRaw.split(placeholder).join(vapidPublicKey);
+    console.log(`  ✅ VAPID_PUBLIC_KEY injected (${vapidPublicKey.length} chars)`);
+  }
+} else {
+  console.warn('  ⚠️  VAPID_PUBLIC_KEY env var absent — push notifications disabled');
+}
+
 // Extract the main <style> block (the big one after the initial scripts)
 const styleMatch = dashboardRaw.match(/<style>([\s\S]*?)<\/style>/);
 let cssContent = '';
