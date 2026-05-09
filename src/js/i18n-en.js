@@ -480,4 +480,17 @@ var T_EN = {
   teamMeetingEmptyTitle: 'Start the meeting',
   teamMeetingEmptyHint: 'Select 2-3 agents and ask your question. They answer together from their domain of expertise.',
 
+
+  // Morning brief opt-in (v63.3.0 — killer feature #1)
+  morningBriefOptInTitle: 'Activate your morning brief?',
+  morningBriefOptInBody: 'Every morning at 7am, get a push with your day plan: next event, journal alert, contextualized tip. 3 lines, 1 action.',
+  morningBriefOptInActivate: 'Activate',
+  morningBriefOptInLater: 'Later',
+  morningBriefOptInOff: 'Not interested',
+  morningBriefSubscribeOk: '🔔 Morning brief activated!',
+  morningBriefSubscribeFail: 'Couldn\'t activate. Try again.',
+  morningBriefPermissionDenied: 'Permission denied. Enable notifications in your browser settings.',
+  morningBriefChip: 'Activate your morning briefs',
+  morningBriefSettingsLabel: 'Morning brief push',
+
 };
