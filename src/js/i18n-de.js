@@ -463,4 +463,16 @@ var T_DE = {
   teamMeetingQuotaTitle: 'Monatslimit erreicht',
   teamMeetingUpgradePro: 'Auf Pro upgraden',
   teamMeetingUsage: 'Meeting {n}/{max} diesen Monat (Plan Plus)',
+
+  // Multi-agent meeting threading (v63.1.0)
+  teamMeetingNavItem: 'Team-Meeting',
+  teamMeetingQuestionLabel: 'Frage',
+  teamMeetingFollowupPlaceholder: 'Stell eine Folgefrage…',
+  teamMeetingFollowupSubmit: 'Senden',
+  teamMeetingTurnCounter: 'Runde {n}/{max}',
+  teamMeetingTurnsLeft: '{n} Runde(n) übrig',
+  teamMeetingNewMeeting: 'Neues Meeting',
+  teamMeetingMaxTurnsReached: 'Du hast das Rundenlimit für dieses Meeting erreicht. Starte ein neues.',
+  teamMeetingMaxTurnsTitle: 'Rundenlimit erreicht',
+
 };
