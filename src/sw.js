@@ -1,21 +1,27 @@
-// SPORTVISE Service Worker v22 — INTELLIGENT CACHING
+// SPORTVISE Service Worker v23 — INTELLIGENT CACHING + WEB PUSH
 // ═══════════════════════════════════════════════════════════════════
-// Sortie de l'ère "v21 nuclear self-destruct". v22 réintroduit du caching
-// sélectif pour réduire le bandwidth Netlify et accélérer les chargements
-// répétés sans risquer de servir une version périmée.
+// v22 → v23 : ajout des listeners 'push' (réception brief matinal) et
+// 'notificationclick' (ouverture dashboard au clic). Pas de changement
+// dans la cache strategy déjà éprouvée en prod.
 //
-// Cache strategies par type d'URL :
+// Cache strategies par type d'URL (inchangé v22) :
 //   • CACHE-FIRST IMMUTABLE  → /assets/*, /icons/* (hashés ou stables)
 //   • NETWORK-FIRST FALLBACK → HTML pages (/dashboard.html, /login.html, /, /index.html, etc.)
 //   • STALE-WHILE-REVALIDATE → /manifest.json, /og-image.png
 //   • NETWORK-ONLY PASSTHRU  → /.netlify/functions/*, Supabase, Sentry, /sw.js, /version.json, POSTs
 //
+// Web Push v23 :
+//   • Subscription via VAPID public key (récupérée via /api/get-vapid-key OU env injectée
+//     dans le bundle build.js). Stockée dans Supabase push_subscriptions.
+//   • Listener 'push' parse le payload JSON et appelle showNotification().
+//   • Listener 'notificationclick' focus la fenêtre existante OU ouvre /dashboard.html.
+//
 // Pre-cache au install : login.html + manifest + 2 icons (offline-ready minimum).
 // Activate nettoie tous les caches dont le nom ne match pas CACHE_VERSION courant.
 // ═══════════════════════════════════════════════════════════════════
 
-const CACHE_VERSION = 'sportvise-v22-1';
-const APP_VERSION = '22';
+const CACHE_VERSION = 'sportvise-v23-1';
+const APP_VERSION = '23';
 
 // Liste des assets à pré-cacher au moment de l'installation. On garde minimal
 // (les assets hashés sont énormes et seront cachés on-demand au premier fetch).
@@ -175,4 +181,62 @@ self.addEventListener('message', e => {
   if (e.data === 'CHECK_VERSION') {
     e.source.postMessage({ type: 'SW_VERSION', version: APP_VERSION });
   }
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// v23 — WEB PUSH SUPPORT
+// ═══════════════════════════════════════════════════════════════════
+
+// ── Push event : reçoit le brief matinal envoyé par send-morning-brief ──
+// Payload attendu (JSON) :
+//   { title: string, body: string, url?: string, tag?: string, badge?: string }
+// Le url est ouvert au clic (default: /dashboard.html).
+self.addEventListener('push', e => {
+  if (!e.data) return;
+
+  let payload = {};
+  try {
+    payload = e.data.json();
+  } catch (err) {
+    // Payload texte simple (fallback)
+    payload = { title: 'SPORTVISE', body: e.data.text() };
+  }
+
+  const title = payload.title || 'SPORTVISE';
+  const options = {
+    body: payload.body || '',
+    icon: '/icons/icon-192.png',
+    badge: payload.badge || '/icons/icon-192.png',
+    tag: payload.tag || 'morning-brief',
+    data: { url: payload.url || '/dashboard.html' },
+    requireInteraction: false,
+    silent: false,
+  };
+
+  e.waitUntil(self.registration.showNotification(title, options));
+});
+
+// ── Notification click : focus l'onglet existant ou ouvre /dashboard.html ──
+// Si l'app est déjà ouverte dans un onglet → on focus celui-là.
+// Sinon → on ouvre une nouvelle window/onglet sur l'URL spécifiée dans le payload.
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  const url = (e.notification.data && e.notification.data.url) || '/dashboard.html';
+
+  e.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+      .then(clientList => {
+        // Si un onglet SPORTVISE est déjà ouvert, focus-le et navigate vers l'url cible
+        for (const client of clientList) {
+          if (client.url.includes(self.location.origin) && 'focus' in client) {
+            client.navigate(url).catch(() => {});
+            return client.focus();
+          }
+        }
+        // Sinon, ouvre une nouvelle window
+        if (self.clients.openWindow) {
+          return self.clients.openWindow(url);
+        }
+      })
+  );
 });
