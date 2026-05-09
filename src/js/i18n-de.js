@@ -493,4 +493,21 @@ var T_DE = {
   morningBriefChip: 'Aktiviere deine Morgen-Briefings',
   morningBriefSettingsLabel: 'Morgen-Briefing Push',
 
+  // KF#3 Vue Avant/Après (v63.4.0 — voir PRD_KF3_VUE_AVANT_APRES_v1.md)
+  tvTitle: 'Deine Transformation',
+  tvWin3mois: '3 Monate',
+  tvWin6mois: '6 Monate',
+  tvWin1an: '1 Jahr',
+  tvWinSince: 'Seit dem Anfang',
+  tvKpiFitness: 'Form',
+  tvKpiTraining: 'Training',
+  tvKpiMSE: 'Stimmung · Schlaf · Energie',
+  tvKpiCheckin: 'Regelmässigkeit',
+  tvEmptyTitle: 'Dein Weg entsteht',
+  tvEmptySub: 'Mach weiter mit deinem Check-in. In <strong>{n} Tagen</strong> zeige ich dir deine Entwicklung.',
+  tvEmptyReady: 'Dein Verlauf ist bereit — lade die Seite neu.',
+  tvNarrativeLoading: 'David analysiert deine Entwicklung…',
+  tvNoDataWindow: 'Noch keine Daten in diesem Zeitraum.',
+  tvError: 'Deine Transformationsansicht kann derzeit nicht geladen werden.',
+
 };

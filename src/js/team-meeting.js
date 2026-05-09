@@ -207,7 +207,9 @@ function _renderTeamMeetingAgentChips() {
     const locked = _teamMeetingActive;
     const opacity = locked ? '0.6' : '1';
     const cursor = locked ? 'not-allowed' : 'pointer';
-    chip.style.cssText = `padding:6px 10px;border-radius:16px;border:1px solid ${isSelected ? '#f59e0b' : '#1e2d47'};background:${isSelected ? 'linear-gradient(135deg,#f59e0b,#d97706)' : 'transparent'};color:${isSelected ? '#07091a' : '#f1f5f9'};font-size:11px;font-weight:600;cursor:${cursor};font-family:Inter,sans-serif;display:inline-flex;align-items:center;gap:4px;margin:2px;opacity:${opacity}`;
+    // v63.4.0 — fix contraste mode jour : remplace couleurs hardcodées dark-mode par CSS vars theme-aware.
+    // Avant : color #f1f5f9 (presque blanc) sur fond transparent → invisible en light mode.
+    chip.style.cssText = `padding:6px 10px;border-radius:16px;border:1px solid ${isSelected ? '#f59e0b' : 'var(--border)'};background:${isSelected ? 'linear-gradient(135deg,#f59e0b,#d97706)' : 'transparent'};color:${isSelected ? '#07091a' : 'var(--text)'};font-size:11px;font-weight:600;cursor:${cursor};font-family:Inter,sans-serif;display:inline-flex;align-items:center;gap:4px;margin:2px;opacity:${opacity}`;
     chip.disabled = locked;
     chip.textContent = (agent.emoji ? agent.emoji + ' ' : '') + agent.name;
     chip.onclick = () => {

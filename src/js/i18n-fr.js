@@ -498,4 +498,21 @@ var T_FR = {
   morningBriefChip: 'Active tes briefs matinaux',
   morningBriefSettingsLabel: 'Brief matinal push',
 
+  // KF#3 Vue Avant/Après (v63.4.0-draft — voir PRD_KF3_VUE_AVANT_APRES_v1.md)
+  tvTitle: 'Ta transformation',
+  tvWin3mois: '3 mois',
+  tvWin6mois: '6 mois',
+  tvWin1an: '1 an',
+  tvWinSince: 'Depuis le début',
+  tvKpiFitness: 'Forme',
+  tvKpiTraining: 'Entraînement',
+  tvKpiMSE: 'Humeur · Sommeil · Énergie',
+  tvKpiCheckin: 'Régularité',
+  tvEmptyTitle: 'Ton chemin se construit',
+  tvEmptySub: 'Continue ton check-in. Dans <strong>{n} jours</strong> je te montre comment t\'as évolué.',
+  tvEmptyReady: 'Ton historique est prêt — recharge la page.',
+  tvNarrativeLoading: 'David analyse ta progression…',
+  tvNoDataWindow: 'Pas encore de données sur cette fenêtre.',
+  tvError: 'Impossible de charger ta vue transformation pour l\'instant.',
+
 };

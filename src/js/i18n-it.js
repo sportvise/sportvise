@@ -493,4 +493,21 @@ var T_IT = {
   morningBriefChip: 'Attiva i tuoi brief mattutini',
   morningBriefSettingsLabel: 'Push brief mattutino',
 
+  // KF#3 Vue Avant/Après (v63.4.0 — vedi PRD_KF3_VUE_AVANT_APRES_v1.md)
+  tvTitle: 'La tua trasformazione',
+  tvWin3mois: '3 mesi',
+  tvWin6mois: '6 mesi',
+  tvWin1an: '1 anno',
+  tvWinSince: 'Dall\'inizio',
+  tvKpiFitness: 'Forma',
+  tvKpiTraining: 'Allenamento',
+  tvKpiMSE: 'Umore · Sonno · Energia',
+  tvKpiCheckin: 'Costanza',
+  tvEmptyTitle: 'Il tuo percorso si costruisce',
+  tvEmptySub: 'Continua il tuo check-in. Tra <strong>{n} giorni</strong> ti mostro come sei evoluto.',
+  tvEmptyReady: 'La tua cronologia è pronta — ricarica la pagina.',
+  tvNarrativeLoading: 'David sta analizzando la tua progressione…',
+  tvNoDataWindow: 'Nessun dato in questa finestra.',
+  tvError: 'Impossibile caricare la tua vista trasformazione al momento.',
+
 };
