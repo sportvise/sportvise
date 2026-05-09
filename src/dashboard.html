@@ -1230,6 +1230,10 @@ function setLang(lang) {
   // Refresh current page content
   chats = {}; // Reset chats to get greetings in new language
   showPage(currentPage, document.querySelector('.nav-item.active'));
+
+  // v63.3.1 — Dispatch event pour que les modals/chips dynamiques (team meeting,
+  // morning brief opt-in, etc.) re-syncent leurs labels i18n.
+  try { window.dispatchEvent(new CustomEvent('sv-lang-changed', { detail: { lang } })); } catch(_) {}
 }
 
 // ── MOBILE MENU ────────────────────────────────────
@@ -11537,25 +11541,99 @@ function showShortcutsHelp() {
     if (m) m.style.display = 'none';
   }
   async function handleMorningBriefActivate() {
+    // v63.3.1 — verbose logging + UI fallback pour debug Safari + scénarios edge.
+    console.log('[MORNING_BRIEF] handleMorningBriefActivate clicked');
     var btn = document.getElementById('morningBriefActivateBtn');
-    if (btn) { btn.disabled = true; btn.textContent = '…'; }
-    try {
-      var result = await subscribeToPush();
-      if (result.ok) {
-        _hideMorningBriefModal();
-        if (typeof showToast === 'function') {
-          showToast((T?.[currentLang]?.morningBriefSubscribeOk) || '🔔 Brief matinal activé !');
-        }
-      } else {
-        if (btn) { btn.disabled = false; btn.innerHTML = '🔔 ' + ((T?.[currentLang]?.morningBriefOptInActivate) || 'Activer'); }
-        var msg = result.reason === 'permission_denied'
-          ? ((T?.[currentLang]?.morningBriefPermissionDenied) || 'Permission refusée. Autorise les notifications dans tes réglages browser.')
-          : ((T?.[currentLang]?.morningBriefSubscribeFail) || 'Impossible d\'activer. Réessaie.');
-        if (typeof showToast === 'function') showToast(msg);
-      }
-    } catch(e) {
-      console.error('[MORNING_BRIEF] activate error:', e);
+    var resetBtn = function() {
       if (btn) { btn.disabled = false; btn.innerHTML = '🔔 ' + ((T?.[currentLang]?.morningBriefOptInActivate) || 'Activer'); }
+    };
+    if (btn) { btn.disabled = true; btn.textContent = '…'; }
+
+    // Pré-check : si subscribeToPush n'est pas définie (bug concat ou shadow), alert immédiat
+    if (typeof subscribeToPush !== 'function') {
+      console.error('[MORNING_BRIEF] subscribeToPush is not a function:', typeof subscribeToPush);
+      alert('⚠️ Erreur technique : subscribeToPush() not available. Recharge la page (Cmd+Shift+R).');
+      resetBtn();
+      return;
+    }
+
+    var result;
+    try {
+      console.log('[MORNING_BRIEF] calling subscribeToPush()...');
+      result = await subscribeToPush();
+      console.log('[MORNING_BRIEF] subscribeToPush returned:', result);
+    } catch(e) {
+      console.error('[MORNING_BRIEF] subscribeToPush threw:', e);
+      alert('⚠️ Erreur lors de l\'activation : ' + (e?.message || String(e)) + '\n\nRegarde la Console pour le détail.');
+      resetBtn();
+      return;
+    }
+
+    // Cas pathologique : la fonction retourne undefined (ne devrait JAMAIS arriver
+    // si push-subscribe.js est bien chargé, mais on a vu ça en console Safari).
+    if (typeof result === 'undefined' || result === null) {
+      console.error('[MORNING_BRIEF] subscribeToPush returned undefined/null — fallback browser direct');
+      // Fallback : tente direct via PushManager browser API + upsert manuel
+      try {
+        var swReg = await navigator.serviceWorker.ready;
+        var sub = await swReg.pushManager.getSubscription();
+        if (!sub) {
+          var vapidKey = (typeof getVapidPublicKey === 'function') ? getVapidPublicKey() : null;
+          if (!vapidKey) throw new Error('VAPID key missing');
+          var keyArray = (typeof _urlBase64ToUint8Array === 'function')
+            ? _urlBase64ToUint8Array(vapidKey)
+            : null;
+          if (!keyArray) throw new Error('_urlBase64ToUint8Array missing');
+          sub = await swReg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyArray });
+        }
+        var subJson = sub.toJSON();
+        await sb.from('push_subscriptions').upsert({
+          user_id: currentUser.id,
+          endpoint: subJson.endpoint,
+          p256dh: subJson.keys.p256dh,
+          auth: subJson.keys.auth,
+          lang: currentLang || 'fr',
+          user_agent: navigator.userAgent.slice(0, 200)
+        }, { onConflict: 'user_id,endpoint' });
+        await sb.from('profiles').update({ morning_brief_optin: 'on' }).eq('id', currentUser.id);
+        if (typeof userProfile !== 'undefined' && userProfile) userProfile.morning_brief_optin = 'on';
+        result = { ok: true, endpoint: subJson.endpoint, fallback: true };
+        console.log('[MORNING_BRIEF] fallback path succeeded:', result);
+      } catch(e) {
+        console.error('[MORNING_BRIEF] fallback also failed:', e);
+        alert('⚠️ Impossible d\'activer (path 1 et 2) : ' + (e?.message || String(e)) + '\n\nRegarde la Console.');
+        resetBtn();
+        return;
+      }
+    }
+
+    // Traitement du résultat (ok ou détail d'erreur)
+    if (result.ok) {
+      _hideMorningBriefModal();
+      if (typeof showToast === 'function') {
+        showToast((T?.[currentLang]?.morningBriefSubscribeOk) || '🔔 Brief matinal activé !');
+      } else {
+        alert('🔔 Brief matinal activé !');
+      }
+      _refreshMorningBriefChip();
+    } else {
+      var msg;
+      if (result.reason === 'permission_denied') {
+        msg = (T?.[currentLang]?.morningBriefPermissionDenied) || 'Permission refusée. Autorise les notifications dans tes réglages browser.';
+      } else if (result.reason === 'subscribe_error') {
+        msg = 'Erreur subscription : ' + (result.error || 'inconnue');
+      } else if (result.reason === 'db_error' || result.reason === 'db_exception') {
+        msg = 'Erreur base de données : ' + (result.error || 'inconnue');
+      } else if (result.reason === 'unsupported') {
+        msg = 'Push non supporté sur ce navigateur.';
+      } else if (result.reason === 'vapid_missing') {
+        msg = 'Configuration VAPID manquante (env var).';
+      } else {
+        msg = (T?.[currentLang]?.morningBriefSubscribeFail) || 'Impossible d\'activer. Réessaie.';
+      }
+      console.warn('[MORNING_BRIEF] subscribe failed:', result.reason, result.error);
+      if (typeof showToast === 'function') showToast(msg); else alert(msg);
+      resetBtn();
     }
   }
   async function handleMorningBriefLater() {
@@ -11601,6 +11679,13 @@ function showShortcutsHelp() {
     window.addEventListener('sv-dashboard-ready', function() {
       maybeShowMorningBriefOptIn();
       _refreshMorningBriefChip();
+    });
+    // v63.3.1 — Re-traduit le chip + les labels modaux au switch de langue.
+    window.addEventListener('sv-lang-changed', function() {
+      _refreshMorningBriefChip();
+      // Si modal ouverte, re-sync ses labels via _showMorningBriefModal (qui re-applique l'i18n)
+      var m = document.getElementById('morningBriefModal');
+      if (m && m.style.display === 'flex') _showMorningBriefModal();
     });
   }
 
