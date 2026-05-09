@@ -3,6 +3,18 @@
   publish = "dist"
   functions = "netlify/functions"
 
+# v63.3.7 — Pin Node 22 LTS pour fix Apple Web Push BadJwtToken.
+# Diagnostic 09/05/2026 : sandbox Node v22.22.0 / OpenSSL 3.x = Apple accepte JWT (status 201
+# Created confirmé via reproduction directe avec mêmes keys / subject / endpoint / payload
+# encrypted que la prod). Netlify Functions sans NODE_VERSION pinné défaut à un Node ancien
+# possible (18 ou moins) avec OpenSSL 1.1.x — les implémentations ES256 ECDSA P-256 ont des
+# différences de padding signature entre OpenSSL 1.1 et 3.x qui font qu'Apple Push Service
+# rejette le JWT avec exactement {"reason":"BadJwtToken"} bien que la signature soit
+# mathématiquement valide. Pin Node 22 = Node récent + OpenSSL 3.x = problème résolu.
+# ⚠️ NE PAS DOWNGRADER sous Node 22 sans avoir re-testé end-to-end Apple Push.
+[build.environment]
+  NODE_VERSION = "22"
+
 # Cache headers — static HTML pages: no cache (always fresh)
 # v62.33 — règle "/" ajoutée car "/*.html" ne matche PAS "/" (URL sans extension).
 # Bug découvert par tests/smoke.test.mjs : la landing ne recevait ni X-Frame-Options
