@@ -291,9 +291,15 @@ async function sendToSubscription(sub, payloadJson) {
     await Promise.race([sendPromise, timeoutPromise]);
     return { ok: true };
   } catch (err) {
-    // 410 Gone / 404 Not Found → subscription expirée, à supprimer
+    // v63.3.6 — Log explicite pour diagnostic. Auparavant l'erreur était silently
+    // capturée → impossible de distinguer 401 (mismatch keys), 403 (subject), 400 (payload), etc.
     const status = err && err.statusCode;
-    if (status === 410 || status === 404) {
+    const body = err && (err.body || err.headers || '');
+    console.error('[BRIEF] webpush error: status=', status, 'message=', err && err.message, 'body=', String(body).slice(0, 500), 'name=', err && err.name);
+
+    // 410 Gone / 404 Not Found / 401 Unauthorized → subscription invalide, à supprimer
+    // (401 ajouté car les subs créées avec ancienne PUBLIC retournent 401 après changement VAPID)
+    if (status === 410 || status === 404 || status === 401) {
       try {
         await httpRequest({
           hostname: supabaseHost(),
@@ -305,9 +311,9 @@ async function sendToSubscription(sub, payloadJson) {
           },
         });
       } catch (_) {}
-      return { ok: false, reason: 'gone', cleaned: true };
+      return { ok: false, reason: 'gone', cleaned: true, status };
     }
-    return { ok: false, reason: 'send_error', status, message: err.message };
+    return { ok: false, reason: 'send_error', status, message: err && err.message };
   }
 }
 
