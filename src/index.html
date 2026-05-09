@@ -22,18 +22,16 @@
   })();
   </script>
   <script>
-  // CACHE CLEANER v21 — async, cleans SW + caches silently
+  // SW REGISTER v22 — register sw.js v22 (cache intelligent, bandwidth Netlify -)
+  // Voir dashboard.html pour le rationale complet. Pattern identique sur les 3
+  // pages (dashboard / index / login) pour assurer le SW actif où que l'user
+  // entre dans l'app. nuke.html garde son propre comportement nuclear.
   window._cacheCleanDone = (async function(){
     try {
       if ('serviceWorker' in navigator) {
-        var regs = await navigator.serviceWorker.getRegistrations();
-        await Promise.all(regs.map(function(r) { return r.unregister(); }));
+        await navigator.serviceWorker.register('/sw.js');
       }
-      if ('caches' in window) {
-        var keys = await caches.keys();
-        await Promise.all(keys.map(function(k) { return caches.delete(k); }));
-      }
-    } catch(e) { console.warn('Cache clean error:', e); }
+    } catch(e) { console.warn('SW register error:', e); }
   })();
   </script>
   <meta name="description" content="Le management sportif IA pensé pour la Suisse — 11 agents experts (préparation physique, mentale, finance, sponsors, contrats), conseils contextualisés à ton calendrier et ton journal. Dès CHF 0/mois." />

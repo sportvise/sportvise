@@ -22,19 +22,16 @@
   })();
   </script>
   <script>
-  // CACHE CLEANER v21 — async, exposes window._cacheCleanDone promise
-  // ALL redirects must await this before navigating to dashboard
+  // SW REGISTER v22 — register sw.js v22 (cache intelligent, bandwidth Netlify -)
+  // Le nom window._cacheCleanDone est conservé : les redirects login → dashboard
+  // l'awaitent encore. La promise se résout dès que le register a été tenté.
+  // Le SW continue son install/activate en background, sans bloquer la nav.
   window._cacheCleanDone = (async function(){
     try {
       if ('serviceWorker' in navigator) {
-        var regs = await navigator.serviceWorker.getRegistrations();
-        await Promise.all(regs.map(function(r) { return r.unregister(); }));
+        await navigator.serviceWorker.register('/sw.js');
       }
-      if ('caches' in window) {
-        var keys = await caches.keys();
-        await Promise.all(keys.map(function(k) { return caches.delete(k); }));
-      }
-    } catch(e) { console.warn('Cache clean error:', e); }
+    } catch(e) { console.warn('SW register error:', e); }
   })();
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
