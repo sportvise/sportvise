@@ -475,4 +475,9 @@ var T_EN = {
   teamMeetingMaxTurnsReached: 'You\'ve reached the turn limit for this meeting. Start a new one.',
   teamMeetingMaxTurnsTitle: 'Turn limit reached',
 
+
+  // Multi-agent meeting empty state (v63.1.1)
+  teamMeetingEmptyTitle: 'Start the meeting',
+  teamMeetingEmptyHint: 'Select 2-3 agents and ask your question. They answer together from their domain of expertise.',
+
 };

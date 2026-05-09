@@ -480,4 +480,9 @@ var T_FR = {
   teamMeetingMaxTurnsReached: 'Tu as atteint la limite de tours pour cette réunion. Démarre-en une nouvelle.',
   teamMeetingMaxTurnsTitle: 'Limite de tours atteinte',
 
+
+  // Multi-agent meeting empty state (v63.1.1)
+  teamMeetingEmptyTitle: 'Démarre la réunion',
+  teamMeetingEmptyHint: 'Sélectionne 2-3 agents et pose ta question. Ils répondent ensemble depuis leur domaine d\'expertise.',
+
 };

@@ -475,4 +475,9 @@ var T_IT = {
   teamMeetingMaxTurnsReached: 'Hai raggiunto il limite di turni per questa riunione. Avviane una nuova.',
   teamMeetingMaxTurnsTitle: 'Limite di turni raggiunto',
 
+
+  // Multi-agent meeting empty state (v63.1.1)
+  teamMeetingEmptyTitle: 'Avvia la riunione',
+  teamMeetingEmptyHint: 'Seleziona 2-3 agenti e poni la tua domanda. Rispondono insieme dal loro dominio di expertise.',
+
 };
