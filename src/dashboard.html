@@ -11670,8 +11670,15 @@ function showShortcutsHelp() {
       localStorage.setItem('sv_morning_brief_later_at', String(Date.now()));
     }
 
-    // Délai de 8s après le boot pour ne pas overwhelm l'user à l'arrivée
-    setTimeout(_showMorningBriefModal, 8000);
+    // Délai de 8s après le boot pour ne pas overwhelm l'user à l'arrivée.
+    // v63.3.2 — Re-check status au moment du show : si l'user a cliqué Activer
+    // (via le chip sidebar) AVANT les 8s, le timer queued ne doit pas re-ouvrir
+    // la modal alors que status='on' déjà.
+    setTimeout(function() {
+      var currentStatus = (typeof getMorningBriefStatus === 'function') ? getMorningBriefStatus() : null;
+      if (currentStatus === 'on' || currentStatus === 'off') return;
+      _showMorningBriefModal();
+    }, 8000);
   }
   // Trigger après que dashboard soit chargé. Le hook init() appelle maybeShowMorningBriefOptIn()
   // automatiquement (cf. dashboard init function).
