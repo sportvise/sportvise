@@ -480,4 +480,17 @@ var T_IT = {
   teamMeetingEmptyTitle: 'Avvia la riunione',
   teamMeetingEmptyHint: 'Seleziona 2-3 agenti e poni la tua domanda. Rispondono insieme dal loro dominio di expertise.',
 
+
+  // Morning brief opt-in (v63.3.0 — killer feature #1)
+  morningBriefOptInTitle: 'Attivare il tuo brief mattutino?',
+  morningBriefOptInBody: 'Ogni mattina alle 7, ricevi un push con il tuo piano del giorno: prossimo evento, avviso diario, consiglio contestualizzato. 3 righe, 1 azione.',
+  morningBriefOptInActivate: 'Attiva',
+  morningBriefOptInLater: 'Più tardi',
+  morningBriefOptInOff: 'Non interessato',
+  morningBriefSubscribeOk: '🔔 Brief mattutino attivato!',
+  morningBriefSubscribeFail: 'Impossibile attivare. Riprova.',
+  morningBriefPermissionDenied: 'Permesso negato. Abilita le notifiche nelle impostazioni del browser.',
+  morningBriefChip: 'Attiva i tuoi brief mattutini',
+  morningBriefSettingsLabel: 'Push brief mattutino',
+
 };
