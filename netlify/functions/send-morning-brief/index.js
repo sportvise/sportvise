@@ -36,8 +36,9 @@ const MAX_USERS_PER_RUN = 50;
 
 // ─────────────────────────────────────────────────────────────
 // HTTP helper (réutilisé pattern chat/meeting)
+// v63.3.4 — Timeout défensif 8s par request (anti-hang)
 // ─────────────────────────────────────────────────────────────
-function httpRequest({ hostname, path, method, headers, body }) {
+function httpRequest({ hostname, path, method, headers, body, timeoutMs = 8000 }) {
   return new Promise((resolve, reject) => {
     const opts = { hostname, path, method, headers: { ...headers } };
     if (body && !opts.headers['Content-Length']) {
@@ -53,6 +54,9 @@ function httpRequest({ hostname, path, method, headers, body }) {
       });
     });
     req.on('error', reject);
+    req.setTimeout(timeoutMs, () => {
+      req.destroy(new Error(`httpRequest timeout after ${timeoutMs}ms (${method} ${path.slice(0, 100)})`));
+    });
     if (body) req.write(body);
     req.end();
   });
@@ -87,8 +91,10 @@ function setupWebPush() {
 // Format retourné : [{id, full_name, sport, canton, lang, push_subscriptions: [...]}, ...]
 // ─────────────────────────────────────────────────────────────
 async function fetchOptedInUsers(limit) {
+  console.log('[BRIEF] fetchOptedInUsers START');
   // Step 1 : profiles avec morning_brief_optin = 'on'
   const profilesPath = `/rest/v1/profiles?morning_brief_optin=eq.on&select=id,full_name,sport,canton,lang&limit=${limit}`;
+  console.log('[BRIEF] step1 profilesPath=', profilesPath);
   const profilesRes = await httpRequest({
     hostname: supabaseHost(),
     path: profilesPath,
@@ -98,16 +104,21 @@ async function fetchOptedInUsers(limit) {
       Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
     },
   });
+  console.log('[BRIEF] step1 status=', profilesRes.status, 'count=', Array.isArray(profilesRes.data) ? profilesRes.data.length : 'not-array');
   if (profilesRes.status !== 200 || !Array.isArray(profilesRes.data)) {
-    console.warn('[BRIEF] fetchOptedInUsers profiles status=', profilesRes.status, 'data=', JSON.stringify(profilesRes.data).slice(0, 300));
+    console.warn('[BRIEF] step1 fail data=', JSON.stringify(profilesRes.data).slice(0, 300));
     return [];
   }
   if (profilesRes.data.length === 0) return [];
 
   // Step 2 : push_subscriptions pour ces users
+  // v63.3.4 — UUIDs sans guillemets dans le filter PostgREST in.(...). Avec quotes,
+  // PostgREST peut interpreter comme strings au lieu d'UUIDs et silencieusement échouer
+  // ou hang. Format correct : ?user_id=in.(uuid1,uuid2,uuid3) URL-encoded.
   const userIds = profilesRes.data.map(p => p.id);
-  const inFilter = `(${userIds.map(id => `"${id}"`).join(',')})`;
+  const inFilter = `(${userIds.join(',')})`;
   const subsPath = `/rest/v1/push_subscriptions?user_id=in.${encodeURIComponent(inFilter)}&select=user_id,endpoint,p256dh,auth,lang,fail_count`;
+  console.log('[BRIEF] step2 subsPath=', subsPath.slice(0, 200));
   const subsRes = await httpRequest({
     hostname: supabaseHost(),
     path: subsPath,
@@ -117,8 +128,9 @@ async function fetchOptedInUsers(limit) {
       Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
     },
   });
+  console.log('[BRIEF] step2 status=', subsRes.status, 'count=', Array.isArray(subsRes.data) ? subsRes.data.length : 'not-array');
   if (subsRes.status !== 200 || !Array.isArray(subsRes.data)) {
-    console.warn('[BRIEF] fetchOptedInUsers subs status=', subsRes.status, 'data=', JSON.stringify(subsRes.data).slice(0, 300));
+    console.warn('[BRIEF] step2 fail data=', JSON.stringify(subsRes.data).slice(0, 300));
     return [];
   }
 
@@ -266,11 +278,17 @@ function buildBriefPayload(profile, ctx) {
 // ─────────────────────────────────────────────────────────────
 async function sendToSubscription(sub, payloadJson) {
   try {
-    await webpush.sendNotification(
+    // v63.3.4 — Race entre sendNotification et un timeout 8s pour éviter qu'un
+    // endpoint lent (Apple Push Service occasionnellement) gel toute la function.
+    const sendPromise = webpush.sendNotification(
       { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
       payloadJson,
-      { TTL: 24 * 3600 } // expire dans 24h si pas livré
+      { TTL: 24 * 3600 }
     );
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('webpush timeout 8s')), 8000)
+    );
+    await Promise.race([sendPromise, timeoutPromise]);
     return { ok: true };
   } catch (err) {
     // 410 Gone / 404 Not Found → subscription expirée, à supprimer
