@@ -10,7 +10,7 @@
 //   • Chaque appel est loggé dans api_usage_log (success ou error).
 //
 // Limites par plan (alignées avec le pricing landing) :
-//   Free : 30 req/min, 10/jour
+//   Free : 30 req/min, 5/jour      (v63.5 : passé de 10 → 5 msg/jour)
 //   Plus : 30 req/min, 500/jour
 //   Pro  : 60 req/min, 1000/jour
 //
@@ -113,9 +113,11 @@ async function getUserPlan(userId) {
 
 // ─────────────────────────────────────────────────────────────
 // Rate limit thresholds per plan
+// v63.5 — Free passé de 10 → 5 msg/jour (audit pricing 7.3 : 5/jour suffit pour
+// tester, réduit le coût acquisition de 50% sur les Free non-convertis).
 // ─────────────────────────────────────────────────────────────
 const LIMITS = {
-  free: { perMinute: 30, perDay: 10 },
+  free: { perMinute: 30, perDay: 5 },
   plus: { perMinute: 30, perDay: 500 },
   pro:  { perMinute: 60, perDay: 1000 },
 };
