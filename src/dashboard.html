@@ -2467,6 +2467,12 @@ async function renderDashboard() {
     </div>
     `}
 
+    <!-- KF#3 — VUE AVANT/APRÈS WIDGET (v63.4.0-draft) -->
+    <!-- Container vide rempli en async par renderTransformationView() défini dans
+         src/js/transformation-view.js. Empty state si <21 daily_log, sinon 4 KPIs
+         comparés baseline vs récent + narratif David (phase 2 à venir). -->
+    <div id="transformationView" style="margin-bottom:16px"></div>
+
     <!-- STREAK & BADGES WIDGET -->
     ${await (async () => {
       const { data: allLogs } = await sb.from('daily_log')
@@ -2848,6 +2854,19 @@ async function renderDashboard() {
         if (shouldShow) injectCheckinCard();
       } catch(e) { console.warn('[CHECKIN-30S] dashboard hook error:', e); }
     }, 350);
+  }
+
+  // v63.4.0-draft — KF#3 Vue Avant/Après widget
+  // Render dans #transformationView (placeholder déjà dans innerHTML ci-dessus, juste
+  // avant le streak widget). Empty state si <21 daily_log, sinon 4 KPIs + narratif.
+  // Best-effort, jamais bloquant. Voir src/js/transformation-view.js + PRD.
+  // SetTimeout 100ms pour laisser l'innerHTML se stabiliser avant le 1er query.
+  if (isOnboardDone() && typeof renderTransformationView === 'function') {
+    setTimeout(() => {
+      try {
+        renderTransformationView();
+      } catch(e) { console.warn('[KF3-TRANSFORMATION] dashboard hook error:', e); }
+    }, 100);
   }
 }
 
