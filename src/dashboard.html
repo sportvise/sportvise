@@ -574,6 +574,12 @@
     <button class="nav-item active" style="border-left-color:#f59e0b" onclick="showPage('dashboard',this)">
       🏠 <span>Dashboard</span>
     </button>
+    <!-- v63.1.0 — Réunion d'équipe (multi-agent meeting) en 2e position. Trigger global,
+         pas de showPage() puisque c'est une modal-overlay. Style distinctif (border gold)
+         pour signaler que c'est une feature spéciale, pas un agent simple. -->
+    <button class="nav-item" id="navItemTeamMeeting" style="border-left:3px solid #f59e0b;background:linear-gradient(90deg,rgba(245,158,11,0.08),transparent)" onclick="openTeamMeeting()">
+      🤝 <span id="navItemTeamMeetingLabel">Réunion d'équipe</span>
+    </button>
     <div class="nav-section">💼 AGENTS IA BUSINESS</div>
     <button class="nav-item" onclick="showPage('equipe',this)">💼 <span data-nav="equipe">Lucas — Manager</span></button>
     <button class="nav-item" onclick="showPage('marketing',this)">🎯 <span data-nav="marketing">Alex — Marketing</span></button>
@@ -11581,11 +11587,13 @@ function showShortcutsHelp() {
 <script>
   // i18n header au moment où la modal est ouverte (sync avec currentLang/T)
   // Le wiring est fait par openTeamMeeting() dans src/js/team-meeting.js.
-  (function syncTeamMeetingI18n() {
+  function _syncTeamMeetingI18nLabels() {
     if (typeof T === 'undefined' || typeof currentLang === 'undefined') return;
     var t = T[currentLang] || T.fr || {};
     var fab = document.getElementById('teamMeetingFab');
     if (fab && t.teamMeetingFabTitle) fab.title = t.teamMeetingFabTitle;
+    var navLbl = document.getElementById('navItemTeamMeetingLabel');
+    if (navLbl && t.teamMeetingNavItem) navLbl.textContent = t.teamMeetingNavItem;
     var title = document.getElementById('teamMeetingTitle');
     if (title && t.teamMeetingTitle) title.textContent = t.teamMeetingTitle;
     var subtitle = document.getElementById('teamMeetingSubtitle');
@@ -11596,25 +11604,12 @@ function showShortcutsHelp() {
     if (lbl && t.teamMeetingAgentsLabel) lbl.textContent = t.teamMeetingAgentsLabel;
     var btn = document.getElementById('teamMeetingSubmit');
     if (btn && t.teamMeetingSubmit) btn.textContent = t.teamMeetingSubmit;
-  })();
-  // Re-sync au lang switch — observe l'event existant ou hook setLangPage si possible
+  }
+  // Run au load
+  _syncTeamMeetingI18nLabels();
+  // Re-run au lang switch
   if (typeof window !== 'undefined') {
-    window.addEventListener('sv-lang-changed', function() {
-      if (typeof T === 'undefined' || typeof currentLang === 'undefined') return;
-      var t = T[currentLang] || T.fr || {};
-      var fab = document.getElementById('teamMeetingFab');
-      if (fab && t.teamMeetingFabTitle) fab.title = t.teamMeetingFabTitle;
-      var title = document.getElementById('teamMeetingTitle');
-      if (title && t.teamMeetingTitle) title.textContent = t.teamMeetingTitle;
-      var subtitle = document.getElementById('teamMeetingSubtitle');
-      if (subtitle && t.teamMeetingSubtitle) subtitle.textContent = t.teamMeetingSubtitle;
-      var qta = document.getElementById('teamMeetingQuestion');
-      if (qta && t.teamMeetingPlaceholder) qta.placeholder = t.teamMeetingPlaceholder;
-      var lbl = document.getElementById('teamMeetingAgentsLabel');
-      if (lbl && t.teamMeetingAgentsLabel) lbl.textContent = t.teamMeetingAgentsLabel;
-      var btn = document.getElementById('teamMeetingSubmit');
-      if (btn && t.teamMeetingSubmit) btn.textContent = t.teamMeetingSubmit;
-    });
+    window.addEventListener('sv-lang-changed', _syncTeamMeetingI18nLabels);
   }
 </script>
 </body>

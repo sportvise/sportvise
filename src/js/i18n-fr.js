@@ -468,4 +468,16 @@ var T_FR = {
   teamMeetingQuotaTitle: 'Quota mensuel atteint',
   teamMeetingUpgradePro: 'Passer en Pro',
   teamMeetingUsage: 'Réunion {n}/{max} ce mois (plan Plus)',
+
+  // Multi-agent meeting threading (v63.1.0)
+  teamMeetingNavItem: 'Réunion d\'équipe',
+  teamMeetingQuestionLabel: 'Question',
+  teamMeetingFollowupPlaceholder: 'Pose une question de suivi…',
+  teamMeetingFollowupSubmit: 'Envoyer',
+  teamMeetingTurnCounter: 'Tour {n}/{max}',
+  teamMeetingTurnsLeft: '{n} tour(s) restant(s)',
+  teamMeetingNewMeeting: 'Nouvelle réunion',
+  teamMeetingMaxTurnsReached: 'Tu as atteint la limite de tours pour cette réunion. Démarre-en une nouvelle.',
+  teamMeetingMaxTurnsTitle: 'Limite de tours atteinte',
+
 };

@@ -108,14 +108,17 @@ const MEETING_QUOTAS = {
 };
 
 // Count meeting usage for a user since the start of the current calendar month.
+// v63.1.0 — On compte UNIQUEMENT les 1ers tours d'une réunion (1 meeting = 1 thread).
+// Les follow-ups (tours 2-5) sont loggés avec agent_id suffixé ":turn{N}" et exclus
+// du compte via filter agent_id=not.like.%25:turn%25.
 async function countMeetingsThisMonth(userId) {
   try {
     const now = new Date();
     const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0));
     const sinceIso = monthStart.toISOString();
-    // Count by counting any /meeting log within the month (success OR failed AFTER quota check).
-    // We filter on success=true to not penalize the user for a failed attempt.
-    const path = `/rest/v1/api_usage_log?user_id=eq.${encodeURIComponent(userId)}&endpoint=eq.meeting&success=eq.true&ts=gte.${encodeURIComponent(sinceIso)}&select=id`;
+    // success=true (vraies réussites) + agent_id PAS de suffixe :turn (donc 1ers tours seulement).
+    // %25 = URL-encoded '%' (wildcard SQL).
+    const path = `/rest/v1/api_usage_log?user_id=eq.${encodeURIComponent(userId)}&endpoint=eq.meeting&success=eq.true&agent_id=not.like.%25%3Aturn%25&ts=gte.${encodeURIComponent(sinceIso)}&select=id`;
     const res = await httpRequest({
       hostname: supabaseHost(),
       path,
@@ -209,11 +212,37 @@ function pickModel(userEmail) {
 }
 
 // ─────────────────────────────────────────────────────────────
+// Constantes threading (v63.1.0)
+// ─────────────────────────────────────────────────────────────
+const MAX_TURNS_PER_MEETING = 5;
+
+// ─────────────────────────────────────────────────────────────
 // Build system prompt for one agent in meeting context.
 // Marque explicitement à l'agent qu'il est en RÉUNION avec d'autres agents,
 // pour qu'il reste dans son domaine et complète au lieu de tout couvrir.
+//
+// v63.1.0 : ajoute optionnellement un bloc "ce que les autres agents ont dit
+// aux tours précédents" pour permettre à l'agent de référencer/compléter
+// les contributions des collègues sans répéter.
 // ─────────────────────────────────────────────────────────────
-function buildMeetingSystem(agent, otherAgentNames, lang, profile, calendar, dailyLog, modelConfig) {
+function buildHistoryContextBlock(history, agentId) {
+  if (!Array.isArray(history) || history.length === 0) return '';
+  let h = '\n\n[CONTEXTE DE LA RÉUNION — ce que les AUTRES agents ont dit aux tours précédents]';
+  history.forEach((turn, idx) => {
+    h += `\n\nTour ${idx + 1} — Question athlète : "${(turn.question || '').slice(0, 500)}"`;
+    (turn.responses || []).forEach(r => {
+      if (r && r.agentId && r.agentId !== agentId && r.reply) {
+        // Tronque chaque reply à 600 chars pour limiter le coût input tokens.
+        const snippet = String(r.reply).slice(0, 600);
+        h += `\n- ${r.agent_name || r.agentId} : ${snippet}`;
+      }
+    });
+  });
+  h += '\n\nUtilise ce contexte pour compléter ou affiner — ne répète pas ce que les autres ont déjà dit.';
+  return h;
+}
+
+function buildMeetingSystem(agent, otherAgentNames, lang, profile, calendar, dailyLog, modelConfig, history, agentId) {
   const langInstructions = {
     fr: 'Réponds toujours en français.',
     de: 'Antworte immer auf Deutsch (Schweizerdeutsch-freundlich, aber Standard-Deutsch).',
@@ -254,6 +283,8 @@ Règles spécifiques au mode réunion :
   if (dailyLog) {
     sys += `\n\n[ÉTAT DU JOUR — journal de bord]\n${dailyLog}`;
   }
+  // v63.1.0 — contexte des autres agents aux tours précédents (threading)
+  sys += buildHistoryContextBlock(history, agentId);
   return sys;
 }
 
@@ -261,14 +292,33 @@ Règles spécifiques au mode réunion :
 // Single Claude API call for one agent.
 // Returns { reply, agent_name, agentId, inputTokens, outputTokens, latencyMs, error? }
 // ─────────────────────────────────────────────────────────────
-async function callOneAgent({ agentId, question, otherAgentNames, lang, profile, calendar, dailyLog, modelConfig, apiKey }) {
+async function callOneAgent({ agentId, question, history, otherAgentNames, lang, profile, calendar, dailyLog, modelConfig, apiKey }) {
   const agent = AGENTS[agentId];
   if (!agent) {
     return { agentId, error: 'unknown_agent' };
   }
 
-  const systemPrompt = buildMeetingSystem(agent, otherAgentNames, lang, profile, calendar, dailyLog, modelConfig);
-  const messages = [{ role: 'user', content: question }];
+  const systemPrompt = buildMeetingSystem(agent, otherAgentNames, lang, profile, calendar, dailyLog, modelConfig, history, agentId);
+
+  // v63.1.0 — Build messages avec history threading.
+  // Pour chaque turn de l'historique : user (question) + assistant (la réponse
+  // de CET agent à ce tour). Final message : la nouvelle question.
+  // Si l'agent n'avait pas réussi à répondre à un tour passé, on injecte un
+  // placeholder pour préserver l'alternance user/assistant attendue par Claude.
+  const messages = [];
+  if (Array.isArray(history) && history.length > 0) {
+    history.forEach(turn => {
+      if (!turn || !turn.question) return;
+      messages.push({ role: 'user', content: String(turn.question).slice(0, 2000) });
+      const myReply = (turn.responses || []).find(r => r && r.agentId === agentId);
+      if (myReply && myReply.reply) {
+        messages.push({ role: 'assistant', content: String(myReply.reply) });
+      } else {
+        messages.push({ role: 'assistant', content: '[Je n\'ai pas pu répondre à ce tour, désolé.]' });
+      }
+    });
+  }
+  messages.push({ role: 'user', content: question });
 
   const startTs = Date.now();
   let response;
@@ -345,7 +395,7 @@ exports.handler = async (event) => {
   } catch (_) {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'invalid_body' }) };
   }
-  const { question, agentIds, lang, profile, calendar, dailyLog, userEmail } = parsed;
+  const { question, agentIds, history, lang, profile, calendar, dailyLog, userEmail } = parsed;
 
   // Validation payload
   if (!question || typeof question !== 'string') {
@@ -360,6 +410,30 @@ exports.handler = async (event) => {
     await logUsage({ userId: user.id, agentIds, success: false, errorCode: 'invalid_agent_count' });
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'agentIds must be array of 2 or 3' }) };
   }
+  // v63.1.0 — Validation threading : history optionnel, max MAX_TURNS_PER_MEETING tours
+  const safeHistory = Array.isArray(history) ? history : [];
+  if (safeHistory.length >= MAX_TURNS_PER_MEETING) {
+    await logUsage({ userId: user.id, agentIds, success: false, errorCode: 'max_turns_reached' });
+    return {
+      statusCode: 429,
+      headers,
+      body: JSON.stringify({
+        error: 'max_turns_reached',
+        message: `Cette réunion a atteint sa limite de ${MAX_TURNS_PER_MEETING} tours. Démarre une nouvelle réunion.`,
+        maxTurns: MAX_TURNS_PER_MEETING
+      })
+    };
+  }
+  // Sanity-check : chaque entry de history doit avoir question + responses[]
+  for (const t of safeHistory) {
+    if (!t || typeof t.question !== 'string' || !Array.isArray(t.responses)) {
+      await logUsage({ userId: user.id, agentIds, success: false, errorCode: 'invalid_history' });
+      return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid history shape' }) };
+    }
+  }
+  // Si on est en follow-up, on flag le tour pour les logs analytics
+  const isFollowup = safeHistory.length > 0;
+  const turnNum = safeHistory.length + 1;
   // Dédoublonnage des agents (au cas où le frontend envoie 2× le même)
   const uniqueAgentIds = [...new Set(agentIds)];
   if (uniqueAgentIds.length !== agentIds.length) {
@@ -391,22 +465,28 @@ exports.handler = async (event) => {
     };
   }
 
-  const monthCount = await countMeetingsThisMonth(user.id);
-  if (monthCount >= quota.perMonth) {
-    await logUsage({ userId: user.id, agentIds, success: false, errorCode: 'quota_exceeded' });
-    return {
-      statusCode: 429,
-      headers,
-      body: JSON.stringify({
-        error: 'quota_exceeded',
-        message: plan === 'plus'
-          ? `Tu as utilisé tes ${quota.perMonth} réunions Plus ce mois. Passe en Pro pour des réunions illimitées.`
-          : `Tu as atteint ta limite de ${quota.perMonth} réunions ce mois.`,
-        used: monthCount,
-        limit: quota.perMonth,
-        upgrade_to: plan === 'plus' ? 'pro' : null
-      })
-    };
+  // v63.1.0 — Quota mensuel checké UNIQUEMENT au 1er tour (history vide).
+  // Les follow-ups (tours 2-5) d'un thread déjà lancé ne consomment rien.
+  // Logique : 1 meeting = 1 thread, peut contenir jusqu'à 5 tours.
+  let monthCount = 0;
+  if (!isFollowup) {
+    monthCount = await countMeetingsThisMonth(user.id);
+    if (monthCount >= quota.perMonth) {
+      await logUsage({ userId: user.id, agentIds, success: false, errorCode: 'quota_exceeded' });
+      return {
+        statusCode: 429,
+        headers,
+        body: JSON.stringify({
+          error: 'quota_exceeded',
+          message: plan === 'plus'
+            ? `Tu as utilisé tes ${quota.perMonth} réunions Plus ce mois. Passe en Pro pour des réunions illimitées.`
+            : `Tu as atteint ta limite de ${quota.perMonth} réunions ce mois.`,
+          used: monthCount,
+          limit: quota.perMonth,
+          upgrade_to: plan === 'plus' ? 'pro' : null
+        })
+      };
+    }
   }
 
   // ─── Claude API key ───
@@ -436,6 +516,7 @@ exports.handler = async (event) => {
     return callOneAgent({
       agentId: aid,
       question,
+      history: safeHistory,           // v63.1.0 — threading
       otherAgentNames: otherNames,
       lang,
       profile,
@@ -471,14 +552,20 @@ exports.handler = async (event) => {
   const totalInputTokens = successes.reduce((s, r) => s + (r.inputTokens || 0), 0);
   const totalOutputTokens = successes.reduce((s, r) => s + (r.outputTokens || 0), 0);
 
-  console.log(`[MEETING] model=${modelKey} agents=${uniqueAgentIds.join(',')} email=${effectiveEmail || 'anon'} input=${totalInputTokens} output=${totalOutputTokens} latency=${totalLatencyMs}ms plan=${plan} month=${monthCount + 1}/${quota.perMonth} successes=${successes.length}/${uniqueAgentIds.length}`);
+  console.log(`[MEETING] model=${modelKey} agents=${uniqueAgentIds.join(',')} turn=${turnNum}/${MAX_TURNS_PER_MEETING} email=${effectiveEmail || 'anon'} input=${totalInputTokens} output=${totalOutputTokens} latency=${totalLatencyMs}ms plan=${plan} month=${monthCount + (isFollowup ? 0 : 1)}/${quota.perMonth} successes=${successes.length}/${uniqueAgentIds.length}`);
 
+  // v63.1.0 — Log avec suffixe ":turn{N}" sur agent_id pour les follow-ups.
+  // countMeetingsThisMonth les exclut via filter agent_id=not.like.%:turn%.
+  // success=true partout (sémantiquement correct : un follow-up qui marche est un succès).
+  const agentIdsForLog = isFollowup
+    ? uniqueAgentIds.join(',') + `:turn${turnNum}`
+    : uniqueAgentIds.join(',');
   await logUsage({
-    userId: user.id, agentIds,
+    userId: user.id, agentIds: agentIdsForLog,
     model: modelConfig.id,
     inputTokens: totalInputTokens, outputTokens: totalOutputTokens,
     latencyMs: totalLatencyMs,
-    success: true   // partial success counts (au moins 1 agent OK)
+    success: true
   });
 
   return {
@@ -488,8 +575,11 @@ exports.handler = async (event) => {
       responses: results,    // contient successes + failures (frontend gère affichage)
       meta: {
         plan,
-        monthUsed: monthCount + 1,
+        monthUsed: isFollowup ? monthCount : monthCount + 1,
         monthLimit: quota.perMonth,
+        turn: turnNum,                          // v63.1.0
+        maxTurns: MAX_TURNS_PER_MEETING,        // v63.1.0
+        isFollowup,                             // v63.1.0
         model: modelKey,
         totalLatencyMs,
         totalInputTokens,

@@ -463,4 +463,16 @@ var T_EN = {
   teamMeetingQuotaTitle: 'Monthly quota reached',
   teamMeetingUpgradePro: 'Upgrade to Pro',
   teamMeetingUsage: 'Meeting {n}/{max} this month (Plus plan)',
+
+  // Multi-agent meeting threading (v63.1.0)
+  teamMeetingNavItem: 'Team meeting',
+  teamMeetingQuestionLabel: 'Question',
+  teamMeetingFollowupPlaceholder: 'Ask a follow-up question…',
+  teamMeetingFollowupSubmit: 'Send',
+  teamMeetingTurnCounter: 'Turn {n}/{max}',
+  teamMeetingTurnsLeft: '{n} turn(s) left',
+  teamMeetingNewMeeting: 'New meeting',
+  teamMeetingMaxTurnsReached: 'You\'ve reached the turn limit for this meeting. Start a new one.',
+  teamMeetingMaxTurnsTitle: 'Turn limit reached',
+
 };
