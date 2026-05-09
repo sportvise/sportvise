@@ -517,6 +517,18 @@
       <h2 data-i18n="pricingTitle">Un investissement,<br/>une carrière boostée</h2>
       <p data-i18n="pricingDesc">Résiliez à tout moment. Remboursement garanti 30 jours.</p>
     </div>
+
+    <!-- v63.5 — Toggle billing cycle (mensuel ↔ annuel) -->
+    <div class="billing-toggle animate" style="display:flex;justify-content:center;gap:0;margin:0 auto 36px;max-width:360px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:4px;animation-delay:.05s">
+      <button id="bt-monthly" class="bt-active" onclick="setBilling('monthly')" style="flex:1;padding:9px 14px;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;background:var(--bg3);color:var(--text);transition:all 0.2s">
+        <span data-i18n="billingMonthly">Mensuel</span>
+      </button>
+      <button id="bt-annual" onclick="setBilling('annual')" style="flex:1;padding:9px 14px;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;background:transparent;color:var(--muted2);transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:6px">
+        <span data-i18n="billingAnnual">Annuel</span>
+        <span style="font-size:10px;font-weight:800;background:linear-gradient(135deg,#10b981,#059669);color:white;padding:2px 7px;border-radius:10px;letter-spacing:0.3px" data-i18n="billingSaveBadge">−2 MOIS</span>
+      </button>
+    </div>
+
     <div class="pricing-grid" style="max-width:900px;margin:0 auto;grid-template-columns:repeat(3,1fr)">
       <div class="pricing-card animate" style="animation-delay:.1s">
         <div class="pricing-name">Free</div>
@@ -534,7 +546,11 @@
       <div class="pricing-card featured animate" style="animation-delay:.2s">
         <div class="pricing-badge" data-i18n="popularBadge">⭐ Populaire</div>
         <div class="pricing-name">Plus</div>
-        <div class="pricing-price gradient-text">CHF 12<span style="-webkit-text-fill-color:#64748b" data-i18n="pricePerMonth">/mois</span></div>
+        <!-- Mensuel : visible par défaut -->
+        <div class="pricing-price gradient-text price-monthly" data-plan="plus">CHF 12<span style="-webkit-text-fill-color:#64748b" data-i18n="pricePerMonth">/mois</span></div>
+        <!-- Annuel : caché par défaut, toggle JS le révèle -->
+        <div class="pricing-price gradient-text price-annual" data-plan="plus" style="display:none">CHF 10<span style="-webkit-text-fill-color:#64748b;font-size:15px;font-weight:400" data-i18n="pricePerMonth">/mois</span></div>
+        <div class="pricing-sub-annual" data-plan="plus" style="display:none;font-size:11px;color:#10b981;font-weight:700;margin-top:-8px;margin-bottom:6px"><span data-i18n="priceAnnualNote">CHF 120 facturés une fois par an · économise CHF 24</span></div>
         <div class="pricing-sub" data-i18n="pricePlusDesc">Pour l'athlète qui rêve grand sans budget de pro</div>
         <div class="pricing-div"></div>
         <div class="pf"><span class="ck">✓</span><span data-i18n="featPlus1"><strong>11 agents IA</strong></span></div>
@@ -543,11 +559,15 @@
         <div class="pf"><span class="ck">✓</span><span data-i18n="featPlus4">Défis & Badges</span></div>
         <div class="pf"><span class="ck">✓</span><span data-i18n="featPlus5">Analytics avancés</span></div>
         <div class="pf"><span class="cx">–</span><span data-i18n="featPlus6">Rapports PDF mensuels</span></div>
-        <a href="login.html" class="pricing-btn pb-gold" style="text-decoration:none;text-align:center" data-i18n="pricePlusBtn">Choisir Plus → CHF 12/mois</a>
+        <a href="login.html" class="pricing-btn pb-gold price-btn-monthly" data-plan="plus" style="text-decoration:none;text-align:center" data-i18n="pricePlusBtnMonthly">Choisir Plus → CHF 12/mois</a>
+        <a href="login.html" class="pricing-btn pb-gold price-btn-annual" data-plan="plus" style="text-decoration:none;text-align:center;display:none" data-i18n="pricePlusBtnAnnual">Choisir Plus annuel → CHF 120/an</a>
       </div>
       <div class="pricing-card animate" style="animation-delay:.3s">
         <div class="pricing-name">Pro</div>
-        <div class="pricing-price">CHF 29<span data-i18n="pricePerMonth">/mois</span></div>
+        <!-- Mensuel : visible par défaut. v63.5 : Pro 29→19. -->
+        <div class="pricing-price price-monthly" data-plan="pro">CHF 19<span data-i18n="pricePerMonth">/mois</span></div>
+        <div class="pricing-price price-annual" data-plan="pro" style="display:none">CHF 16<span style="font-size:15px;font-weight:400;color:var(--muted)" data-i18n="pricePerMonth">/mois</span></div>
+        <div class="pricing-sub-annual" data-plan="pro" style="display:none;font-size:11px;color:#10b981;font-weight:700;margin-top:-8px;margin-bottom:6px"><span data-i18n="priceProAnnualNote">CHF 190 facturés une fois par an · économise CHF 38</span></div>
         <div class="pricing-sub" data-i18n="priceProDesc">Pour le semi-pro qui veut tout, partout, tout de suite</div>
         <div class="pricing-div"></div>
         <div class="pf"><span class="ck">✓</span><span data-i18n="featPro1"><strong>Tout de Plus</strong></span></div>
@@ -556,7 +576,8 @@
         <div class="pf"><span class="ck">✓</span><span data-i18n="featPro4">Intégrations (Strava...)</span></div>
         <div class="pf"><span class="ck">✓</span><span data-i18n="featPro5">Support prioritaire 24/7</span></div>
         <div class="pf"><span class="ck">✓</span><span data-i18n="featPro6">Accès anticipé nouveautés</span></div>
-        <a href="login.html" class="pricing-btn pb-outline" style="text-decoration:none;text-align:center" data-i18n="priceProBtn">Choisir Pro → CHF 29/mois</a>
+        <a href="login.html" class="pricing-btn pb-outline price-btn-monthly" data-plan="pro" style="text-decoration:none;text-align:center" data-i18n="priceProBtnMonthly">Choisir Pro → CHF 19/mois</a>
+        <a href="login.html" class="pricing-btn pb-outline price-btn-annual" data-plan="pro" style="text-decoration:none;text-align:center;display:none" data-i18n="priceProBtnAnnual">Choisir Pro annuel → CHF 190/an</a>
       </div>
     </div>
     <!-- v59 — Bloc garantie 30j satisfait ou remboursé (gros levier conversion) -->
@@ -637,6 +658,38 @@
     if(!open) item.classList.add('open');
   }
 
+  // ── v63.5 — BILLING TOGGLE (mensuel ↔ annuel) ─────────────────────
+  // Switche l'affichage des prix Plus/Pro entre 12/19 CHF mensuel et 10/16 CHF
+  // équivalent (120/190 CHF facturés annuellement = -2 mois offerts).
+  // Persisté via sessionStorage pour cohérence cross-page (landing → login → dashboard).
+  let billingCycle = sessionStorage.getItem('sv_billing_cycle') || 'monthly';
+  function setBilling(cycle) {
+    if (cycle !== 'monthly' && cycle !== 'annual') return;
+    billingCycle = cycle;
+    try { sessionStorage.setItem('sv_billing_cycle', cycle); } catch(e) {}
+
+    // Toggle button visual state
+    const btnM = document.getElementById('bt-monthly');
+    const btnA = document.getElementById('bt-annual');
+    if (btnM) {
+      btnM.style.background = cycle === 'monthly' ? 'var(--bg3)' : 'transparent';
+      btnM.style.color = cycle === 'monthly' ? 'var(--text)' : 'var(--muted2)';
+    }
+    if (btnA) {
+      btnA.style.background = cycle === 'annual' ? 'var(--bg3)' : 'transparent';
+      btnA.style.color = cycle === 'annual' ? 'var(--text)' : 'var(--muted2)';
+    }
+
+    // Show/hide price + sub + button per cycle
+    document.querySelectorAll('.price-monthly').forEach(el => el.style.display = cycle === 'monthly' ? '' : 'none');
+    document.querySelectorAll('.price-annual').forEach(el => el.style.display = cycle === 'annual' ? '' : 'none');
+    document.querySelectorAll('.pricing-sub-annual').forEach(el => el.style.display = cycle === 'annual' ? 'block' : 'none');
+    document.querySelectorAll('.price-btn-monthly').forEach(el => el.style.display = cycle === 'monthly' ? '' : 'none');
+    document.querySelectorAll('.price-btn-annual').forEach(el => el.style.display = cycle === 'annual' ? '' : 'none');
+  }
+  // Apply persisted billing cycle on load
+  setBilling(billingCycle);
+
   // ── TRADUCTIONS LANDING PAGE ─────────────────────
   const i18n = {
     fr: {
@@ -692,8 +745,15 @@
       pricePlusDesc:"Pour l'athlète qui rêve grand sans budget de pro",
       priceProDesc:"Pour le semi-pro qui veut tout, partout, tout de suite",
       priceFreeBtn:"Créer mon compte gratuit",
-      pricePlusBtn:"Choisir Plus → CHF 12/mois",
-      priceProBtn:"Choisir Pro → CHF 29/mois",
+      pricePlusBtnMonthly:"Choisir Plus → CHF 12/mois",
+      priceProBtnMonthly:"Choisir Pro → CHF 19/mois",
+      pricePlusBtnAnnual:"Choisir Plus annuel → CHF 120/an",
+      priceProBtnAnnual:"Choisir Pro annuel → CHF 190/an",
+      billingMonthly:"Mensuel",
+      billingAnnual:"Annuel",
+      billingSaveBadge:"−2 MOIS",
+      priceAnnualNote:"CHF 120 facturés une fois par an · économise CHF 24",
+      priceProAnnualNote:"CHF 190 facturés une fois par an · économise CHF 38",
       featFree1:"3 agents IA", featFree2:"10 messages par jour", featFree3:"Journal quotidien",
       featFree4:"Dashboard de base", featFree5:"Défis & Badges", featFree6:"Rapports PDF",
       featPlus1:"<strong>11 agents IA</strong>", featPlus2:"Messages illimités",
@@ -776,8 +836,15 @@
       pricePlusDesc:"Für Athleten mit grossen Träumen ohne Profi-Budget",
       priceProDesc:"Für Semi-Profis, die alles wollen — überall, sofort",
       priceFreeBtn:"Kostenloses Konto erstellen",
-      pricePlusBtn:"Plus wählen → CHF 12/Monat",
-      priceProBtn:"Pro wählen → CHF 29/Monat",
+      pricePlusBtnMonthly:"Plus wählen → CHF 12/Monat",
+      priceProBtnMonthly:"Pro wählen → CHF 19/Monat",
+      pricePlusBtnAnnual:"Plus jährlich → CHF 120/Jahr",
+      priceProBtnAnnual:"Pro jährlich → CHF 190/Jahr",
+      billingMonthly:"Monatlich",
+      billingAnnual:"Jährlich",
+      billingSaveBadge:"−2 MONATE",
+      priceAnnualNote:"CHF 120 einmalig pro Jahr · spare CHF 24",
+      priceProAnnualNote:"CHF 190 einmalig pro Jahr · spare CHF 38",
       featFree1:"3 KI-Agenten", featFree2:"10 Nachrichten pro Tag", featFree3:"Tägliches Tagebuch",
       featFree4:"Basis-Dashboard", featFree5:"Herausforderungen & Badges", featFree6:"PDF-Berichte",
       featPlus1:"<strong>11 KI-Agenten</strong>", featPlus2:"Unbegrenzte Nachrichten",
@@ -860,8 +927,15 @@
       pricePlusDesc:"For athletes who dream big without a pro's budget",
       priceProDesc:"For semi-pros who want everything — anywhere, right now",
       priceFreeBtn:"Create my free account",
-      pricePlusBtn:"Choose Plus → CHF 12/month",
-      priceProBtn:"Choose Pro → CHF 29/month",
+      pricePlusBtnMonthly:"Choose Plus → CHF 12/month",
+      priceProBtnMonthly:"Choose Pro → CHF 19/month",
+      pricePlusBtnAnnual:"Choose Plus annual → CHF 120/year",
+      priceProBtnAnnual:"Choose Pro annual → CHF 190/year",
+      billingMonthly:"Monthly",
+      billingAnnual:"Annual",
+      billingSaveBadge:"−2 MONTHS",
+      priceAnnualNote:"CHF 120 billed once per year · save CHF 24",
+      priceProAnnualNote:"CHF 190 billed once per year · save CHF 38",
       featFree1:"3 AI agents", featFree2:"10 messages per day", featFree3:"Daily journal",
       featFree4:"Basic dashboard", featFree5:"Challenges & Badges", featFree6:"PDF reports",
       featPlus1:"<strong>11 AI agents</strong>", featPlus2:"Unlimited messages",
@@ -944,8 +1018,15 @@
       pricePlusDesc:"Per l'atleta che sogna in grande senza un budget da pro",
       priceProDesc:"Per il semi-pro che vuole tutto — ovunque, subito",
       priceFreeBtn:"Crea il mio account gratuito",
-      pricePlusBtn:"Scegli Plus → CHF 12/mese",
-      priceProBtn:"Scegli Pro → CHF 29/mese",
+      pricePlusBtnMonthly:"Scegli Plus → CHF 12/mese",
+      priceProBtnMonthly:"Scegli Pro → CHF 19/mese",
+      pricePlusBtnAnnual:"Scegli Plus annuale → CHF 120/anno",
+      priceProBtnAnnual:"Scegli Pro annuale → CHF 190/anno",
+      billingMonthly:"Mensile",
+      billingAnnual:"Annuale",
+      billingSaveBadge:"−2 MESI",
+      priceAnnualNote:"CHF 120 fatturati una volta all'anno · risparmi CHF 24",
+      priceProAnnualNote:"CHF 190 fatturati una volta all'anno · risparmi CHF 38",
       featFree1:"3 agenti IA", featFree2:"10 messaggi al giorno", featFree3:"Diario quotidiano",
       featFree4:"Dashboard di base", featFree5:"Sfide & Badge", featFree6:"Report PDF",
       featPlus1:"<strong>11 agenti IA</strong>", featPlus2:"Messaggi illimitati",

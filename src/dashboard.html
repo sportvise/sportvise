@@ -1257,7 +1257,7 @@ let currentUser = null;
 let userProfile = null;
 let userPlan = 'free'; // 'free', 'plus' or 'pro'
 let dailyMsgCount = 0;
-const FREE_MSG_LIMIT = 10;
+const FREE_MSG_LIMIT = 5; // v63.5 — passé de 10 → 5 msg/jour (audit pricing 7.3, cohérent backend chat/index.js LIMITS.free.perDay)
 
 // ── AGENT ACCESS BY PLAN — extrait dans src/js/helpers-agent-access.js (v62.37 Phase 2)
 let selectedLevel = '';
@@ -10809,14 +10809,56 @@ async function cancelSubscription() {
   }
 }
 
+// v63.5 — Stripe Payment Links centralisés. Plus monthly 12 CHF garde son URL existante.
+// Pro monthly DESCEND de 29 → 19 CHF : il faut créer un NOUVEAU Payment Link Stripe
+// (Stripe ne permet pas de modifier le price d'un Payment Link existant). Idem pour
+// les 2 nouveaux Payment Links annuels (Plus 120 / Pro 190).
+// Voir doc STRIPE_DASHBOARD_v63.5.md pour les étapes Dashboard.
+const STRIPE_LINKS = {
+  plus_monthly: 'https://buy.stripe.com/00w14p3B721JetFavS6AM00',                  // ✓ Existant 12 CHF/mois
+  plus_annual:  'https://buy.stripe.com/PLACEHOLDER_PLUS_ANNUAL_120CHF',           // TODO Thomas — 120 CHF/an
+  pro_monthly:  'https://buy.stripe.com/PLACEHOLDER_PRO_MONTHLY_19CHF',            // TODO Thomas — 19 CHF/mois (remplace 28E00ldbHayf99lbzW6AM01 à 29 CHF)
+  pro_annual:   'https://buy.stripe.com/PLACEHOLDER_PRO_ANNUAL_190CHF',            // TODO Thomas — 190 CHF/an
+};
+// Cycle billing — partagé avec sessionStorage pour cohérence cross-page (landing → dashboard)
+let currentBillingCycle = (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('sv_billing_cycle')) || 'monthly';
+function setAbonnementBilling(cycle) {
+  if (cycle !== 'monthly' && cycle !== 'annual') return;
+  currentBillingCycle = cycle;
+  try { sessionStorage.setItem('sv_billing_cycle', cycle); } catch(e) {}
+  renderAbonnement();
+}
+
 function renderAbonnement() {
   const t = T[currentLang];
   const isPro = userPlan === 'pro';
   const isPlus = userPlan === 'plus';
+  const cycle = currentBillingCycle;
+  // Prices selon le cycle
+  const plusPrice  = cycle === 'monthly' ? t.plusPlanPrice  : (t.plusPlanPriceAnnual  || 'CHF 10');
+  const proPrice   = cycle === 'monthly' ? t.proPlanPrice   : (t.proPlanPriceAnnual   || 'CHF 16');
+  const plusUrl    = cycle === 'monthly' ? STRIPE_LINKS.plus_monthly : STRIPE_LINKS.plus_annual;
+  const proUrl     = cycle === 'monthly' ? STRIPE_LINKS.pro_monthly  : STRIPE_LINKS.pro_annual;
+  const plusBtnTxt = cycle === 'monthly' ? (t.upgradToPlus || 'Passer au Plus →')   : (t.upgradToPlusAnnual || 'Passer au Plus annuel →');
+  const proBtnTxt  = cycle === 'monthly' ? t.upgradeToPro                            : (t.upgradeToProAnnual || 'Passer au Pro annuel →');
+  const plusNote   = cycle === 'annual' ? (t.plusAnnualNote || '') : '';
+  const proNote    = cycle === 'annual' ? (t.proAnnualNote || '')  : '';
   document.getElementById('mainContent').innerHTML = `
     <div style="max-width:900px">
       <h2 style="font-size:20px;font-weight:700;margin-bottom:6px">${t.chooseYourPlan}</h2>
-      <p style="color:var(--muted);font-size:13px;margin-bottom:28px">${t.cancelAnytime}</p>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:20px">${t.cancelAnytime}</p>
+
+      <!-- v63.5 — Toggle billing cycle -->
+      <div style="display:flex;justify-content:center;gap:0;margin:0 auto 22px;max-width:340px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:4px">
+        <button onclick="setAbonnementBilling('monthly')" style="flex:1;padding:9px 12px;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;background:${cycle==='monthly'?'var(--bg3)':'transparent'};color:${cycle==='monthly'?'var(--text)':'var(--muted2)'};transition:all 0.2s">
+          ${t.billingMonthly || 'Mensuel'}
+        </button>
+        <button onclick="setAbonnementBilling('annual')" style="flex:1;padding:9px 12px;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;background:${cycle==='annual'?'var(--bg3)':'transparent'};color:${cycle==='annual'?'var(--text)':'var(--muted2)'};transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:6px">
+          ${t.billingAnnual || 'Annuel'}
+          <span style="font-size:9px;font-weight:800;background:linear-gradient(135deg,#10b981,#059669);color:white;padding:2px 6px;border-radius:8px;letter-spacing:0.3px">${t.billingSaveBadge || '−2 MOIS'}</span>
+        </button>
+      </div>
+
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px">
 
         <!-- FREE -->
@@ -10838,15 +10880,16 @@ function renderAbonnement() {
         <div style="background:var(--bg3);border:1px solid ${isPlus ? '#06b6d4' : '#06b6d450'};border-radius:14px;padding:22px;position:relative;${isPlus ? 'box-shadow:0 0 0 1px #06b6d420' : ''}">
           ${isPlus ? '<div style="display:inline-block;padding:3px 10px;border-radius:20px;background:#06b6d420;color:#06b6d4;font-size:10px;font-weight:800;margin-bottom:8px">' + t.currentPlan + '</div>' : '<div style="display:inline-block;padding:3px 10px;border-radius:20px;background:#06b6d420;color:#06b6d4;font-size:10px;font-weight:800;margin-bottom:8px">' + (t.plusNew || 'Nouveau') + '</div>'}
           <div style="font-size:15px;font-weight:800;margin-bottom:4px">${t.plusPlan}</div>
-          <div style="font-size:28px;font-weight:900;color:#06b6d4;margin:12px 0 4px">${t.plusPlanPrice}<span style="font-size:13px;font-weight:400;color:var(--muted)">${t.perMonth}</span></div>
+          <div style="font-size:28px;font-weight:900;color:#06b6d4;margin:12px 0 4px">${plusPrice}<span style="font-size:13px;font-weight:400;color:var(--muted)">${t.perMonth}</span></div>
+          ${plusNote ? `<div style="font-size:11px;color:#10b981;font-weight:700;margin:-4px 0 8px">${plusNote}</div>` : ''}
           <div style="font-size:11px;color:var(--muted);margin-bottom:16px">${t.plusPlanDesc}</div>
           ${t.plusPlanFeatures.map(f => '<div style="font-size:11px;color:var(--muted2);margin-bottom:7px">✓ ' + f + '</div>').join('')}
           <div style="margin-bottom:16px"></div>
           ${isPlus ? `<button disabled style="width:100%;padding:10px;border-radius:8px;border:none;background:#06b6d4;color:#07091a;font-weight:700;font-size:12px;cursor:default;font-family:'Inter',sans-serif;opacity:0.6">
             ${t.currentPlanCheck}
-          </button>` : `<button onclick="window.open('https://buy.stripe.com/00w14p3B721JetFavS6AM00?client_reference_id=lang_${currentLang}','_blank')"
+          </button>` : `<button onclick="window.open('${plusUrl}?client_reference_id=lang_${currentLang}','_blank')"
             style="width:100%;padding:10px;border-radius:8px;border:none;background:#06b6d4;color:#07091a;font-weight:700;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity 0.2s" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
-            ${t.upgradToPlus || 'Passer au Plus →'}
+            ${plusBtnTxt}
           </button>`}
         </div>
 
@@ -10855,15 +10898,16 @@ function renderAbonnement() {
           <div style="position:absolute;top:-10px;right:16px;padding:3px 12px;border-radius:20px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-size:9px;font-weight:800;letter-spacing:0.5px">${t.popularBadge||'POPULAIRE'}</div>
           ${isPro ? '<div style="display:inline-block;padding:3px 10px;border-radius:20px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-size:10px;font-weight:800;margin-bottom:8px">' + t.currentPlan + '</div>' : '<div style="display:inline-block;padding:3px 10px;border-radius:20px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-size:10px;font-weight:800;margin-bottom:8px">' + t.recommended + '</div>'}
           <div style="font-size:15px;font-weight:800;margin-bottom:4px">${t.proPlan}</div>
-          <div style="font-size:28px;font-weight:900;background:linear-gradient(135deg,#f59e0b,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:12px 0 4px">${t.proPlanPrice}<span style="font-size:13px;font-weight:400;-webkit-text-fill-color:var(--muted)">${t.perMonth}</span></div>
+          <div style="font-size:28px;font-weight:900;background:linear-gradient(135deg,#f59e0b,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:12px 0 4px">${proPrice}<span style="font-size:13px;font-weight:400;-webkit-text-fill-color:var(--muted)">${t.perMonth}</span></div>
+          ${proNote ? `<div style="font-size:11px;color:#10b981;font-weight:700;margin:-4px 0 8px">${proNote}</div>` : ''}
           <div style="font-size:11px;color:var(--muted);margin-bottom:16px">${t.proPlanDesc}</div>
           ${t.proPlanFeatures.map(f => '<div style="font-size:11px;color:var(--muted2);margin-bottom:7px">✓ ' + f + '</div>').join('')}
           <div style="margin-bottom:16px"></div>
           ${isPro ? `<button disabled style="width:100%;padding:10px;border-radius:8px;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-weight:700;font-size:12px;cursor:default;font-family:'Inter',sans-serif;opacity:0.6">
             ${t.currentPlanCheck}
-          </button>` : `<button onclick="window.open('https://buy.stripe.com/28E00ldbHayf99lbzW6AM01?client_reference_id=lang_${currentLang}','_blank')"
+          </button>` : `<button onclick="window.open('${proUrl}?client_reference_id=lang_${currentLang}','_blank')"
             style="width:100%;padding:10px;border-radius:8px;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-weight:700;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity 0.2s" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
-            ${t.upgradeToPro}
+            ${proBtnTxt}
           </button>`}
         </div>
 
