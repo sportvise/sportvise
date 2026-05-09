@@ -493,4 +493,21 @@ var T_EN = {
   morningBriefChip: 'Activate your morning briefs',
   morningBriefSettingsLabel: 'Morning brief push',
 
+  // KF#3 Vue Avant/Après (v63.4.0 — see PRD_KF3_VUE_AVANT_APRES_v1.md)
+  tvTitle: 'Your transformation',
+  tvWin3mois: '3 months',
+  tvWin6mois: '6 months',
+  tvWin1an: '1 year',
+  tvWinSince: 'Since signup',
+  tvKpiFitness: 'Fitness',
+  tvKpiTraining: 'Training',
+  tvKpiMSE: 'Mood · Sleep · Energy',
+  tvKpiCheckin: 'Consistency',
+  tvEmptyTitle: 'Your journey is building',
+  tvEmptySub: 'Keep checking in. In <strong>{n} days</strong> I\'ll show you how you\'ve evolved.',
+  tvEmptyReady: 'Your history is ready — reload the page.',
+  tvNarrativeLoading: 'David is analyzing your progress…',
+  tvNoDataWindow: 'No data yet in this window.',
+  tvError: 'Cannot load your transformation view right now.',
+
 };
