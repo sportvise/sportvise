@@ -78,33 +78,61 @@ function setupWebPush() {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Récupère les users opt-in avec leur subscription
-// Format retourné : [{user_id, email, full_name, lang, subscription, profile}, ...]
+// Récupère les users opt-in avec leur subscription.
+// v63.3.3 — Fix : on fait 2 queries séparées au lieu d'un embed PostgREST,
+// parce que push_subscriptions.user_id pointe vers auth.users(id), pas vers
+// public.profiles(id). Sans FK directe entre les 2 tables PostgREST-accessible,
+// l'embed `profiles?select=...,push_subscriptions(...)` retourne null pour
+// chaque sub → 0 users matched.
+// Format retourné : [{id, full_name, sport, canton, lang, push_subscriptions: [...]}, ...]
 // ─────────────────────────────────────────────────────────────
 async function fetchOptedInUsers(limit) {
-  // 1. Liste les profiles avec morning_brief_optin = 'on'
-  // PostgREST : pour récupérer en 1 call, on join push_subscriptions via foreign key.
-  // Mais l'auth.users full_name n'est pas accessible directement via PostgREST,
-  // donc on fait 2 queries séquentielles : d'abord profiles+subscriptions, puis emails.
-
-  // Step 1 : profiles + subscriptions via embed PostgREST (foreign key user_id)
-  // On utilise &select=*,push_subscriptions(*) — sb détecte la FK.
-  const path = `/rest/v1/profiles?morning_brief_optin=eq.on&select=id,full_name,sport,canton,lang,push_subscriptions(endpoint,p256dh,auth,lang,fail_count)&limit=${limit}`;
-  const res = await httpRequest({
+  // Step 1 : profiles avec morning_brief_optin = 'on'
+  const profilesPath = `/rest/v1/profiles?morning_brief_optin=eq.on&select=id,full_name,sport,canton,lang&limit=${limit}`;
+  const profilesRes = await httpRequest({
     hostname: supabaseHost(),
-    path,
+    path: profilesPath,
     method: 'GET',
     headers: {
       apikey: SUPABASE_SERVICE_KEY,
       Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
     },
   });
-  if (res.status !== 200 || !Array.isArray(res.data)) {
-    console.warn('[BRIEF] fetchOptedInUsers status=', res.status, 'data=', JSON.stringify(res.data).slice(0, 300));
+  if (profilesRes.status !== 200 || !Array.isArray(profilesRes.data)) {
+    console.warn('[BRIEF] fetchOptedInUsers profiles status=', profilesRes.status, 'data=', JSON.stringify(profilesRes.data).slice(0, 300));
     return [];
   }
-  // Filtrer les users qui ont au moins 1 subscription valide
-  return res.data.filter(p => Array.isArray(p.push_subscriptions) && p.push_subscriptions.length > 0);
+  if (profilesRes.data.length === 0) return [];
+
+  // Step 2 : push_subscriptions pour ces users
+  const userIds = profilesRes.data.map(p => p.id);
+  const inFilter = `(${userIds.map(id => `"${id}"`).join(',')})`;
+  const subsPath = `/rest/v1/push_subscriptions?user_id=in.${encodeURIComponent(inFilter)}&select=user_id,endpoint,p256dh,auth,lang,fail_count`;
+  const subsRes = await httpRequest({
+    hostname: supabaseHost(),
+    path: subsPath,
+    method: 'GET',
+    headers: {
+      apikey: SUPABASE_SERVICE_KEY,
+      Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+    },
+  });
+  if (subsRes.status !== 200 || !Array.isArray(subsRes.data)) {
+    console.warn('[BRIEF] fetchOptedInUsers subs status=', subsRes.status, 'data=', JSON.stringify(subsRes.data).slice(0, 300));
+    return [];
+  }
+
+  // Step 3 : merger profiles + subscriptions (group by user_id)
+  const subsByUser = {};
+  subsRes.data.forEach(s => {
+    if (!subsByUser[s.user_id]) subsByUser[s.user_id] = [];
+    subsByUser[s.user_id].push(s);
+  });
+
+  // Retourne les users qui ont au moins 1 subscription
+  return profilesRes.data
+    .map(p => ({ ...p, push_subscriptions: subsByUser[p.id] || [] }))
+    .filter(p => p.push_subscriptions.length > 0);
 }
 
 // ─────────────────────────────────────────────────────────────
