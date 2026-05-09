@@ -475,4 +475,9 @@ var T_DE = {
   teamMeetingMaxTurnsReached: 'Du hast das Rundenlimit für dieses Meeting erreicht. Starte ein neues.',
   teamMeetingMaxTurnsTitle: 'Rundenlimit erreicht',
 
+
+  // Multi-agent meeting empty state (v63.1.1)
+  teamMeetingEmptyTitle: 'Meeting starten',
+  teamMeetingEmptyHint: 'Wähle 2-3 Agenten und stell deine Frage. Sie antworten gemeinsam aus ihrem Fachgebiet.',
+
 };
