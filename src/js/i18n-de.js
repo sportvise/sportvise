@@ -439,5 +439,28 @@ var T_DE = {
     sommeil:'Schlafspezialistin',
     equipe:'Sportmanager',
     recuperation:'Erholung & Regeneration'
-  }
+  },
+
+  // Multi-agent meeting (v63.0.0 — killer feature ProductHunt)
+  teamMeetingFabTitle: 'Team-Meeting',
+  teamMeetingTitle: 'Team-Meeting',
+  teamMeetingSubtitle: 'Stell 2 oder 3 Experten-Agenten eine Frage. Sie antworten gemeinsam aus ihrem Fachgebiet.',
+  teamMeetingPlaceholder: 'Z.B.: Ich fühle mich vor einem Match in 3 Tagen müde, was tun?',
+  teamMeetingAgentsLabel: 'Agenten (2-3)',
+  teamMeetingCounter: '{n}/{max} Agenten ausgewählt',
+  teamMeetingSubmit: 'Meeting starten',
+  teamMeetingLoading: 'Meeting läuft…',
+  teamMeetingThinking: 'Deine Agenten denken gemeinsam nach…',
+  teamMeetingHeader: 'Das sagt dein Team',
+  teamMeetingErrShort: 'Frage zu kurz (mind. 10 Zeichen)',
+  teamMeetingErrAgents: 'Wähle mindestens 2 Agenten',
+  teamMeetingErrNetwork: 'Netzwerkfehler. Versuch es nochmal.',
+  teamMeetingErrServer: 'Serverfehler. Versuch es gleich nochmal.',
+  teamMeetingErrAgent: 'Dieser Agent konnte diesmal nicht antworten.',
+  teamMeetingLockedTitle: 'Team-Meeting — Plus & Pro',
+  teamMeetingLockedBody: 'Lass 2-3 Experten-Agenten gemeinsam auf deine Frage antworten. Verfügbar im Plan Plus (2/Monat) und Pro (unbegrenzt).',
+  teamMeetingUpgrade: 'Pläne ansehen',
+  teamMeetingQuotaTitle: 'Monatslimit erreicht',
+  teamMeetingUpgradePro: 'Auf Pro upgraden',
+  teamMeetingUsage: 'Meeting {n}/{max} diesen Monat (Plan Plus)',
 };

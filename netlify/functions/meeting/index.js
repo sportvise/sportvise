@@ -1,0 +1,502 @@
+// SPORTVISE — Netlify Function : Multi-agent Meeting (Idée 7 STRATEGIE / audit 4.3)
+// ═══════════════════════════════════════════════════════════════════
+// "Demande à ton équipe" — orchestrateur multi-agents.
+// Réutilise les patterns de chat/index.js (verifyUser, httpRequest, logUsage,
+// agents-data, GARDE_FOUS_GLOBAUX) mais en lance 3 en parallèle sur une seule
+// question, retournant les 3 réponses pour affichage en dialogue structuré.
+//
+// Killer feature ProductHunt : aucun concurrent ne peut afficher 3 conseillers
+// experts qui répondent en parallèle, contextualisés au profil athlète. Cf.
+// audit section 4.3 : "Imagine le screenshot. Aucun concurrent ne peut faire ça."
+//
+// Quotas par plan (3× le coût Claude API d'un chat simple, donc rationnés) :
+//   Free : pas d'accès → 403 paywall
+//   Plus : 2 meetings/mois
+//   Pro  : illimité (limite per-day héritée de chat = garde-fou abus)
+//
+// Coût estimé Claude (Haiku) : ~$0.005 × 3 calls = $0.015 par meeting.
+// ═══════════════════════════════════════════════════════════════════
+
+const https = require('https');
+const { AGENTS, GARDE_FOUS_GLOBAUX } = require("../chat/agents-data");
+const { initSentry, captureError } = require('../_sentry');
+
+initSentry({ component: 'meeting', release: process.env.SPORTVISE_APP_V || 'v63' });
+
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://ckikyvokurpehavjlkbc.supabase.co';
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
+
+// ─────────────────────────────────────────────────────────────
+// HTTP helper (vanilla node https — cohérent avec chat/index.js)
+// ─────────────────────────────────────────────────────────────
+function httpRequest({ hostname, path, method, headers, body }) {
+  return new Promise((resolve, reject) => {
+    const opts = { hostname, path, method, headers: { ...headers } };
+    if (body && !opts.headers['Content-Length']) {
+      opts.headers['Content-Length'] = Buffer.byteLength(body);
+    }
+    const req = https.request(opts, (res) => {
+      let data = '';
+      res.on('data', (chunk) => (data += chunk));
+      res.on('end', () => {
+        let parsed = data;
+        try { parsed = data ? JSON.parse(data) : null; } catch (_) { /* keep raw */ }
+        resolve({ status: res.statusCode, data: parsed, raw: data, headers: res.headers });
+      });
+    });
+    req.on('error', reject);
+    if (body) req.write(body);
+    req.end();
+  });
+}
+
+function supabaseHost() {
+  return SUPABASE_URL.replace(/^https?:\/\//, '').replace(/\/$/, '');
+}
+
+// ─────────────────────────────────────────────────────────────
+// Auth: verify JWT and extract user info (copied from chat/index.js)
+// ─────────────────────────────────────────────────────────────
+async function verifyUser(accessToken) {
+  if (!accessToken) return null;
+  try {
+    const res = await httpRequest({
+      hostname: supabaseHost(),
+      path: '/auth/v1/user',
+      method: 'GET',
+      headers: {
+        apikey: SUPABASE_SERVICE_KEY,
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    if (res.status !== 200) return null;
+    return res.data || null;
+  } catch (e) {
+    console.warn('[MEETING] verifyUser error:', e.message);
+    return null;
+  }
+}
+
+async function getUserPlan(userId) {
+  if (!userId) return 'free';
+  try {
+    const res = await httpRequest({
+      hostname: supabaseHost(),
+      path: `/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}&select=plan`,
+      method: 'GET',
+      headers: {
+        apikey: SUPABASE_SERVICE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+      },
+    });
+    if (res.status !== 200 || !Array.isArray(res.data) || res.data.length === 0) return 'free';
+    const plan = String(res.data[0]?.plan || 'free').toLowerCase();
+    return (plan === 'plus' || plan === 'pro') ? plan : 'free';
+  } catch (e) {
+    console.warn('[MEETING] getUserPlan error:', e.message);
+    return 'free';
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Quotas par plan (meetings/mois). Free = 0 = paywall complet.
+// ─────────────────────────────────────────────────────────────
+const MEETING_QUOTAS = {
+  free: { perMonth: 0 },          // pas d'accès
+  plus: { perMonth: 2 },          // 2 meetings par mois calendaire
+  pro:  { perMonth: 9999 },       // de facto illimité
+};
+
+// Count meeting usage for a user since the start of the current calendar month.
+async function countMeetingsThisMonth(userId) {
+  try {
+    const now = new Date();
+    const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0));
+    const sinceIso = monthStart.toISOString();
+    // Count by counting any /meeting log within the month (success OR failed AFTER quota check).
+    // We filter on success=true to not penalize the user for a failed attempt.
+    const path = `/rest/v1/api_usage_log?user_id=eq.${encodeURIComponent(userId)}&endpoint=eq.meeting&success=eq.true&ts=gte.${encodeURIComponent(sinceIso)}&select=id`;
+    const res = await httpRequest({
+      hostname: supabaseHost(),
+      path,
+      method: 'GET',
+      headers: {
+        apikey: SUPABASE_SERVICE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+        Prefer: 'count=exact',
+        Range: '0-0',
+      },
+    });
+    const cr = res.headers?.['content-range'] || '';
+    const m = /\/(\d+)$/.exec(cr);
+    return m ? parseInt(m[1], 10) : 0;
+  } catch (e) {
+    console.warn('[MEETING] countMeetingsThisMonth error:', e.message);
+    // Fail-open : on ne bloque pas un user payant sur un transient DB error.
+    return 0;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Log a single meeting call (success or error) into api_usage_log.
+// ─────────────────────────────────────────────────────────────
+async function logUsage({ userId, agentIds, model, inputTokens, outputTokens, latencyMs, success, errorCode }) {
+  if (!userId) return;
+  // agent_id field stocke le triplet sous forme "a,b,c" pour debug ; le compte
+  // pour quotas se fait par count(*) où endpoint='meeting'.
+  const body = JSON.stringify({
+    user_id: userId,
+    endpoint: 'meeting',
+    agent_id: Array.isArray(agentIds) ? agentIds.join(',') : (agentIds || null),
+    model: model || null,
+    input_tokens: inputTokens ?? null,
+    output_tokens: outputTokens ?? null,
+    latency_ms: latencyMs ?? null,
+    success: !!success,
+    error_code: errorCode || null,
+  });
+  try {
+    await httpRequest({
+      hostname: supabaseHost(),
+      path: '/rest/v1/api_usage_log',
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_SERVICE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal',
+      },
+      body,
+    });
+  } catch (e) {
+    console.warn('[MEETING] logUsage failed (non-blocking):', e.message);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Model config — meeting force Haiku par défaut (3× cost donc on optimise).
+// Sonnet réservé aux beta testers via env AI_MODEL_BETA_USERS comme chat.
+// ─────────────────────────────────────────────────────────────
+const MODEL_CONFIG = {
+  haiku: {
+    id: process.env.AI_MODEL_DEFAULT || 'claude-haiku-4-5-20251001',
+    maxTokens: 600,            // plus court qu'un chat (3× le call → 3× max_tokens cumulés)
+    temperature: 1.0,
+    systemPrefix: ''
+  },
+  sonnet: {
+    id: process.env.AI_MODEL_BETA || 'claude-sonnet-4-6',
+    maxTokens: 500,
+    temperature: 0.4,
+    systemPrefix: `[CONSIGNES MEETING — RESPECTE STRICTEMENT]
+- Réponds en 2 paragraphes courts maximum (le user va lire 3 réponses, sois concis).
+- Tutoie systématiquement.
+- Pas de listes à puces sauf nécessité absolue.
+- Reste dans TON domaine d'expertise — ne déborde pas sur les autres agents qui répondent en parallèle à la même question.
+- Termine par UNE seule recommandation actionnable.
+
+`
+  }
+};
+
+function pickModel(userEmail) {
+  const betaUsersRaw = process.env.AI_MODEL_BETA_USERS || '';
+  if (!userEmail || !betaUsersRaw) return 'haiku';
+  const betaSet = new Set(
+    betaUsersRaw.split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
+  );
+  return betaSet.has(String(userEmail).trim().toLowerCase()) ? 'sonnet' : 'haiku';
+}
+
+// ─────────────────────────────────────────────────────────────
+// Build system prompt for one agent in meeting context.
+// Marque explicitement à l'agent qu'il est en RÉUNION avec d'autres agents,
+// pour qu'il reste dans son domaine et complète au lieu de tout couvrir.
+// ─────────────────────────────────────────────────────────────
+function buildMeetingSystem(agent, otherAgentNames, lang, profile, calendar, dailyLog, modelConfig) {
+  const langInstructions = {
+    fr: 'Réponds toujours en français.',
+    de: 'Antworte immer auf Deutsch (Schweizerdeutsch-freundlich, aber Standard-Deutsch).',
+    en: 'Always respond in English.',
+    it: 'Rispondi sempre in italiano.'
+  };
+  const langInstruction = langInstructions[lang] || langInstructions.fr;
+
+  const todayLabel = new Date().toLocaleDateString('fr-CH', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    timeZone: 'Europe/Zurich'
+  });
+  const todayIso = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Zurich' });
+  const dateInstruction = `[DATE DU JOUR : ${todayLabel} (${todayIso}). Utilise cette date pour tout raisonnement temporel.]`;
+
+  // Marqueur MEETING : bloc spécifique qui explique à l'agent qu'il fait partie
+  // d'une réunion d'équipe et qu'il doit rester dans son domaine.
+  const meetingContext = `[MODE RÉUNION D'ÉQUIPE — IMPORTANT]
+Tu participes à une réunion d'équipe avec d'autres agents SPORTVISE qui répondent en parallèle à la même question de l'athlète.
+Les autres agents présents : ${otherAgentNames.join(', ')}.
+
+Règles spécifiques au mode réunion :
+- Réponds UNIQUEMENT depuis ton domaine d'expertise (${agent.name} = ${agent.title || 'spécialiste'}).
+- N'aborde PAS les sujets qui sont clairement du domaine des autres agents présents (ils s'en occupent).
+- Sois concis : 2 paragraphes max, ~120 mots. L'user lira 3 réponses au total.
+- Termine par UNE recommandation concrète et actionnable de TON domaine.
+- Si la question dépasse complètement ton domaine, dis-le brièvement et renvoie vers l'agent approprié.`;
+
+  let sys = (modelConfig.systemPrefix || '') + agent.system + (GARDE_FOUS_GLOBAUX || '') +
+            '\n\n' + langInstruction + '\n\n' + dateInstruction + '\n\n' + meetingContext;
+
+  if (profile) {
+    sys += `\n\n[PROFIL ATHLÈTE]\n${profile}`;
+  }
+  if (calendar) {
+    sys += `\n\n[CALENDRIER SPORTIF — événements à venir]\n${calendar}`;
+  }
+  if (dailyLog) {
+    sys += `\n\n[ÉTAT DU JOUR — journal de bord]\n${dailyLog}`;
+  }
+  return sys;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Single Claude API call for one agent.
+// Returns { reply, agent_name, agentId, inputTokens, outputTokens, latencyMs, error? }
+// ─────────────────────────────────────────────────────────────
+async function callOneAgent({ agentId, question, otherAgentNames, lang, profile, calendar, dailyLog, modelConfig, apiKey }) {
+  const agent = AGENTS[agentId];
+  if (!agent) {
+    return { agentId, error: 'unknown_agent' };
+  }
+
+  const systemPrompt = buildMeetingSystem(agent, otherAgentNames, lang, profile, calendar, dailyLog, modelConfig);
+  const messages = [{ role: 'user', content: question }];
+
+  const startTs = Date.now();
+  let response;
+  try {
+    response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({
+        model: modelConfig.id,
+        max_tokens: modelConfig.maxTokens,
+        temperature: modelConfig.temperature,
+        system: systemPrompt,
+        messages
+      })
+    });
+  } catch (fetchErr) {
+    const latencyMs = Date.now() - startTs;
+    console.error(`[MEETING] fetch error agent=${agentId}:`, fetchErr.message);
+    return { agentId, agent_name: agent.name, error: 'claude_network_error', latencyMs };
+  }
+
+  const latencyMs = Date.now() - startTs;
+  if (!response.ok) {
+    const err = await response.text();
+    console.error(`[MEETING] agent=${agentId} status=${response.status} err=`, err.slice(0, 200));
+    return { agentId, agent_name: agent.name, error: `claude_api_${response.status}`, latencyMs };
+  }
+
+  const data = await response.json();
+  return {
+    agentId,
+    agent_name: agent.name,
+    agent_title: agent.title || '',
+    reply: data.content[0].text,
+    inputTokens: data.usage?.input_tokens ?? null,
+    outputTokens: data.usage?.output_tokens ?? null,
+    latencyMs,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────
+// Main handler
+// ─────────────────────────────────────────────────────────────
+exports.handler = async (event) => {
+  // CORS — même whitelist que chat
+  const allowedOrigins = ['https://sportvise.ch', 'https://www.sportvise.ch', 'https://prismatic-lebkuchen-48a8ee.netlify.app', 'https://stately-hummingbird-2ce1c2.netlify.app'];
+  const origin = event.headers?.origin || event.headers?.Origin || '';
+  const corsOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
+  const headers = {
+    'Access-Control-Allow-Origin': corsOrigin,
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Content-Type': 'application/json'
+  };
+
+  if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' };
+  if (event.httpMethod !== 'POST') return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
+
+  // ─── Auth: Bearer JWT mandatory ───
+  const authHeader = event.headers?.authorization || event.headers?.Authorization || '';
+  const accessToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  const user = await verifyUser(accessToken);
+  if (!user) {
+    return {
+      statusCode: 401,
+      headers,
+      body: JSON.stringify({ error: 'auth_invalid', message: 'Authentication required' })
+    };
+  }
+
+  let parsed;
+  try {
+    parsed = JSON.parse(event.body || '{}');
+  } catch (_) {
+    return { statusCode: 400, headers, body: JSON.stringify({ error: 'invalid_body' }) };
+  }
+  const { question, agentIds, lang, profile, calendar, dailyLog, userEmail } = parsed;
+
+  // Validation payload
+  if (!question || typeof question !== 'string') {
+    await logUsage({ userId: user.id, agentIds, success: false, errorCode: 'invalid_payload' });
+    return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing question' }) };
+  }
+  if (question.length > 2000) {
+    await logUsage({ userId: user.id, agentIds, success: false, errorCode: 'question_too_long' });
+    return { statusCode: 400, headers, body: JSON.stringify({ error: 'Question too long (max 2000 chars)' }) };
+  }
+  if (!Array.isArray(agentIds) || agentIds.length < 2 || agentIds.length > 3) {
+    await logUsage({ userId: user.id, agentIds, success: false, errorCode: 'invalid_agent_count' });
+    return { statusCode: 400, headers, body: JSON.stringify({ error: 'agentIds must be array of 2 or 3' }) };
+  }
+  // Dédoublonnage des agents (au cas où le frontend envoie 2× le même)
+  const uniqueAgentIds = [...new Set(agentIds)];
+  if (uniqueAgentIds.length !== agentIds.length) {
+    await logUsage({ userId: user.id, agentIds, success: false, errorCode: 'duplicate_agents' });
+    return { statusCode: 400, headers, body: JSON.stringify({ error: 'Duplicate agents in agentIds' }) };
+  }
+  // Vérifier que tous les agents existent
+  for (const aid of uniqueAgentIds) {
+    if (!AGENTS[aid]) {
+      await logUsage({ userId: user.id, agentIds, success: false, errorCode: 'unknown_agent' });
+      return { statusCode: 400, headers, body: JSON.stringify({ error: `Unknown agent: ${aid}` }) };
+    }
+  }
+
+  // ─── Plan + quotas check ───
+  const plan = await getUserPlan(user.id);
+  const quota = MEETING_QUOTAS[plan] || MEETING_QUOTAS.free;
+
+  if (plan === 'free' || quota.perMonth === 0) {
+    await logUsage({ userId: user.id, agentIds, success: false, errorCode: 'plan_required' });
+    return {
+      statusCode: 403,
+      headers,
+      body: JSON.stringify({
+        error: 'plan_required',
+        message: 'La réunion d\'équipe est réservée aux plans Plus et Pro.',
+        upgrade_to: 'plus'
+      })
+    };
+  }
+
+  const monthCount = await countMeetingsThisMonth(user.id);
+  if (monthCount >= quota.perMonth) {
+    await logUsage({ userId: user.id, agentIds, success: false, errorCode: 'quota_exceeded' });
+    return {
+      statusCode: 429,
+      headers,
+      body: JSON.stringify({
+        error: 'quota_exceeded',
+        message: plan === 'plus'
+          ? `Tu as utilisé tes ${quota.perMonth} réunions Plus ce mois. Passe en Pro pour des réunions illimitées.`
+          : `Tu as atteint ta limite de ${quota.perMonth} réunions ce mois.`,
+        used: monthCount,
+        limit: quota.perMonth,
+        upgrade_to: plan === 'plus' ? 'pro' : null
+      })
+    };
+  }
+
+  // ─── Claude API key ───
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    await logUsage({ userId: user.id, agentIds, success: false, errorCode: 'api_key_missing' });
+    return { statusCode: 500, headers, body: JSON.stringify({ error: 'API key not configured' }) };
+  }
+
+  // ─── Pick model (Haiku par défaut, Sonnet beta) ───
+  const effectiveEmail = user.email || userEmail;
+  const modelKey = pickModel(effectiveEmail);
+  const modelConfig = MODEL_CONFIG[modelKey];
+
+  // ─── Build other-agent-names map for meeting context ───
+  // Pour chaque agent, on lui passe les noms des AUTRES agents présents.
+  // Permet à l'agent de respecter son périmètre (ne pas empiéter).
+  const allNames = uniqueAgentIds.map(aid => {
+    const a = AGENTS[aid];
+    return `${a.name} (${a.title || 'spécialiste'})`;
+  });
+
+  // ─── Lance les 3 (ou 2) appels Claude EN PARALLÈLE ───
+  const startTs = Date.now();
+  const calls = uniqueAgentIds.map((aid, idx) => {
+    const otherNames = allNames.filter((_, i) => i !== idx);
+    return callOneAgent({
+      agentId: aid,
+      question,
+      otherAgentNames: otherNames,
+      lang,
+      profile,
+      calendar,
+      dailyLog,
+      modelConfig,
+      apiKey
+    });
+  });
+
+  let results;
+  try {
+    results = await Promise.all(calls);
+  } catch (err) {
+    console.error('[MEETING] Promise.all unexpected error:', err);
+    captureError(err, { context: { user_id: user.id, agent_ids: uniqueAgentIds, error_code: 'meeting_orchestration' }, level: 'error' });
+    await logUsage({ userId: user.id, agentIds, success: false, errorCode: 'meeting_orchestration' });
+    return { statusCode: 500, headers, body: JSON.stringify({ error: 'Meeting orchestration error' }) };
+  }
+  const totalLatencyMs = Date.now() - startTs;
+
+  // ─── Vérifier qu'au moins 1 agent a réussi ; sinon échec global ───
+  const successes = results.filter(r => !r.error);
+  const failures = results.filter(r => r.error);
+
+  if (successes.length === 0) {
+    console.error('[MEETING] all agents failed:', failures.map(f => f.error));
+    await logUsage({ userId: user.id, agentIds, success: false, errorCode: 'all_agents_failed' });
+    return { statusCode: 502, headers, body: JSON.stringify({ error: 'All agents failed' }) };
+  }
+
+  // Aggregate token usage pour le log et le retour
+  const totalInputTokens = successes.reduce((s, r) => s + (r.inputTokens || 0), 0);
+  const totalOutputTokens = successes.reduce((s, r) => s + (r.outputTokens || 0), 0);
+
+  console.log(`[MEETING] model=${modelKey} agents=${uniqueAgentIds.join(',')} email=${effectiveEmail || 'anon'} input=${totalInputTokens} output=${totalOutputTokens} latency=${totalLatencyMs}ms plan=${plan} month=${monthCount + 1}/${quota.perMonth} successes=${successes.length}/${uniqueAgentIds.length}`);
+
+  await logUsage({
+    userId: user.id, agentIds,
+    model: modelConfig.id,
+    inputTokens: totalInputTokens, outputTokens: totalOutputTokens,
+    latencyMs: totalLatencyMs,
+    success: true   // partial success counts (au moins 1 agent OK)
+  });
+
+  return {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify({
+      responses: results,    // contient successes + failures (frontend gère affichage)
+      meta: {
+        plan,
+        monthUsed: monthCount + 1,
+        monthLimit: quota.perMonth,
+        model: modelKey,
+        totalLatencyMs,
+        totalInputTokens,
+        totalOutputTokens,
+        successCount: successes.length,
+        failureCount: failures.length
+      }
+    })
+  };
+};
