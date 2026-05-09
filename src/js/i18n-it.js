@@ -439,5 +439,28 @@ var T_IT = {
     sommeil:'Specialista del Sonno',
     equipe:'Manager Sportivo',
     recuperation:'Recupero & Rigenerazione'
-  }
+  },
+
+  // Multi-agent meeting (v63.0.0 — killer feature ProductHunt)
+  teamMeetingFabTitle: 'Riunione di squadra',
+  teamMeetingTitle: 'Riunione di squadra',
+  teamMeetingSubtitle: 'Fai una domanda a 2 o 3 agenti esperti. Rispondono insieme dal loro dominio.',
+  teamMeetingPlaceholder: 'Es: Mi sento stanco prima di una partita tra 3 giorni, che fare?',
+  teamMeetingAgentsLabel: 'Agenti (2-3)',
+  teamMeetingCounter: '{n}/{max} agenti selezionati',
+  teamMeetingSubmit: 'Avvia la riunione',
+  teamMeetingLoading: 'Riunione in corso…',
+  teamMeetingThinking: 'I tuoi agenti riflettono insieme…',
+  teamMeetingHeader: 'Ecco cosa dice il tuo team',
+  teamMeetingErrShort: 'Domanda troppo corta (min 10 caratteri)',
+  teamMeetingErrAgents: 'Seleziona almeno 2 agenti',
+  teamMeetingErrNetwork: 'Errore di rete. Riprova.',
+  teamMeetingErrServer: 'Errore del server. Riprova tra poco.',
+  teamMeetingErrAgent: 'Questo agente non ha potuto rispondere questa volta.',
+  teamMeetingLockedTitle: 'Riunione di squadra — Plus & Pro',
+  teamMeetingLockedBody: 'Chiedi a 2-3 agenti esperti di rispondere insieme alla tua domanda. Disponibile con il piano Plus (2/mese) e Pro (illimitato).',
+  teamMeetingUpgrade: 'Vedi i piani',
+  teamMeetingQuotaTitle: 'Quota mensile raggiunta',
+  teamMeetingUpgradePro: 'Passa a Pro',
+  teamMeetingUsage: 'Riunione {n}/{max} questo mese (piano Plus)',
 };
