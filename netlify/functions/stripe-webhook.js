@@ -63,13 +63,31 @@ function stripeApiPost(path, params) {
 }
 
 // ── PLAN DETECTION ──────────────────────────────────
+// v63.5 — Mapping étendu pour gérer mensuel ET annuel + nouveau prix Pro 19 CHF.
+// Stripe envoie unit_amount EN CENTIMES (1 CHF = 100 centimes).
+//
+// Plus :
+//   1200  =  12.00 CHF/mois (mensuel, inchangé)
+//   12000 = 120.00 CHF/an   (annuel NEW — économise 24 CHF, -2 mois offerts)
+//
+// Pro :
+//   1900  =  19.00 CHF/mois (mensuel NEW v63.5 — descend de 29 → 19)
+//   19000 = 190.00 CHF/an   (annuel NEW — économise 38 CHF, -2 mois offerts)
+//   2900  =  29.00 CHF/mois (legacy — users existants pré-v63.5 qui gardent leur prix)
+const PLAN_BY_AMOUNT_CENTS = {
+  // Plus
+  1200: 'plus',     // 12 CHF/mo
+  12000: 'plus',    // 120 CHF/year
+  // Pro
+  1900: 'pro',      // 19 CHF/mo (v63.5 NEW)
+  19000: 'pro',     // 190 CHF/year (v63.5 NEW)
+  2900: 'pro',      // 29 CHF/mo (legacy pre-v63.5, conservé pour ne pas casser les users existants)
+};
 
 async function getPlanFromSession(session) {
   // Try from amount_total first
-  if (session.amount_total) {
-    const amount = session.amount_total;
-    if (amount === 1200) return 'plus';
-    if (amount === 2900) return 'pro';
+  if (session.amount_total && PLAN_BY_AMOUNT_CENTS[session.amount_total]) {
+    return PLAN_BY_AMOUNT_CENTS[session.amount_total];
   }
 
   // Fallback: fetch line items from Stripe API
@@ -78,9 +96,11 @@ async function getPlanFromSession(session) {
     if (lineItems && lineItems.data) {
       for (const item of lineItems.data) {
         const unitAmount = item.price?.unit_amount;
-        if (unitAmount === 1200) return 'plus';
-        if (unitAmount === 2900) return 'pro';
+        if (unitAmount && PLAN_BY_AMOUNT_CENTS[unitAmount]) {
+          return PLAN_BY_AMOUNT_CENTS[unitAmount];
+        }
 
+        // Last resort : description-based matching (used if amount is unknown)
         const productName = item.description || '';
         if (productName.toLowerCase().includes('plus')) return 'plus';
         if (productName.toLowerCase().includes('pro')) return 'pro';
@@ -90,7 +110,10 @@ async function getPlanFromSession(session) {
     console.error('Error fetching line items:', e);
   }
 
-  return 'pro'; // default fallback
+  // Default fallback : log + return 'pro' (assumption : if we can't detect, assume highest paid tier
+  // so user doesn't lose access ; the support email will be triggered for manual review).
+  console.warn('[stripe-webhook] getPlanFromSession could not detect plan, defaulting to pro. amount_total:', session.amount_total);
+  return 'pro';
 }
 
 // ── STRIPE SIGNATURE VERIFICATION ───────────────────
@@ -267,11 +290,11 @@ const EMAIL_TEMPLATES = {
     titleUpgrade: (planName) => `Plan ${planName} activé !`,
     titleDowngrade: 'Abonnement résilié',
     introUpgrade: 'Votre plan a été mis à jour avec succès !',
-    downgradeBody1: `Votre abonnement a été résilié. Vous êtes désormais sur le plan <strong style="color:#10b981">Free</strong>. Vous gardez l'accès à 3 agents IA (Lucas, Emma, Clara) avec 10 messages par jour.`,
+    downgradeBody1: `Votre abonnement a été résilié. Vous êtes désormais sur le plan <strong style="color:#10b981">Free</strong>. Vous gardez l'accès à 3 agents IA (Lucas, Emma, Clara) avec 5 messages par jour.`,
     downgradeBody2: 'Vous pouvez passer à un plan supérieur à tout moment depuis votre dashboard.',
     planLabel: (planName, price) => `Plan ${planName} — ${price}`,
     planSubLabel: (agents) => `${agents} · Messages illimités`,
-    planPrices: { free: 'CHF 0', plus: 'CHF 12/mois', pro: 'CHF 29/mois' },
+    planPrices: { free: 'CHF 0', plus: 'CHF 12/mois', pro: 'CHF 19/mois' },
     planAgents: { free: '3 agents IA', plus: '6 agents performance', pro: '11 agents IA (complet)' },
     ctaButton: 'Accéder à mon dashboard →',
     footerCountry: 'Suisse',
@@ -293,11 +316,11 @@ const EMAIL_TEMPLATES = {
     titleUpgrade: (planName) => `${planName}-Plan aktiviert!`,
     titleDowngrade: 'Abonnement gekündigt',
     introUpgrade: 'Ihr Plan wurde erfolgreich aktualisiert!',
-    downgradeBody1: `Ihr Abonnement wurde gekündigt. Sie befinden sich nun im <strong style="color:#10b981">Free</strong>-Plan. Sie behalten Zugriff auf 3 KI-Agenten (Lucas, Emma, Clara) mit 10 Nachrichten pro Tag.`,
+    downgradeBody1: `Ihr Abonnement wurde gekündigt. Sie befinden sich nun im <strong style="color:#10b981">Free</strong>-Plan. Sie behalten Zugriff auf 3 KI-Agenten (Lucas, Emma, Clara) mit 5 Nachrichten pro Tag.`,
     downgradeBody2: 'Sie können jederzeit über Ihr Dashboard zu einem höheren Plan wechseln.',
     planLabel: (planName, price) => `${planName}-Plan — ${price}`,
     planSubLabel: (agents) => `${agents} · Unbegrenzte Nachrichten`,
-    planPrices: { free: 'CHF 0', plus: 'CHF 12/Monat', pro: 'CHF 29/Monat' },
+    planPrices: { free: 'CHF 0', plus: 'CHF 12/Monat', pro: 'CHF 19/Monat' },
     planAgents: { free: '3 KI-Agenten', plus: '6 Performance-Agenten', pro: '11 KI-Agenten (komplett)' },
     ctaButton: 'Zum Dashboard →',
     footerCountry: 'Schweiz',
@@ -319,11 +342,11 @@ const EMAIL_TEMPLATES = {
     titleUpgrade: (planName) => `${planName} plan activated!`,
     titleDowngrade: 'Subscription cancelled',
     introUpgrade: 'Your plan has been updated successfully!',
-    downgradeBody1: `Your subscription has been cancelled. You are now on the <strong style="color:#10b981">Free</strong> plan. You keep access to 3 AI agents (Lucas, Emma, Clara) with 10 messages per day.`,
+    downgradeBody1: `Your subscription has been cancelled. You are now on the <strong style="color:#10b981">Free</strong> plan. You keep access to 3 AI agents (Lucas, Emma, Clara) with 5 messages per day.`,
     downgradeBody2: 'You can upgrade to a higher plan anytime from your dashboard.',
     planLabel: (planName, price) => `${planName} plan — ${price}`,
     planSubLabel: (agents) => `${agents} · Unlimited messages`,
-    planPrices: { free: 'CHF 0', plus: 'CHF 12/month', pro: 'CHF 29/month' },
+    planPrices: { free: 'CHF 0', plus: 'CHF 12/month', pro: 'CHF 19/month' },
     planAgents: { free: '3 AI agents', plus: '6 performance agents', pro: '11 AI agents (complete)' },
     ctaButton: 'Go to my dashboard →',
     footerCountry: 'Switzerland',
@@ -345,11 +368,11 @@ const EMAIL_TEMPLATES = {
     titleUpgrade: (planName) => `Piano ${planName} attivato!`,
     titleDowngrade: 'Abbonamento annullato',
     introUpgrade: 'Il Suo piano è stato aggiornato con successo!',
-    downgradeBody1: `Il Suo abbonamento è stato annullato. Si trova ora nel piano <strong style="color:#10b981">Free</strong>. Mantiene l'accesso a 3 agenti IA (Lucas, Emma, Clara) con 10 messaggi al giorno.`,
+    downgradeBody1: `Il Suo abbonamento è stato annullato. Si trova ora nel piano <strong style="color:#10b981">Free</strong>. Mantiene l'accesso a 3 agenti IA (Lucas, Emma, Clara) con 5 messaggi al giorno.`,
     downgradeBody2: 'Può passare a un piano superiore in qualsiasi momento dalla Sua dashboard.',
     planLabel: (planName, price) => `Piano ${planName} — ${price}`,
     planSubLabel: (agents) => `${agents} · Messaggi illimitati`,
-    planPrices: { free: 'CHF 0', plus: 'CHF 12/mese', pro: 'CHF 29/mese' },
+    planPrices: { free: 'CHF 0', plus: 'CHF 12/mese', pro: 'CHF 19/mese' },
     planAgents: { free: '3 agenti IA', plus: '6 agenti performance', pro: '11 agenti IA (completo)' },
     ctaButton: 'Vai alla mia dashboard →',
     footerCountry: 'Svizzera',
