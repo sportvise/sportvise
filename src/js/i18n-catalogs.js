@@ -43,7 +43,7 @@ const SPORTS_CATALOG = [
 ];
 
 // Subsets for the 2 different selectors (onboarding 16 / profile 18 — kept divergent to match existing UX)
-const ONBOARDING_SPORT_KEYS = ['football','tennis','basketball','swimming','athletics','volleyball','hockey','skiing','cycling','martial-arts','gymnastics','handball','rugby','dance','climbing','trail-running'];
+const ONBOARDING_SPORT_KEYS = ['football','tennis','basketball','floorball','swimming','athletics','volleyball','hockey','skiing','cycling','martial-arts','gymnastics','handball','rugby','dance','climbing','trail-running'];
 const PROFILE_SPORT_KEYS    = ['football','hockey','skiing','tennis','padel','cycling','swimming','athletics','basketball','volleyball','floorball','handball','gymnastics','rugby','golf','triathlon','boxing','other'];
 
 const LEVELS_CATALOG = [

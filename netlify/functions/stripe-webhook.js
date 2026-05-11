@@ -433,7 +433,7 @@ function renderPlanChangeHtml(t, newPlan, isDowngrade) {
         <div style="color:#94a3b8;font-size:13px">${t.planSubLabel(agents)}</div>
       </div>`}
       <div style="text-align:center;margin-top:24px">
-        <a href="https://sportvise.ch/app/dashboard.html" style="display:inline-block;padding:14px 36px;background:linear-gradient(135deg,${color},${color}cc);color:${ctaTextColor};font-size:15px;font-weight:800;text-decoration:none;border-radius:10px">
+        <a href="https://sportvise.ch/dashboard.html" style="display:inline-block;padding:14px 36px;background:linear-gradient(135deg,${color},${color}cc);color:${ctaTextColor};font-size:15px;font-weight:800;text-decoration:none;border-radius:10px">
           ${t.ctaButton}
         </a>
       </div>
@@ -511,7 +511,7 @@ function renderPaymentFailedHtml(t) {
       <p style="color:#94a3b8;font-size:14px;line-height:1.6;margin:0 0 12px">${t.introFailed1}</p>
       <p style="color:#94a3b8;font-size:14px;line-height:1.6;margin:0 0 20px">${t.introFailed2}</p>
       <div style="text-align:center;margin-top:24px">
-        <a href="https://sportvise.ch/app/dashboard.html#abonnement" style="display:inline-block;padding:14px 36px;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-size:15px;font-weight:800;text-decoration:none;border-radius:10px">
+        <a href="https://sportvise.ch/dashboard.html#abonnement" style="display:inline-block;padding:14px 36px;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-size:15px;font-weight:800;text-decoration:none;border-radius:10px">
           ${t.ctaFailed}
         </a>
       </div>
