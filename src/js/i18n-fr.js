@@ -331,6 +331,8 @@ var T_FR = {
   dashCheckLevelDone:'Niveau renseigné :',
   dashCheckLevelTodo:'Renseigne ton niveau dans ton profil',
   dashQuickProfileTitle:'Complète ton profil en 30 secondes',
+  dashProfileMoreLabel:'Plus tes agents te connaissent (position, club, taille, poids…), plus leurs conseils sont précis.',
+  dashProfileMoreCta:'📋 Profil détaillé →',
   dashQuickProfileSub:'Nos agents seront plus pertinents avec ces infos',
   dashQuickLevelLabel:'Ton niveau',
   dashQuickGoalLabel:'Ton objectif principal',

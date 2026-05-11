@@ -326,6 +326,8 @@ var T_DE = {
   dashCheckLevelDone:'Niveau angegeben:',
   dashCheckLevelTodo:'Trage dein Niveau im Profil ein',
   dashQuickProfileTitle:'Vervollständige dein Profil in 30 Sekunden',
+  dashProfileMoreLabel:'Je besser deine Agenten dich kennen (Position, Verein, Grösse, Gewicht…), desto präziser ihre Empfehlungen.',
+  dashProfileMoreCta:'📋 Detailliertes Profil →',
   dashQuickProfileSub:'Mit diesen Infos werden unsere Agenten relevanter',
   dashQuickLevelLabel:'Dein Niveau',
   dashQuickGoalLabel:'Dein Hauptziel',
