@@ -1333,6 +1333,21 @@ async function init() {
   }
   localStorage.setItem('sv_last_user', currentUser.id);
 
+  // v63.5.2 — Si l'user revient de Stripe checkout success_url avec ?upgraded=1,
+  // attendre 2.5s pour laisser le webhook Stripe mettre à jour profiles.plan dans Supabase.
+  // Sans cette attente, le profile est lu AVANT que le webhook ait fini → plan='free' affiché
+  // alors que l'user vient juste de payer. Avec cette attente : plan='plus'/'pro' affiché direct.
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('upgraded') === '1') {
+      await new Promise(r => setTimeout(r, 2500));
+      // Nettoie l'URL pour ne pas re-déclencher le délai si l'user recharge
+      history.replaceState(null, '', location.pathname + location.hash);
+      // Toast de confirmation post-upgrade
+      try { if (typeof showToast === 'function') showToast('✅ Plan activé — bienvenue !'); } catch(e) {}
+    }
+  } catch(e) { console.warn('upgraded flag check:', e); }
+
   // Load profile + count messages in parallel for faster init
   const now = new Date();
   const todayLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
@@ -2455,6 +2470,12 @@ async function renderDashboard() {
         </div>
       </div>
       ` : ''}
+
+      <!-- v63.5.2 — CTA Profil détaillé : pour aller plus loin que le quick quiz -->
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+        <div style="font-size:11px;color:var(--muted);flex:1;min-width:180px">${t.dashProfileMoreLabel||'Plus tes agents te connaissent (position, club, taille, poids…), plus leurs conseils sont précis.'}</div>
+        <button onclick="showProfileModal()" style="padding:8px 14px;border-radius:8px;border:1px solid #f59e0b40;background:transparent;color:var(--gold);font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;transition:all 0.2s" onmouseover="this.style.background='#f59e0b15'" onmouseout="this.style.background='transparent'">${t.dashProfileMoreCta||'📋 Profil détaillé →'}</button>
+      </div>
     </div>
     ` : ''}
     ` : `
@@ -2462,6 +2483,16 @@ async function renderDashboard() {
       <div style="flex:1">
         <div style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:4px">${t.dashWelcomeFull||'🏆 Profil complet !'}</div>
         <div style="font-size:12px;color:var(--muted)">${(t.dashWelcomeFullSub||'Tes agents ont toutes les infos pour te donner les meilleurs conseils. Bonne session, {name} !').replace('{name}', name)}</div>
+        ${(() => {
+          // v63.5.2 — Si le user a fait sport+level mais qu'il manque encore des champs détaillés,
+          // mini CTA pour pousser à compléter le profil détaillé (position, club, weight, height, canton…)
+          const detailedFields = ['position','club','weight','height','canton','birth_date'];
+          const missing = detailedFields.filter(f => !userProfile?.[f]);
+          if (missing.length >= 3) {
+            return `<button onclick="showProfileModal()" style="margin-top:10px;padding:7px 14px;border-radius:8px;border:1px solid var(--gold)40;background:transparent;color:var(--gold);font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s" onmouseover="this.style.background='#f59e0b15'" onmouseout="this.style.background='transparent'">${t.dashProfileMoreCta||'📋 Profil détaillé'} <span style="opacity:0.7;font-weight:400">· ${missing.length} infos manquantes</span></button>`;
+          }
+          return '';
+        })()}
       </div>
       <div style="font-size:32px;flex-shrink:0">🚀</div>
     </div>
