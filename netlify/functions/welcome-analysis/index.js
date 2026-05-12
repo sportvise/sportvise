@@ -403,8 +403,17 @@ exports.handler = async (event) => {
     ? payload.lang
     : (profile?.lang || 'fr');
 
+  // v63.5.6 — Détection lang mismatch (aligné sur weekly-insight L547-571).
+  // Si la card cachée a été générée dans une autre langue que la lang demandée,
+  // on bypass le cache et on régénère. Empêche le bug "header DE / contenu FR"
+  // observé en self-test 13/05 quand l'utilisateur change de langue depuis le
+  // dashboard (setLang trigger une re-génération avec lang explicite en payload).
+  const cachedLang = profile?.welcome_card_json?._lang || null;
+  const langMismatch = cachedLang && cachedLang !== lang;
+
   // Cache hit : already have a non-fallback card → return immediately
-  if (profile?.welcome_card_json && !profile.welcome_card_json._fallback) {
+  // (sauf si lang mismatch → on régénère)
+  if (!langMismatch && profile?.welcome_card_json && !profile.welcome_card_json._fallback) {
     return {
       statusCode: 200,
       headers,
@@ -413,12 +422,17 @@ exports.handler = async (event) => {
   }
 
   // Cache hit fallback : was fallback, but we haven't waited 24h → return cached fallback (don't hammer)
-  if (profile?.welcome_card_json?._fallback && !shouldRegenerateFromFallback(profile)) {
+  // (sauf si lang mismatch → on régénère même un fallback)
+  if (!langMismatch && profile?.welcome_card_json?._fallback && !shouldRegenerateFromFallback(profile)) {
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify({ ...profile.welcome_card_json, _cached: true })
     };
+  }
+
+  if (langMismatch) {
+    console.log('[WELCOME] lang mismatch cache=' + cachedLang + ' requested=' + lang + ' → regen');
   }
 
   // ─── Generate ───
@@ -448,6 +462,12 @@ exports.handler = async (event) => {
     card = buildFallbackCard(lang);
     modelUsed = 'fallback';
   }
+
+  // v63.5.6 — Persist `_lang` dans la card pour que les futurs appels puissent
+  // détecter un mismatch de langue (cf. langMismatch logic L417). Sans ça, les
+  // cards générées en FR seraient retournées en cache même quand l'utilisateur
+  // demande DE/EN/IT.
+  card._lang = lang;
 
   // Persist to DB (best-effort, don't fail the request if save errors)
   await saveCardToProfile(user.id, card);
