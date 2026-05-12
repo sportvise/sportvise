@@ -1173,6 +1173,13 @@ function loadTheme() {
 loadTheme();
 
 function setLang(lang) {
+  // v63.5.6 — Capture l'ancienne lang AVANT mutation pour détecter changement réel.
+  // Bug fix : welcome_card et weekly_insight stockent leur contenu en DB dans la
+  // langue de génération. Sans regen au setLang, l'utilisateur voit "header DE /
+  // contenu FR" jusqu'au prochain F5. Cf. POST_LAUNCH_TODO #3 (résolu en v63.5.6).
+  const previousLang = currentLang;
+  const langActuallyChanged = previousLang && previousLang !== lang;
+
   currentLang = lang;
   localStorage.setItem('sv_lang', lang);
   // v61.4 — Persiste la langue dans profiles.lang pour que les emails Stripe
@@ -1234,6 +1241,66 @@ function setLang(lang) {
   // v63.3.1 — Dispatch event pour que les modals/chips dynamiques (team meeting,
   // morning brief opt-in, etc.) re-syncent leurs labels i18n.
   try { window.dispatchEvent(new CustomEvent('sv-lang-changed', { detail: { lang } })); } catch(_) {}
+
+  // v63.5.6 — Fix bug désync langue welcome_card & weekly_insight.
+  // Quand l'utilisateur change effectivement de langue (pas au boot initial où
+  // previousLang===currentLang), on remove les cards Claude existantes du DOM
+  // et on déclenche une régénération en background dans la nouvelle langue.
+  // Le backend (welcome-analysis + weekly-insight) détecte le langMismatch et
+  // régénère via Claude. Délai typique 3-6s, l'utilisateur voit les cards
+  // réapparaître dans la bonne langue sans avoir à F5.
+  // Guards : currentUser doit être défini (sinon on est au boot, skip).
+  if (langActuallyChanged && typeof currentUser !== 'undefined' && currentUser && currentUser.id) {
+    try {
+      // 1) Remove existing cards from DOM so re-inject n'est pas bloqué par leurs guards
+      //    (cf. generateWelcomeCardAsync L6047, generateWeeklyInsightAsync L6530).
+      const oldWelcome = document.getElementById('welcomeCard');
+      if (oldWelcome) oldWelcome.remove();
+      const oldWeekly = document.getElementById('weeklyInsightCard');
+      if (oldWeekly) oldWeekly.remove();
+
+      // 2) Trigger welcome card regen avec lang explicite dans payload.
+      //    Le backend a une logique langMismatch (v63.5.6) qui force regen
+      //    si profile.welcome_card_json._lang !== requested lang.
+      //    On reconstruit le payload depuis userProfile (best effort — si profil
+      //    incomplet, le backend tombera sur son propre fallback).
+      if (userProfile?.sport) {
+        (async () => {
+          let firstGoal = null;
+          try {
+            const { data } = await sb.from('goals')
+              .select('title, domain')
+              .eq('user_id', currentUser.id)
+              .order('created_at', { ascending: true })
+              .limit(1);
+            firstGoal = data?.[0] || null;
+          } catch(_) {}
+          generateWelcomeCardAsync({
+            sport_key:   (typeof sportKey === 'function') ? sportKey(userProfile.sport) : userProfile.sport,
+            sport_label: (typeof sportLabel === 'function') ? sportLabel(userProfile.sport, lang) : userProfile.sport,
+            sport_raw:   '',
+            level_key:   (typeof levelKey === 'function') ? levelKey(userProfile.level) : userProfile.level,
+            level_label: (typeof levelLabel === 'function') ? levelLabel(userProfile.level, lang) : userProfile.level,
+            goal_key:    firstGoal ? ((typeof goalKey === 'function') ? goalKey(firstGoal.title) : firstGoal.title) : '',
+            goal_label:  firstGoal?.title || '',
+            goal_domain: firstGoal?.domain || '',
+            lang:        lang,
+            first_name:  ((currentUser?.user_metadata?.full_name || userProfile?.full_name || '') + '').split(' ')[0]
+          });
+        })();
+      }
+
+      // 3) Trigger weekly insight regen avec nouvelle lang.
+      //    Le backend a déjà la logique langMismatch (L547-571), nothing to add.
+      if (typeof generateWeeklyInsightAsync === 'function') {
+        generateWeeklyInsightAsync(lang).catch(e =>
+          console.warn('[LANG] weekly insight regen error:', e)
+        );
+      }
+    } catch(e) {
+      console.warn('[LANG] cards regen trigger error:', e);
+    }
+  }
 }
 
 // ── MOBILE MENU ────────────────────────────────────
@@ -3109,8 +3176,9 @@ async function renderChat(page) {
 // Fallback défensif via typeof === 'function' au cas où l'ordre de concat
 // changerait.
 //
-// Click sur l'encart → showPage('profile') pour permettre à l'utilisateur
+// Click sur l'encart → showPage('profil') pour permettre à l'utilisateur
 // de corriger/compléter ce que SPORTVISE sait de lui.
+// v63.5.6 hotfix : était 'profile' (page inexistante) → 'profil' (correct, cf. L620 sidebar).
 //
 // v63.6+ enrichira avec : last event, last daily_log, last subject, goals
 // (cf. SPEC_v636_memoire_visible.md). v63.5.5 = MVP pre-launch, 2-4 tags max.
@@ -3154,7 +3222,7 @@ function renderMemoryCardLite(page, agent) {
   const editLabel = t.memoryCardEdit || 'Éditer';
 
   return `
-    <div class="memory-card-lite" onclick="showPage('profile')"
+    <div class="memory-card-lite" onclick="showPage('profil')"
          style="margin:8px 16px 0;padding:8px 12px;background:linear-gradient(135deg,${agent.color}10,${agent.color}04);border:1px solid ${agent.color}25;border-radius:10px;cursor:pointer;transition:border-color 0.2s"
          onmouseover="this.style.borderColor='${agent.color}55'"
          onmouseout="this.style.borderColor='${agent.color}25'">
