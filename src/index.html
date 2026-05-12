@@ -270,6 +270,23 @@
 
     /* HOW */
     .how-section { padding:90px 24px; }
+
+    /* v63.5.3 — Section vraie conversation (3 dialogues Lucas/David/Emma) */
+    .conversation-section { padding:90px 24px; background:linear-gradient(180deg,var(--bg2) 0%,var(--bg) 100%); }
+    .conv-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; max-width:1100px; margin:36px auto 0; }
+    .conv-card { background:var(--bg3); border:1px solid var(--border); border-radius:14px; padding:20px; box-shadow:0 12px 32px rgba(0,0,0,0.18); }
+    .conv-header { display:flex; align-items:center; gap:12px; margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+    .conv-avatar { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+    .conv-name { font-size:14px; font-weight:800; color:var(--text); }
+    .conv-role { font-size:11px; color:var(--muted); margin-top:1px; }
+    .conv-context { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:14px; }
+    .conv-chip { font-size:10px; padding:4px 9px; background:var(--bg); border:1px solid var(--border); border-radius:12px; color:var(--gold); font-weight:600; white-space:nowrap; }
+    .conv-messages { display:flex; flex-direction:column; gap:10px; }
+    .conv-msg { font-size:13px; line-height:1.55; padding:10px 12px; border-radius:10px; }
+    .conv-msg.user { background:#1e293b; color:var(--text); align-self:flex-end; max-width:88%; }
+    .conv-msg.agent { background:var(--bg); border:1px solid var(--border); color:var(--text); }
+    .conv-footer-note { text-align:center; font-size:14px; color:var(--muted2); max-width:680px; margin:40px auto 0; line-height:1.6; }
+    .conv-footer-note strong { color:var(--gold); font-weight:700; }
     .steps { display:grid; grid-template-columns:repeat(3,1fr); gap:36px; position:relative; }
     .steps::before { content:''; position:absolute; top:36px; left:16%; right:16%; height:1px; background:linear-gradient(90deg,transparent,var(--border),var(--border),transparent); }
     .step { text-align:center; padding:0 12px; }
@@ -355,6 +372,7 @@
       .pricing-card.featured{transform:none}
       .steps{grid-template-columns:1fr;gap:28px}
       .steps::before{display:none}
+      .conv-grid{grid-template-columns:1fr !important; max-width:480px !important}
       .testi-grid{grid-template-columns:1fr}
       .footer-inner{grid-template-columns:1fr 1fr}
       .preview-side{display:none}
@@ -442,6 +460,16 @@
           <div class="pm-card" style="border-top:2px solid #6366f1"><div class="v" style="color:#6366f1">7.5h</div><div class="l" data-i18n="mockSleep">Sommeil</div></div>
           <div class="pm-card" style="border-top:2px solid #ef4444"><div class="v" style="color:#ef4444">72</div><div class="l" data-i18n="mockFitness">Fitness Score</div></div>
         </div>
+        <!-- v63.5.3 — Vue Avant/Après teaser (KF#3) -->
+        <div style="background:linear-gradient(135deg,#06b6d418,#10b98112);border:1px solid #06b6d430;border-radius:8px;padding:8px 10px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:8px">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:8px;font-weight:700;color:#06b6d4;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:2px" data-i18n="mockTransformLabel">Vue Avant / Après · 30 jours</div>
+            <div style="font-size:9px;color:#f1f5f9" data-i18n="mockTransformValue">Forme <strong style="color:#10b981">+12%</strong> · Régularité <strong style="color:#10b981">+18%</strong></div>
+          </div>
+          <div style="font-size:16px;flex-shrink:0">📊</div>
+        </div>
+        <!-- v63.5.3 — Team meeting hint (KF#2) -->
+        <div style="font-size:8px;font-weight:700;color:#a78bfa;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px" data-i18n="mockTeamMeeting">🤝 Réunion d'équipe · 3 agents répondent ensemble</div>
         <div style="font-size:9px;font-weight:700;color:#64748b;margin-bottom:7px;text-transform:uppercase;letter-spacing:1px" data-i18n="mock11Agents">Tes 11 Agents IA</div>
         <div class="pm-agents">
           <div class="pm-agent"><div class="i">💼</div><div class="n">Lucas · Manager</div></div>
@@ -465,7 +493,7 @@
       <div class="stat-item"><div class="stat-num gradient-text">11</div><div class="stat-label" data-i18n="stat1">Agents IA spécialisés</div></div>
       <div class="stat-item"><div class="stat-num gradient-text">24/7</div><div class="stat-label" data-i18n="stat2">Disponibilité totale</div></div>
       <div class="stat-item"><div class="stat-num gradient-text">Gratuit</div><div class="stat-label" data-i18n="stat3">Pour commencer dès maintenant</div></div>
-      <div class="stat-item"><div class="stat-num gradient-text">🇨🇭</div><div class="stat-label" data-i18n="stat4">100% adapté Suisse</div></div>
+      <div class="stat-item"><div class="stat-num" style="background:none;-webkit-text-fill-color:initial;color:var(--text)">🇨🇭</div><div class="stat-label" data-i18n="stat4">100% adapté Suisse</div></div>
     </div>
   </div>
 </section>
@@ -509,6 +537,72 @@
       <div class="step animate" style="animation-delay:.2s"><div class="step-num">2</div><h3 data-i18n="step2Title">Check-in en 30 secondes</h3><p data-i18n="step2Desc">Énergie, sommeil, motivation, douleurs : 4 curseurs et c'est plié. Plus tu en saisis, plus tes agents sont précis.</p></div>
       <div class="step animate" style="animation-delay:.3s"><div class="step-num">3</div><h3 data-i18n="step3Title">Reçois un conseil contextualisé</h3><p data-i18n="step3Desc">David, Julie ou Emma te répondent en sachant que tu as un match dans 48h, un RPE de 7.8 hier, et une douleur au mollet.</p></div>
     </div>
+  </div>
+</section>
+
+<!-- v63.5.3 — VRAIE CONVERSATION (3 dialogues contextualisés Lucas/David/Emma) -->
+<section class="conversation-section">
+  <div class="container">
+    <div class="section-header animate">
+      <span class="tag tag-gold" data-i18n="convTag">Vraie conversation</span>
+      <h2 data-i18n="convTitle">Pas un chatbot. Un conseiller qui te connaît.</h2>
+      <p data-i18n="convDesc">Tes agents lisent ton profil, ton calendrier et ton journal avant chaque réponse. Voici 3 vraies discussions.</p>
+    </div>
+    <div class="conv-grid">
+
+      <!-- Carte 1 : Lucas (Manager) -->
+      <div class="conv-card animate" style="animation-delay:.1s">
+        <div class="conv-header">
+          <div class="conv-avatar" style="background:#f59e0b25;color:#f59e0b">⚖️</div>
+          <div><div class="conv-name">Lucas</div><div class="conv-role" data-i18n="convLucasRole">Manager · Carrière & contrats</div></div>
+        </div>
+        <div class="conv-context">
+          <span class="conv-chip" data-i18n="convLucasChip1">FC Lausanne M19</span>
+          <span class="conv-chip" data-i18n="convLucasChip2">Fin contrat juin</span>
+          <span class="conv-chip" data-i18n="convLucasChip3">Offre Servette</span>
+        </div>
+        <div class="conv-messages">
+          <div class="conv-msg user" data-i18n="convLucasUser">Servette me propose un contrat 2 ans. Je signe ?</div>
+          <div class="conv-msg agent" data-i18n="convLucasAgent">Avant de signer : 3 points. 1) Ton temps de jeu projeté (M21 ou première ?). 2) Le projet sportif (entraîneur, joueurs à ton poste). 3) La clause de libération. À ton âge, jouer 1500min en M21 vaut mieux que rester sur le banc en pro. On regarde le détail ?</div>
+        </div>
+      </div>
+
+      <!-- Carte 2 : David (Physique) -->
+      <div class="conv-card animate" style="animation-delay:.2s">
+        <div class="conv-header">
+          <div class="conv-avatar" style="background:#ef444425;color:#ef4444">🏋️</div>
+          <div><div class="conv-name">David</div><div class="conv-role" data-i18n="convDavidRole">Prépa physique · Performance</div></div>
+        </div>
+        <div class="conv-context">
+          <span class="conv-chip" data-i18n="convDavidChip1">Match dim 14h</span>
+          <span class="conv-chip" data-i18n="convDavidChip2">RPE 7.8 hier</span>
+          <span class="conv-chip" data-i18n="convDavidChip3">Mollet sensible</span>
+        </div>
+        <div class="conv-messages">
+          <div class="conv-msg user" data-i18n="convDavidUser">Je fais une grosse séance demain ou pas ?</div>
+          <div class="conv-msg agent" data-i18n="convDavidAgent">Non. RPE 7.8 hier + mollet sensible + match à J-3 : on est en zone de fatigue accumulée. Demain : mobilité 30min + activation glutes/ischios + 15min de touches techniques à intensité légère. Jeudi on remet une séance intense si le mollet est à 0/10. Priorité : être frais dimanche.</div>
+        </div>
+      </div>
+
+      <!-- Carte 3 : Emma (Mental) -->
+      <div class="conv-card animate" style="animation-delay:.3s">
+        <div class="conv-header">
+          <div class="conv-avatar" style="background:#06b6d425;color:#06b6d4">🧠</div>
+          <div><div class="conv-name">Emma</div><div class="conv-role" data-i18n="convEmmaRole">Prépa mentale · Stress & confiance</div></div>
+        </div>
+        <div class="conv-context">
+          <span class="conv-chip" data-i18n="convEmmaChip1">Sommeil 5h30</span>
+          <span class="conv-chip" data-i18n="convEmmaChip2">Compét samedi</span>
+          <span class="conv-chip" data-i18n="convEmmaChip3">Stress 8/10</span>
+        </div>
+        <div class="conv-messages">
+          <div class="conv-msg user" data-i18n="convEmmaUser">Je dors mal depuis 4 nuits. J'angoisse pour samedi.</div>
+          <div class="conv-msg agent" data-i18n="convEmmaAgent">4 nuits à 5h30 c'est un signal — ton corps te dit que la pression monte. Ce soir : routine 21h (pas d'écran 30min avant, respiration 4-7-8). Cible le stress, pas le sommeil. Et si tu sens que ça déborde au-delà du sport, La Main Tendue 143 est anonyme et gratuit, 24/7. On en parle demain ?</div>
+        </div>
+      </div>
+
+    </div>
+    <p class="conv-footer-note animate" style="animation-delay:.4s" data-i18n="convFooter">Pas de réponses génériques. Tes agents <strong>connaissent ton contexte</strong> avant de te répondre.</p>
   </div>
 </section>
 
@@ -641,7 +735,7 @@
     </div>
     <div class="footer-col"><h4 data-i18n="footerProduct">Produit</h4><a href="#agents" data-i18n="footerLinkAgents">Agents IA</a><a href="#tarifs" data-i18n="footerLinkPricing">Tarifs</a><a href="login.html" data-i18n="footerLinkLogin">Connexion</a></div>
     <div class="footer-col"><h4 data-i18n="footerLegal">Légal</h4><a href="terms_fr.html" data-legal-section="terms" data-i18n="footerLinkTos">CGU</a><a href="privacy_fr.html" data-legal-section="privacy" data-i18n="footerLinkPrivacy">Confidentialité</a><a href="legal_fr.html" data-legal-section="legal" data-i18n="footerLinkLegal">Mentions légales</a></div>
-    <div class="footer-col"><h4 data-i18n="footerContact">Contact</h4><a href="mailto:info@sportvise.ch">info@sportvise.ch</a><a href="#">Instagram</a><a href="#">LinkedIn</a></div>
+    <div class="footer-col"><h4 data-i18n="footerContact">Contact</h4><a href="mailto:info@sportvise.ch">info@sportvise.ch</a><a href="https://www.instagram.com/sportvise.ch/" target="_blank" rel="noopener noreferrer">Instagram</a><a href="https://www.linkedin.com/in/sportvise-ch-a8183b40a/" target="_blank" rel="noopener noreferrer">LinkedIn</a></div>
   </div>
   <div class="footer-bottom">
     <span data-i18n="footerCopyright">© 2026 SPORTVISE · Suisse 🇨🇭</span>
@@ -708,6 +802,14 @@
       step1Title:"Connecte ton sport", step1Desc:"Strava, ton calendrier d\u2019entra\u00eenements, ton journal et ton RPE. Tes agents lisent tout \u00e7a avant chaque r\u00e9ponse.",
       step2Title:"Check-in en 30 secondes", step2Desc:"\u00c9nergie, sommeil, motivation, douleurs : 4 curseurs et c\u2019est pli\u00e9. Plus tu en saisis, plus tes agents sont pr\u00e9cis.",
       step3Title:"Re\u00e7ois un conseil contextualis\u00e9", step3Desc:"David, Julie ou Emma te r\u00e9pondent en sachant que tu as un match dans 48h, un RPE de 7.8 hier, et une douleur au mollet.",
+      convTag:"Vraie conversation", convTitle:"Pas un chatbot. Un conseiller qui te conna\u00eet.", convDesc:"Tes agents lisent ton profil, ton calendrier et ton journal avant chaque r\u00e9ponse. Voici 3 vraies discussions.",
+      convLucasRole:"Manager \u00b7 Carri\u00e8re & contrats", convLucasChip1:"FC Lausanne M19", convLucasChip2:"Fin contrat juin", convLucasChip3:"Offre Servette",
+      convLucasUser:"Servette me propose un contrat 2 ans. Je signe ?", convLucasAgent:"Avant de signer : 3 points. 1) Ton temps de jeu projet\u00e9 (M21 ou premi\u00e8re ?). 2) Le projet sportif (entra\u00eeneur, joueurs \u00e0 ton poste). 3) La clause de lib\u00e9ration. \u00c0 ton \u00e2ge, jouer 1500min en M21 vaut mieux que rester sur le banc en pro. On regarde le d\u00e9tail ?",
+      convDavidRole:"Pr\u00e9pa physique \u00b7 Performance", convDavidChip1:"Match dim 14h", convDavidChip2:"RPE 7.8 hier", convDavidChip3:"Mollet sensible",
+      convDavidUser:"Je fais une grosse s\u00e9ance demain ou pas ?", convDavidAgent:"Non. RPE 7.8 hier + mollet sensible + match \u00e0 J-3 : on est en zone de fatigue accumul\u00e9e. Demain : mobilit\u00e9 30min + activation glutes/ischios + 15min de touches techniques \u00e0 intensit\u00e9 l\u00e9g\u00e8re. Jeudi on remet une s\u00e9ance intense si le mollet est \u00e0 0/10. Priorit\u00e9 : \u00eatre frais dimanche.",
+      convEmmaRole:"Pr\u00e9pa mentale \u00b7 Stress & confiance", convEmmaChip1:"Sommeil 5h30", convEmmaChip2:"Comp\u00e9t samedi", convEmmaChip3:"Stress 8/10",
+      convEmmaUser:"Je dors mal depuis 4 nuits. J\u2019angoisse pour samedi.", convEmmaAgent:"4 nuits \u00e0 5h30 c\u2019est un signal \u2014 ton corps te dit que la pression monte. Ce soir : routine 21h (pas d\u2019\u00e9cran 30min avant, respiration 4-7-8). Cible le stress, pas le sommeil. Et si tu sens que \u00e7a d\u00e9borde au-del\u00e0 du sport, La Main Tendue 143 est anonyme et gratuit, 24/7. On en parle demain ?",
+      convFooter:"Pas de r\u00e9ponses g\u00e9n\u00e9riques. Tes agents <strong>connaissent ton contexte</strong> avant de te r\u00e9pondre.",
       pricingTag:"Tarifs transparents", pricingTitle:"Un investissement,<br/>une carri\u00e8re boost\u00e9e", pricingDesc:"R\u00e9siliez \u00e0 tout moment. Remboursement garanti 30 jours.",
       moneyBackTitle:"30 jours satisfait ou rembours\u00e9", moneyBackDesc:"Essayez SPORTVISE Plus ou Pro sans risque. Si vous n\u2019\u00eates pas convaincu, on rembourse votre premier mois \u2014 sans question.",
       testiTag:"T\u00e9moignages", testiTitle:"Ce qu\u2019ils disent de SPORTVISE",
@@ -720,6 +822,9 @@
       mockStreakBadges:"· 🔥 Streak : 7 jours · ⭐ 3 badges",
       mockMood:"Humeur", mockEnergy:"Énergie", mockSleep:"Sommeil", mockFitness:"Fitness Score",
       mock11Agents:"Tes 11 Agents IA",
+      mockTransformLabel:"Vue Avant / Après · 30 jours",
+      mockTransformValue:'Forme <strong style="color:#10b981">+12%</strong> · Régularité <strong style="color:#10b981">+18%</strong>',
+      mockTeamMeeting:"🤝 Réunion d'équipe · 3 agents répondent ensemble",
       agentLucasRole:"Manager Sportif",
       agentLucasDesc:"Gestion de carrière, recherche de clubs, transferts et stratégie de développement.",
       agentAlexRole:"Marketing & Visibilité",
@@ -799,6 +904,14 @@
       step1Title:"Verbinde deinen Sport", step1Desc:"Strava, dein Trainingskalender, dein Tagebuch und dein RPE. Deine Agenten lesen alles vor jeder Antwort.",
       step2Title:"Check-in in 30 Sekunden", step2Desc:"Energie, Schlaf, Motivation, Schmerzen: 4 Schieberegler und fertig. Je mehr du erfasst, desto präziser werden deine Agenten.",
       step3Title:"Erhalte einen kontextbezogenen Rat", step3Desc:"David, Julie oder Emma antworten dir mit dem Wissen, dass du in 48h ein Spiel hast, gestern RPE 7.8 warst und Wadenschmerzen hast.",
+      convTag:"Echtes Gespräch", convTitle:"Kein Chatbot. Ein Berater, der dich kennt.", convDesc:"Deine Agenten lesen dein Profil, deinen Kalender und dein Tagebuch vor jeder Antwort. Hier sind 3 echte Gespräche.",
+      convLucasRole:"Manager · Karriere & Verträge", convLucasChip1:"FC Lausanne U19", convLucasChip2:"Vertrag endet Juni", convLucasChip3:"Angebot Servette",
+      convLucasUser:"Servette bietet mir einen 2-Jahres-Vertrag. Soll ich unterschreiben?", convLucasAgent:"Vor der Unterschrift: 3 Punkte. 1) Deine projizierte Spielzeit (U21 oder erste Mannschaft?). 2) Das sportliche Projekt (Trainer, Spieler auf deiner Position). 3) Die Ausstiegsklausel. In deinem Alter sind 1500min in der U21 mehr wert als auf der Profi-Bank zu sitzen. Schauen wir uns die Details an?",
+      convDavidRole:"Athletiktraining · Performance", convDavidChip1:"Spiel So 14h", convDavidChip2:"RPE 7.8 gestern", convDavidChip3:"Wade empfindlich",
+      convDavidUser:"Soll ich morgen eine intensive Einheit machen oder nicht?", convDavidAgent:"Nein. RPE 7.8 gestern + empfindliche Wade + Spiel in J-3: das ist akkumulierte Ermüdung. Morgen: Mobility 30min + Aktivierung Gluteus/Ischio + 15min lockere Technik. Donnerstag wieder intensiv, wenn die Wade bei 0/10 ist. Priorität: am Sonntag frisch sein.",
+      convEmmaRole:"Mentaltraining · Stress & Selbstvertrauen", convEmmaChip1:"Schlaf 5h30", convEmmaChip2:"Wettkampf Samstag", convEmmaChip3:"Stress 8/10",
+      convEmmaUser:"Ich schlafe seit 4 Nächten schlecht. Ich habe Angst vor Samstag.", convEmmaAgent:"4 Nächte mit 5h30 ist ein Signal — dein Körper sagt dir, dass der Druck steigt. Heute Abend: Routine 21h (kein Bildschirm 30min vorher, 4-7-8-Atmung). Ziel ist der Stress, nicht der Schlaf. Und wenn es über den Sport hinaus zu viel wird: Die Dargebotene Hand 143 ist anonym und kostenlos, 24/7. Sprechen wir morgen darüber?",
+      convFooter:"Keine generischen Antworten. Deine Agenten <strong>kennen deinen Kontext</strong>, bevor sie dir antworten.",
       pricingTag:"Transparente Preise", pricingTitle:"Eine Investition,<br/>eine gest\u00e4rkte Karriere", pricingDesc:"Jederzeit k\u00fcndbar. 30-Tage-Geld-zur\u00fcck-Garantie.",
       moneyBackTitle:"30 Tage Geld-zur\u00fcck-Garantie", moneyBackDesc:"Probieren Sie SPORTVISE Plus oder Pro risikofrei aus. Sind Sie nicht \u00fcberzeugt, erstatten wir Ihren ersten Monat \u2014 ohne Wenn und Aber.",
       testiTag:"Erfahrungsberichte", testiTitle:"Was sie \u00fcber SPORTVISE sagen",
@@ -811,6 +924,9 @@
       mockStreakBadges:"· 🔥 Streak: 7 Tage · ⭐ 3 Badges",
       mockMood:"Stimmung", mockEnergy:"Energie", mockSleep:"Schlaf", mockFitness:"Fitness Score",
       mock11Agents:"Deine 11 KI-Agenten",
+      mockTransformLabel:"Vorher / Nachher · 30 Tage",
+      mockTransformValue:'Form <strong style="color:#10b981">+12%</strong> · Regelmässigkeit <strong style="color:#10b981">+18%</strong>',
+      mockTeamMeeting:"🤝 Team-Meeting · 3 Agenten antworten gemeinsam",
       agentLucasRole:"Sportmanager",
       agentLucasDesc:"Karrieremanagement, Vereine suchen, Transfers und Entwicklungsstrategie.",
       agentAlexRole:"Marketing & Sichtbarkeit",
@@ -890,6 +1006,14 @@
       step1Title:"Connect your sport", step1Desc:"Strava, your training calendar, your journal and your RPE. Your agents read all of it before every reply.",
       step2Title:"Check in in 30 seconds", step2Desc:"Energy, sleep, motivation, pain: 4 sliders and you're done. The more you log, the sharper your agents get.",
       step3Title:"Get contextual advice", step3Desc:"David, Julie or Emma reply knowing you have a match in 48h, an RPE of 7.8 yesterday, and a calf strain.",
+      convTag:"Real conversation", convTitle:"Not a chatbot. An advisor who knows you.", convDesc:"Your agents read your profile, your calendar and your journal before every reply. Here are 3 real conversations.",
+      convLucasRole:"Manager · Career & contracts", convLucasChip1:"FC Lausanne U19", convLucasChip2:"Contract ends June", convLucasChip3:"Servette offer",
+      convLucasUser:"Servette offered me a 2-year contract. Should I sign?", convLucasAgent:"Before signing: 3 points. 1) Your projected playing time (U21 or first team?). 2) The sporting project (coach, players in your position). 3) The release clause. At your age, playing 1500min in U21 beats sitting on a pro bench. Shall we look at the details?",
+      convDavidRole:"Strength & conditioning · Performance", convDavidChip1:"Match Sun 2pm", convDavidChip2:"RPE 7.8 yesterday", convDavidChip3:"Sensitive calf",
+      convDavidUser:"Should I do a big session tomorrow or not?", convDavidAgent:"No. RPE 7.8 yesterday + sensitive calf + match in 3 days: we're in accumulated fatigue zone. Tomorrow: 30min mobility + glutes/hamstrings activation + 15min light technical touches. Thursday back to intense if the calf is at 0/10. Priority: be fresh on Sunday.",
+      convEmmaRole:"Mental coaching · Stress & confidence", convEmmaChip1:"Sleep 5h30", convEmmaChip2:"Competition Sat", convEmmaChip3:"Stress 8/10",
+      convEmmaUser:"I've been sleeping badly for 4 nights. I'm anxious about Saturday.", convEmmaAgent:"4 nights at 5h30 is a signal — your body is telling you the pressure is building. Tonight: 9pm routine (no screens 30min before, 4-7-8 breathing). Target the stress, not the sleep. And if it spills beyond sport, La Main Tendue 143 is anonymous and free, 24/7. Shall we talk tomorrow?",
+      convFooter:"No generic answers. Your agents <strong>know your context</strong> before they reply.",
       pricingTag:"Transparent pricing", pricingTitle:"An investment,<br/>a boosted career", pricingDesc:"Cancel anytime. 30-day money-back guarantee.",
       moneyBackTitle:"30-day money-back guarantee", moneyBackDesc:"Try SPORTVISE Plus or Pro risk-free. Not convinced? We refund your first month — no questions asked.",
       testiTag:"Testimonials", testiTitle:"What they say about SPORTVISE",
@@ -902,6 +1026,9 @@
       mockStreakBadges:"· 🔥 Streak: 7 days · ⭐ 3 badges",
       mockMood:"Mood", mockEnergy:"Energy", mockSleep:"Sleep", mockFitness:"Fitness Score",
       mock11Agents:"Your 11 AI Agents",
+      mockTransformLabel:"Before / After · 30 days",
+      mockTransformValue:'Form <strong style="color:#10b981">+12%</strong> · Consistency <strong style="color:#10b981">+18%</strong>',
+      mockTeamMeeting:"🤝 Team meeting · 3 agents reply together",
       agentLucasRole:"Sports Manager",
       agentLucasDesc:"Career management, club search, transfers and development strategy.",
       agentAlexRole:"Marketing & Visibility",
@@ -981,6 +1108,14 @@
       step1Title:"Collega il tuo sport", step1Desc:"Strava, il tuo calendario di allenamenti, il tuo diario e l'RPE. I tuoi agenti leggono tutto prima di ogni risposta.",
       step2Title:"Check-in in 30 secondi", step2Desc:"Energia, sonno, motivazione, dolori: 4 cursori e fatto. Pi\u00f9 registri, pi\u00f9 precisi diventano i tuoi agenti.",
       step3Title:"Ricevi un consiglio contestualizzato", step3Desc:"David, Julie o Emma ti rispondono sapendo che hai una partita tra 48h, un RPE di 7.8 ieri e un dolore al polpaccio.",
+      convTag:"Vera conversazione", convTitle:"Non un chatbot. Un consulente che ti conosce.", convDesc:"I tuoi agenti leggono il tuo profilo, il tuo calendario e il tuo diario prima di ogni risposta. Ecco 3 vere conversazioni.",
+      convLucasRole:"Manager · Carriera & contratti", convLucasChip1:"FC Lausanne U19", convLucasChip2:"Contratto a giugno", convLucasChip3:"Offerta Servette",
+      convLucasUser:"Servette mi offre un contratto di 2 anni. Firmo?", convLucasAgent:"Prima di firmare: 3 punti. 1) Il tuo minutaggio previsto (U21 o prima squadra?). 2) Il progetto sportivo (allenatore, giocatori nel tuo ruolo). 3) La clausola di risoluzione. Alla tua età, giocare 1500min in U21 vale più che restare in panchina tra i pro. Vediamo i dettagli?",
+      convDavidRole:"Preparazione fisica · Performance", convDavidChip1:"Partita Dom 14h", convDavidChip2:"RPE 7.8 ieri", convDavidChip3:"Polpaccio sensibile",
+      convDavidUser:"Faccio una seduta intensa domani o no?", convDavidAgent:"No. RPE 7.8 ieri + polpaccio sensibile + partita a J-3: siamo in zona di fatica accumulata. Domani: mobilità 30min + attivazione glutei/ischiocrurali + 15min di tecnica leggera. Giovedì riprendiamo intenso se il polpaccio è a 0/10. Priorità: arrivare freschi domenica.",
+      convEmmaRole:"Preparazione mentale · Stress & fiducia", convEmmaChip1:"Sonno 5h30", convEmmaChip2:"Gara sabato", convEmmaChip3:"Stress 8/10",
+      convEmmaUser:"Dormo male da 4 notti. Sono in ansia per sabato.", convEmmaAgent:"4 notti a 5h30 è un segnale — il tuo corpo ti dice che la pressione sale. Stasera: routine 21h (niente schermi 30min prima, respirazione 4-7-8). Punta allo stress, non al sonno. E se senti che va oltre lo sport, La Main Tendue 143 è anonimo e gratuito, 24/7. Ne parliamo domani?",
+      convFooter:"Niente risposte generiche. I tuoi agenti <strong>conoscono il tuo contesto</strong> prima di rispondere.",
       pricingTag:"Prezzi trasparenti", pricingTitle:"Un investimento,<br/>una carriera potenziata", pricingDesc:"Cancella in qualsiasi momento. Garanzia di rimborso 30 giorni.",
       moneyBackTitle:"Garanzia di rimborso 30 giorni", moneyBackDesc:"Prova SPORTVISE Plus o Pro senza rischi. Se non sei convinto, ti rimborsiamo il primo mese — senza fare domande.",
       testiTag:"Testimonianze", testiTitle:"Cosa dicono di SPORTVISE",
@@ -993,6 +1128,9 @@
       mockStreakBadges:"· 🔥 Streak: 7 giorni · ⭐ 3 badge",
       mockMood:"Umore", mockEnergy:"Energia", mockSleep:"Sonno", mockFitness:"Fitness Score",
       mock11Agents:"I tuoi 11 Agenti IA",
+      mockTransformLabel:"Prima / Dopo · 30 giorni",
+      mockTransformValue:'Forma <strong style="color:#10b981">+12%</strong> · Regolarità <strong style="color:#10b981">+18%</strong>',
+      mockTeamMeeting:"🤝 Riunione di squadra · 3 agenti rispondono insieme",
       agentLucasRole:"Manager Sportivo",
       agentLucasDesc:"Gestione carriera, ricerca club, trasferimenti e strategia di sviluppo.",
       agentAlexRole:"Marketing & Visibilità",

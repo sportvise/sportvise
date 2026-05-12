@@ -264,9 +264,13 @@ exports.handler = async (event) => {
 
   if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' };
   if (event.httpMethod !== 'POST') return { statusCode: 405, headers, body: '' };
+  // v63.5.3 — Robustesse : retourner 400 propre au lieu de crash 500 si body manquant/invalide
+  if (!event.body) return { statusCode: 400, headers, body: JSON.stringify({ error: 'body_required' }) };
 
   try {
-    const { name, email, sport, lang } = JSON.parse(event.body);
+    let parsed;
+    try { parsed = JSON.parse(event.body); } catch (_) { return { statusCode: 400, headers, body: JSON.stringify({ error: 'invalid_json' }) }; }
+    const { name, email, sport, lang } = parsed;
     const apiKey = process.env.RESEND_API_KEY;
 
     if (!apiKey) return { statusCode: 500, headers, body: JSON.stringify({ error: 'Resend API key missing' }) };

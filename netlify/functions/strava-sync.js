@@ -11,9 +11,13 @@ exports.handler = async (event) => {
 
   if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' };
   if (event.httpMethod !== 'POST') return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
+  // v63.5.3 — body validation
+  if (!event.body) return { statusCode: 400, headers, body: JSON.stringify({ error: 'body_required' }) };
 
   try {
-    const { access_token, after, per_page } = JSON.parse(event.body);
+    let parsed;
+    try { parsed = JSON.parse(event.body); } catch (_) { return { statusCode: 400, headers, body: JSON.stringify({ error: 'invalid_json' }) }; }
+    const { access_token, after, per_page } = parsed;
     if (!access_token) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing access_token' }) };
 
     // Default: last 30 days of activities (v62.20 — étendu de 14 → 30j pour couvrir
