@@ -68,13 +68,17 @@ exports.handler = async (event) => {
 
   if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' };
   if (event.httpMethod !== 'POST') return { statusCode: 405, headers, body: 'Method not allowed' };
+  // v63.5.3 — body validation
+  if (!event.body) return { statusCode: 400, headers, body: JSON.stringify({ error: 'body_required' }) };
 
   if (!STRIPE_SECRET_KEY) {
     return { statusCode: 500, headers, body: JSON.stringify({ error: 'Stripe not configured' }) };
   }
 
   try {
-    const { email } = JSON.parse(event.body);
+    let parsed;
+    try { parsed = JSON.parse(event.body); } catch (_) { return { statusCode: 400, headers, body: JSON.stringify({ error: 'invalid_json' }) }; }
+    const { email } = parsed;
 
     if (!email) {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Email required' }) };

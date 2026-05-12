@@ -101,8 +101,12 @@ exports.handler = async (event) => {
 
   // ── POST: Refresh an expired token ─────────────────
   if (event.httpMethod === 'POST') {
+    // v63.5.3 — body validation
+    if (!event.body) return { statusCode: 400, headers, body: JSON.stringify({ error: 'body_required' }) };
     try {
-      const { refresh_token } = JSON.parse(event.body);
+      let parsed;
+      try { parsed = JSON.parse(event.body); } catch (_) { return { statusCode: 400, headers, body: JSON.stringify({ error: 'invalid_json' }) }; }
+      const { refresh_token } = parsed;
       if (!refresh_token) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing refresh_token' }) };
 
       const tokenRes = await fetch('https://www.strava.com/oauth/token', {
