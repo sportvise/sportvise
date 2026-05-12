@@ -3075,6 +3075,7 @@ async function renderChat(page) {
           </button>
         </div>
       </div>
+      ${renderMemoryCardLite(page, agent)}
       <div class="ai-disclaimer" style="padding:6px 16px;background:${agent.color}08;border-bottom:1px solid ${agent.color}15;display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted);line-height:1.3">
         <span style="font-size:12px">ℹ️</span>
         <span>${(t.agentDisclaimer || '{name} est un assistant IA. Ses conseils ne remplacent pas l\'avis d\'un professionnel qualifié (médecin, avocat, comptable).').replace('{name}', agent.name)} <a href="#" onclick="event.preventDefault();showDisclaimer()" style="color:${agent.color};text-decoration:underline;font-weight:600">${t.agentDisclaimerLink || 'En savoir plus'}</a></span>
@@ -3092,6 +3093,88 @@ async function renderChat(page) {
     </div>
   `;
   scrollChat();
+}
+
+// ── v63.5.5 — MEMORY CARD ULTRA-LIGHT (Levier #1 Phase 0) ──────────
+// Affiche un encart compact "Ce que [agent] sait de toi" entre chat-header
+// et ai-disclaimer dans renderChat. Lit UNIQUEMENT userProfile (déjà chargé
+// au login, L1257). Aucun fetch DB, aucun appel async, aucun nouveau global
+// — zéro risque de régression sur le chemin critique de renderChat.
+//
+// Si userProfile.sport absent → fonction retourne '' (encart caché, comportement
+// identique à pre-v63.5.5).
+//
+// Réutilise les helpers existants de i18n-helpers.js : sportLabel, sportIcon,
+// levelLabel, cantonLabel (concat au build, donc disponibles globalement).
+// Fallback défensif via typeof === 'function' au cas où l'ordre de concat
+// changerait.
+//
+// Click sur l'encart → showPage('profile') pour permettre à l'utilisateur
+// de corriger/compléter ce que SPORTVISE sait de lui.
+//
+// v63.6+ enrichira avec : last event, last daily_log, last subject, goals
+// (cf. SPEC_v636_memoire_visible.md). v63.5.5 = MVP pre-launch, 2-4 tags max.
+function renderMemoryCardLite(page, agent) {
+  // Guard : pas de profil ou pas de sport → pas d'encart (utilisateur tout neuf)
+  if (!userProfile || !userProfile.sport) return '';
+
+  const t = T[currentLang] || T.fr;
+
+  // Build tags from userProfile only (no async fetches)
+  const tags = [];
+
+  // Tag 1 — Sport (toujours présent si on est dans cette branche)
+  const sportEm   = (typeof sportIcon  === 'function') ? sportIcon(userProfile.sport)            : '🏆';
+  const sportName = (typeof sportLabel === 'function') ? sportLabel(userProfile.sport, currentLang) : userProfile.sport;
+  tags.push({ icon: sportEm, label: sportName });
+
+  // Tag 2 — Niveau (si renseigné)
+  if (userProfile.level) {
+    const lvlName = (typeof levelLabel === 'function') ? levelLabel(userProfile.level, currentLang) : userProfile.level;
+    tags.push({ icon: '🎯', label: lvlName });
+  }
+
+  // Tag 3 — Canton (si renseigné)
+  if (userProfile.canton) {
+    const cName = (typeof cantonLabel === 'function') ? cantonLabel(userProfile.canton, currentLang) : userProfile.canton;
+    tags.push({ icon: '📍', label: cName });
+  }
+
+  // Tag 4 — Club (si renseigné, text libre)
+  if (userProfile.club && typeof userProfile.club === 'string' && userProfile.club.trim().length > 0) {
+    tags.push({ icon: '🏟️', label: userProfile.club.trim().slice(0, 40) });
+  }
+
+  // Tag 5 — Position (si renseignée, text libre, agents performance/equipe surtout)
+  if (userProfile.position && typeof userProfile.position === 'string' && userProfile.position.trim().length > 0) {
+    tags.push({ icon: '🧭', label: userProfile.position.trim().slice(0, 40) });
+  }
+
+  const title = (t.memoryCardTitle || 'Ce que {name} sait de toi').replace('{name}', agent.name);
+  const editLabel = t.memoryCardEdit || 'Éditer';
+
+  return `
+    <div class="memory-card-lite" onclick="showPage('profile')"
+         style="margin:8px 16px 0;padding:8px 12px;background:linear-gradient(135deg,${agent.color}10,${agent.color}04);border:1px solid ${agent.color}25;border-radius:10px;cursor:pointer;transition:border-color 0.2s"
+         onmouseover="this.style.borderColor='${agent.color}55'"
+         onmouseout="this.style.borderColor='${agent.color}25'">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+        <div style="font-size:10px;font-weight:800;color:${agent.color};text-transform:uppercase;letter-spacing:0.5px">
+          📌 ${escapeHtml(title)}
+        </div>
+        <div style="font-size:10px;color:var(--muted2);font-weight:600">
+          ${escapeHtml(editLabel)} →
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px">
+        ${tags.map(tag => `
+          <span style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;background:${agent.color}15;border:1px solid ${agent.color}25;border-radius:12px;font-size:11px;color:var(--text);font-weight:500;line-height:1.4">
+            <span aria-hidden="true">${tag.icon}</span><span>${escapeHtml(tag.label)}</span>
+          </span>
+        `).join('')}
+      </div>
+    </div>
+  `;
 }
 
 function renderMessages(page, agent) {
