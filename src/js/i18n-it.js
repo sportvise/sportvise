@@ -198,6 +198,8 @@ var T_IT = {
   briefCalmDay:'Nessuna scadenza in vista', briefCalmDesc:'Goditi la giornata e avanza con serenità. Non dimenticare il diario stasera!',
   briefClose:'Tutto chiaro, grazie!', briefCloseCalm:'Buona giornata!',
   briefPrediction:'Intelligenza predittiva',
+  // v63.5.5 — Memory card ultra-light (Levier #1 Phase 0)
+  memoryCardTitle:'Cosa {name} sa di te', memoryCardEdit:'Modifica',
   briefEveningQ:'Com\'è andata la giornata,', briefMood:'Umore', briefEnergy:'Energia', briefSleep:'Sonno (scorsa notte)',
   briefSave:'Salva ✓', briefSaved:'Salvato!', briefFullJournal:'Diario completo →', briefFillJournal:'Compila il diario',
   briefEnrichedTitle:'Brief arricchito', briefEnrichedSubtitle:'In base a quanto mi hai appena detto:',
