@@ -200,6 +200,8 @@ var T_DE = {
   briefPrediction:'Prädiktive Intelligenz',
   // v63.5.5 — Memory card ultra-light (Levier #1 Phase 0)
   memoryCardTitle:'Was {name} über dich weiss', memoryCardEdit:'Bearbeiten',
+  // v63.5.8 — Brief conversation-driven Phase 0 (Levier #2)
+  briefOpenQuestions:'Gespräche fortsetzen', briefOpenQuestionAwaiting:'wartet auf deine Antworten', briefOpenQuestionResume:'Fortsetzen',
   briefEveningQ:'Wie war dein Tag,', briefMood:'Stimmung', briefEnergy:'Energie', briefSleep:'Schlaf (letzte Nacht)',
   briefSave:'Speichern ✓', briefSaved:'Gespeichert!', briefFullJournal:'Volles Tagebuch →', briefFillJournal:'Tagebuch ausfüllen',
   briefEnrichedTitle:'Aktualisiertes Briefing', briefEnrichedSubtitle:'Basierend auf Deinen frischen Daten:',
