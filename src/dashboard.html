@@ -7198,6 +7198,47 @@ async function showMorningBrief(forceShow = false) {
       return;
     }
 
+    // v63.5.8 — OPEN QUESTIONS DETECTION (Levier #2 Phase 0, "brief conversation-driven")
+    // Identifie les agents dont la dernière réponse contenait une question ouverte
+    // (texte avec '?') ET dont l'utilisateur n'a pas répliqué depuis. Fenêtre 7 jours.
+    // 100% client-side : 1 fetch supabase wrapped en try/catch → si échoue, le brief
+    // reste fonctionnel (block caché). Cap 3 cards, plus récent en premier.
+    // Phase 0 = label générique "attend tes réponses" (pas de snippet exact).
+    // Phase 1 (v63.7+) enrichira avec snippet + signal d'inactivité + backend push.
+    let openQuestions = [];
+    try {
+      const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+      const { data: oqMsgs, error: oqErr } = await sb.from('messages')
+        .select('agent_id, role, content, created_at')
+        .eq('user_id', currentUser.id)
+        .gte('created_at', sevenDaysAgo)
+        .order('created_at', { ascending: false })
+        .limit(80);
+      if (oqErr) console.warn('[BRIEF] open questions fetch error', oqErr);
+      if (oqMsgs && oqMsgs.length > 0) {
+        const lastAgentMsgByAgent = {};
+        const lastUserMsgByAgent = {};
+        oqMsgs.forEach(m => {
+          if (m.role === 'agent' && !lastAgentMsgByAgent[m.agent_id]) lastAgentMsgByAgent[m.agent_id] = m;
+          if (m.role === 'user' && !lastUserMsgByAgent[m.agent_id]) lastUserMsgByAgent[m.agent_id] = m;
+        });
+        const candidates = [];
+        for (const [agentId, agentMsg] of Object.entries(lastAgentMsgByAgent)) {
+          // Heuristique simple : dernière réponse agent contient un '?' ET pas de réponse user postérieure.
+          if (!agentMsg.content || !/\?/.test(agentMsg.content)) continue;
+          const userMsg = lastUserMsgByAgent[agentId];
+          if (userMsg && new Date(userMsg.created_at) > new Date(agentMsg.created_at)) continue;
+          candidates.push({ agent_id: agentId, ts: agentMsg.created_at });
+        }
+        candidates.sort((a, b) => new Date(b.ts) - new Date(a.ts));
+        openQuestions = candidates.slice(0, 3);
+      }
+      console.log('[BRIEF] open questions detected:', openQuestions.length);
+    } catch (oqErr) {
+      console.warn('[BRIEF] open questions exception:', oqErr);
+      openQuestions = [];
+    }
+
     // Build agent suggestions based on events + state
     const suggestions = [];
     const agentInfo = {
@@ -7340,6 +7381,25 @@ async function showMorningBrief(forceShow = false) {
       </div>`;
     }).join('') : '';
 
+    // v63.5.8 — Build open questions HTML (Levier #2 Phase 0)
+    // Cards "Reprendre la conversation avec [agent]" en haut de la modal.
+    // Click → close brief + showPage(agentId). Réutilise agentInfo défini plus haut.
+    const openQuestionsHTML = openQuestions.length > 0 ? openQuestions.map(oq => {
+      const ag = agentInfo[oq.agent_id];
+      if (!ag) return '';
+      return `
+        <button onclick="this.style.background='${ag.color}30';this.style.border='1px solid ${ag.color}';this.querySelector('.brief-arrow').textContent='✓';setTimeout(function(){closeMorningBrief();showPage('${oq.agent_id}',null)},300)" style="display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border-radius:12px;border:1px solid ${ag.color}40;background:${ag.color}10;cursor:pointer;transition:all 0.2s;font-family:'Inter',sans-serif;text-align:left" onmouseover="this.style.background='${ag.color}20'" onmouseout="this.style.background='${ag.color}10'">
+          <div style="width:40px;height:40px;border-radius:12px;background:${ag.color}25;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${ag.emoji}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:700;color:var(--text)">${escapeHtml(ag.name)} ${escapeHtml(t.briefOpenQuestionAwaiting||'attend tes réponses')}</div>
+            <div style="font-size:11px;color:var(--muted);line-height:1.4">${escapeHtml(t.briefOpenQuestionResume||'Reprendre')} →</div>
+          </div>
+          <div class="brief-arrow" style="color:${ag.color};font-size:16px;flex-shrink:0;transition:all 0.2s">→</div>
+        </button>
+      `;
+    }).join('') : '';
+    const hasOpenQuestions = openQuestions.length > 0;
+
     // Build suggestions HTML
     const suggestionsHTML = topSuggestions.map(s => `
       <button onclick="this.style.background='${s.color}30';this.style.border='1px solid ${s.color}';this.querySelector('.brief-arrow').textContent='✓';var b=this;setTimeout(function(){closeMorningBrief();showPage('${s.page}',null)},300)" style="display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border-radius:12px;border:1px solid ${s.color}25;background:${s.color}08;cursor:pointer;transition:all 0.2s;font-family:'Inter',sans-serif;text-align:left" onmouseover="this.style.background='${s.color}15';this.style.transform='translateY(-1px)'" onmouseout="this.style.background='${s.color}08';this.style.transform='none'">
@@ -7371,6 +7431,16 @@ async function showMorningBrief(forceShow = false) {
         </div>
 
         ${predictionHTML}
+
+        ${hasOpenQuestions ? `
+          <!-- v63.5.8 — Open questions section (Levier #2 Phase 0) -->
+          <div style="margin-bottom:20px">
+            <div style="font-size:12px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">💬 ${t.briefOpenQuestions||'Conversations à reprendre'}</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              ${openQuestionsHTML}
+            </div>
+          </div>
+        ` : ''}
 
         ${hasEvents ? `
           <!-- Events section -->
