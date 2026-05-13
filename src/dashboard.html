@@ -2429,6 +2429,15 @@ async function showPage(page, el) {
       renderChat(page);
     }
   }
+
+  // v63.5.9 — Hide team meeting FAB on chat agent pages (bug rapporté self-test
+  // mobile 13/05) : le FAB position:fixed bottom-right chevauche le bouton
+  // 'Envoyer' du chat input. La réunion d'équipe reste accessible via la sidebar
+  // ('Réunion d'équipe' nav item). FAB visible sur dashboard + autres pages.
+  try {
+    const fab = document.getElementById('teamMeetingFab');
+    if (fab) fab.style.display = agent ? 'none' : 'flex';
+  } catch(_) {}
   } catch(err) {
     console.error('showPage error:', err);
     var mc = document.getElementById('mainContent');
@@ -3245,7 +3254,122 @@ function renderMemoryCardLite(page, agent) {
   `;
 }
 
+// ── v63.5.10 — CROSS-AGENT ROUTING ULTRA-LIGHT (Levier #3 Phase 0) ──────
+// Heuristique simple basée sur des mots-clés FR (+ quelques DE/EN évidents).
+// Analyse le contenu d'un message agent et retourne 0-2 agent_id pertinents
+// pour un cross-routing visuel. Phase A (v63.8) remplacera par un tag Claude
+// `<relevant_agents>` injecté côté system prompt — meilleure accuracy multi-
+// langue. v63.5.10 = MVP zero-risk frontend pour valider le pattern auprès
+// des premiers testeurs du soft launch dimanche 17/05.
+//
+// Limitations connues acceptées en Phase 0 :
+//  - Détection bruyante en DE/EN/IT (keywords mostly FR)
+//  - Faux positifs sur questions rhétoriques ("Tu sais comment dormir ?")
+//  - Pas de pondération sémantique (juste comptage de keywords)
+//
+// Mais : 100% frontend, échec silencieux (0 match → rien affiché), 0 backend
+// touch, 0 coût Claude, désactivable instantanément en supprimant l'appel
+// dans renderMessages.
+const ROUTING_KEYWORDS = {
+  physique: ['douleur','blessure','muscle','genou','dos','cheville','épaule','entorse','tendinite','endurance','vitesse','force','course','sprint','musculation','prépa physique','préparation physique','athlétique','technique','match','matchs','schmerz','pain','injury','muscle','training'],
+  mental: ['stress','anxiété','pression','focus','concentration','confiance','motivation','peur','mental','méditation','visualisation','émotion','colère','frustration','découragé','découragement','angoisse','burnout'],
+  nutrition: ['repas','alimentation','protéine','glucide','hydratation','poids','régime','calorie','vitamine','nutriment','manger','boire','avant match','après match','supplément','créatine','whey','récup nutritionnelle','ernährung','meal','diet'],
+  sommeil: ['sommeil','dormir','insomnie','réveil','sieste','récupération nocturne','rythme circadien','jetlag','nuit','heures de sommeil','schlaf','sleep'],
+  recuperation: ['récup','récupération','massage','étirement','foam roller','cryothérapie','bain froid','sauna','électrostim','jour off','jour de repos','repos','régénération','active rest','regeneration','recovery'],
+  equipe: ['carrière','club','transfert','LNB','SFL','division','contrat club','essai','agent sportif','manager','progression','évolution','niveau visé','LNA','NLA','super league','challenge league'],
+  marketing: ['Instagram','TikTok','followers','visibilité','réseaux sociaux','sponsor digital','image','contenu','reels','stories','LinkedIn','community','personal branding','snapchat','youtube'],
+  sponsors: ['sponsor','partenariat','marque','collab','partenaire commercial','sponsoring','dotation','contrepartie','endorsement'],
+  contrats: ['contrat','clause','juridique','exclusivité','droits image','indemnité','licence','transferts','agent licencié','signature','résiliation','contract','legal','vertrag'],
+  finance: ['fiscalité','impôt','3a','3b','prévoyance','optimisation','déclaration','revenu','salaire net','LPP','AVS','impôts','steuer','tax'],
+  comptabilite: ['compta','facture','TVA','frais','déduction','indépendant','SARL','SA','tenue compte','bilan','facturer']
+};
+
+function getRelevantAgentsFromText(currentAgentId, text) {
+  if (!text || typeof text !== 'string' || text.length < 30) return [];
+  const lower = text.toLowerCase();
+  const scores = {};
+  for (const [agentId, words] of Object.entries(ROUTING_KEYWORDS)) {
+    if (agentId === currentAgentId) continue;
+    let s = 0;
+    for (const w of words) {
+      // Recherche stricte mot entier (boundaries) pour réduire les faux positifs.
+      // Ex : 'sa' ne match pas 'masser', 'pro' ne match pas 'protéine'.
+      // Pour les mots courts (<4 chars), on requiert le boundary à gauche ET droite.
+      const escaped = w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const re = w.length < 4
+        ? new RegExp('\\b' + escaped + '\\b', 'i')
+        : new RegExp(escaped, 'i');
+      if (re.test(lower)) s++;
+    }
+    if (s > 0) scores[agentId] = s;
+  }
+  return Object.entries(scores)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 2)
+    .map(([id]) => id);
+}
+
+// ── v63.5.10 — Cross-routing chips renderer (Levier #3 Phase 0) ──
+// Rendu d'un mini-bandeau "💡 Touche aussi à : [chip1] [chip2]" placé sous
+// le DERNIER message agent uniquement. Pas de double-render sur l'historique
+// (sinon spam visuel sur scroll vers le haut).
+const ROUTING_AGENT_INFO = {
+  physique:     { name:'David',  emoji:'🏋️', color:'#ef4444' },
+  mental:       { name:'Emma',   emoji:'🧠', color:'#06b6d4' },
+  nutrition:    { name:'Clara',  emoji:'🥗', color:'#84cc16' },
+  sommeil:      { name:'Nora',   emoji:'😴', color:'#a78bfa' },
+  recuperation: { name:'Julie',  emoji:'♻️', color:'#14b8a6' },
+  equipe:       { name:'Lucas',  emoji:'💼', color:'#f59e0b' },
+  marketing:    { name:'Alex',   emoji:'🎯', color:'#f97316' },
+  sponsors:     { name:'Marc',   emoji:'🤝', color:'#6366f1' },
+  contrats:     { name:'Léa',    emoji:'⚖️', color:'#8b5cf6' },
+  finance:      { name:'Sophie', emoji:'💶', color:'#10b981' },
+  comptabilite: { name:'Pierre', emoji:'📊', color:'#64748b' }
+};
+
+function renderRoutingChips(currentAgentId, agentMsgText) {
+  let relevantIds = [];
+  try {
+    relevantIds = getRelevantAgentsFromText(currentAgentId, agentMsgText);
+  } catch (_) { relevantIds = []; }
+  if (relevantIds.length === 0) return '';
+
+  const t = T[currentLang] || T.fr;
+  const hint = t.routingHint || 'Touche aussi à';
+  const lockedLabel = t.routingLocked || 'requiert Plus';
+
+  const chips = relevantIds.map(aid => {
+    const ag = ROUTING_AGENT_INFO[aid];
+    if (!ag) return '';
+    let locked = false;
+    try { locked = (typeof isAgentLocked === 'function') && isAgentLocked(aid); } catch(_) {}
+    const target = locked ? 'abonnement' : aid;
+    const title = locked ? lockedLabel : (ag.name);
+    return `<button onclick="event.stopPropagation();showPage('${target}',null)"
+      title="${escapeHtml(title)}"
+      style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;background:${ag.color}15;border:1px solid ${ag.color}35;border-radius:14px;font-size:11px;color:var(--text);font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;line-height:1.4;transition:background 0.15s"
+      onmouseover="this.style.background='${ag.color}25'"
+      onmouseout="this.style.background='${ag.color}15'">
+      ${locked ? '🔒 ' : ''}<span aria-hidden="true">${ag.emoji}</span><span>${escapeHtml(ag.name)}</span>
+    </button>`;
+  }).join('');
+
+  return `
+    <div class="routing-chips" style="display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-top:6px;font-size:11px;color:var(--muted)">
+      <span>💡 ${escapeHtml(hint)} :</span>${chips}
+    </div>
+  `;
+}
+
 function renderMessages(page, agent) {
+  // v63.5.10 — Trouve l'index du dernier message agent (pour n'afficher les
+  // routing chips qu'une seule fois, sur le dernier — évite spam visuel sur
+  // scroll dans l'historique).
+  let lastAgentIdx = -1;
+  for (let i = chats[page].length - 1; i >= 0; i--) {
+    if (chats[page][i] && chats[page][i].from === 'agent') { lastAgentIdx = i; break; }
+  }
+
   return chats[page].map((m, i) => {
     // Extract image data if present in message
     let msgText = m.text;
@@ -3261,6 +3385,13 @@ function renderMessages(page, agent) {
     if (m.imageData && displayText) {
       displayText = displayText.replace(/📷 \[Image envoyée\]/g, '').replace(/\[📎 [^\]]+\]/g, '').trim();
     }
+
+    // v63.5.10 — Cross-routing chips uniquement sous le dernier message agent.
+    // Skip pour le greeting initial (i === 0) qui est générique : on ne veut
+    // pas suggérer de routing avant que l'utilisateur ait posé sa première
+    // question. Chips n'apparaissent qu'après le 1er échange réel.
+    const showRoutingChips = (i === lastAgentIdx) && (i > 0) && (m.from === 'agent');
+    const routingChipsHtml = showRoutingChips ? renderRoutingChips(page, displayText || msgText || '') : '';
 
     return `
     <div class="msg ${m.from}">
@@ -3288,6 +3419,7 @@ function renderMessages(page, agent) {
             </button>
           ` : ''}
         </div>
+        ${routingChipsHtml}
       </div>
     </div>
   `;
@@ -6111,8 +6243,16 @@ async function generateWelcomeCardAsync(payload) {
     if (!card || !card.headline) return;
     // Cache local pour cohérence si l'user revient au dashboard avant DB visible
     try { localStorage.setItem(`sv_welcome_card_${currentUser.id}`, JSON.stringify(card)); } catch(_) {}
-    // Si on est sur le dashboard et que la carte n'est pas déjà rendue → inject avec fade-in
-    if (document.getElementById('mainContent') && !document.getElementById('welcomeCard')) {
+    // v63.5.9 — Atomic swap : toujours remove l'ancienne card AVANT inject de la
+    // nouvelle. Précédemment le guard `!document.getElementById('welcomeCard')`
+    // empêchait le replace post-setLang : si le re-render dashboard avait re-
+    // injecté l'ancienne card depuis la DB pendant que la regen Claude tournait,
+    // la nouvelle card (lang correcte) ne pouvait plus être injectée. Bug "lag
+    // d'un switch" observé self-test mobile 13/05. Fix : remove inconditionnel
+    // puis inject. Idem dans generateWeeklyInsightAsync.
+    if (document.getElementById('mainContent')) {
+      const existingCard = document.getElementById('welcomeCard');
+      if (existingCard) existingCard.remove();
       injectWelcomeCard(card);
     }
   } catch(e) {
@@ -6594,7 +6734,14 @@ async function generateWeeklyInsightAsync(lang) {
       // été dismissed entre temps (cas race : user clique × pendant les 3-6s de
       // génération). Si dismiss DB ou localStorage présent → ne pas réinjecter.
       const wasDismissed = await _checkInsightDismissed(currentUser.id, _isoWeek(new Date()));
-      if (!wasDismissed && !document.getElementById('weeklyInsightCard')) {
+      if (!wasDismissed) {
+        // v63.5.9 — Atomic swap : toujours remove l'ancienne card AVANT inject
+        // de la nouvelle. Bug "lag d'un switch" observé self-test 13/05 : le
+        // guard `!document.getElementById('weeklyInsightCard')` empêchait le
+        // replace si le re-render dashboard avait déjà ré-injecté l'ancienne
+        // version depuis la DB. Fix : remove inconditionnel puis inject.
+        const existingWeekly = document.getElementById('weeklyInsightCard');
+        if (existingWeekly) existingWeekly.remove();
         injectWeeklyInsightCard(json.insight);
       }
     }
@@ -11185,6 +11332,15 @@ function renderAbonnement() {
 
 // ── QUICK ACTIONS (PDF generators per agent) ─────────
 function getQuickActions(page, agent) {
+  // v63.5.9 — Auto-hide quick actions une fois que l'utilisateur a envoyé au moins
+  // 1 message à cet agent. Les chips servent de templates de démarrage pour les
+  // nouveaux users — redondants une fois la conversation lancée. Gain mobile
+  // ~150-200px de hauteur sous le chat-header, le chat respire mieux.
+  // Les chips réapparaîtront naturellement si le user supprime ses messages (cas
+  // edge non géré explicitement, n'arrive jamais en pratique).
+  const hasUserMessage = Array.isArray(chats[page]) && chats[page].some(m => m && m.from === 'user');
+  if (hasUserMessage) return '';
+
   const t = T[currentLang];
   // Quick action buttons (Pro feature)
   const proActions = {
