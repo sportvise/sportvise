@@ -408,8 +408,20 @@ exports.handler = async (event) => {
   // on bypass le cache et on régénère. Empêche le bug "header DE / contenu FR"
   // observé en self-test 13/05 quand l'utilisateur change de langue depuis le
   // dashboard (setLang trigger une re-génération avec lang explicite en payload).
+  //
+  // v63.5.7 — Migration path : les cards générées AVANT v63.5.6 n'ont pas de
+  // champ _lang stocké. Sans le check ci-dessous, cachedLang serait null,
+  // langMismatch = false (null && ... = false), et le cache FR serait retourné
+  // même quand l'utilisateur demande DE. On détecte ces "cartes legacy" (card
+  // existe ET _lang absent) ET on force regen si un lang explicite est demandé.
+  // Coût : 1 appel Claude par utilisateur legacy sur son prochain dashboard
+  // load post-v63.5.7. Après ça, _lang est stocké et le cache fonctionne
+  // normalement. ~17 users impactés au 13/05 = ~$0.04 one-shot.
   const cachedLang = profile?.welcome_card_json?._lang || null;
-  const langMismatch = cachedLang && cachedLang !== lang;
+  const hasCachedCard = !!profile?.welcome_card_json;
+  const isLegacyCard = hasCachedCard && cachedLang === null;
+  const explicitLangRequested = !!(payload.lang && ['fr','de','en','it'].includes(payload.lang));
+  const langMismatch = (cachedLang && cachedLang !== lang) || (isLegacyCard && explicitLangRequested);
 
   // Cache hit : already have a non-fallback card → return immediately
   // (sauf si lang mismatch → on régénère)
@@ -432,7 +444,8 @@ exports.handler = async (event) => {
   }
 
   if (langMismatch) {
-    console.log('[WELCOME] lang mismatch cache=' + cachedLang + ' requested=' + lang + ' → regen');
+    const reason = isLegacyCard ? 'legacy-card-no-lang-stamp' : 'lang-mismatch';
+    console.log('[WELCOME] regen forced: reason=' + reason + ' cache=' + cachedLang + ' requested=' + lang);
   }
 
   // ─── Generate ───
