@@ -206,6 +206,8 @@ var T_FR = {
   memoryCardTitle:'Ce que {name} sait de toi', memoryCardEdit:'Éditer',
   // v63.5.8 — Brief conversation-driven Phase 0 (Levier #2)
   briefOpenQuestions:'Conversations à reprendre', briefOpenQuestionAwaiting:'attend tes réponses', briefOpenQuestionResume:'Reprendre',
+  // v63.5.10 — Cross-agent routing Phase 0 (Levier #3)
+  routingHint:'Touche aussi à', routingLocked:'requiert Plus',
   briefEveningQ:'Comment s\'est passée ta journée,', briefMood:'Humeur', briefEnergy:'Énergie', briefSleep:'Sommeil (nuit dernière)',
   briefSave:'Enregistrer ✓', briefSaved:'Enregistré !', briefFullJournal:'Journal complet →', briefFillJournal:'Remplir mon journal',
   briefEnrichedTitle:'Brief enrichi', briefEnrichedSubtitle:'Vu ce que tu viens de me dire, je te suggère :',
