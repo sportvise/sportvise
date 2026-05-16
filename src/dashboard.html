@@ -6488,11 +6488,11 @@ function injectCheckinCard() {
   const html = `
     <div id="checkinCard" style="background:linear-gradient(135deg,#0ea5e915,#0284c715);border:1px solid #0ea5e950;border-radius:14px;padding:18px;margin-bottom:16px;position:relative;opacity:0;transform:translateY(-8px);transition:opacity 0.4s ease, transform 0.4s ease">
       <div style="font-size:11px;font-weight:800;color:#0ea5e9;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px">
-        ✨ ${escapeHtml(t.checkinCardTitle || 'Check-in du jour')}
+        ✨ ${escapeHtml(t.checkinCardTitle || 'Ton journal du jour')}
       </div>
-      <div style="font-size:13px;color:var(--text);line-height:1.5;margin-bottom:14px">${escapeHtml(t.checkinCardSubtitle || '30 secondes pour aider tes coachs à mieux te conseiller.')}</div>
+      <div style="font-size:13px;color:var(--text);line-height:1.5;margin-bottom:14px">${escapeHtml(t.checkinCardSubtitle || 'Remplis ton journal — tes coachs adaptent leurs conseils à ton état du jour.')}</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button onclick="openCheckinModal()" style="flex:1;min-width:160px;padding:12px 14px;border-radius:10px;border:1px solid #0ea5e940;background:#0ea5e9;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif" onmouseover="this.style.background='#0284c7'" onmouseout="this.style.background='#0ea5e9'">${escapeHtml(t.checkinCardCTA || 'Faire mon check-in')} →</button>
+        <button onclick="showPage('journal')" style="flex:1;min-width:160px;padding:12px 14px;border-radius:10px;border:1px solid #0ea5e940;background:#0ea5e9;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif" onmouseover="this.style.background='#0284c7'" onmouseout="this.style.background='#0ea5e9'">${escapeHtml(t.checkinCardCTA || 'Remplir mon journal')} →</button>
         <button onclick="dismissCheckinCardToday()" style="padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:none;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">${escapeHtml(t.checkinCardLater || 'Plus tard')}</button>
       </div>
     </div>
@@ -6529,7 +6529,10 @@ function dismissCheckinCardToday() {
   } catch(_) {}
 }
 
-// Ouvre la modal 3 sliders. Pattern modal codebase (overlay + panel centré).
+// DÉPRÉCIÉ v63.5.12 — le check-in 30s a été fusionné dans le Journal : la carte
+// du dashboard pointe désormais vers showPage('journal'). Les 4 fonctions ci-dessous
+// (openCheckinModal / _renderCheckinSlider / closeCheckinModal / submitQuickCheckin)
+// ne sont plus référencées — à supprimer dans un prochain nettoyage.
 function openCheckinModal() {
   if (document.getElementById('checkinModal')) return; // double-open guard
   const t = T[currentLang] || T.fr;
@@ -9192,6 +9195,11 @@ async function saveJournal() {
   // Persist a "saved today" flag in localStorage so navigating away and back
   // shows the summary view even if the DB read returns partial data later.
   try { localStorage.setItem('sv_journal_saved_' + currentUser.id + '_' + today, '1'); } catch(_) {}
+
+  // v63.5.12 — le journal couvre désormais le check-in : retire la carte
+  // d'invitation du dashboard si elle est encore montée (rafraîchissement en
+  // cours de session, sans attendre un reload).
+  document.getElementById('checkinCard')?.remove();
 
   // Switch back to summary view + non-blocking toast
   _journalEditMode = false;
