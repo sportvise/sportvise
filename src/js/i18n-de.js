@@ -231,7 +231,7 @@ var T_DE = {
   kickoffCtaTraining:'Meine Einheit vorbereiten →', kickoffCtaEmma:'Mit Emma sprechen →', kickoffCtaRecovery:'Erholungsprotokoll →', kickoffCtaPlanSession:'Einheit planen →',
   welcomeCardTitle:'Deine Begrüssungsanalyse', welcomeCardDismiss:'Schliessen', welcomeCardAction:'Diese Woche', welcomeCardComingUp:'Kommt bald',
   // v62.27 — Check-in 30s (Quick Win #3)
-  checkinCardTitle:'Heutiger Check-in', checkinCardSubtitle:'30 Sekunden, damit deine Coaches dich besser beraten können.', checkinCardCTA:'Check-in starten', checkinCardLater:'Später',
+  checkinCardTitle:'Dein Tagebuch von heute', checkinCardSubtitle:'Füll dein Tagebuch aus — deine Coaches passen ihre Ratschläge an deinen Tag an.', checkinCardCTA:'Tagebuch ausfüllen', checkinCardLater:'Später',
   checkinModalTitle:'Wie geht\'s dir heute?', checkinSliderEnergy:'Energie', checkinSliderMood:'Stimmung', checkinSliderPain:'Schmerzen',
   checkinEnergyLow:'Erschöpft', checkinEnergyHigh:'Topfit', checkinMoodLow:'Schwierig', checkinMoodHigh:'Ausgezeichnet', checkinPainNone:'Keine', checkinPainHigh:'Stark',
   checkinSubmit:'Speichern ✓', checkinCancel:'Abbrechen', checkinSavedToast:'✅ Check-in gespeichert · Deine Coaches passen sich an', checkinErrorToast:'⚠️ Fehler — nochmal versuchen',
