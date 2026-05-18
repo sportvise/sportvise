@@ -188,9 +188,16 @@ async function logUsage({ userId, agentId, model, inputTokens, outputTokens, lat
 }
 
 // ─────────────────────────────────────────────────────────────
-// v45 — Per-model configuration for Haiku (default) / Sonnet (opt-in beta).
-// Beta opt-in is driven by env var AI_MODEL_BETA_USERS (comma-separated emails).
-// Model IDs are env-overridable so we can swap without redeploying code.
+// v63.6 — Upgrade qualité agents experts (post test amis 13/05) :
+//   TOUS les plans (Free + Plus + Pro) → Sonnet 4.6 (était Haiku)
+//   AI_MODEL_BETA_USERS → Opus (override interne QA, permet de comparer)
+// Haiku reste configuré pour fallback éventuel mais n'est plus sélectionné automatiquement.
+// Opus reste configuré (dormant) — réactivable en 1 ligne dans pickModel si Thomas
+// décide plus tard d'en faire un différenciateur Pro (cf. SPEC_v63_6).
+// Coût impact : Sonnet ~3.9× Haiku. Acceptable car le moat SPORTVISE = qualité conseil
+// des 11 agents experts (mémoire vision_agents_experts), et le test amis du 13/05 a
+// montré que Haiku dégradait l'expérience vs claude.ai direct.
+// Model IDs env-overridable pour swap sans redeploy si Anthropic publie un nouvel alias.
 // ─────────────────────────────────────────────────────────────
 const MODEL_CONFIG = {
   haiku: {
@@ -212,16 +219,41 @@ const MODEL_CONFIG = {
 - Ton conversationnel et concret, pas académique.
 
 `
+  },
+  opus: {
+    id: process.env.AI_MODEL_PREMIUM || 'claude-opus-4-6',
+    maxTokens: 800,
+    temperature: 0.4,
+    systemPrefix: `[CONSIGNES DE STYLE STRICTES — À RESPECTER POUR CHAQUE RÉPONSE]
+- Réponds en 2 à 3 paragraphes courts maximum (pas plus).
+- Tutoie systématiquement l'athlète (jamais de "vous").
+- Termine par UNE seule question OU UN seul appel à l'action concret — pas les deux.
+- Pas de listes à puces ni de listes numérotées, SAUF si la réponse en a vraiment besoin (ex : étapes ordonnées d'un protocole). Privilégie des phrases fluides en prose.
+- N'invente JAMAIS d'URL, de lien, de site web, de marque ni de produit que tu n'es pas certain d'avoir vu apparaître dans le contexte fourni. Si tu ne connais pas un lien précis, dis "cherche sur Google" ou "demande à ta fédération".
+- Ton conversationnel et concret, pas académique.
+- Tu es l'expert haut de gamme du plan Pro : appuie-toi sur ta capacité de raisonnement pour aller plus loin dans la spécificité (chiffres précis, références aux particularités du sport pratiqué, anticipation de la prochaine question de l'athlète).
+
+`
   }
 };
 
-function pickModel(userEmail) {
+function pickModel(userEmail, plan) {
+  // 1. Override interne (QA / beta testing) — permet de forcer Opus pour comparer
+  //    la qualité premium depuis un compte connu (toi). Sinon, personne ne touche Opus.
   const betaUsersRaw = process.env.AI_MODEL_BETA_USERS || '';
-  if (!userEmail || !betaUsersRaw) return 'haiku';
-  const betaSet = new Set(
-    betaUsersRaw.split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
-  );
-  return betaSet.has(String(userEmail).trim().toLowerCase()) ? 'sonnet' : 'haiku';
+  if (userEmail && betaUsersRaw) {
+    const betaSet = new Set(
+      betaUsersRaw.split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
+    );
+    if (betaSet.has(String(userEmail).trim().toLowerCase())) return 'opus';
+  }
+  // 2. Tous les plans (Free, Plus, Pro) → Sonnet.
+  //    NB : la config 'opus' reste dormante dans MODEL_CONFIG ci-dessus, prête à être
+  //    réactivée pour le plan Pro si Thomas valide le différenciateur paywall plus tard.
+  //    Pour l'instant (17/05) : on n'augmente pas le coût Pro tant que les conversations
+  //    découverte (mémoire test_amis_13_05) n'ont pas validé le segment cible.
+  //    Le paramètre `plan` reste dans la signature pour réactivation rapide (1 ligne).
+  return 'sonnet';
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -331,9 +363,10 @@ exports.handler = async (event) => {
     return { statusCode: 500, headers, body: JSON.stringify({ error: 'API key not configured' }) };
   }
 
-  // v45 — pick Haiku or Sonnet (use email from JWT first, fallback to body for compat)
+  // v63.6 — pick Sonnet (default) / Opus (Pro plan or beta override).
+  // Email from JWT first, fallback to body for compat. Plan déjà calculé ci-dessus.
   const effectiveEmail = user.email || userEmail;
-  const modelKey = pickModel(effectiveEmail);
+  const modelKey = pickModel(effectiveEmail, plan);
   const modelConfig = MODEL_CONFIG[modelKey];
 
   // Language instruction
