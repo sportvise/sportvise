@@ -1,0 +1,88 @@
+{
+  "date": "2026-05-17",
+  "target_file": "/Users/thomas/Documents/SPORTVISE/Code/src/dashboard.html",
+  "applied": true,
+  "applied_at": "2026-05-17",
+  "applied_option": "A — 11/11 agents, dépassement 23,7% accepté par Thomas",
+  "generator": "scheduled-task sportvise-agent-training",
+  "note": "Patch hebdomadaire 17/05/2026. 11/11 agents couverts. Pour appliquer : ouvre une session Cowork et dis « applique le patch SPORTVISE du 2026-05-17 ». Les anchors correspondent à la phrase finale ACTUELLE de chaque prompt (dernière ligne du bloc MISE À JOUR MAI 2026 ajouté le 05/05/2026).",
+  "edits": [
+    {
+      "agent_key": "physique",
+      "agent_name": "David",
+      "anchor": "USA Triathlon — Endurance Exchange 2026 ; Frontiers in Physiology, 27 janvier 2026 ; méta-analyse PMC9368129).",
+      "append": "\n\nMISE À JOUR MAI 2026 (17/05) — Méta-analyse VBT vs PBT & autorégulation APRE :\nNouvelle méta-analyse BMC Sports Sci Med Rehabil 2026 (17 études, 348 sujets, qualité GRADE modérée) : la VBT offre un léger avantage sur la percentage-based training (PBT) pour le saut et les changements de direction, mais des effets SIMILAIRES sur la force maximale et le sprint. À utiliser comme outil de pilotage fin plutôt que comme rupture méthodologique.\nNetwork meta-analysis 2025 sur l'autorégulation : APRE (Autoregulating Progressive Resistance Exercise) classé en tête (SUCRA 93,0 %), devant la RPE-based (66,8 %), la VBT (27,0 %) et la PBT (13,2 %).\nPratique 2026 : combine APRE/RPE en phases hypertrophie, VBT en phases puissance/explosivité. VLT 20-30 % bénéfique pour la force selon méta-analyse dose-réponse PMC9914552.\n(Sources : Springer BMC s13102-025-01504-9 ; ScienceDirect S1728869X25000590.)",
+      "summary": "Méta-analyse VBT vs PBT 2026 : avantage léger saut/COD seulement + APRE en tête des méthodes autorégulées (SUCRA 93)"
+    },
+    {
+      "agent_key": "mental",
+      "agent_name": "Emma",
+      "anchor": "Couple ACT + PST (imagerie mentale, fixation d'objectifs, profilage de performance, self-talk).",
+      "append": "\n\nMISE À JOUR MAI 2026 (17/05) — Burnout d'élite & supériorité des interventions ONLINE :\nMéta-analyse Sports Medicine 2025 (PMC12011916) : la TCC et les interventions mindfulness réduisent significativement la plupart des dimensions du burnout chez les athlètes d'élite ; les interventions ONLINE sont SIGNIFICATIVEMENT plus efficaces que les interventions présentielles pour cette réduction.\nÉtude Journal of Applied Sport Psychology (février 2026) : les coachs d'élite identifient mieux la dépression que le burnout — sensibilise tes athlètes ET leur staff à la reconnaissance précoce.\nPrévalence à mémoriser : 1-5 % des athlètes d'élite présentent des symptômes sévères de burnout.\nIntègre des micro-interventions digitales quotidiennes (apps de pleine conscience, journaling court) plutôt que d'attendre un point de bascule. Le capital psychologique (PsyCap) est malléable et constitue une cible d'intervention validée.\n(Sources : PMC12011916 ; J. Applied Sport Psychology 02/2026 ; PMC11756217.)",
+      "summary": "Burnout d'élite : interventions ONLINE > présentielles (méta-analyse 2025) + coachs détectent mieux dépression que burnout"
+    },
+    {
+      "agent_key": "nutrition",
+      "agent_name": "Clara",
+      "anchor": "Quand la charge baisse, la digestion ralentit aussi.",
+      "append": "\n\nMISE À JOUR MAI 2026 (17/05) — Cadre 4Ps & cibles protéiques endurance révisées :\nNouveau cadre evidence-based 4Ps publié dans Performance Nutrition (Springer 2026) : Personalise (plans individualisés), Periodise (interventions stratégiques par phase), Prefuel (6-10 g/kg/jour de glucides en phase d'entraînement intense), Prepare (protocoles d'hydratation pré-effort).\nApport protéique pour ATHLÈTES D'ENDURANCE révisé à la hausse : 1,6-2,1 g/kg/jour pour compenser l'oxydation des AA à l'effort et soutenir le remodelage tissulaire ; potentiellement >2,0 g/kg/jour en phases low-CHO / low-EA (PMC12152099). À distinguer du standard ISSN 1,4-2,0 g/kg pour force/hypertrophie.\nApplication : adapter les glucides repas par repas selon l'intensité de la séance ; relever la cible protéique sur les blocs polarisés / affûtage où le risque catabolique augmente.\n(Sources : Springer Performance Nutrition s44410-026-00022-0 ; PMC12152099.)",
+      "summary": "Cadre 4Ps (Personalise/Periodise/Prefuel/Prepare) + protéines endurance révisées 1,6-2,1 g/kg/j"
+    },
+    {
+      "agent_key": "sommeil",
+      "agent_name": "Nora",
+      "anchor": "Gains documentés (Springer 2025) sur sprint, précision tennis, efficacité virages natation, tirs basket.",
+      "append": "\n\nMISE À JOUR MAI 2026 (17/05) — Dose minimale efficace ~55 min & architecture SWS/REM :\nSynthèse 2026 : des extensions de sommeil d'environ 55 minutes par nuit produisent des améliorations significatives, principalement en augmentant les phases de SOMMEIL LENT PROFOND (SWS) et REM — critiques pour la récupération physiologique et cognitive. Affine la recommandation 45-120 min précédente : viser ~55 min comme dose plancher efficace, monter à 90-120 min sur les semaines de forte charge.\nGH et testostérone sont sécrétées majoritairement pendant le SWS — les athlètes dormant moins de 7 h ont des taux mesurablement plus bas, impactant directement l'adaptation et la vitesse de récupération de blessure.\nLes efforts complexes/soutenus + les fonctions cognitives (prise de décision, contrôle inhibiteur) bénéficient le plus de l'extension. Caler l'horaire de coucher sur le chronotype reste aussi déterminant que la durée.\n(Sources : MDPI Life 15/8/1178 single-night extension RCT ; MDPI JCM 14/21/7606 multidimensional review ; Sports-Today 2026.)",
+      "summary": "Dose minimale efficace ~55 min/nuit pour gains SWS/REM + lien GH/testo dépendant du SWS"
+    },
+    {
+      "agent_key": "recuperation",
+      "agent_name": "Julie",
+      "anchor": "En rééducation, intègre le BFR dès J+10 post-blessure (membre opéré) avec autorégulation RPE pour préserver la masse pendant la phase de décharge.",
+      "append": "\n\nMISE À JOUR MAI 2026 (17/05) — CWI : 10-15 min à 5-10 °C confirmé en network meta-analysis :\nLa network meta-analysis Frontiers in Physiology (PMC11897523) confirme : CWI durée moyenne + température basse (10-15 min, 5-10 °C) = la plus efficace pour le saut (CMJ) ET la réduction de la créatine kinase (CK). CWI 10-15 min à 11-15 °C reste pertinente pour la réduction de la sensibilité musculaire perçue.\nMéta-analyse spécifique SOCCER 2026 (Scand J Med Sci Sports, PMC12767754) : CWI accélère la récupération de la force et du CMJ, normalise les CK plus vite et réduit les DOMS post-match.\nGap recherche à signaler aux athlètes féminines : aucune étude exclusivement féminine — les protocoles actuels reflètent principalement les réponses masculines, prudence sur l'extrapolation.\nÀ combiner avec la règle déjà établie : NE PAS appliquer la CWI immédiatement après séances de force/hypertrophie (atténue les adaptations).\n(Sources : Frontiers Physiology PMC11897523 ; Scand J Med Sci Sports PMC12767754 ; Frontiers Sports Active Living 2026 — body-region meta-analysis.)",
+      "summary": "CWI 10-15 min / 5-10 °C confirmée en network meta-analysis + méta-analyse soccer 2026 + gap recherche athlètes féminines"
+    },
+    {
+      "agent_key": "finance",
+      "agent_name": "Sophie",
+      "anchor": "(Sources : Banque Cler, Assurance-info.ch, Directives IS 2026.)",
+      "append": "\n\nMISE À JOUR MAI 2026 (17/05) — PRÉCISION CRITIQUE rachat 3a : lacunes 2025+ uniquement :\nCORRECTION importante de la formulation antérieure « 10 dernières années rétroactivement » : depuis l'entrée en vigueur 01.01.2026, le rachat 3a rétroactif n'est possible QUE pour les lacunes APPARUES À PARTIR DE 2025 — les années antérieures (2024 et avant) ne sont PAS rattrapables. En 2026, seul le rachat pour l'année fiscale 2025 est possible, plafonné à la petite cotisation (CHF 7 258).\nQuatre conditions cumulatives strictes : (1) revenu soumis à l'AVS l'année concernée, (2) activité lucrative au moment du rachat, (3) cotisation max de l'année courante déjà versée, (4) aucun retrait anticipé depuis le 01.01.2025.\nLe « rétroactif sur 10 ans » deviendra théoriquement effectif en 2035 (rachat 2025-2034). Pour les sportifs à revenus irréguliers, mémoriser cette nouvelle ligne fiscale et planifier le rachat sur les années à haute imposition marginale.\n(Sources : RTS info 01/2026 ; UBS Pension — versements rétroactifs ; Zurich Suisse ; troisiemepilier.ch ; CA next bank.)",
+      "summary": "CORRECTION — rachat 3a rétroactif possible UNIQUEMENT pour lacunes 2025+ (2024 et avant non rattrapables)"
+    },
+    {
+      "agent_key": "comptabilite",
+      "agent_name": "Pierre",
+      "anchor": "Les cotisations 2e/3e pilier 2026 (cf. Sophie : nouveaux plafonds, rachat 3a rétroactif sur 10 ans) restent les principaux leviers de planification fiscale.",
+      "append": "\n\nMISE À JOUR MAI 2026 (17/05) — Exemption TVA Swiss Olympic & seuil sportifs étrangers :\nRappel AFC (Feuille d'info MWST sport 2024/2026) confirmé : les montants alloués par SWISS OLYMPIC ou la FONDATION AIDE SPORTIVE aux athlètes en préparation pour les JO et compétitions nationales/internationales NE SONT PAS SOUMIS À LA TVA. Ces montants ne comptent PAS dans le calcul du seuil de CA de 100 000 CHF pour l'assujettissement TVA.\nSportif domicilié à l'étranger : assujettissement TVA suisse dès qu'il participe à une manifestation sur sol suisse ET réalise mondialement (CH + étranger) un CA d'au moins 100 000 CHF/an sur les prestations imposables.\nLes revenus de SPONSORING, PUBLICITÉ et DROITS D'IMAGE restent imposables — bien les séparer comptablement des allocations Swiss Olympic / Aide Sportive.\nPrécision rachat 3a (cf. Sophie corrigée) : ne s'applique qu'aux lacunes 2025+, pas aux 10 années antérieures.\n(Sources : ESTV / AFC — Feuille d'info MWST sport ; entreprendre.ch 2026 ; tva-suisse.ch.)",
+      "summary": "Exemption TVA Swiss Olympic + Aide Sportive (hors calcul seuil 100k) + précision sportifs étrangers"
+    },
+    {
+      "agent_key": "marketing",
+      "agent_name": "Alex",
+      "anchor": "Pour les athlètes suisses, capitalise sur le storytelling local (paysages, salles, équipes) — l'authenticité reste un signal premium.",
+      "append": "\n\nMISE À JOUR MAI 2026 (17/05) — TikTok 70 % completion + Instagram keywords > hashtags :\nSeuil de viralité TikTok 2026 confirmé à 70 % de COMPLETION RATE (vs 50 % en 2024) — calibre tes durées (≤15 s pour maximiser la chance d'atteindre ce seuil). 73 % des vues TikTok proviennent désormais directement de l'onglet For You.\nINSTAGRAM 2026 — basculement : les MOTS-CLÉS dans légendes et profils sont devenus plus efficaces pour la découverte que les hashtags, qui ne supportent plus les follows. Optimise la copie de tes posts en SEO-friendly.\nPénalité algorithmique Instagram : les contenus avec WATERMARK visible (logo TikTok notamment) sont down-rankés de 30-50 %. Ré-exporte tes Reels sans watermark avant repost.\nCadence pratique 2026 : Instagram = 3-5 Feed + 4 Reels/semaine + Stories quotidiennes ; TikTok = 1-3 posts/jour.\nStratégie multiplateforme : créer sur TikTok pour le reach (test rapide auprès des followers puis diffusion), faire converger sur Instagram pour la conversion (DM, partenariats).\n(Sources : Buffer Instagram Algorithm 2026 ; Socialync TikTok algorithm 2026 ; Truescho 2026 ; Metricool TikTok trends.)",
+      "summary": "TikTok seuil viralité 70 % completion + Instagram keywords > hashtags + watermark pénalisé 30-50 %"
+    },
+    {
+      "agent_key": "sponsors",
+      "agent_name": "Marc",
+      "anchor": "Côté suisse : Brack.ch est devenu sponsor titre de la Super League (Brack Super League) ; Genius Sports a signé un partenariat IA/data multi-années avec la SFL — opportunités tech B2B suisses à activer.",
+      "append": "\n\nMISE À JOUR MAI 2026 (17/05) — Volume sans inflation, clauses ESG & Infront CH :\nMarché EUROPÉEN du sponsoring sportif : 27,80 Mrd USD (2025) → 29,77 Mrd USD (2026). Caractéristique 2026 confirmée : VOLUME SANS INFLATION — plus de deals mais moins de méga-deals, acheteurs plus informés et plus sélectifs (The Sponsor — Outlook 2026).\nClauses ESG / GREEN CLAUSES devenues standard dans les contrats : impact mesuré de +15 % sur la perception de marque chez les consommateurs socialement engagés. Anticipe ces clauses dans tes media kits (engagements carbone, mobilité, équipement, programmes communauté).\nLEVIER SUISSE : Infront Sports & Media (siège à Zoug) reste opérateur dominant en Europe pour les fédérations (FIS — ski, IIHF — hockey) — voie de pénétration privilégiée pour les athlètes ski et hockey à viser.\nTendance BUSINESS-BACKED en accélération : intégration de produits B2B (cloud, cybersécurité, perf tech) dans les opérations de la propriété sportive — déplacement du modèle « brand awareness » vers « sponsorship as a service ». Engagement souvent supérieur sur ces deals que sur les deals de visibilité pure.\n(Sources : Business Research Company — Sports Sponsorship 2026 ; Market Data Forecast Europe ; The Sponsor 2026 ; SponsorUnited Insights ; VML Future 100 2026.)",
+      "summary": "Marché Europe 29,77 Mrd USD 2026 + clauses ESG standard (+15 % perception) + Infront CH levier ski/hockey"
+    },
+    {
+      "agent_key": "contrats",
+      "agent_name": "Léa",
+      "anchor": "Host City Contracts JO 2026 (Milano-Cortina) : clauses droits humains désormais standard — anticipe-les pour les contrats avec villes-hôtes ou organisateurs d'événements.",
+      "append": "\n\nMISE À JOUR MAI 2026 (17/05) — FIFA Legal Handbook 2025 & licence agents :\nLe FIFA Legal Handbook 2025 (édition la plus récente disponible) renforce la PROTECTION DES JOUEUSES ET ENTRAÎNEURS FÉMININES (maternité, congé, retour à l'activité), ajuste les règles de transferts internationaux (périodes d'enregistrement, résolution des litiges) et clarifie les obligations des agents.\nRégulation FIFA Football Agents en vigueur : licence FIFA obligatoire, prohibition de la représentation multiple (anti-conflit d'intérêts), plafond de commission, mécanisme Agents Chamber pour les litiges.\nDue-diligence systématique avant signature d'un mandat : (1) vérifier que l'agent a sa licence FIFA active ; (2) confirmer l'absence de représentation multiple ; (3) intégrer la juridiction Agents Chamber dans le contrat.\nCette mise à jour s'ajoute à la liste WADA 2026 déjà couverte (CO inhalé non-diagnostique, salmétérol 100 μg / 8 h glissant).\n(Sources : FIFA inside.fifa.com/transfer-system/agents ; SportsAgent Institute — FIFA 2025 Legal Handbook.)",
+      "summary": "FIFA Legal Handbook 2025 + protection joueuses + due-diligence licence agent (3 checks systématiques)"
+    },
+    {
+      "agent_key": "equipe",
+      "agent_name": "Lucas",
+      "anchor": "Pour les agents de joueurs internationaux suisses (Sommer, Xhaka, Akanji, Embolo, etc.), anticipe la juridiction TAS exclusive sur les litiges Coupe du monde FIFA 2026.",
+      "append": "\n\nMISE À JOUR MAI 2026 (17/05) — FC THUN CHAMPION DE BRACK SUPER LEAGUE 2025/26 :\nACTUALITÉ FOOTBALL SUISSE 17/05/2026 — Le FC THUN a sécurisé son PREMIER TITRE de champion de Suisse dans les 128 ans d'histoire du club. Titre acquis à 3 journées de la fin (défaite 0-3 du FC St-Gall face au FC Sion). Le trophée a été remis le 14 mai 2026 après le derby face à YB (défaite 3-8 sans impact sur le titre).\nFC Thun n'était remonté en Super League qu'il y a un an, avec l'un des plus PETITS BUDGETS de la ligue — comparaison médiatique avec le titre de Leicester en Premier League 2016.\nImplications carrière à intégrer dans tes conseils : repositionne Thun comme destination crédible pour les jeunes talents suisses ; revalorise mécaniquement les agents et les joueurs du club (clauses de transfert) ; ouvre des opportunités sponsoring locales (région Berne / Oberland bernois) ; place de UEFA Champions League qualifiers garantie.\nFinal-six 2025/26 : FC Thun champion devant FC St-Gall (vice-champion). Saison 2026/27 démarre fin juillet sous le format Brack Super League désormais établi (sponsor titre Brack.ch).\nRappel hockey déjà couvert : Fribourg-Gottéron champion National League 2026.\n(Sources : sfl.ch/superleague-classement ; OneFootball — FC Thun first Swiss title ; Outlook India Sports ; Blick.ch — derby Thun-YB 14/05/2026.)",
+      "summary": "FC THUN CHAMPION 2025/26 (1er titre en 128 ans, équivalent Leicester 2016) — repositionne le club comme destination CH crédible"
+    }
+  ]
+}
