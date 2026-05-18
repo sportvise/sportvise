@@ -1,0 +1,87 @@
+{
+  "date": "2026-05-05",
+  "target_file": "/Users/thomas/Documents/SPORTVISE/Code/src/dashboard.html",
+  "applied": true,
+  "applied_at": "2026-05-05",
+  "applied_method": "manual sequential Edit via Cowork session",
+  "note": "Patch reconstruit a posteriori comme référence — les anchors ci-dessous correspondent à l'état AVANT application. Pour les semaines suivantes, le scheduled task génèrera ce fichier en amont.",
+  "edits": [
+    {
+      "agent_key": "physique",
+      "agent_name": "David",
+      "anchor": "- Athlétisme : spécifique à la discipline (sprint: pliométrie/force-vitesse, endurance: seuils lactiques, lancers: force/puissance).",
+      "append": "\n\nMISE À JOUR MAI 2026 — VBT & individualisation du VLT :\nEn 2026, individualise systématiquement le seuil de perte de vélocité (VLT) selon le sexe, le statut d'entraînement et la force de base. Privilégie un VLT bas (10 %) lors des phases de puissance/explosivité, et un VLT plus élevé (20-30 %) lors des phases d'hypertrophie. La VBT permet de coupler force et endurance dans un même mésocycle sans interférence neurale notable, et constitue un outil de réduction du risque de surmenage chez les athlètes d'endurance (USA Triathlon — Endurance Exchange 2026 ; Frontiers in Physiology, 27 janvier 2026 ; méta-analyse PMC9368129).",
+      "summary": "VBT & individualisation du VLT (10 % puissance / 20-30 % hypertrophie)"
+    },
+    {
+      "agent_key": "mental",
+      "agent_name": "Emma",
+      "anchor": "Communication en double, gestion frustration (murs, filet), patience et construction du point, confiance dans le partenaire, gestion pression en fin de set.",
+      "append": "\n\nMISE À JOUR MAI 2026 — ACT consolidé chez les jeunes & ACPT pour disciplines de précision :\nUne revue systématique 2026 (Int. J. Sport & Exercise Psychology) consolide l'efficacité de l'ACT chez les athlètes adolescents — premier corpus consolidé pour cette population. Renforce les 6 processus de la flexibilité psychologique : attention flexible au présent, valeurs, action engagée, soi comme contexte, défusion cognitive, acceptation. Pour les disciplines de précision (tir, golf, biathlon — pertinent pour l'écosystème suisse), propose une routine type ACPT (Acceptance and Commitment Performance Training) ciblant flexibilité psychologique, stabilité attentionnelle et motivation guidée par les valeurs. Couple ACT + PST (imagerie mentale, fixation d'objectifs, profilage de performance, self-talk).",
+      "summary": "ACT chez les jeunes (revue systématique 2026) + routine ACPT pour disciplines de précision"
+    },
+    {
+      "agent_key": "nutrition",
+      "agent_name": "Clara",
+      "anchor": "Sport intermittent haute intensité, matchs 1h30+, hydratation critique en terrain couvert (chaleur), électrolytes, collations inter-sets (banane, barre énergétique), récupération post-match.",
+      "append": "\n\nMISE À JOUR MAI 2026 — IOC REDs CAT2 + chrono-nutrition + microbiome :\nLe CIO a publié en janvier 2026 le REDs CAT2 + Scoring Tool 2 — version cliniquement opérationnelle du modèle physiologique de 2023. Utilise-le comme outil de tri systématique chez tout athlète présentant baisse de performance, fatigue persistante ou perturbations cycle/libido. L'apport glucidique insuffisant est désormais identifié comme déclencheur principal ; le modèle couvre aussi les athlètes masculins et para-athlètes, et clarifie l'overlap RED-S/overtraining syndrome. Recommande une chrono-nutrition avec apport glucidique aligné sur les fenêtres d'entraînement et 3 prises protéiques équilibrées (~0,4 g/kg/repas), incluant une prise matinale (Springer Nature 2025/26 — l'horloge intrinsèque du tractus GI régule digestion, absorption et transport). Considère le microbiome comme un système modulable par l'alimentation et la charge — fibres fermentescibles, polyphénols, probiotiques ciblés ; les SCFA (butyrate, acétate, propionate) sont clés pour la barrière intestinale et l'inflammation. Quand la charge baisse, la digestion ralentit aussi.",
+      "summary": "IOC REDs CAT2 (jan 2026) + chrono-nutrition 3 prises protéiques + microbiome modulable"
+    },
+    {
+      "agent_key": "sommeil",
+      "agent_name": "Nora",
+      "anchor": "Matchs souvent en soirée (20h-22h+), routines de redescente post-match, stratégies pour maintenir le rythme circadien malgré les horaires tardifs.",
+      "append": "\n\nMISE À JOUR MAI 2026 — Extension de sommeil 45-120 min & jeunes athlètes :\nRecommande une extension de sommeil de 45-120 minutes par nuit en période de forte charge ou compétition (RCT crossover PMC12387293, 2025/26 — une seule nuit d'extension améliore les performances physiques et cognitives matinales, effet observé tout au long de la journée). Adapte le protocole au chronotype individuel (Horne-Östberg) et à l'efficacité de sommeil. Pour les jeunes athlètes (hockey, ski, gym), une seule nuit d'extension peut suffire à restaurer une partie des fonctions neuromusculaires et cognitives — RCT J. Sleep Research 2026 sur jeunes hockeyeurs élites : réduction de la fatigue, amélioration du contrôle inhibiteur, de la vigilance courte et de la fonction neuromusculaire. Très pertinent pour la National League jeune. Gains documentés (Springer 2025) sur sprint, précision tennis, efficacité virages natation, tirs basket.",
+      "summary": "Extension sommeil 45-120 min + RCT 2026 hockey jeune (1 nuit suffit pour restaurer fonctions)"
+    },
+    {
+      "agent_key": "recuperation",
+      "agent_name": "Julie",
+      "anchor": "Récupération épaules (coiffe des rotateurs), coudes (épicondylite fréquente), genoux (sollicitations latérales), bas du dos (rotations répétées). Étirements chaîne postérieure et mobilité thoracique. Auto-massage ciblé des avant-bras (extenseurs du poignet).",
+      "append": "\n\nMISE À JOUR MAI 2026 — CWI selon finalité & BFR autorégulé :\nMéta-analyse réseau BMC Sports Science 2026 : la CWI est CONTRE-PRODUCTIVE immédiatement après séances de force/hypertrophie (atténue les adaptations) ; à privilégier en sports collectifs et endurance. Méta-analyse soccer PMC12767754 (2026) : CWI accélère la récupération de la force, du CMJ, normalise les CK plus vite et réduit les DOMS post-match. Doses optimales (Frontiers Physiology 2025) : récupération biochimique/neuromusculaire = 10-15 min à 5-10 °C ; réduction de la sensibilité musculaire = 10-15 min à 11-15 °C. BFR (Frontiers Physiology mars 2026) : les protocoles autorégulés (RPE-based) sont aussi efficaces que le BFR contrôlé classique pour les gains de masse et de force. En rééducation, intègre le BFR dès J+10 post-blessure (membre opéré) avec autorégulation RPE pour préserver la masse pendant la phase de décharge.",
+      "summary": "CWI contre-productive en force/hypertrophie + BFR autorégulé RPE dès J+10 post-blessure"
+    },
+    {
+      "agent_key": "finance",
+      "agent_name": "Sophie",
+      "anchor": "Tu aides à budgétiser : frais d'entraînement, équipement, déplacements/compétitions, nutrition/suppléments, staff (coach, physio, mental), cotisations fédérations/clubs. Déductions fiscales possibles : frais professionnels directs, déplacements, hébergement en compétition, matériel sportif.",
+      "append": "\n\nMISE À JOUR MAI 2026 — Rachat 3a rétroactif & nouveaux plafonds :\nNOUVEAUTÉ FISCALE SUISSE 2026 — Pour la première fois, un cotisant peut COMBLER LES LACUNES DU 3e PILIER A SUR LES 10 DERNIÈRES ANNÉES rétroactivement. Particulièrement adapté aux carrières sportives à revenus irréguliers (saisons, primes, transferts) : recommande systématiquement la stratégie du rachat 3a rétroactif sur les bonnes années fiscales (haute imposition marginale). Plafonds 3a 2026 : salarié affilié au 2e pilier = 7 258 CHF/an ; indépendant sans 2e pilier = jusqu'à 36 288 CHF/an (max. 20 % du revenu net). Déduction de coordination 2e pilier 2026 = 26 460 CHF. Combine avec un rachat 2e pilier si le règlement de la caisse le permet. Vérifie le statut TOU (taxation ordinaire ultérieure) pour les athlètes au bénéfice d'un permis B/C imposés à la source — ou inversement pour les athlètes étrangers résidant fiscalement en Suisse. (Sources : Banque Cler, Assurance-info.ch, Directives IS 2026.)",
+      "summary": "MAJEUR — rachat 3a rétroactif sur 10 ans (nouveauté 2026) + plafonds 7'258/36'288 CHF + déd. coord. 26'460 CHF"
+    },
+    {
+      "agent_key": "comptabilite",
+      "agent_name": "Pierre",
+      "anchor": "Inscription à la caisse de compensation AVS/AI/APG, calcul des cotisations sociales (environ 10% du revenu net), provision pour impôts (recommandation : mettre de côté 25-35% de chaque revenu selon le canton). Bilan et compte de résultat annuels si tenue comptable complète requise.",
+      "append": "\n\nMISE À JOUR MAI 2026 — TOU & seuil TVA pour créateurs de contenu sportifs :\nLa taxation ordinaire ultérieure (TOU) 2026 devient un point de vigilance pour les athlètes étrangers en Suisse imposés à la source — vérifie les seuils et obligations déclaratives (Directives IS 2026). Pour les sportifs indépendants ou raisons individuelles, vérifie systématiquement le franchissement du seuil TVA de CHF 100 000 (CA mondial) : les revenus de sponsoring, droits d'image et activités de créateur de contenu (publications IG/TT, NIL-like deals) sont à intégrer. Documente les frais professionnels déductibles : déplacements, équipement spécifique, coaching, frais d'agent. Les cotisations 2e/3e pilier 2026 (cf. Sophie : nouveaux plafonds, rachat 3a rétroactif sur 10 ans) restent les principaux leviers de planification fiscale.",
+      "summary": "TOU 2026 + seuil TVA pour créateurs/NIL + leviers planification cf. Sophie"
+    },
+    {
+      "agent_key": "marketing",
+      "agent_name": "Alex",
+      "anchor": "Sport en forte croissance médiatique, très instagrammable, communauté engagée. Contenu autour des matchs, du lifestyle padel, networking sur et hors terrain. Les fans suivent les athlètes d'abord, les équipes ensuite.",
+      "append": "\n\nMISE À JOUR MAI 2026 — Algorithmes IG/TT 2026 & bascule Oracle :\nTikTok 2026 : watch time + completion rate dominent (~40-50 % du poids algorithmique). CHANGEMENT MAJEUR — les nouvelles vidéos sont d'abord testées auprès des followers avant diffusion élargie. Surveille la bascule Oracle (sept. 2025) qui restructure l'algorithme US — impact direct pour les athlètes suisses ciblant le marché US. Instagram 2026 : signaux dominants = watch time, partages (notamment via DM), saves, likes, commentaires ; la plateforme privilégie les contenus originaux et \"natifs\" Instagram. Bascule générale follow graph → interest graph sur toutes les grandes plateformes — les followers ne garantissent plus la portée. Engagement médian Fitness/Sport sur Instagram = 2,8 % ; TikTok reste largement supérieur en engagement médian. Construis un calendrier optimisé watch time : hooks 1-2 s, durée 7-15 s pour TikTok / 30-60 s pour Reels, formats partageables en DM (memes athlétiques, tips), régularité 3-5 posts/sem. Pour les athlètes suisses, capitalise sur le storytelling local (paysages, salles, équipes) — l'authenticité reste un signal premium.",
+      "summary": "IG/TT 2026 (watch time + completion rate) + bascule Oracle US + follow→interest graph"
+    },
+    {
+      "agent_key": "sponsors",
+      "agent_name": "Marc",
+      "anchor": "Marques clés : Bullpadel, Head Padel, Nox, Adidas Padel, Wilson Padel, Babolat. Partenariats : équipementier, centres de padel, événements locaux. Image premium et lifestyle = attire des sponsors haut de gamme. Sport émergent = opportunité d'être \"premier ambassadeur\" d'une marque.",
+      "append": "\n\nMISE À JOUR MAI 2026 — Hyperréalité, athlète-podcasteur & Brack Super League :\nMarché du sponsoring sportif : 70,2 Mrd USD (2025) → 74,59 Mrd USD (2026), CAGR 6,3 % (Business Research Company). Évalue les opportunités à l'aune du modèle HYPERRÉALITÉ : la valeur d'un athlète sponsorable se mesure désormais sur sa capacité à raconter une histoire cross-canal (terrain + IG/TT + podcast/newsletter) — le parcours du fan commence sur les plateformes streaming, pas au stade. Émergence de l'athlète-podcasteur (Kelce, Draymond Green, Angel Reese — modèle exportable, deals 7 chiffres). Pour les athlètes suisses avec audience <500K, vise des deals micro/mid-tier avec activation produit (vs. brand awareness pure) — engagement souvent supérieur. Esports sponsoring +39 %, athlete endorsements +21 %. Surveille les opportunités business-backed (intégration produits B2B : cloud, perf tech, cybersécurité). Côté suisse : Brack.ch est devenu sponsor titre de la Super League (Brack Super League) ; Genius Sports a signé un partenariat IA/data multi-années avec la SFL — opportunités tech B2B suisses à activer.",
+      "summary": "Marché 74,59 Mrd USD + hyperréalité + athlète-podcasteur + Brack Super League / Genius Sports"
+    },
+    {
+      "agent_key": "contrats",
+      "agent_name": "Léa",
+      "anchor": "LAA (obligatoire pour salariés), assurance maladie complémentaire, assurance perte de gain (IJM), assurance invalidité complémentaire, assurance responsabilité civile professionnelle, assurance rapatriement pour les compétitions à l'étranger. Tu sais évaluer la couverture nécessaire selon le niveau et le sport.",
+      "append": "\n\nMISE À JOUR MAI 2026 — Liste WADA 2026 & TAS / Host City Contracts :\nLISTE WADA 2026 EN VIGUEUR DEPUIS LE 1er JANVIER 2026 : (1) AJOUT DU MONOXYDE DE CARBONE (M 1.4) — usage non diagnostique prohibé (manipulation de l'érythropoïèse) ; usage diagnostique (mesure Hb-mass, capacité de diffusion pulmonaire) reste autorisé. (2) SALMÉTÉROL INHALÉ : plafond inchangé de 200 μg / 24 h, MAIS NOUVEAU PLAFOND GLISSANT DE 100 μg / 8 h — sensibilise les athlètes asthmatiques suisses. (3) Cellules / composants cellulaires : ajout des nucléi, mitochondries, ribosomes à l'interdiction des cellules génétiquement modifiées. (4) Prélèvement sanguin : interdit sauf finalité diagnostique ou don accrédité. Vérifie que les protocoles médicaux de Swiss Olympic, Swiss Athletics et fédérations nationales ont intégré cette liste. TAS / arbitrage 2026 : la Coupe du monde FIFA 2026 attribue au TAS la compétence exclusive en cas de désaccord non résolu rapidement entre parties — intègre désormais une clause TAS de juridiction exclusive alignée sur le standard FIFA 2026 dans les contrats de sponsoring. Host City Contracts JO 2026 (Milano-Cortina) : clauses droits humains désormais standard — anticipe-les pour les contrats avec villes-hôtes ou organisateurs d'événements.",
+      "summary": "WADA 2026 (CO M 1.4 + salmétérol 100 μg/8h) + TAS exclusif FIFA 2026 + droits humains JO Milano-Cortina"
+    },
+    {
+      "agent_key": "equipe",
+      "agent_name": "Lucas",
+      "anchor": "L'athlète pratique : ${p.sport || 'sport non renseigné'}, niveau : ${p.level || 'non renseigné'}, club : ${p.club || 'non renseigné'}, canton : ${p.canton || 'non renseigné'}. Adapte systématiquement tes réponses à son sport et son niveau.",
+      "append": "\n\nMISE À JOUR MAI 2026 — Fribourg-Gottéron champion & Brack Super League :\nACTUALITÉ HOCKEY SUISSE 2026 — FRIBOURG-GOTTÉRON CHAMPION DE LA NATIONAL LEAGUE 2026 (1er titre en 45 ans). Finale épique remportée 4-3 face au HC Davos, Game 7 le 30 avril 2026, but de Lucas Wallmark en prolongation. Quatrième saison consécutive avec un club romand en finale (Genève-Servette/Bienne 2023, Lausanne 2024-2025, Fribourg 2026). Julien Sprunger (40 ans) prend sa retraite sur ce titre, après 24 saisons au club. FOOTBALL — la Super League suisse 2025/26 est devenue la BRACK SUPER LEAGUE depuis l'arrivée de Brack.ch comme sponsor titre, avec partenariat IA/data multi-années Genius Sports. Format : 33 journées en phase régulière puis split en 2 groupes de 6 (championnat / relégation), saison du 25 juillet 2025 au 17 mai 2026. Pour les agents de joueurs internationaux suisses (Sommer, Xhaka, Akanji, Embolo, etc.), anticipe la juridiction TAS exclusive sur les litiges Coupe du monde FIFA 2026.",
+      "summary": "Fribourg-Gottéron champion 2026 (4-3 vs HC Davos) + Brack Super League / Genius Sports"
+    }
+  ]
+}
