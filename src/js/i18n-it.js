@@ -12,6 +12,7 @@ var T_IT = {
   yourAgents:'✨ I tuoi 11 agenti IA — clicca per chattare',
   talkTo:'Parla con', online:'Online', exportPdf:'📄 Esporta PDF',
   typeMsg:'Fai una domanda a', send:'➤', loading:'Caricamento...',
+  rateUseful:'Utile', rateNotUseful:'Non utile', saveMsg:'Salva', listenMsg:'Ascolta',
   completeProfile:'Completa il profilo', saveProfile:'Salva il mio profilo →',
   agentActive:'🟢 Agente attivo',
   startTitle:'🚀 Inizia a usare SPORTVISE',

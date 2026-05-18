@@ -12,6 +12,7 @@ var T_DE = {
   yourAgents:'✨ Deine 11 KI-Agenten — zum Chatten klicken',
   talkTo:'Sprich mit', online:'Online', exportPdf:'📄 PDF exportieren',
   typeMsg:'Stell eine Frage an', send:'➤', loading:'Laden...',
+  rateUseful:'Nützlich', rateNotUseful:'Nicht nützlich', saveMsg:'Speichern', listenMsg:'Anhören',
   completeProfile:'Profil vervollständigen', saveProfile:'Profil speichern →',
   agentActive:'🟢 Agent aktiv',
   startTitle:'🚀 Starte mit SPORTVISE',

@@ -12,6 +12,7 @@ var T_EN = {
   yourAgents:'✨ Your 11 AI agents — click to chat',
   talkTo:'Ask', online:'Online', exportPdf:'📄 Export PDF',
   typeMsg:'Ask a question to', send:'➤', loading:'Loading...',
+  rateUseful:'Useful', rateNotUseful:'Not useful', saveMsg:'Save', listenMsg:'Listen',
   completeProfile:'Complete your profile', saveProfile:'Save my profile →',
   agentActive:'🟢 Agent active',
   startTitle:'🚀 Get started with SPORTVISE',
