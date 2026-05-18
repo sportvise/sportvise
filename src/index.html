@@ -378,6 +378,24 @@
       .preview-side{display:none}
       .pm-kpi{grid-template-columns:repeat(2,1fr)}
     }
+
+    /* v63.6 — Level selector + bandeau recommandation */
+    .level-selector{max-width:720px;margin:0 auto 32px;padding:0 16px;text-align:center}
+    .level-selector-label{font-size:12px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;font-weight:600}
+    .level-pills{display:inline-flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:16px}
+    .level-pill{background:transparent;border:1.5px solid #cbd5e1;color:#475569;padding:8px 18px;border-radius:999px;font-size:14px;cursor:pointer;transition:all .18s;font-family:inherit;font-weight:500}
+    .level-pill:hover{border-color:#f59e0b;color:#b45309;background:#fff7ed}
+    .level-pill.active{background:#fef3c7;border-color:#f59e0b;color:#78350f;font-weight:700;box-shadow:0 0 0 3px rgba(245,158,11,.15)}
+    .level-banner{display:flex;align-items:flex-start;gap:10px;border-left:3px solid #cbd5e1;border-radius:8px;padding:12px 16px;font-size:13px;line-height:1.6;text-align:left;max-width:640px;margin:0 auto;transition:all .25s;background:#f8fafc;color:#64748b}
+    .level-banner[data-banner-state="filled"]{background:#fff7ed;border-left-color:#f59e0b;color:#78350f}
+    .level-banner-icon{font-size:18px;flex-shrink:0;line-height:1.4}
+    .level-banner-text{margin:0}
+    .agent-card{position:relative;transition:box-shadow .25s,transform .18s}
+    .agent-card.recommended{box-shadow:0 0 0 2px #f59e0b,0 8px 24px rgba(245,158,11,.18);transform:translateY(-2px)}
+    .agent-card.recommended::after{content:attr(data-rec-label);position:absolute;top:10px;right:10px;background:#f59e0b;color:#fff;font-size:9px;padding:3px 9px;border-radius:999px;font-weight:800;letter-spacing:.6px;text-transform:uppercase}
+    @media (max-width:480px){
+      .level-pill{padding:7px 14px;font-size:13px}
+    }
   </style>
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#f59e0b" />
@@ -506,20 +524,33 @@
       <h2 data-i18n="agentsTitle">11 agents experts<br/>à votre service</h2>
       <p data-i18n="agentsDesc">Chaque agent connaît parfaitement le marché sportif suisse — droit, fiscalité, culture et réseaux locaux.</p>
     </div>
+    <!-- v63.6 — Level selector + bandeau recommandation -->
+    <div class="level-selector animate" style="animation-delay:.08s">
+      <div class="level-selector-label" data-i18n="levelLabel">Tu es à quel niveau ?</div>
+      <div class="level-pills">
+        <button type="button" class="level-pill" data-level="amateur" data-i18n="levelAmateur">Amateur compétitif</button>
+        <button type="button" class="level-pill" data-level="semipro" data-i18n="levelSemipro">Semi-pro</button>
+        <button type="button" class="level-pill" data-level="pro" data-i18n="levelPro">Pro</button>
+      </div>
+      <div class="level-banner" data-banner-state="empty">
+        <span class="level-banner-icon" aria-hidden="true">🎯</span>
+        <p class="level-banner-text" data-i18n="levelBannerEmpty">Choisis ton niveau pour voir tes 4 agents prioritaires.</p>
+      </div>
+    </div>
     <div class="agents-grid">
       <!-- BUSINESS -->
-      <div class="agent-card animate" style="border-color:#fb923c25;animation-delay:.1s"><div class="agent-emoji">💼</div><div class="agent-name">Lucas</div><div class="agent-role" style="color:#fb923c" data-i18n="agentLucasRole">Manager Sportif</div><div class="agent-desc" data-i18n="agentLucasDesc">Gestion de carrière, recherche de clubs, transferts et stratégie de développement.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
-      <div class="agent-card animate" style="border-color:#6366f125;animation-delay:.15s"><div class="agent-emoji">🎯</div><div class="agent-name">Alex</div><div class="agent-role" style="color:#6366f1" data-i18n="agentAlexRole">Marketing & Visibilité</div><div class="agent-desc" data-i18n="agentAlexDesc">Réseaux sociaux, personal branding, image publique et stratégie de communication.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
-      <div class="agent-card animate" style="border-color:#f59e0b25;animation-delay:.2s"><div class="agent-emoji">🤝</div><div class="agent-name">Marc</div><div class="agent-role" style="color:#f59e0b" data-i18n="agentMarcRole">Sponsors & Partenariats</div><div class="agent-desc" data-i18n="agentMarcDesc">Recherche de sponsors, négociations, partenariats et valorisation de votre image.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
-      <div class="agent-card animate" style="border-color:#8b5cf625;animation-delay:.25s"><div class="agent-emoji">⚖️</div><div class="agent-name">Léa</div><div class="agent-role" style="color:#8b5cf6" data-i18n="agentLeaRole">Contrats & Juridique</div><div class="agent-desc" data-i18n="agentLeaDesc">Contrats, droits des sportifs, litiges et réglementation sportive suisse.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
-      <div class="agent-card animate" style="border-color:#10b98125;animation-delay:.3s"><div class="agent-emoji">💶</div><div class="agent-name">Sophie</div><div class="agent-role" style="color:#10b981" data-i18n="agentSophieRole">Finance & Fiscalité</div><div class="agent-desc" data-i18n="agentSophieDesc">Budget, investissements, fiscalité sportive suisse et planification financière.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
-      <div class="agent-card animate" style="border-color:#94a3b825;animation-delay:.35s"><div class="agent-emoji">📊</div><div class="agent-name">Pierre</div><div class="agent-role" style="color:#94a3b8" data-i18n="agentPierreRole">Comptabilité</div><div class="agent-desc" data-i18n="agentPierreDesc">Suivi comptable, factures, déclarations fiscales et gestion administrative.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+      <div class="agent-card animate" data-agent="lucas" style="border-color:#fb923c25;animation-delay:.1s"><div class="agent-emoji">💼</div><div class="agent-name">Lucas</div><div class="agent-role" style="color:#fb923c" data-i18n="agentLucasRole">Manager Sportif</div><div class="agent-desc" data-i18n="agentLucasDesc">Gestion de carrière, recherche de clubs, transferts et stratégie de développement.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+      <div class="agent-card animate" data-agent="alex" style="border-color:#6366f125;animation-delay:.15s"><div class="agent-emoji">🎯</div><div class="agent-name">Alex</div><div class="agent-role" style="color:#6366f1" data-i18n="agentAlexRole">Marketing & Visibilité</div><div class="agent-desc" data-i18n="agentAlexDesc">Réseaux sociaux, personal branding, image publique et stratégie de communication.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+      <div class="agent-card animate" data-agent="marc" style="border-color:#f59e0b25;animation-delay:.2s"><div class="agent-emoji">🤝</div><div class="agent-name">Marc</div><div class="agent-role" style="color:#f59e0b" data-i18n="agentMarcRole">Sponsors & Partenariats</div><div class="agent-desc" data-i18n="agentMarcDesc">Recherche de sponsors, négociations, partenariats et valorisation de votre image.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+      <div class="agent-card animate" data-agent="lea" style="border-color:#8b5cf625;animation-delay:.25s"><div class="agent-emoji">⚖️</div><div class="agent-name">Léa</div><div class="agent-role" style="color:#8b5cf6" data-i18n="agentLeaRole">Contrats & Juridique</div><div class="agent-desc" data-i18n="agentLeaDesc">Contrats, droits des sportifs, litiges et réglementation sportive suisse.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+      <div class="agent-card animate" data-agent="sophie" style="border-color:#10b98125;animation-delay:.3s"><div class="agent-emoji">💶</div><div class="agent-name">Sophie</div><div class="agent-role" style="color:#10b981" data-i18n="agentSophieRole">Finance & Fiscalité</div><div class="agent-desc" data-i18n="agentSophieDesc">Budget, investissements, fiscalité sportive suisse et planification financière.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+      <div class="agent-card animate" data-agent="pierre" style="border-color:#94a3b825;animation-delay:.35s"><div class="agent-emoji">📊</div><div class="agent-name">Pierre</div><div class="agent-role" style="color:#94a3b8" data-i18n="agentPierreRole">Comptabilité</div><div class="agent-desc" data-i18n="agentPierreDesc">Suivi comptable, factures, déclarations fiscales et gestion administrative.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
       <!-- PERFORMANCE -->
-      <div class="agent-card animate" style="border-color:#ef444425;animation-delay:.4s"><div class="agent-emoji">🏋️</div><div class="agent-name">David</div><div class="agent-role" style="color:#ef4444" data-i18n="agentDavidRole">Préparation Physique</div><div class="agent-desc" data-i18n="agentDavidDesc">Programmes d'entraînement sur mesure, prévention des blessures et performance.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
-      <div class="agent-card animate" style="border-color:#06b6d425;animation-delay:.45s"><div class="agent-emoji">🧠</div><div class="agent-name">Emma</div><div class="agent-role" style="color:#06b6d4" data-i18n="agentEmmaRole">Préparation Mentale</div><div class="agent-desc" data-i18n="agentEmmaDesc">Psychologie du sport, gestion du stress, confiance et performance sous pression.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
-      <div class="agent-card animate" style="border-color:#84cc1625;animation-delay:.5s"><div class="agent-emoji">🥗</div><div class="agent-name">Clara</div><div class="agent-role" style="color:#84cc16" data-i18n="agentClaraRole">Nutrition Sportive</div><div class="agent-desc" data-i18n="agentClaraDesc">Plans alimentaires personnalisés, hydratation, supplémentation et nutrition de saison.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
-      <div class="agent-card animate" style="border-color:#a78bfa25;animation-delay:.55s"><div class="agent-emoji">😴</div><div class="agent-name">Nora</div><div class="agent-role" style="color:#a78bfa" data-i18n="agentNoraRole">Sommeil & Récupération</div><div class="agent-desc" data-i18n="agentNoraDesc">Optimisation du sommeil, routines de repos et cycles de récupération.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
-      <div class="agent-card animate" style="border-color:#14b8a625;animation-delay:.6s"><div class="agent-emoji">♻️</div><div class="agent-name">Julie</div><div class="agent-role" style="color:#14b8a6" data-i18n="agentJulieRole">Récupération & Régénération</div><div class="agent-desc" data-i18n="agentJulieDesc">Protocoles de récupération, cryothérapie, étirements et régénération musculaire.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+      <div class="agent-card animate" data-agent="david" style="border-color:#ef444425;animation-delay:.4s"><div class="agent-emoji">🏋️</div><div class="agent-name">David</div><div class="agent-role" style="color:#ef4444" data-i18n="agentDavidRole">Préparation Physique</div><div class="agent-desc" data-i18n="agentDavidDesc">Programmes d'entraînement sur mesure, prévention des blessures et performance.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+      <div class="agent-card animate" data-agent="emma" style="border-color:#06b6d425;animation-delay:.45s"><div class="agent-emoji">🧠</div><div class="agent-name">Emma</div><div class="agent-role" style="color:#06b6d4" data-i18n="agentEmmaRole">Préparation Mentale</div><div class="agent-desc" data-i18n="agentEmmaDesc">Psychologie du sport, gestion du stress, confiance et performance sous pression.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+      <div class="agent-card animate" data-agent="clara" style="border-color:#84cc1625;animation-delay:.5s"><div class="agent-emoji">🥗</div><div class="agent-name">Clara</div><div class="agent-role" style="color:#84cc16" data-i18n="agentClaraRole">Nutrition Sportive</div><div class="agent-desc" data-i18n="agentClaraDesc">Plans alimentaires personnalisés, hydratation, supplémentation et nutrition de saison.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+      <div class="agent-card animate" data-agent="nora" style="border-color:#a78bfa25;animation-delay:.55s"><div class="agent-emoji">😴</div><div class="agent-name">Nora</div><div class="agent-role" style="color:#a78bfa" data-i18n="agentNoraRole">Sommeil & Récupération</div><div class="agent-desc" data-i18n="agentNoraDesc">Optimisation du sommeil, routines de repos et cycles de récupération.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+      <div class="agent-card animate" data-agent="julie" style="border-color:#14b8a625;animation-delay:.6s"><div class="agent-emoji">♻️</div><div class="agent-name">Julie</div><div class="agent-role" style="color:#14b8a6" data-i18n="agentJulieRole">Récupération & Régénération</div><div class="agent-desc" data-i18n="agentJulieDesc">Protocoles de récupération, cryothérapie, étirements et régénération musculaire.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
     </div>
   </div>
 </section>
@@ -889,7 +920,16 @@
       footerProduct:"Produit", footerLegal:"Légal", footerContact:"Contact",
       footerLinkAgents:"Agents IA", footerLinkPricing:"Tarifs", footerLinkLogin:"Connexion",
       footerLinkTos:"CGU", footerLinkPrivacy:"Confidentialité", footerLinkLegal:"Mentions légales",
-      footerCopyright:"© 2026 SPORTVISE · Suisse 🇨🇭"
+      footerCopyright:"© 2026 SPORTVISE · Suisse 🇨🇭",
+      levelLabel:"Tu es à quel niveau ?",
+      levelAmateur:"Amateur compétitif",
+      levelSemipro:"Semi-pro",
+      levelPro:"Pro",
+      levelBannerEmpty:"Choisis ton niveau pour voir tes 4 agents prioritaires.",
+      levelBanner_amateur:"Pour un amateur, on suggère <strong>David, Emma, Clara et Sophie</strong> — entraînement, mental, nutrition, bases finances. Les 7 autres restent là quand tu en auras besoin.",
+      levelBanner_semipro:"Pour un semi-pro, ton carré quotidien : <strong>Lucas, David, Emma, Sophie</strong>. Carrière, corps, tête, thune — les questions qui reviennent chaque semaine.",
+      levelBanner_pro:"Pour un pro, ce qui pèse : <strong>Lucas, Léa, Marc, Sophie</strong>. Décisions de carrière, contrats, sponsors, fiscalité. David et Emma restent disponibles au quotidien.",
+      levelRecBadge:"Recommandé"
     },
     de: {
       navAgents:"KI-Agenten", navPricing:"Preise", navFaq:"FAQ", navLogin:"Anmelden", navStart:"Starten \u2192",
@@ -991,7 +1031,16 @@
       footerProduct:"Produkt", footerLegal:"Rechtliches", footerContact:"Kontakt",
       footerLinkAgents:"KI-Agenten", footerLinkPricing:"Preise", footerLinkLogin:"Anmelden",
       footerLinkTos:"AGB", footerLinkPrivacy:"Datenschutz", footerLinkLegal:"Impressum",
-      footerCopyright:"© 2026 SPORTVISE · Schweiz 🇨🇭"
+      footerCopyright:"© 2026 SPORTVISE · Schweiz 🇨🇭",
+      levelLabel:"Auf welchem Niveau bist du?",
+      levelAmateur:"Wettkampf-Amateur",
+      levelSemipro:"Semi-Profi",
+      levelPro:"Profi",
+      levelBannerEmpty:"Wähle dein Niveau, um deine 4 prioritären Agenten zu sehen.",
+      levelBanner_amateur:"Für Amateure empfehlen wir <strong>David, Emma, Clara und Sophie</strong> — Training, Mental, Ernährung, Finanzgrundlagen. Die anderen 7 bleiben verfügbar.",
+      levelBanner_semipro:"Für Semi-Profis dein tägliches Kernteam: <strong>Lucas, David, Emma, Sophie</strong>. Karriere, Körper, Kopf, Finanzen — die wöchentlichen Fragen.",
+      levelBanner_pro:"Für Profis was wirklich zählt: <strong>Lucas, Léa, Marc, Sophie</strong>. Karriereentscheidungen, Verträge, Sponsoren, Steuern. David und Emma bleiben für den Alltag verfügbar.",
+      levelRecBadge:"Empfohlen"
     },
     en: {
       navAgents:"AI Agents", navPricing:"Pricing", navFaq:"FAQ", navLogin:"Log in", navStart:"Get started \u2192",
@@ -1093,7 +1142,16 @@
       footerProduct:"Product", footerLegal:"Legal", footerContact:"Contact",
       footerLinkAgents:"AI Agents", footerLinkPricing:"Pricing", footerLinkLogin:"Log in",
       footerLinkTos:"Terms", footerLinkPrivacy:"Privacy", footerLinkLegal:"Legal Notice",
-      footerCopyright:"© 2026 SPORTVISE · Switzerland 🇨🇭"
+      footerCopyright:"© 2026 SPORTVISE · Switzerland 🇨🇭",
+      levelLabel:"What's your level?",
+      levelAmateur:"Competitive amateur",
+      levelSemipro:"Semi-pro",
+      levelPro:"Pro",
+      levelBannerEmpty:"Pick your level to see your 4 priority agents.",
+      levelBanner_amateur:"For an amateur, we suggest <strong>David, Emma, Clara and Sophie</strong> — training, mind, nutrition, financial basics. The other 7 stay available when you need them.",
+      levelBanner_semipro:"For a semi-pro, your daily core: <strong>Lucas, David, Emma, Sophie</strong>. Career, body, mind, money — the weekly questions.",
+      levelBanner_pro:"For a pro, what really matters: <strong>Lucas, Léa, Marc, Sophie</strong>. Career decisions, contracts, sponsors, taxes. David and Emma stay available for daily life.",
+      levelRecBadge:"Recommended"
     },
     it: {
       navAgents:"Agenti IA", navPricing:"Prezzi", navFaq:"FAQ", navLogin:"Accedi", navStart:"Inizia \u2192",
@@ -1195,7 +1253,16 @@
       footerProduct:"Prodotto", footerLegal:"Legale", footerContact:"Contatto",
       footerLinkAgents:"Agenti IA", footerLinkPricing:"Prezzi", footerLinkLogin:"Accedi",
       footerLinkTos:"CGU", footerLinkPrivacy:"Privacy", footerLinkLegal:"Note legali",
-      footerCopyright:"© 2026 SPORTVISE · Svizzera 🇨🇭"
+      footerCopyright:"© 2026 SPORTVISE · Svizzera 🇨🇭",
+      levelLabel:"A che livello sei?",
+      levelAmateur:"Amatore competitivo",
+      levelSemipro:"Semi-pro",
+      levelPro:"Pro",
+      levelBannerEmpty:"Scegli il tuo livello per vedere i tuoi 4 agenti prioritari.",
+      levelBanner_amateur:"Per un amatore, suggeriamo <strong>David, Emma, Clara e Sophie</strong> — allenamento, mente, nutrizione, basi finanziarie. Gli altri 7 restano disponibili.",
+      levelBanner_semipro:"Per un semi-pro, il tuo nucleo quotidiano: <strong>Lucas, David, Emma, Sophie</strong>. Carriera, corpo, mente, soldi — le domande settimanali.",
+      levelBanner_pro:"Per un pro, ciò che conta: <strong>Lucas, Léa, Marc, Sophie</strong>. Decisioni di carriera, contratti, sponsor, fiscalità. David ed Emma restano disponibili per il quotidiano.",
+      levelRecBadge:"Consigliato"
     }
   };
 
@@ -1264,6 +1331,83 @@
       if (saved && i18n[saved]) setLangPage(saved);
     }
   } catch(e) {}
+
+  // ────────────────────────────────────────────────────────
+  // v63.6 — Level selector + bandeau recommandation
+  // KILL SWITCH : passer SV_FEATURE_LEVEL_SELECTOR à false pour masquer
+  // le selector et désactiver toute la logique. Repush = retour à la
+  // grille 11 agents standard, sans revert Git.
+  // ────────────────────────────────────────────────────────
+  const SV_FEATURE_LEVEL_SELECTOR = true;
+
+  if (!SV_FEATURE_LEVEL_SELECTOR) {
+    const _selEl = document.querySelector('.level-selector');
+    if (_selEl) _selEl.style.display = 'none';
+    document.querySelectorAll('.agent-card.recommended').forEach(c => {
+      c.classList.remove('recommended');
+      c.removeAttribute('data-rec-label');
+    });
+  } else {
+    const SV_AGENT_RECS = {
+      amateur: ['david', 'emma', 'clara', 'sophie'],
+      semipro: ['lucas', 'david', 'emma', 'sophie'],
+      pro:     ['lucas', 'lea', 'marc', 'sophie']
+    };
+
+    function svSetAthleteLevel(level, silent) {
+      if (!SV_AGENT_RECS[level]) return;
+
+      if (!silent) {
+        try { localStorage.setItem('sv_athlete_level', level); } catch(e) {}
+      }
+
+      document.querySelectorAll('.level-pill').forEach(b => {
+        b.classList.toggle('active', b.dataset.level === level);
+      });
+
+      const banner = document.querySelector('.level-banner');
+      if (banner) {
+        banner.setAttribute('data-banner-state', 'filled');
+        const txtEl = banner.querySelector('.level-banner-text');
+        const lang = currentLang || 'fr';
+        const key = 'levelBanner_' + level;
+        const txt = (i18n[lang] && i18n[lang][key]) || (i18n.fr && i18n.fr[key]) || '';
+        if (txtEl && txt) txtEl.innerHTML = txt;
+      }
+
+      const recAgents = SV_AGENT_RECS[level];
+      const lang = currentLang || 'fr';
+      const recLabel = (i18n[lang] && i18n[lang].levelRecBadge) || 'Recommandé';
+      document.querySelectorAll('.agent-card[data-agent]').forEach(card => {
+        const isRec = recAgents.includes(card.dataset.agent);
+        card.classList.toggle('recommended', isRec);
+        if (isRec) card.setAttribute('data-rec-label', recLabel);
+        else card.removeAttribute('data-rec-label');
+      });
+    }
+
+    document.querySelectorAll('.level-pill').forEach(btn => {
+      btn.addEventListener('click', () => svSetAthleteLevel(btn.dataset.level));
+    });
+
+    // Restore previously selected level on page load
+    try {
+      const saved = localStorage.getItem('sv_athlete_level');
+      if (saved && SV_AGENT_RECS[saved]) {
+        svSetAthleteLevel(saved, true);
+      }
+    } catch(e) {}
+
+    // Re-apply badges + banner after language switch (wrap setLangPage)
+    const _svOrigSetLang = setLangPage;
+    setLangPage = function(lang) {
+      _svOrigSetLang(lang);
+      try {
+        const saved = localStorage.getItem('sv_athlete_level');
+        if (saved && SV_AGENT_RECS[saved]) svSetAthleteLevel(saved, true);
+      } catch(e) {}
+    };
+  }
 </script>
 </body>
 </html>
