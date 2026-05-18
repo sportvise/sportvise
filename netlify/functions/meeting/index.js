@@ -177,8 +177,10 @@ async function logUsage({ userId, agentIds, model, inputTokens, outputTokens, la
 }
 
 // ─────────────────────────────────────────────────────────────
-// Model config — meeting force Haiku par défaut (3× cost donc on optimise).
-// Sonnet réservé aux beta testers via env AI_MODEL_BETA_USERS comme chat.
+// Model config (v63.6) — TOUS les plans → Sonnet 4.6. Opus dormant (réactivable pour Pro
+// en 1 ligne dans pickModel). Beta override → Opus pour comparer la qualité depuis le
+// compte interne. Le meeting déclenche 3 calls en parallèle donc le coût est ×3 par
+// session — c'est pourquoi on garde maxTokens plus serré qu'en chat 1-1.
 // ─────────────────────────────────────────────────────────────
 const MODEL_CONFIG = {
   haiku: {
@@ -199,16 +201,37 @@ const MODEL_CONFIG = {
 - Termine par UNE seule recommandation actionnable.
 
 `
+  },
+  opus: {
+    id: process.env.AI_MODEL_PREMIUM || 'claude-opus-4-6',
+    maxTokens: 500,
+    temperature: 0.4,
+    systemPrefix: `[CONSIGNES MEETING — RESPECTE STRICTEMENT]
+- Réponds en 2 paragraphes courts maximum (le user va lire 3 réponses, sois concis).
+- Tutoie systématiquement.
+- Pas de listes à puces sauf nécessité absolue.
+- Reste dans TON domaine d'expertise — ne déborde pas sur les autres agents qui répondent en parallèle à la même question.
+- Termine par UNE seule recommandation actionnable.
+- Tu es l'expert haut de gamme du plan Pro : pousse la spécificité (chiffres, références au sport pratiqué, anticipation) tout en restant dans ton domaine.
+
+`
   }
 };
 
-function pickModel(userEmail) {
+function pickModel(userEmail, plan) {
+  // 1. Override interne (QA / beta testing) — permet de forcer Opus pour comparer.
   const betaUsersRaw = process.env.AI_MODEL_BETA_USERS || '';
-  if (!userEmail || !betaUsersRaw) return 'haiku';
-  const betaSet = new Set(
-    betaUsersRaw.split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
-  );
-  return betaSet.has(String(userEmail).trim().toLowerCase()) ? 'sonnet' : 'haiku';
+  if (userEmail && betaUsersRaw) {
+    const betaSet = new Set(
+      betaUsersRaw.split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
+    );
+    if (betaSet.has(String(userEmail).trim().toLowerCase())) return 'opus';
+  }
+  // 2. Tous les plans → Sonnet. Opus dormant dans MODEL_CONFIG, réactivable plus tard
+  //    pour le plan Pro si on valide le différenciateur paywall. Pour l'instant on
+  //    n'augmente pas le coût Pro tant que le segment cible n'est pas validé (mémoire
+  //    test_amis_13_05). Le paramètre `plan` reste dans la signature pour réactivation.
+  return 'sonnet';
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -498,7 +521,7 @@ exports.handler = async (event) => {
 
   // ─── Pick model (Haiku par défaut, Sonnet beta) ───
   const effectiveEmail = user.email || userEmail;
-  const modelKey = pickModel(effectiveEmail);
+  const modelKey = pickModel(effectiveEmail, plan);
   const modelConfig = MODEL_CONFIG[modelKey];
 
   // ─── Build other-agent-names map for meeting context ───
