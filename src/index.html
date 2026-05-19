@@ -146,7 +146,7 @@
         "name": "SPORTVISE remplace-t-il un vrai agent sportif humain ?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "SPORTVISE ne remplace pas un agent humain, il le démocratise. Un agent pro coûte CHF 5'000–15'000/mois — inaccessible pour la majorité. SPORTVISE offre une équipe complète de 11 agents IA dès CHF 0/mois, avec des plans Plus à CHF 12 et Pro à CHF 19."
+          "text": "SPORTVISE n'est pas un remplaçant de manager humain — c'est ton premier réflexe entre deux rendez-vous, accessible 24/7 et sans réseau préalable. En quelques secondes tu obtiens un point de vue de manager, préparateur, fiscaliste ou juriste sans avoir à appeler trois personnes. Dès CHF 0/mois, Plus à CHF 12, Pro à CHF 19."
         }
       },
       {
@@ -378,6 +378,24 @@
       .preview-side{display:none}
       .pm-kpi{grid-template-columns:repeat(2,1fr)}
     }
+
+    /* v63.6 — Level selector + bandeau recommandation */
+    .level-selector{max-width:720px;margin:0 auto 32px;padding:0 16px;text-align:center}
+    .level-selector-label{font-size:12px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;font-weight:600}
+    .level-pills{display:inline-flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:16px}
+    .level-pill{background:transparent;border:1.5px solid #cbd5e1;color:#475569;padding:8px 18px;border-radius:999px;font-size:14px;cursor:pointer;transition:all .18s;font-family:inherit;font-weight:500}
+    .level-pill:hover{border-color:#f59e0b;color:#b45309;background:#fff7ed}
+    .level-pill.active{background:#fef3c7;border-color:#f59e0b;color:#78350f;font-weight:700;box-shadow:0 0 0 3px rgba(245,158,11,.15)}
+    .level-banner{display:flex;align-items:flex-start;gap:10px;border-left:3px solid #cbd5e1;border-radius:8px;padding:12px 16px;font-size:13px;line-height:1.6;text-align:left;max-width:640px;margin:0 auto;transition:all .25s;background:#f8fafc;color:#64748b}
+    .level-banner[data-banner-state="filled"]{background:#fff7ed;border-left-color:#f59e0b;color:#78350f}
+    .level-banner-icon{font-size:18px;flex-shrink:0;line-height:1.4}
+    .level-banner-text{margin:0}
+    .agent-card{position:relative;transition:box-shadow .25s,transform .18s}
+    .agent-card.recommended{box-shadow:0 0 0 2px #f59e0b,0 8px 24px rgba(245,158,11,.18);transform:translateY(-2px)}
+    .agent-card.recommended::after{content:attr(data-rec-label);position:absolute;top:10px;right:10px;background:#f59e0b;color:#fff;font-size:9px;padding:3px 9px;border-radius:999px;font-weight:800;letter-spacing:.6px;text-transform:uppercase}
+    @media (max-width:480px){
+      .level-pill{padding:7px 14px;font-size:13px}
+    }
   </style>
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#f59e0b" />
@@ -493,7 +511,7 @@
       <div class="stat-item"><div class="stat-num gradient-text">11</div><div class="stat-label" data-i18n="stat1">Agents IA spécialisés</div></div>
       <div class="stat-item"><div class="stat-num gradient-text">24/7</div><div class="stat-label" data-i18n="stat2">Disponibilité totale</div></div>
       <div class="stat-item"><div class="stat-num gradient-text">Gratuit</div><div class="stat-label" data-i18n="stat3">Pour commencer dès maintenant</div></div>
-      <div class="stat-item"><div class="stat-num" style="background:none;-webkit-text-fill-color:initial;color:var(--text)">🇨🇭</div><div class="stat-label" data-i18n="stat4">100% adapté Suisse</div></div>
+      <div class="stat-item"><div class="stat-num" style="background:none;-webkit-text-fill-color:initial;color:var(--text)">🇨🇭</div><div class="stat-label" data-i18n="stat4">Droit & fiscalité CH</div></div>
     </div>
   </div>
 </section>
@@ -506,20 +524,33 @@
       <h2 data-i18n="agentsTitle">11 agents experts<br/>à votre service</h2>
       <p data-i18n="agentsDesc">Chaque agent connaît parfaitement le marché sportif suisse — droit, fiscalité, culture et réseaux locaux.</p>
     </div>
+    <!-- v63.6 — Level selector + bandeau recommandation -->
+    <div class="level-selector animate" style="animation-delay:.08s">
+      <div class="level-selector-label" data-i18n="levelLabel">Tu es à quel niveau ?</div>
+      <div class="level-pills">
+        <button type="button" class="level-pill" data-level="amateur" data-i18n="levelAmateur">Amateur compétitif</button>
+        <button type="button" class="level-pill" data-level="semipro" data-i18n="levelSemipro">Semi-pro</button>
+        <button type="button" class="level-pill" data-level="pro" data-i18n="levelPro">Pro</button>
+      </div>
+      <div class="level-banner" data-banner-state="empty">
+        <span class="level-banner-icon" aria-hidden="true">🎯</span>
+        <p class="level-banner-text" data-i18n="levelBannerEmpty">Choisis ton niveau pour voir tes 4 agents prioritaires.</p>
+      </div>
+    </div>
     <div class="agents-grid">
       <!-- BUSINESS -->
-      <div class="agent-card animate" style="border-color:#fb923c25;animation-delay:.1s"><div class="agent-emoji">💼</div><div class="agent-name">Lucas</div><div class="agent-role" style="color:#fb923c" data-i18n="agentLucasRole">Manager Sportif</div><div class="agent-desc" data-i18n="agentLucasDesc">Gestion de carrière, recherche de clubs, transferts et stratégie de développement.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
-      <div class="agent-card animate" style="border-color:#6366f125;animation-delay:.15s"><div class="agent-emoji">🎯</div><div class="agent-name">Alex</div><div class="agent-role" style="color:#6366f1" data-i18n="agentAlexRole">Marketing & Visibilité</div><div class="agent-desc" data-i18n="agentAlexDesc">Réseaux sociaux, personal branding, image publique et stratégie de communication.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
-      <div class="agent-card animate" style="border-color:#f59e0b25;animation-delay:.2s"><div class="agent-emoji">🤝</div><div class="agent-name">Marc</div><div class="agent-role" style="color:#f59e0b" data-i18n="agentMarcRole">Sponsors & Partenariats</div><div class="agent-desc" data-i18n="agentMarcDesc">Recherche de sponsors, négociations, partenariats et valorisation de votre image.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
-      <div class="agent-card animate" style="border-color:#8b5cf625;animation-delay:.25s"><div class="agent-emoji">⚖️</div><div class="agent-name">Léa</div><div class="agent-role" style="color:#8b5cf6" data-i18n="agentLeaRole">Contrats & Juridique</div><div class="agent-desc" data-i18n="agentLeaDesc">Contrats, droits des sportifs, litiges et réglementation sportive suisse.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
-      <div class="agent-card animate" style="border-color:#10b98125;animation-delay:.3s"><div class="agent-emoji">💶</div><div class="agent-name">Sophie</div><div class="agent-role" style="color:#10b981" data-i18n="agentSophieRole">Finance & Fiscalité</div><div class="agent-desc" data-i18n="agentSophieDesc">Budget, investissements, fiscalité sportive suisse et planification financière.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
-      <div class="agent-card animate" style="border-color:#94a3b825;animation-delay:.35s"><div class="agent-emoji">📊</div><div class="agent-name">Pierre</div><div class="agent-role" style="color:#94a3b8" data-i18n="agentPierreRole">Comptabilité</div><div class="agent-desc" data-i18n="agentPierreDesc">Suivi comptable, factures, déclarations fiscales et gestion administrative.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+      <div class="agent-card animate" data-agent="lucas" style="border-color:#fb923c25;animation-delay:.1s"><div class="agent-emoji">💼</div><div class="agent-name">Lucas</div><div class="agent-role" style="color:#fb923c" data-i18n="agentLucasRole">Manager Sportif</div><div class="agent-desc" data-i18n="agentLucasDesc">Gestion de carrière, recherche de clubs, transferts et stratégie de développement.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+      <div class="agent-card animate" data-agent="alex" style="border-color:#6366f125;animation-delay:.15s"><div class="agent-emoji">🎯</div><div class="agent-name">Alex</div><div class="agent-role" style="color:#6366f1" data-i18n="agentAlexRole">Marketing & Visibilité</div><div class="agent-desc" data-i18n="agentAlexDesc">Réseaux sociaux, personal branding, image publique et stratégie de communication.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+      <div class="agent-card animate" data-agent="marc" style="border-color:#f59e0b25;animation-delay:.2s"><div class="agent-emoji">🤝</div><div class="agent-name">Marc</div><div class="agent-role" style="color:#f59e0b" data-i18n="agentMarcRole">Sponsors & Partenariats</div><div class="agent-desc" data-i18n="agentMarcDesc">Recherche de sponsors, négociations, partenariats et valorisation de votre image.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+      <div class="agent-card animate" data-agent="lea" style="border-color:#8b5cf625;animation-delay:.25s"><div class="agent-emoji">⚖️</div><div class="agent-name">Léa</div><div class="agent-role" style="color:#8b5cf6" data-i18n="agentLeaRole">Contrats & Juridique</div><div class="agent-desc" data-i18n="agentLeaDesc">Contrats, droits des sportifs, litiges et réglementation sportive suisse.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+      <div class="agent-card animate" data-agent="sophie" style="border-color:#10b98125;animation-delay:.3s"><div class="agent-emoji">💶</div><div class="agent-name">Sophie</div><div class="agent-role" style="color:#10b981" data-i18n="agentSophieRole">Finance & Fiscalité</div><div class="agent-desc" data-i18n="agentSophieDesc">Budget, investissements, fiscalité sportive suisse et planification financière.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+      <div class="agent-card animate" data-agent="pierre" style="border-color:#94a3b825;animation-delay:.35s"><div class="agent-emoji">📊</div><div class="agent-name">Pierre</div><div class="agent-role" style="color:#94a3b8" data-i18n="agentPierreRole">Comptabilité</div><div class="agent-desc" data-i18n="agentPierreDesc">Suivi comptable, factures, déclarations fiscales et gestion administrative.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
       <!-- PERFORMANCE -->
-      <div class="agent-card animate" style="border-color:#ef444425;animation-delay:.4s"><div class="agent-emoji">🏋️</div><div class="agent-name">David</div><div class="agent-role" style="color:#ef4444" data-i18n="agentDavidRole">Préparation Physique</div><div class="agent-desc" data-i18n="agentDavidDesc">Programmes d'entraînement sur mesure, prévention des blessures et performance.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
-      <div class="agent-card animate" style="border-color:#06b6d425;animation-delay:.45s"><div class="agent-emoji">🧠</div><div class="agent-name">Emma</div><div class="agent-role" style="color:#06b6d4" data-i18n="agentEmmaRole">Préparation Mentale</div><div class="agent-desc" data-i18n="agentEmmaDesc">Psychologie du sport, gestion du stress, confiance et performance sous pression.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
-      <div class="agent-card animate" style="border-color:#84cc1625;animation-delay:.5s"><div class="agent-emoji">🥗</div><div class="agent-name">Clara</div><div class="agent-role" style="color:#84cc16" data-i18n="agentClaraRole">Nutrition Sportive</div><div class="agent-desc" data-i18n="agentClaraDesc">Plans alimentaires personnalisés, hydratation, supplémentation et nutrition de saison.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
-      <div class="agent-card animate" style="border-color:#a78bfa25;animation-delay:.55s"><div class="agent-emoji">😴</div><div class="agent-name">Nora</div><div class="agent-role" style="color:#a78bfa" data-i18n="agentNoraRole">Sommeil & Récupération</div><div class="agent-desc" data-i18n="agentNoraDesc">Optimisation du sommeil, routines de repos et cycles de récupération.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
-      <div class="agent-card animate" style="border-color:#14b8a625;animation-delay:.6s"><div class="agent-emoji">♻️</div><div class="agent-name">Julie</div><div class="agent-role" style="color:#14b8a6" data-i18n="agentJulieRole">Récupération & Régénération</div><div class="agent-desc" data-i18n="agentJulieDesc">Protocoles de récupération, cryothérapie, étirements et régénération musculaire.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+      <div class="agent-card animate" data-agent="david" style="border-color:#ef444425;animation-delay:.4s"><div class="agent-emoji">🏋️</div><div class="agent-name">David</div><div class="agent-role" style="color:#ef4444" data-i18n="agentDavidRole">Préparation Physique</div><div class="agent-desc" data-i18n="agentDavidDesc">Programmes d'entraînement sur mesure, prévention des blessures et performance.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+      <div class="agent-card animate" data-agent="emma" style="border-color:#06b6d425;animation-delay:.45s"><div class="agent-emoji">🧠</div><div class="agent-name">Emma</div><div class="agent-role" style="color:#06b6d4" data-i18n="agentEmmaRole">Préparation Mentale</div><div class="agent-desc" data-i18n="agentEmmaDesc">Psychologie du sport, gestion du stress, confiance et performance sous pression.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+      <div class="agent-card animate" data-agent="clara" style="border-color:#84cc1625;animation-delay:.5s"><div class="agent-emoji">🥗</div><div class="agent-name">Clara</div><div class="agent-role" style="color:#84cc16" data-i18n="agentClaraRole">Nutrition Sportive</div><div class="agent-desc" data-i18n="agentClaraDesc">Plans alimentaires personnalisés, hydratation, supplémentation et nutrition de saison.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+      <div class="agent-card animate" data-agent="nora" style="border-color:#a78bfa25;animation-delay:.55s"><div class="agent-emoji">😴</div><div class="agent-name">Nora</div><div class="agent-role" style="color:#a78bfa" data-i18n="agentNoraRole">Sommeil & Récupération</div><div class="agent-desc" data-i18n="agentNoraDesc">Optimisation du sommeil, routines de repos et cycles de récupération.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+      <div class="agent-card animate" data-agent="julie" style="border-color:#14b8a625;animation-delay:.6s"><div class="agent-emoji">♻️</div><div class="agent-name">Julie</div><div class="agent-role" style="color:#14b8a6" data-i18n="agentJulieRole">Récupération & Régénération</div><div class="agent-desc" data-i18n="agentJulieDesc">Protocoles de récupération, cryothérapie, étirements et régénération musculaire.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
     </div>
   </div>
 </section>
@@ -533,7 +564,7 @@
       <p data-i18n="howDesc">Pas de paperasse. Votre équipe d'agents IA est opérationnelle dès votre inscription.</p>
     </div>
     <div class="steps">
-      <div class="step animate" style="animation-delay:.1s"><div class="step-num">1</div><h3 data-i18n="step1Title">Connecte ton sport</h3><p data-i18n="step1Desc">Strava, ton calendrier d'entraînements, ton journal et ton RPE. Tes agents lisent tout ça avant chaque réponse.</p></div>
+      <div class="step animate" style="animation-delay:.1s"><div class="step-num">1</div><h3 data-i18n="step1Title">Crée ton profil athlète</h3><p data-i18n="step1Desc">Sport, niveau, club, objectif : 30 secondes au signup. Strava et calendrier optionnels, à brancher plus tard si tu veux enrichir le contexte.</p></div>
       <div class="step animate" style="animation-delay:.2s"><div class="step-num">2</div><h3 data-i18n="step2Title">Check-in en 30 secondes</h3><p data-i18n="step2Desc">Énergie, sommeil, motivation, douleurs : 4 curseurs et c'est plié. Plus tu en saisis, plus tes agents sont précis.</p></div>
       <div class="step animate" style="animation-delay:.3s"><div class="step-num">3</div><h3 data-i18n="step3Title">Reçois un conseil contextualisé</h3><p data-i18n="step3Desc">David, Julie ou Emma te répondent en sachant que tu as un match dans 48h, un RPE de 7.8 hier, et une douleur au mollet.</p></div>
     </div>
@@ -730,7 +761,7 @@
   <div class="footer-inner">
     <div>
       <div class="footer-logo gradient-text">SPORTVISE</div>
-      <div class="footer-desc"><span data-i18n="footerDesc">Le premier service de management sportif par IA, 100% adapté au marché suisse.</span></div>
+      <div class="footer-desc"><span data-i18n="footerDesc">Le premier service de management sportif par IA pensé pour les athlètes suisses.</span></div>
       <div class="footer-ch" data-i18n="footerSwissBased">🇨🇭 Fondé en Suisse · 2026</div>
     </div>
     <div class="footer-col"><h4 data-i18n="footerProduct">Produit</h4><a href="#agents" data-i18n="footerLinkAgents">Agents IA</a><a href="#tarifs" data-i18n="footerLinkPricing">Tarifs</a><a href="/login.html" data-i18n="footerLinkLogin">Connexion</a></div>
@@ -796,10 +827,10 @@
       heroDesc:"SPORTVISE injecte votre journal, votre RPE et votre calendrier dans chaque conversation. Pas un chatbot g\u00e9n\u00e9rique \u2014 un management sportif qui vous conna\u00eet et adapte ses conseils \u00e0 votre \u00e9tat du jour.",
       heroCta1:"Cr\u00e9er mon compte gratuit \u2192", heroCta2:"D\u00e9couvrir les agents IA",
       heroSocial:"\ud83d\udd12 Aucune carte de cr\u00e9dit requise \u00b7 Donn\u00e9es prot\u00e9g\u00e9es LPD \ud83c\udde8\ud83c\udded",
-      stat1:"Agents IA sp\u00e9cialis\u00e9s", stat2:"Disponibilit\u00e9 totale", stat3:"Pour commencer d\u00e8s maintenant", stat4:"100% adapt\u00e9 Suisse",
+      stat1:"Agents IA sp\u00e9cialis\u00e9s", stat2:"Disponibilit\u00e9 totale", stat3:"Pour commencer d\u00e8s maintenant", stat4:"Droit & fiscalit\u00e9 CH",
       agentsTag:"Votre \u00e9quipe IA", agentsTitle:"11 agents experts<br/>\u00e0 votre service", agentsDesc:"Chaque agent conna\u00eet parfaitement le march\u00e9 sportif suisse \u2014 droit, fiscalit\u00e9, culture et r\u00e9seaux locaux.",
       howTag:"Simple & Rapide", howTitle:"Lancez-vous en 3 \u00e9tapes", howDesc:"Pas de paperasse. Votre \u00e9quipe d\u2019agents IA est op\u00e9rationnelle d\u00e8s votre inscription.",
-      step1Title:"Connecte ton sport", step1Desc:"Strava, ton calendrier d\u2019entra\u00eenements, ton journal et ton RPE. Tes agents lisent tout \u00e7a avant chaque r\u00e9ponse.",
+      step1Title:"Cr\u00e9e ton profil athl\u00e8te", step1Desc:"Sport, niveau, club, objectif : 30 secondes au signup. Strava et calendrier optionnels, \u00e0 brancher plus tard si tu veux enrichir le contexte.",
       step2Title:"Check-in en 30 secondes", step2Desc:"\u00c9nergie, sommeil, motivation, douleurs : 4 curseurs et c\u2019est pli\u00e9. Plus tu en saisis, plus tes agents sont pr\u00e9cis.",
       step3Title:"Re\u00e7ois un conseil contextualis\u00e9", step3Desc:"David, Julie ou Emma te r\u00e9pondent en sachant que tu as un match dans 48h, un RPE de 7.8 hier, et une douleur au mollet.",
       convTag:"Vraie conversation", convTitle:"Pas un chatbot. Un conseiller qui te conna\u00eet.", convDesc:"Tes agents lisent ton profil, ton calendrier et ton journal avant chaque r\u00e9ponse. Voici 3 vraies discussions.",
@@ -816,7 +847,7 @@
       faqTag:"FAQ", faqTitle:"Questions fr\u00e9quentes",
       ctaTag:"\ud83d\ude80 Rejoindre", ctaTitle:"Lancez votre carri\u00e8re avec", ctaDesc:"Cr\u00e9ez votre compte gratuit et acc\u00e9dez \u00e0 votre \u00e9quipe d\u2019agents IA d\u00e8s aujourd\u2019hui.", ctaBtn:"Cr\u00e9er mon compte gratuit \u2192",
       ctaNote:"\ud83d\udd12 Aucune carte de cr\u00e9dit requise \u00b7 R\u00e9siliation \u00e0 tout moment \u00b7 Donn\u00e9es prot\u00e9g\u00e9es LPD \ud83c\udde8\ud83c\udded",
-      footerDesc:"Le premier service de management sportif par IA, 100% adapt\u00e9 au march\u00e9 suisse.",
+      footerDesc:"Le premier service de management sportif par IA pens\u00e9 pour les athl\u00e8tes suisses.",
       footerMade:"Fait avec \u2764\ufe0f pour les athl\u00e8tes suisses",
       mockGreeting:"Bonjour 👋",
       mockStreakBadges:"· 🔥 Streak : 7 jours · ⭐ 3 badges",
@@ -847,7 +878,7 @@
       agentNoraDesc:"Optimisation du sommeil, routines de repos et cycles de récupération.",
       agentJulieRole:"Récupération & Régénération",
       agentJulieDesc:"Protocoles de récupération, cryothérapie, étirements et régénération musculaire.",
-      agentOnline:"En ligne · Répond en &lt;2s",
+      agentOnline:"En ligne · Lit ton contexte avant de répondre",
       pricePerMonth:"/mois", popularBadge:"⭐ Populaire",
       priceFreeDesc:"Pour tester SPORTVISE sans rien sortir",
       pricePlusDesc:"Pour l'athlète qui rêve grand sans budget de pro",
@@ -871,7 +902,7 @@
       featPro3:"Export CSV illimité", featPro4:"Intégrations (Strava...)",
       featPro5:"Support prioritaire 24/7", featPro6:"Accès anticipé nouveautés",
       faq1Q:"SPORTVISE remplace-t-il un vrai agent sportif humain ?",
-      faq1A:"SPORTVISE ne remplace pas un agent humain, il le démocratise. Un agent pro coûte CHF 5'000–15'000/mois — inaccessible pour la majorité. SPORTVISE offre une équipe complète de 11 agents IA dès CHF 0/mois, avec des plans Plus à CHF 12 et Pro à CHF 19.",
+      faq1A:"SPORTVISE n'est pas un remplaçant de manager humain — c'est ton premier réflexe entre deux rendez-vous, accessible 24/7 et sans réseau préalable. En quelques secondes tu obtiens un point de vue de manager, préparateur, fiscaliste ou juriste sans avoir à appeler trois personnes. Dès CHF 0/mois, Plus à CHF 12, Pro à CHF 19.",
       faq2Q:"Les conseils sont-ils adaptés à la Suisse ?",
       faq2A:"Oui — droit suisse des obligations, fiscalité par canton, Swiss Football League, sponsors locaux (Helvetia, Swiss Life…) et particularités de la Suisse Romande, Alémanique et Italophone.",
       faq3Q:"Mes données sont-elles protégées ?",
@@ -889,7 +920,16 @@
       footerProduct:"Produit", footerLegal:"Légal", footerContact:"Contact",
       footerLinkAgents:"Agents IA", footerLinkPricing:"Tarifs", footerLinkLogin:"Connexion",
       footerLinkTos:"CGU", footerLinkPrivacy:"Confidentialité", footerLinkLegal:"Mentions légales",
-      footerCopyright:"© 2026 SPORTVISE · Suisse 🇨🇭"
+      footerCopyright:"© 2026 SPORTVISE · Suisse 🇨🇭",
+      levelLabel:"Tu es à quel niveau ?",
+      levelAmateur:"Amateur compétitif",
+      levelSemipro:"Semi-pro",
+      levelPro:"Pro",
+      levelBannerEmpty:"Choisis ton niveau pour voir tes 4 agents prioritaires.",
+      levelBanner_amateur:"Pour un amateur, on suggère <strong>David, Emma, Clara et Sophie</strong> — entraînement, mental, nutrition, bases finances. Les 7 autres restent là quand tu en auras besoin.",
+      levelBanner_semipro:"Pour un semi-pro, ton carré quotidien : <strong>Lucas, David, Emma, Sophie</strong>. Carrière, corps, tête, thune — les questions qui reviennent chaque semaine.",
+      levelBanner_pro:"Pour un pro, ce qui pèse : <strong>Lucas, Léa, Marc, Sophie</strong>. Décisions de carrière, contrats, sponsors, fiscalité. David et Emma restent disponibles au quotidien.",
+      levelRecBadge:"Recommandé"
     },
     de: {
       navAgents:"KI-Agenten", navPricing:"Preise", navFaq:"FAQ", navLogin:"Anmelden", navStart:"Starten \u2192",
@@ -898,10 +938,10 @@
       heroDesc:"SPORTVISE bezieht Ihr Trainingstagebuch, Ihren RPE und Ihren Kalender in jedes Gespr\u00e4ch ein. Kein generischer Chatbot \u2014 ein Sportmanagement, das Sie kennt und seine Empfehlungen an Ihre Tagesform anpasst.",
       heroCta1:"Kostenloses Konto erstellen \u2192", heroCta2:"KI-Agenten entdecken",
       heroSocial:"\ud83d\udd12 Keine Kreditkarte erforderlich \u00b7 Daten gesch\u00fctzt gem\u00e4ss DSG \ud83c\udde8\ud83c\udded",
-      stat1:"Spezialisierte KI-Agenten", stat2:"Totale Verf\u00fcgbarkeit", stat3:"Sofort kostenlos starten", stat4:"100% auf die Schweiz angepasst",
+      stat1:"Spezialisierte KI-Agenten", stat2:"Totale Verf\u00fcgbarkeit", stat3:"Sofort kostenlos starten", stat4:"Schweizer Recht & Steuern",
       agentsTag:"Ihr KI-Team", agentsTitle:"11 Experten-Agenten<br/>zu Ihrem Dienst", agentsDesc:"Jeder Agent kennt den Schweizer Sportmarkt perfekt \u2014 Recht, Steuern, Kultur und lokale Netzwerke.",
       howTag:"Einfach & Schnell", howTitle:"Starten Sie in 3 Schritten", howDesc:"Kein Papierkram. Ihr KI-Agenten-Team ist sofort nach der Anmeldung einsatzbereit.",
-      step1Title:"Verbinde deinen Sport", step1Desc:"Strava, dein Trainingskalender, dein Tagebuch und dein RPE. Deine Agenten lesen alles vor jeder Antwort.",
+      step1Title:"Erstelle dein Athletenprofil", step1Desc:"Sport, Niveau, Club, Ziel: 30 Sekunden bei der Anmeldung. Strava und Kalender sind optional und können später für mehr Kontext verbunden werden.",
       step2Title:"Check-in in 30 Sekunden", step2Desc:"Energie, Schlaf, Motivation, Schmerzen: 4 Schieberegler und fertig. Je mehr du erfasst, desto präziser werden deine Agenten.",
       step3Title:"Erhalte einen kontextbezogenen Rat", step3Desc:"David, Julie oder Emma antworten dir mit dem Wissen, dass du in 48h ein Spiel hast, gestern RPE 7.8 warst und Wadenschmerzen hast.",
       convTag:"Echtes Gespräch", convTitle:"Kein Chatbot. Ein Berater, der dich kennt.", convDesc:"Deine Agenten lesen dein Profil, deinen Kalender und dein Tagebuch vor jeder Antwort. Hier sind 3 echte Gespräche.",
@@ -949,7 +989,7 @@
       agentNoraDesc:"Schlafoptimierung, Ruheroutinen und Erholungszyklen.",
       agentJulieRole:"Erholung & Regeneration",
       agentJulieDesc:"Erholungsprotokolle, Kryotherapie, Dehnungen und muskuläre Regeneration.",
-      agentOnline:"Online · Antwortet in &lt;2s",
+      agentOnline:"Online · Liest deinen Kontext vor jeder Antwort",
       pricePerMonth:"/Monat", popularBadge:"⭐ Beliebt",
       priceFreeDesc:"Um SPORTVISE risikofrei zu testen",
       pricePlusDesc:"Für Athleten mit grossen Träumen ohne Profi-Budget",
@@ -973,7 +1013,7 @@
       featPro3:"Unbegrenzter CSV-Export", featPro4:"Integrationen (Strava...)",
       featPro5:"Vorrangiger 24/7-Support", featPro6:"Frühzeitiger Zugang zu Neuheiten",
       faq1Q:"Ersetzt SPORTVISE einen echten menschlichen Sportagenten?",
-      faq1A:"SPORTVISE ersetzt keinen menschlichen Agenten, sondern demokratisiert ihn. Ein Profi-Agent kostet CHF 5'000–15'000/Monat — für die meisten unerreichbar. SPORTVISE bietet ein komplettes Team von 11 KI-Agenten ab CHF 0/Monat mit Plus-Plänen für CHF 12 und Pro für CHF 19.",
+      faq1A:"SPORTVISE ersetzt keinen menschlichen Manager — es ist dein erster Reflex zwischen zwei Terminen, rund um die Uhr verfügbar und ohne Netzwerk nötig. In Sekunden bekommst du die Perspektive eines Managers, Trainers, Steuerberaters oder Juristen, ohne drei Personen anrufen zu müssen. Ab CHF 0/Monat, Plus CHF 12, Pro CHF 19.",
       faq2Q:"Sind die Tipps an die Schweiz angepasst?",
       faq2A:"Ja — Schweizer Obligationenrecht, kantonale Steuern, Swiss Football League, lokale Sponsoren (Helvetia, Swiss Life...) und Besonderheiten der Romandie, Deutschschweiz und Italienischschweiz.",
       faq3Q:"Sind meine Daten geschützt?",
@@ -991,7 +1031,16 @@
       footerProduct:"Produkt", footerLegal:"Rechtliches", footerContact:"Kontakt",
       footerLinkAgents:"KI-Agenten", footerLinkPricing:"Preise", footerLinkLogin:"Anmelden",
       footerLinkTos:"AGB", footerLinkPrivacy:"Datenschutz", footerLinkLegal:"Impressum",
-      footerCopyright:"© 2026 SPORTVISE · Schweiz 🇨🇭"
+      footerCopyright:"© 2026 SPORTVISE · Schweiz 🇨🇭",
+      levelLabel:"Auf welchem Niveau bist du?",
+      levelAmateur:"Wettkampf-Amateur",
+      levelSemipro:"Semi-Profi",
+      levelPro:"Profi",
+      levelBannerEmpty:"Wähle dein Niveau, um deine 4 prioritären Agenten zu sehen.",
+      levelBanner_amateur:"Für Amateure empfehlen wir <strong>David, Emma, Clara und Sophie</strong> — Training, Mental, Ernährung, Finanzgrundlagen. Die anderen 7 bleiben verfügbar.",
+      levelBanner_semipro:"Für Semi-Profis dein tägliches Kernteam: <strong>Lucas, David, Emma, Sophie</strong>. Karriere, Körper, Kopf, Finanzen — die wöchentlichen Fragen.",
+      levelBanner_pro:"Für Profis was wirklich zählt: <strong>Lucas, Léa, Marc, Sophie</strong>. Karriereentscheidungen, Verträge, Sponsoren, Steuern. David und Emma bleiben für den Alltag verfügbar.",
+      levelRecBadge:"Empfohlen"
     },
     en: {
       navAgents:"AI Agents", navPricing:"Pricing", navFaq:"FAQ", navLogin:"Log in", navStart:"Get started \u2192",
@@ -1000,10 +1049,10 @@
       heroDesc:"SPORTVISE brings your journal, RPE and calendar into every conversation. Not a generic chatbot \u2014 sports management that knows you and tailors its advice to how you feel today.",
       heroCta1:"Create my free account \u2192", heroCta2:"Discover our AI agents",
       heroSocial:"\ud83d\udd12 No credit card required \u00b7 Data protected by Swiss law \ud83c\udde8\ud83c\udded",
-      stat1:"Specialized AI agents", stat2:"Total availability", stat3:"Start for free right now", stat4:"100% adapted to Switzerland",
+      stat1:"Specialized AI agents", stat2:"Total availability", stat3:"Start for free right now", stat4:"Swiss law & taxes",
       agentsTag:"Your AI team", agentsTitle:"11 expert agents<br/>at your service", agentsDesc:"Each agent knows the Swiss sports market perfectly \u2014 law, taxes, culture and local networks.",
       howTag:"Simple & Fast", howTitle:"Get started in 3 steps", howDesc:"No paperwork. Your AI agent team is operational from the moment you sign up.",
-      step1Title:"Connect your sport", step1Desc:"Strava, your training calendar, your journal and your RPE. Your agents read all of it before every reply.",
+      step1Title:"Build your athlete profile", step1Desc:"Sport, level, club, goal: 30 seconds at signup. Strava and calendar are optional, plug them in later if you want to enrich the context.",
       step2Title:"Check in in 30 seconds", step2Desc:"Energy, sleep, motivation, pain: 4 sliders and you're done. The more you log, the sharper your agents get.",
       step3Title:"Get contextual advice", step3Desc:"David, Julie or Emma reply knowing you have a match in 48h, an RPE of 7.8 yesterday, and a calf strain.",
       convTag:"Real conversation", convTitle:"Not a chatbot. An advisor who knows you.", convDesc:"Your agents read your profile, your calendar and your journal before every reply. Here are 3 real conversations.",
@@ -1020,7 +1069,7 @@
       faqTag:"FAQ", faqTitle:"Frequently asked questions",
       ctaTag:"\ud83d\ude80 Join us", ctaTitle:"Launch your career with", ctaDesc:"Create your free account and access your AI agent team today.", ctaBtn:"Create my free account \u2192",
       ctaNote:"\ud83d\udd12 No credit card required \u00b7 Cancel anytime \u00b7 Data protected by Swiss law \ud83c\udde8\ud83c\udded",
-      footerDesc:"The first AI-powered sports management service, 100% adapted to the Swiss market.",
+      footerDesc:"The first AI-powered sports management service built for Swiss athletes.",
       footerMade:"Made with \u2764\ufe0f for Swiss athletes",
       mockGreeting:"Hello 👋",
       mockStreakBadges:"· 🔥 Streak: 7 days · ⭐ 3 badges",
@@ -1051,7 +1100,7 @@
       agentNoraDesc:"Sleep optimisation, rest routines and recovery cycles.",
       agentJulieRole:"Recovery & Regeneration",
       agentJulieDesc:"Recovery protocols, cryotherapy, stretching and muscular regeneration.",
-      agentOnline:"Online · Replies in &lt;2s",
+      agentOnline:"Online · Reads your context before replying",
       pricePerMonth:"/month", popularBadge:"⭐ Popular",
       priceFreeDesc:"To try SPORTVISE risk-free",
       pricePlusDesc:"For athletes who dream big without a pro's budget",
@@ -1075,7 +1124,7 @@
       featPro3:"Unlimited CSV export", featPro4:"Integrations (Strava...)",
       featPro5:"Priority 24/7 support", featPro6:"Early access to new features",
       faq1Q:"Does SPORTVISE replace a real human sports agent?",
-      faq1A:"SPORTVISE doesn't replace a human agent, it democratises one. A pro agent costs CHF 5,000–15,000/month — out of reach for most. SPORTVISE offers a full team of 11 AI agents from CHF 0/month, with Plus plans at CHF 12 and Pro at CHF 19.",
+      faq1A:"SPORTVISE doesn't replace a human manager — it's your first reflex between appointments, available 24/7 with no network required. In seconds you get the perspective of a manager, coach, tax advisor or lawyer without having to call three people. From CHF 0/month, Plus CHF 12, Pro CHF 19.",
       faq2Q:"Is the advice tailored to Switzerland?",
       faq2A:"Yes — Swiss law of obligations, cantonal taxation, Swiss Football League, local sponsors (Helvetia, Swiss Life…) and the particularities of French-, German- and Italian-speaking Switzerland.",
       faq3Q:"Is my data protected?",
@@ -1093,7 +1142,16 @@
       footerProduct:"Product", footerLegal:"Legal", footerContact:"Contact",
       footerLinkAgents:"AI Agents", footerLinkPricing:"Pricing", footerLinkLogin:"Log in",
       footerLinkTos:"Terms", footerLinkPrivacy:"Privacy", footerLinkLegal:"Legal Notice",
-      footerCopyright:"© 2026 SPORTVISE · Switzerland 🇨🇭"
+      footerCopyright:"© 2026 SPORTVISE · Switzerland 🇨🇭",
+      levelLabel:"What's your level?",
+      levelAmateur:"Competitive amateur",
+      levelSemipro:"Semi-pro",
+      levelPro:"Pro",
+      levelBannerEmpty:"Pick your level to see your 4 priority agents.",
+      levelBanner_amateur:"For an amateur, we suggest <strong>David, Emma, Clara and Sophie</strong> — training, mind, nutrition, financial basics. The other 7 stay available when you need them.",
+      levelBanner_semipro:"For a semi-pro, your daily core: <strong>Lucas, David, Emma, Sophie</strong>. Career, body, mind, money — the weekly questions.",
+      levelBanner_pro:"For a pro, what really matters: <strong>Lucas, Léa, Marc, Sophie</strong>. Career decisions, contracts, sponsors, taxes. David and Emma stay available for daily life.",
+      levelRecBadge:"Recommended"
     },
     it: {
       navAgents:"Agenti IA", navPricing:"Prezzi", navFaq:"FAQ", navLogin:"Accedi", navStart:"Inizia \u2192",
@@ -1102,10 +1160,10 @@
       heroDesc:"SPORTVISE integra il tuo diario, l\u2019RPE e il calendario in ogni conversazione. Non un chatbot generico \u2014 una gestione sportiva che ti conosce e adatta i consigli alla tua forma del giorno.",
       heroCta1:"Crea il mio account gratuito \u2192", heroCta2:"Scopri gli agenti IA",
       heroSocial:"\ud83d\udd12 Nessuna carta di credito richiesta \u00b7 Dati protetti LPD \ud83c\udde8\ud83c\udded",
-      stat1:"Agenti IA specializzati", stat2:"Disponibilit\u00e0 totale", stat3:"Inizia gratis subito", stat4:"100% adattato alla Svizzera",
+      stat1:"Agenti IA specializzati", stat2:"Disponibilit\u00e0 totale", stat3:"Inizia gratis subito", stat4:"Diritto e fiscalit\u00e0 CH",
       agentsTag:"Il tuo team IA", agentsTitle:"11 agenti esperti<br/>al tuo servizio", agentsDesc:"Ogni agente conosce perfettamente il mercato sportivo svizzero \u2014 diritto, fiscalit\u00e0, cultura e reti locali.",
       howTag:"Semplice & Veloce", howTitle:"Inizia in 3 passaggi", howDesc:"Nessuna burocrazia. Il tuo team di agenti IA \u00e8 operativo dal momento della registrazione.",
-      step1Title:"Collega il tuo sport", step1Desc:"Strava, il tuo calendario di allenamenti, il tuo diario e l'RPE. I tuoi agenti leggono tutto prima di ogni risposta.",
+      step1Title:"Crea il tuo profilo atleta", step1Desc:"Sport, livello, club, obiettivo: 30 secondi alla registrazione. Strava e calendario sono opzionali, da collegare più tardi se vuoi arricchire il contesto.",
       step2Title:"Check-in in 30 secondi", step2Desc:"Energia, sonno, motivazione, dolori: 4 cursori e fatto. Pi\u00f9 registri, pi\u00f9 precisi diventano i tuoi agenti.",
       step3Title:"Ricevi un consiglio contestualizzato", step3Desc:"David, Julie o Emma ti rispondono sapendo che hai una partita tra 48h, un RPE di 7.8 ieri e un dolore al polpaccio.",
       convTag:"Vera conversazione", convTitle:"Non un chatbot. Un consulente che ti conosce.", convDesc:"I tuoi agenti leggono il tuo profilo, il tuo calendario e il tuo diario prima di ogni risposta. Ecco 3 vere conversazioni.",
@@ -1122,7 +1180,7 @@
       faqTag:"FAQ", faqTitle:"Domande frequenti",
       ctaTag:"\ud83d\ude80 Unisciti", ctaTitle:"Lancia la tua carriera con", ctaDesc:"Crea il tuo account gratuito e accedi al tuo team di agenti IA oggi.", ctaBtn:"Crea il mio account gratuito \u2192",
       ctaNote:"\ud83d\udd12 Nessuna carta di credito richiesta \u00b7 Cancellazione in qualsiasi momento \u00b7 Dati protetti LPD \ud83c\udde8\ud83c\udded",
-      footerDesc:"Il primo servizio di gestione sportiva con IA, 100% adattato al mercato svizzero.",
+      footerDesc:"Il primo servizio di gestione sportiva con IA pensato per gli atleti svizzeri.",
       footerMade:"Fatto con \u2764\ufe0f per gli atleti svizzeri",
       mockGreeting:"Ciao 👋",
       mockStreakBadges:"· 🔥 Streak: 7 giorni · ⭐ 3 badge",
@@ -1153,7 +1211,7 @@
       agentNoraDesc:"Ottimizzazione del sonno, routine di riposo e cicli di recupero.",
       agentJulieRole:"Recupero & Rigenerazione",
       agentJulieDesc:"Protocolli di recupero, crioterapia, stretching e rigenerazione muscolare.",
-      agentOnline:"Online · Risponde in &lt;2s",
+      agentOnline:"Online · Legge il tuo contesto prima di rispondere",
       pricePerMonth:"/mese", popularBadge:"⭐ Popolare",
       priceFreeDesc:"Per provare SPORTVISE senza rischi",
       pricePlusDesc:"Per l'atleta che sogna in grande senza un budget da pro",
@@ -1177,7 +1235,7 @@
       featPro3:"Export CSV illimitato", featPro4:"Integrazioni (Strava...)",
       featPro5:"Supporto prioritario 24/7", featPro6:"Accesso anticipato alle novità",
       faq1Q:"SPORTVISE sostituisce un vero agente sportivo umano?",
-      faq1A:"SPORTVISE non sostituisce un agente umano, lo democratizza. Un agente professionista costa CHF 5'000–15'000/mese — inaccessibile alla maggioranza. SPORTVISE offre un team completo di 11 agenti IA da CHF 0/mese, con piani Plus a CHF 12 e Pro a CHF 19.",
+      faq1A:"SPORTVISE non sostituisce un manager umano — è il tuo primo riflesso tra due appuntamenti, disponibile 24/7 senza bisogno di rete. In pochi secondi ottieni il punto di vista di un manager, preparatore, fiscalista o legale senza dover chiamare tre persone. Da CHF 0/mese, Plus CHF 12, Pro CHF 19.",
       faq2Q:"I consigli sono adattati alla Svizzera?",
       faq2A:"Sì — diritto svizzero delle obbligazioni, fiscalità cantonale, Swiss Football League, sponsor locali (Helvetia, Swiss Life…) e particolarità della Svizzera Romanda, Tedesca e Italiana.",
       faq3Q:"I miei dati sono protetti?",
@@ -1195,7 +1253,16 @@
       footerProduct:"Prodotto", footerLegal:"Legale", footerContact:"Contatto",
       footerLinkAgents:"Agenti IA", footerLinkPricing:"Prezzi", footerLinkLogin:"Accedi",
       footerLinkTos:"CGU", footerLinkPrivacy:"Privacy", footerLinkLegal:"Note legali",
-      footerCopyright:"© 2026 SPORTVISE · Svizzera 🇨🇭"
+      footerCopyright:"© 2026 SPORTVISE · Svizzera 🇨🇭",
+      levelLabel:"A che livello sei?",
+      levelAmateur:"Amatore competitivo",
+      levelSemipro:"Semi-pro",
+      levelPro:"Pro",
+      levelBannerEmpty:"Scegli il tuo livello per vedere i tuoi 4 agenti prioritari.",
+      levelBanner_amateur:"Per un amatore, suggeriamo <strong>David, Emma, Clara e Sophie</strong> — allenamento, mente, nutrizione, basi finanziarie. Gli altri 7 restano disponibili.",
+      levelBanner_semipro:"Per un semi-pro, il tuo nucleo quotidiano: <strong>Lucas, David, Emma, Sophie</strong>. Carriera, corpo, mente, soldi — le domande settimanali.",
+      levelBanner_pro:"Per un pro, ciò che conta: <strong>Lucas, Léa, Marc, Sophie</strong>. Decisioni di carriera, contratti, sponsor, fiscalità. David ed Emma restano disponibili per il quotidiano.",
+      levelRecBadge:"Consigliato"
     }
   };
 
@@ -1264,6 +1331,83 @@
       if (saved && i18n[saved]) setLangPage(saved);
     }
   } catch(e) {}
+
+  // ────────────────────────────────────────────────────────
+  // v63.6 — Level selector + bandeau recommandation
+  // KILL SWITCH : passer SV_FEATURE_LEVEL_SELECTOR à false pour masquer
+  // le selector et désactiver toute la logique. Repush = retour à la
+  // grille 11 agents standard, sans revert Git.
+  // ────────────────────────────────────────────────────────
+  const SV_FEATURE_LEVEL_SELECTOR = true;
+
+  if (!SV_FEATURE_LEVEL_SELECTOR) {
+    const _selEl = document.querySelector('.level-selector');
+    if (_selEl) _selEl.style.display = 'none';
+    document.querySelectorAll('.agent-card.recommended').forEach(c => {
+      c.classList.remove('recommended');
+      c.removeAttribute('data-rec-label');
+    });
+  } else {
+    const SV_AGENT_RECS = {
+      amateur: ['david', 'emma', 'clara', 'sophie'],
+      semipro: ['lucas', 'david', 'emma', 'sophie'],
+      pro:     ['lucas', 'lea', 'marc', 'sophie']
+    };
+
+    function svSetAthleteLevel(level, silent) {
+      if (!SV_AGENT_RECS[level]) return;
+
+      if (!silent) {
+        try { localStorage.setItem('sv_athlete_level', level); } catch(e) {}
+      }
+
+      document.querySelectorAll('.level-pill').forEach(b => {
+        b.classList.toggle('active', b.dataset.level === level);
+      });
+
+      const banner = document.querySelector('.level-banner');
+      if (banner) {
+        banner.setAttribute('data-banner-state', 'filled');
+        const txtEl = banner.querySelector('.level-banner-text');
+        const lang = currentLang || 'fr';
+        const key = 'levelBanner_' + level;
+        const txt = (i18n[lang] && i18n[lang][key]) || (i18n.fr && i18n.fr[key]) || '';
+        if (txtEl && txt) txtEl.innerHTML = txt;
+      }
+
+      const recAgents = SV_AGENT_RECS[level];
+      const lang = currentLang || 'fr';
+      const recLabel = (i18n[lang] && i18n[lang].levelRecBadge) || 'Recommandé';
+      document.querySelectorAll('.agent-card[data-agent]').forEach(card => {
+        const isRec = recAgents.includes(card.dataset.agent);
+        card.classList.toggle('recommended', isRec);
+        if (isRec) card.setAttribute('data-rec-label', recLabel);
+        else card.removeAttribute('data-rec-label');
+      });
+    }
+
+    document.querySelectorAll('.level-pill').forEach(btn => {
+      btn.addEventListener('click', () => svSetAthleteLevel(btn.dataset.level));
+    });
+
+    // Restore previously selected level on page load
+    try {
+      const saved = localStorage.getItem('sv_athlete_level');
+      if (saved && SV_AGENT_RECS[saved]) {
+        svSetAthleteLevel(saved, true);
+      }
+    } catch(e) {}
+
+    // Re-apply badges + banner after language switch (wrap setLangPage)
+    const _svOrigSetLang = setLangPage;
+    setLangPage = function(lang) {
+      _svOrigSetLang(lang);
+      try {
+        const saved = localStorage.getItem('sv_athlete_level');
+        if (saved && SV_AGENT_RECS[saved]) svSetAthleteLevel(saved, true);
+      } catch(e) {}
+    };
+  }
 </script>
 </body>
 </html>
