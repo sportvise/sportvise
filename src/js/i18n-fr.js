@@ -172,12 +172,20 @@ var T_FR = {
     recuperation:'Protocoles post-effort, récupération active, prévention'
   },
   // FEATURE 1: Goals
-  goals:'Objectifs', addGoal:'Ajouter un objectif', goalTitle:'Titre du objectif',
+  goals:'Objectifs', addGoal:'Ajouter un objectif', goalTitle:'Titre de l\'objectif',
   goalDesc:'Description', targetValue:'Valeur cible', unit:'Unité',
-  deadline:'Deadline', milestones:'Étapes intermédiaires', financial:'Financier',
+  deadline:'Échéance', milestones:'Étapes intermédiaires', financial:'Financier',
   physical:'Physique', mental:'Mental', career:'Carrière', noGoalsYet:'Aucun objectif pour le moment',
-  activeGoals:'Objectifs actifs', completed:'Complété', abandoned:'Abandonné',
-  progress:'Progression', update:'Mettre à jour', markCompleted:'Marquer comme complété',
+  activeGoals:'Objectifs actifs', completed:'Atteint', abandoned:'Abandonné',
+  progress:'Progression', update:'Mettre à jour', markCompleted:'Marquer comme atteint',
+  // v63.7.2 — toggle quantitatif/qualitatif + nouveaux labels
+  goalTypeLabel:'Type d\'objectif', inProgress:'En cours',
+  goalTypeQualTitle:'À atteindre ou pas', goalTypeQualSub:'Ex: Signer un contrat, gérer ma carrière',
+  goalTypeQuantTitle:'Avec cible chiffrée', goalTypeQuantSub:'Ex: 5000 CHF, 100km, 12 séances',
+  activeGoalsShort:'actifs', completedGoalsShort:'atteints',
+  goalUpdate:'Mettre à jour', goalMarkDone:'Marquer atteint',
+  daysShort:'jours', todayShort:'Aujourd\'hui', deadlineIn:'Échéance dans',
+  goalUpdatePrompt:'Nouvelle valeur atteinte (chiffre) :',
   // FEATURE 2: Journal
   journal:'Journal de bord', todayEntry:'Entrée du jour', mood:'Humeur',
   energy:'Énergie', motivation:'Motivation', sleepQuality:'Qualité du sommeil',
