@@ -3831,21 +3831,27 @@ Utilise TOUTES les données (journal, calendrier, objectifs, autres agents) pour
 // Get a summary of recent conversations from other agents
 async function getOtherAgentsSummary(currentAgentId) {
   try {
-    // Fetch both user AND agent messages for richer cross-agent context
+    // v63.7 — Cross-agent context enrichi.
+    // Avant : 100c question, 120c réponse, 1 seul échange par agent, pas de timestamp.
+    // Après : 250c question, 300c réponse, jusqu'à 3 échanges par agent,
+    //   timestamps relatifs ("il y a 2h", "hier", "il y a 5j") pour fraîcheur.
+    // Objectif : ne pas obliger l'athlète à redonner sport / niveau / club /
+    // blessure / objectif déjà déclarés ailleurs. Évite l'effet « chaque agent
+    // repart de zéro » remonté par tests amis 17/05/2026.
     const { data: recentMsgs } = await sb.from('messages')
       .select('agent_id, role, content, created_at')
       .eq('user_id', currentUser.id)
       .neq('agent_id', currentAgentId)
       .order('created_at', { ascending: false })
-      .limit(60);
+      .limit(80);
 
     if (!recentMsgs || recentMsgs.length === 0) return '';
 
-    // Group by agent: keep last 2 exchanges (user question + agent answer)
+    // Group by agent: keep up to 6 messages (≈3 échanges user+agent)
     const byAgent = {};
     recentMsgs.forEach(m => {
       if (!byAgent[m.agent_id]) byAgent[m.agent_id] = [];
-      if (byAgent[m.agent_id].length < 4) byAgent[m.agent_id].push(m);
+      if (byAgent[m.agent_id].length < 6) byAgent[m.agent_id].push(m);
     });
 
     const agentNames = {
@@ -3860,18 +3866,50 @@ async function getOtherAgentsSummary(currentAgentId) {
       physique:'condition physique', mental:'mental & stress', nutrition:'alimentation', sommeil:'sommeil & récupération'
     };
 
+    // Helper : format relative time (FR)
+    const nowMs = Date.now();
+    const relTime = (iso) => {
+      const ms = nowMs - new Date(iso).getTime();
+      const h = ms / 3.6e6;
+      if (h < 1) return 'il y a moins d\'1h';
+      if (h < 24) return `il y a ${Math.round(h)}h`;
+      const d = h / 24;
+      if (d < 7) return `il y a ${Math.round(d)}j`;
+      const w = d / 7;
+      if (w < 5) return `il y a ${Math.round(w)} sem`;
+      const mo = d / 30;
+      return `il y a ${Math.round(mo)} mois`;
+    };
+
     let summary = 'CONVERSATIONS RÉCENTES AVEC LES AUTRES AGENTS:\n';
     for (const [agentId, msgs] of Object.entries(byAgent)) {
       const name = agentNames[agentId] || agentId;
       const domain = agentDomains[agentId] || '';
-      // Rebuild exchanges: user asked → agent replied
-      const userMsgs = msgs.filter(m => m.role === 'user').map(m => m.content.slice(0, 100));
-      const agentMsgs = msgs.filter(m => m.role === 'agent').map(m => m.content.slice(0, 120));
-      summary += `\n${name} [${domain}]:\n`;
-      if (userMsgs.length) summary += `  Athlète a demandé: ${userMsgs[0]}\n`;
-      if (agentMsgs.length) summary += `  Conseil donné: ${agentMsgs[0]}\n`;
+      // msgs en ordre DESC (plus récent → plus ancien). Reverse pour chrono.
+      const chrono = [...msgs].reverse();
+      const lastTs = msgs[0] && msgs[0].created_at;
+      const freshness = lastTs ? ` · dernier échange ${relTime(lastTs)}` : '';
+      summary += `\n${name} [${domain}]${freshness}:\n`;
+      // Pair user → agent dans l'ordre chronologique, max 3 paires
+      let userBuf = null;
+      let pairs = 0;
+      for (const m of chrono) {
+        if (pairs >= 3) break;
+        if (m.role === 'user') {
+          userBuf = m.content.slice(0, 250);
+        } else if (m.role === 'agent' && userBuf !== null) {
+          summary += `  • Athlète: ${userBuf}\n`;
+          summary += `    Agent: ${m.content.slice(0, 300)}\n`;
+          userBuf = null;
+          pairs++;
+        }
+      }
+      // Trailing user msg without paired reply (rare mais possible)
+      if (userBuf !== null && pairs < 3) {
+        summary += `  • Athlète (sans réponse encore): ${userBuf}\n`;
+      }
     }
-    summary += '\nUtilise ces informations pour éviter les répétitions et compléter les conseils des collègues.';
+    summary += '\nUtilise ces informations pour éviter les répétitions et compléter les conseils des collègues. Si un fait important a déjà été déclaré récemment (sport, niveau, club, blessure, objectif, contrat en cours), n\'oblige PAS l\'athlète à le redonner — réfère-toi à ce que tu vois ici.';
     return summary;
   } catch(e) {
     console.warn('Cross-agent summary error:', e);
