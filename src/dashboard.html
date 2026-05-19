@@ -1114,14 +1114,20 @@ function showLucasWelcome() {
       });
     } catch(e) { console.warn('[WELCOME-CARD] generate trigger error:', e); }
 
-    // v62.26 — Quick Win #2 : pre-fill calendrier semaine type (3 events suggérés
-    // sur la semaine prochaine selon le sport). Idempotent côté backend (skip si
-    // l'user a déjà des events is_suggested). Fire-and-forget — .catch() sur la promesse
-    // car prefillSuggestedWeek est async (un try/catch sync ne capture pas les rejects).
-    prefillSuggestedWeek({
-      sportKey: sportKey(data.sport) || data.sport,
-      levelKey: levelKey(data.level)
-    }).catch(e => console.warn('[PREFILL-WEEK] trigger error:', e));
+    // v63.7.3 — Pré-fill calendrier DÉSACTIVÉ (feedback Thomas 19/05).
+    // Avant : prefillSuggestedWeek insérait 3 séances factices "Suggéré" à l'onboarding
+    //   pour que le nouveau user ne voie pas un calendrier vide. Mais ces events fictifs
+    //   étaient lus par les agents → ils inventaient des échéances ("ton match dans 7j")
+    //   et v63.7.1 a déjà filtré is_suggested du contexte agent. Maintenant on va plus
+    //   loin : on ne sème PLUS du tout. Calendrier vide à l'onboarding = vérité pure.
+    //   À la place, la page Calendrier affiche une carte d'onboarding visuel qui
+    //   explique comment remplir, et disparaît au 1er event créé (cf. renderCalendar).
+    // La fonction prefillSuggestedWeek reste définie ci-dessous au cas où on voudrait
+    // réactiver. Pour réactiver : décommenter l'appel ci-dessous.
+    // prefillSuggestedWeek({
+    //   sportKey: sportKey(data.sport) || data.sport,
+    //   levelKey: levelKey(data.level)
+    // }).catch(e => console.warn('[PREFILL-WEEK] trigger error:', e));
 
     overlay.style.opacity = '0';
     overlay.style.transition = 'opacity 0.3s';
@@ -5080,9 +5086,15 @@ function eventCountLabel(n) {
 }
 
 async function loadCalendarEvents() {
+  // v63.7.3 — Filtre is_suggested=true (events factices semés par l'ancien prefillSuggestedWeek).
+  // Le pré-fill est désactivé depuis ce push, mais les anciens comptes test peuvent avoir des
+  // events suggérés persistés en DB. On les cache du rendu calendrier (l'user voit un calendrier
+  // vide propre). v63.7.1 les cachait déjà des agents — maintenant cohérence frontend aussi.
+  // Pour réactiver visuellement les suggestions (debug) : retirer le .neq('is_suggested', true).
   const { data } = await sb.from('calendar_events')
     .select('*')
     .eq('user_id', currentUser.id)
+    .neq('is_suggested', true)
     .order('event_date', { ascending: true });
   calendarEvents = data || [];
 }
@@ -5134,8 +5146,35 @@ async function renderCalendar() {
     : weekIntensity <= 7 ? '#f59e0b'
     : '#ef4444';
 
+  // v63.7.3 — Carte d'onboarding calendrier. Affichée si l'user n'a AUCUN event,
+  // disparaît au 1er event créé (calendarEvents.length passe à >0 → bloc non rendu).
+  // Remplace l'ancien pré-fill de séances factices : on apprend à l'user à remplir
+  // son vrai calendrier au lieu de lui en générer un fictif.
+  const isCalendarEmpty = calendarEvents.length === 0;
+  const emptyStateCard = isCalendarEmpty ? `
+    <div style="background:linear-gradient(135deg,#f59e0b15,#fb923c08);border:1px solid #f59e0b30;border-radius:14px;padding:20px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <div style="font-size:28px">🗓️</div>
+        <div>
+          <div style="font-size:15px;font-weight:800;color:var(--text)">${t.calendarEmptyTitle || 'Ton calendrier est vide'}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">${t.calendarEmptySub || 'Plus tu le remplis, plus tes agents sont précis. Voilà comment.'}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:14px">
+        <div style="display:flex;gap:10px;align-items:flex-start"><div style="font-size:18px;flex-shrink:0;width:28px;text-align:center">➕</div><div><div style="font-size:12px;font-weight:700;color:var(--text)">${t.calendarHelpAddTitle || 'Ajoute un événement'}</div><div style="font-size:11px;color:var(--muted);line-height:1.5">${t.calendarHelpAddDesc || 'Bouton « Ajouter un événement » en bas, ou clique sur une case du calendrier. Type (match, compétition, entraînement, autre), date, horaire, lieu et durée.'}</div></div></div>
+        <div style="display:flex;gap:10px;align-items:flex-start"><div style="font-size:18px;flex-shrink:0;width:28px;text-align:center">🔥</div><div><div style="font-size:12px;font-weight:700;color:var(--text)">${t.calendarHelpIntensityTitle || 'Indique la charge'}</div><div style="font-size:11px;color:var(--muted);line-height:1.5">${t.calendarHelpIntensityDesc || 'Légère, moyenne ou intense. Ça pilote la charge hebdo affichée en haut et permet à David d\'adapter ses conseils.'}</div></div></div>
+        <div style="display:flex;gap:10px;align-items:flex-start"><div style="font-size:18px;flex-shrink:0;width:28px;text-align:center">📋</div><div><div style="font-size:12px;font-weight:700;color:var(--text)">${t.calendarHelpDuplicateTitle || 'Dupliquer un événement'}</div><div style="font-size:11px;color:var(--muted);line-height:1.5">${t.calendarHelpDuplicateDesc || 'Pour un entraînement qui revient chaque semaine, ouvre la journée puis clique sur l\'icône 📋 du bloc événement. Tu choisis la nouvelle date.'}</div></div></div>
+        <div style="display:flex;gap:10px;align-items:flex-start"><div style="font-size:18px;flex-shrink:0;width:28px;text-align:center">✏️</div><div><div style="font-size:12px;font-weight:700;color:var(--text)">${t.calendarHelpEditTitle || 'Modifier ou supprimer'}</div><div style="font-size:11px;color:var(--muted);line-height:1.5">${t.calendarHelpEditDesc || 'Clique sur un événement existant pour l\'éditer (titre, date, horaire, charge) ou utiliser l\'icône 🗑️ pour le supprimer.'}</div></div></div>
+        <div style="display:flex;gap:10px;align-items:flex-start"><div style="font-size:18px;flex-shrink:0;width:28px;text-align:center">📝</div><div><div style="font-size:12px;font-weight:700;color:var(--text)">${t.calendarHelpRecapTitle || 'Récap post-événement'}</div><div style="font-size:11px;color:var(--muted);line-height:1.5">${t.calendarHelpRecapDesc || 'Après un match ou un entraînement, ajoute un court récap (RPE, performance, sommeil avant). Tes agents s\'en servent pour leurs prochains conseils.'}</div></div></div>
+      </div>
+      <button onclick="showAddEvent('${dateToStr(today)}')" style="width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-size:13px;font-weight:800;cursor:pointer;font-family:'Inter',sans-serif">${t.calendarHelpCta || 'Créer mon 1er événement →'}</button>
+    </div>
+  ` : '';
+
   document.getElementById('mainContent').innerHTML = `
     <div style="max-width:800px">
+
+      ${emptyStateCard}
 
       <!-- COUNTDOWN -->
       ${nextEvent ? (() => {
