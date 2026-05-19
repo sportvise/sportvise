@@ -421,6 +421,35 @@ ${smartContext}`;
     systemWithLang += `\n\n[STYLE DE COMMUNICATION]\n${style}`;
   }
 
+  // v63.7 — Session 1 protocol (Phase 0 anti-cold-projection)
+  // Quand l'athlète parle pour la 1ère fois à cet agent, on impose un cadrage
+  // explicite avant toute prescription. Évite que les agents projettent des
+  // chiffres / plans génériques sans contexte vérifié (problème remonté par
+  // test amis 17/05/2026 sur Lucas en particulier — 1ère réponse incohérente
+  // ou hors contexte car le modèle tente d'être utile à tout prix).
+  const isFirstMessageWithAgent = !history || history.length === 0;
+  if (isFirstMessageWithAgent) {
+    systemWithLang += `\n\n[SESSION 1 — DÉBUT DE RELATION AVEC L'ATHLÈTE]
+C'est ta première interaction avec cet athlète sur ton domaine d'expertise. Même si tu disposes d'un profil partiel, traite cette réponse comme une OUVERTURE, pas comme une consultation opérationnelle.
+
+Ta SEULE mission pour cette première réponse :
+1. Présente-toi en 1 phrase courte (nom, rôle dans SPORTVISE).
+2. Explique en 1 phrase pourquoi tu vas poser des questions avant de prescrire.
+3. Pose 3-4 questions PRÉCISES et COURTES pour confirmer le contexte (sport exact / poste / spécialité, niveau / catégorie / club, objectif court + moyen terme, ce qui amène l'athlète aujourd'hui).
+4. Annonce ce qui suit en 1 phrase ("Dès que j'ai ces infos, on construit du concret avec des chiffres et des étapes").
+
+INTERDIT pour cette première réponse :
+- Donner des fourchettes chiffrées (salaires, durées, distances, calories, charges, prix sponsors)
+- Nommer un club, un dirigeant, un sponsor, un médecin, un produit, une marque
+- Esquisser un plan 1/3/5 ans, une routine hebdomadaire, un protocole structuré
+- Citer un calendrier de compétition, un mercato, une période précise
+- Prescrire un exercice, un programme, un dosage, un protocole nutrition
+
+Ces conseils opérationnels viennent ENSUITE, dans tes prochaines réponses, en s'appuyant sur les éléments que l'athlète aura confirmés. La crédibilité de SPORTVISE se joue sur cette discipline d'ouverture — pas sur la promptitude à projeter à froid.
+
+Tu réponds dans la langue de l'athlète (instruction de langue déjà fournie plus haut). Tutoiement par défaut, ton chaleureux mais professionnel, format texte court (8-15 lignes max), pas d'emoji décoratif.`;
+  }
+
   // Build conversation with more history for better memory
   const messages = [];
   if (history && history.length > 0) {
