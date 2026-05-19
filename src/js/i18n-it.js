@@ -172,8 +172,16 @@ var T_IT = {
   goalDesc:'Descrizione', targetValue:'Valore obiettivo', unit:'Unità',
   deadline:'Scadenza', milestones:'Tappe intermedie', financial:'Finanziario',
   physical:'Fisico', mental:'Mentale', career:'Carriera', noGoalsYet:'Nessun obiettivo ancora',
-  activeGoals:'Obiettivi attivi', completed:'Completato', abandoned:'Abbandonato',
-  progress:'Avanzamento', update:'Aggiorna', markCompleted:'Segna come completato',
+  activeGoals:'Obiettivi attivi', completed:'Raggiunto', abandoned:'Abbandonato',
+  progress:'Avanzamento', update:'Aggiorna', markCompleted:'Segna come raggiunto',
+  // v63.7.2 — Toggle quantitativo/qualitativo + nuove etichette
+  goalTypeLabel:'Tipo di obiettivo', inProgress:'In corso',
+  goalTypeQualTitle:'Da raggiungere o no', goalTypeQualSub:'Es: Firmare un contratto, gestire la carriera',
+  goalTypeQuantTitle:'Con valore numerico', goalTypeQuantSub:'Es: 5000 CHF, 100km, 12 allenamenti',
+  activeGoalsShort:'attivi', completedGoalsShort:'raggiunti',
+  goalUpdate:'Aggiorna', goalMarkDone:'Segna come raggiunto',
+  daysShort:'giorni', todayShort:'Oggi', deadlineIn:'Scadenza tra',
+  goalUpdatePrompt:'Nuovo valore raggiunto (numero):',
   // FEATURE 2: Journal
   journal:'Diario', todayEntry:'Voce di oggi', mood:'Umore',
   energy:'Energia', motivation:'Motivazione', sleepQuality:'Qualità del sonno',

@@ -172,8 +172,16 @@ var T_EN = {
   goalDesc:'Description', targetValue:'Target value', unit:'Unit',
   deadline:'Deadline', milestones:'Milestones', financial:'Financial',
   physical:'Physical', mental:'Mental', career:'Career', noGoalsYet:'No goals yet',
-  activeGoals:'Active goals', completed:'Completed', abandoned:'Abandoned',
-  progress:'Progress', update:'Update', markCompleted:'Mark as completed',
+  activeGoals:'Active goals', completed:'Reached', abandoned:'Abandoned',
+  progress:'Progress', update:'Update', markCompleted:'Mark as reached',
+  // v63.7.2 — Quantitative/qualitative toggle + new labels
+  goalTypeLabel:'Goal type', inProgress:'In progress',
+  goalTypeQualTitle:'Reach or drop', goalTypeQualSub:'Ex: Sign a contract, manage my career',
+  goalTypeQuantTitle:'With a number target', goalTypeQuantSub:'Ex: 5000 CHF, 100km, 12 sessions',
+  activeGoalsShort:'active', completedGoalsShort:'reached',
+  goalUpdate:'Update', goalMarkDone:'Mark as reached',
+  daysShort:'days', todayShort:'Today', deadlineIn:'Due in',
+  goalUpdatePrompt:'New value reached (number):',
   // FEATURE 2: Journal
   journal:'Daily Log', todayEntry:'Today\'s entry', mood:'Mood',
   energy:'Energy', motivation:'Motivation', sleepQuality:'Sleep quality',

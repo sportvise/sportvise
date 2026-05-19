@@ -784,12 +784,17 @@ async function quickOnboard(field, value, btn) {
       if (userProfile) userProfile.level = lvKey;
     } else if (field === 'goal') {
       const gKey = goalKey(value);
+      // v63.7.2 — Objectifs semés à l'onboarding = qualitatifs (À atteindre / pas).
+      // Avant : target_value:100, current_value:0 → barre figée à 0% en permanence,
+      // donnait l'impression d'un objectif "qui n'avance pas" alors que la mesure
+      // n'avait aucun sens. Maintenant : target_value:null = qualitatif, statut
+      // En cours / Atteint / Abandonné géré par renderGoals.
       await sb.from('goals').insert({
         user_id: currentUser.id,
-        title: goalLabel(gKey),       // localized label for display
-        domain: goalDomain(gKey),     // canonical domain from catalog
+        title: goalLabel(gKey),
+        domain: goalDomain(gKey),
         status: 'active',
-        target_value: 100,
+        target_value: null,
         current_value: 0,
         description: 'Objectif défini lors de l\'onboarding'
       });
@@ -1078,11 +1083,13 @@ function showLucasWelcome() {
         if (userProfile) { Object.assign(userProfile, updates); }
       }
       if (data.goal) {
+        // v63.7.2 — Idem onboarding guidé : objectif semé = qualitatif (target_value:null).
+        // Pas de barre à 0% trompeuse.
         await sb.from('goals').insert({
           user_id: currentUser.id,
-          title: goalLabel(data.goal),       // localized label for display elsewhere
-          domain: goalDomain(data.goal),     // canonical domain from catalog
-          status: 'active', target_value: 100, current_value: 0,
+          title: goalLabel(data.goal),
+          domain: goalDomain(data.goal),
+          status: 'active', target_value: null, current_value: 0,
           description: 'Objectif défini lors de l\'onboarding guidé'
         });
       }
@@ -4084,7 +4091,13 @@ async function getCalendarContext() {
     if (!events || events.length === 0) return '';
 
     // v62.6 — exclure les events cancelled/postponed du contexte agent (pas pertinents pour le coaching)
-    const activeEvents = events.filter(e => e.event_status !== 'cancelled' && e.event_status !== 'postponed');
+    // v63.7.1 — exclure aussi les events is_suggested (pré-fill onboarding non confirmé par l'user).
+    // Avant le fix, les agents lisaient les suggestions factices comme de vraies échéances et disaient
+    // "tu as un match dans 7 jours" alors que l'user n'avait rien planifié — sapait la crédibilité dès
+    // la session 1. Désormais : un event suggéré n'entre dans le contexte agent qu'APRÈS confirmation
+    // explicite (bouton ✓ → confirmSuggestedEvent → is_suggested=false).
+    const activeEvents = events.filter(e => e.event_status !== 'cancelled' && e.event_status !== 'postponed' && !e.is_suggested);
+    const hasSuggestedOnly = events.length > 0 && activeEvents.length === 0 && events.some(e => e.is_suggested);
 
     const typeLabels = { match:'Match', competition:'Compétition', entrainement:'Entraînement', autre:'Événement' };
     // v53 — also get recent past events with recaps for context (window expanded 3 → 10 within last 14 days)
@@ -4098,25 +4111,42 @@ async function getCalendarContext() {
     // v59 — block TENDANCES en tête (les LLMs accordent plus de poids au début du context block)
     let ctx = buildEventTrendsBlock(pastEvents);
 
-    // v62.7 — Group upcoming events by série (≥3 occurrences) pour éviter de spammer le
-    // contexte avec 36 lignes répétitives quand un user a un entraînement hebdo régulier.
-    // Les séries sont affichées en summary, les one-shots et petites séries restent listés.
-    const upcoming = splitEventsBySeries(activeEvents);
-    ctx += 'ÉVÉNEMENTS À VENIR :\n';
+    // v63.7.1 — Si aucun événement confirmé à venir, on signale explicitement aux agents
+    // qu'ils NE DOIVENT PAS inventer d'échéances. Deux cas distincts :
+    //  (a) hasSuggestedOnly : l'user a des suggestions pré-onboarding mais rien confirmé
+    //      → message qui invite à confirmer ou compléter
+    //  (b) calendrier complètement vide ET pas de récaps passés non plus
+    //      → message qui invite à remplir l'agenda
+    if (activeEvents.length === 0) {
+      if (hasSuggestedOnly) {
+        return ctx + 'CALENDRIER NON CONFIRMÉ — L\'athlète a des suggestions automatiques d\'événements (pré-remplissage post-onboarding avec badge "Suggéré") mais ne les a PAS encore confirmées dans son agenda. Ces suggestions NE SONT PAS des faits réels — tu ne dois PAS les utiliser comme références ("ton match dans X jours", "ton entraînement demain", etc.). Encourage l\'athlète à confirmer ou compléter son vrai calendrier dans l\'onglet Calendrier pour que tes conseils soient ancrés dans sa vraie semaine, pas dans un modèle générique.';
+      }
+      if (!pastEvents || pastEvents.length === 0) {
+        return 'CALENDRIER VIDE — L\'athlète n\'a renseigné AUCUN match, compétition ou entraînement à venir, et aucun récap passé n\'est disponible. Tu ne dois JAMAIS inventer d\'échéances ("ton match dans 7 jours", "ton entraînement intense demain") ni supposer un calendrier type. Si la question implique le calendrier, invite d\'abord l\'athlète à compléter son agenda dans l\'onglet Calendrier avant de prescrire quoi que ce soit de calendrier-dépendant.';
+      }
+      // Pas d'event à venir mais des récaps passés → on continue pour les récaps
+      ctx += 'AUCUN ÉVÉNEMENT À VENIR RENSEIGNÉ — L\'athlète n\'a pas encore noté de match, compétition ou entraînement futur. Tu ne dois PAS inventer d\'échéances. Si besoin, invite-le à compléter son agenda.\n';
+    } else {
+      // v62.7 — Group upcoming events by série (≥3 occurrences) pour éviter de spammer le
+      // contexte avec 36 lignes répétitives quand un user a un entraînement hebdo régulier.
+      // Les séries sont affichées en summary, les one-shots et petites séries restent listés.
+      const upcoming = splitEventsBySeries(activeEvents);
+      ctx += 'ÉVÉNEMENTS À VENIR (confirmés par l\'athlète) :\n';
 
-    if (upcoming.series.length > 0) {
-      ctx += upcoming.series.map(s => summarizeUpcomingSeries(s, today, typeLabels)).join('\n');
-      if (upcoming.oneShots.length > 0) ctx += '\n';
-    }
+      if (upcoming.series.length > 0) {
+        ctx += upcoming.series.map(s => summarizeUpcomingSeries(s, today, typeLabels)).join('\n');
+        if (upcoming.oneShots.length > 0) ctx += '\n';
+      }
 
-    if (upcoming.oneShots.length > 0) {
-      ctx += upcoming.oneShots.map(e => {
-        const d = new Date(e.event_date);
-        const diff = Math.round((d - today) / 86400000);
-        const when = diff === 0 ? "AUJOURD'HUI" : diff === 1 ? 'DEMAIN' : `dans ${diff} jours`;
-        const intens = e.intensity ? ` (intensité: ${e.intensity})` : '';
-        return `${typeLabels[e.event_type] || 'Événement'} ${when}: ${e.title}${e.event_time ? ' à ' + e.event_time.slice(0,5) : ''}${e.location ? ' (' + e.location + ')' : ''}${intens}${e.notes ? ' — Note: ' + e.notes : ''}`;
-      }).join('\n');
+      if (upcoming.oneShots.length > 0) {
+        ctx += upcoming.oneShots.map(e => {
+          const d = new Date(e.event_date);
+          const diff = Math.round((d - today) / 86400000);
+          const when = diff === 0 ? "AUJOURD'HUI" : diff === 1 ? 'DEMAIN' : `dans ${diff} jours`;
+          const intens = e.intensity ? ` (intensité: ${e.intensity})` : '';
+          return `${typeLabels[e.event_type] || 'Événement'} ${when}: ${e.title}${e.event_time ? ' à ' + e.event_time.slice(0,5) : ''}${e.location ? ' (' + e.location + ')' : ''}${intens}${e.notes ? ' — Note: ' + e.notes : ''}`;
+        }).join('\n');
+      }
     }
 
     // v62.7 — Idem pour les récaps : agréger les séries pour donner des tendances
@@ -9109,14 +9139,35 @@ function showAddGoalModal() {
           <option value="carriere">🚀 ${t.career || 'Career'}</option>
         </select>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="form-field">
-          <label class="form-label">${t.targetValue}</label>
-          <input type="number" id="goalTarget" class="form-input" placeholder="Ex: 5000" />
+
+      <!-- v63.7.2 — Toggle quantitatif/qualitatif. Évite la barre figée à 0% sur les objectifs sans cible mesurable. -->
+      <div class="form-field" style="margin-bottom:14px">
+        <label class="form-label" style="display:block;margin-bottom:8px">${t.goalTypeLabel || 'Type d\'objectif'}</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <button type="button" id="goalTypeQual" onclick="setGoalType('qualitative')" style="padding:12px 10px;border-radius:10px;border:2px solid #f59e0b;background:#f59e0b15;color:var(--text);font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;text-align:left;line-height:1.4">
+            <div style="font-size:18px;margin-bottom:4px">✅</div>
+            <div>${t.goalTypeQualTitle || 'À atteindre ou pas'}</div>
+            <div style="font-size:10px;font-weight:500;color:var(--muted);margin-top:2px">${t.goalTypeQualSub || 'Ex: Signer un contrat, gérer ma carrière'}</div>
+          </button>
+          <button type="button" id="goalTypeQuant" onclick="setGoalType('quantitative')" style="padding:12px 10px;border-radius:10px;border:2px solid var(--border);background:transparent;color:var(--text);font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;text-align:left;line-height:1.4">
+            <div style="font-size:18px;margin-bottom:4px">📊</div>
+            <div>${t.goalTypeQuantTitle || 'Avec cible chiffrée'}</div>
+            <div style="font-size:10px;font-weight:500;color:var(--muted);margin-top:2px">${t.goalTypeQuantSub || 'Ex: 5000 CHF, 100km, 12 séances'}</div>
+          </button>
         </div>
-        <div class="form-field">
-          <label class="form-label">${t.unit}</label>
-          <input type="text" id="goalUnit" class="form-input" placeholder="Ex: CHF" />
+        <input type="hidden" id="goalType" value="qualitative" />
+      </div>
+
+      <div id="goalQuantFields" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-field">
+            <label class="form-label">${t.targetValue}</label>
+            <input type="number" id="goalTarget" class="form-input" placeholder="Ex: 5000" />
+          </div>
+          <div class="form-field">
+            <label class="form-label">${t.unit}</label>
+            <input type="text" id="goalUnit" class="form-input" placeholder="Ex: CHF" />
+          </div>
         </div>
       </div>
       <div class="form-field">
@@ -9148,15 +9199,48 @@ function fillGoalSuggestion(domain, label) {
   if (titleEl) titleEl.focus();
 }
 
+// v63.7.2 — Toggle entre objectif qualitatif (par défaut) et quantitatif.
+// Qualitatif : pas de target/unit, statut binaire (En cours / Atteint / Abandonné).
+// Quantitatif : target_value + unit, barre de progression % current/target.
+function setGoalType(type) {
+  const hidden = document.getElementById('goalType');
+  const qualBtn = document.getElementById('goalTypeQual');
+  const quantBtn = document.getElementById('goalTypeQuant');
+  const quantFields = document.getElementById('goalQuantFields');
+  if (!hidden || !qualBtn || !quantBtn || !quantFields) return;
+  hidden.value = type;
+  if (type === 'qualitative') {
+    qualBtn.style.borderColor = '#f59e0b';
+    qualBtn.style.background = '#f59e0b15';
+    quantBtn.style.borderColor = 'var(--border)';
+    quantBtn.style.background = 'transparent';
+    quantFields.style.display = 'none';
+  } else {
+    quantBtn.style.borderColor = '#f59e0b';
+    quantBtn.style.background = '#f59e0b15';
+    qualBtn.style.borderColor = 'var(--border)';
+    qualBtn.style.background = 'transparent';
+    quantFields.style.display = 'block';
+  }
+}
+
 async function saveGoal() {
   const title = document.getElementById('goalTitle').value.trim();
   const desc = document.getElementById('goalDesc').value.trim();
   const domain = document.getElementById('goalDomain').value;
-  const targetValue = parseInt(document.getElementById('goalTarget').value) || 0;
-  const unit = document.getElementById('goalUnit').value;
+  const goalType = document.getElementById('goalType')?.value || 'qualitative';
   const deadline = document.getElementById('goalDeadline').value;
 
   if (!title) { alert('Titre requis'); return; }
+
+  // v63.7.2 — target_value/unit ne sont stockés que pour les objectifs quantitatifs.
+  // Pour les qualitatifs, on stocke null → renderGoals affiche le statut binaire au lieu d'une barre.
+  let targetValue = null;
+  let unit = null;
+  if (goalType === 'quantitative') {
+    targetValue = parseInt(document.getElementById('goalTarget')?.value) || null;
+    unit = document.getElementById('goalUnit')?.value || null;
+  }
 
   const { error } = await sb.from('goals').insert({
     user_id: currentUser.id,
@@ -9170,7 +9254,10 @@ async function saveGoal() {
 }
 
 async function updateGoalValue(goalId) {
-  const newValue = prompt('Nouvelle valeur atteinte:');
+  // v63.7.2 — Le prompt s'applique uniquement aux objectifs quantitatifs (target_value > 0).
+  // Pour les qualitatifs, le bouton "Marquer atteint" appelle completeGoal directement.
+  const t = T[currentLang] || T.fr;
+  const newValue = prompt(t.goalUpdatePrompt || 'Nouvelle valeur atteinte (chiffre) :');
   if (newValue === null) return;
   const { error } = await sb.from('goals').update({ current_value: parseInt(newValue) || 0 }).eq('id', goalId);
   if (!error) renderGoals();
@@ -9318,28 +9405,26 @@ async function renderGoals() {
   const domains = { financier: '💰', physique: '💪', mental: '🧠', carriere: '🚀' };
   const domainNames = { financier: t.financial || 'Financier', physique: t.physical || 'Physique', mental: t.mental || 'Mental', carriere: t.career || 'Carrière' };
 
+  // v63.7.2 — Stats par domaine : on remplace le "% progress" (basé sur un seul topGoal,
+  // ne reflétait pas l'ensemble) par "X actifs · Y atteints" (cumul honnête multi-objectifs).
   const domainStats = Object.keys(domains).map(domain => {
-    const domainGoals = allGoals.filter(g => g.domain === domain && g.status === 'active');
-    const topGoal = domainGoals[0];
-    const progress = topGoal && topGoal.target_value ? Math.min(100, Math.round((topGoal.current_value / topGoal.target_value) * 100)) : 0;
-    return { domain, emoji: domains[domain], name: domainNames[domain], count: domainGoals.length, progress };
+    const allDomainGoals = allGoals.filter(g => g.domain === domain);
+    const activeCount = allDomainGoals.filter(g => g.status === 'active').length;
+    const completedCount = allDomainGoals.filter(g => g.status === 'completed').length;
+    return { domain, emoji: domains[domain], name: domainNames[domain], activeCount, completedCount };
   });
 
   document.getElementById('mainContent').innerHTML = `
     <div style="max-width:1000px">
-      <!-- Domain Cards -->
+      <!-- Domain Cards (v63.7.2 — X actifs · Y atteints, plus de barre fake) -->
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:24px">
         ${domainStats.map(stat => `
           <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer" onclick="scrollToGoals('${stat.domain}')">
             <div style="font-size:28px;margin-bottom:8px">${stat.emoji}</div>
             <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">${stat.name}</div>
-            <div style="font-size:12px;color:var(--muted);margin-bottom:12px">${stat.count} ${t.activeGoals || 'active goals'}</div>
-            ${stat.count > 0 ? `
-              <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:4px">
-                <div style="height:100%;width:${stat.progress}%;background:var(--gold);transition:width 0.3s"></div>
-              </div>
-              <div style="font-size:10px;color:var(--muted)">${stat.progress}% progress</div>
-            ` : `<div style="font-size:10px;color:var(--muted);font-style:italic">${t.noGoalsYet}</div>`}
+            ${(stat.activeCount + stat.completedCount) > 0 ? `
+              <div style="font-size:12px;color:var(--muted)"><strong style="color:var(--text)">${stat.activeCount}</strong> ${t.activeGoalsShort || 'actifs'} · <strong style="color:#10b981">${stat.completedCount}</strong> ${t.completedGoalsShort || 'atteints'}</div>
+            ` : `<div style="font-size:11px;color:var(--muted);font-style:italic">${t.noGoalsYet || 'Aucun objectif'}</div>`}
           </div>
         `).join('')}
       </div>
@@ -9365,27 +9450,37 @@ async function renderGoals() {
               <div style="margin-bottom:20px" id="goals-${domain}">
                 <h4 style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px">${domains[domain]} ${domainNames[domain]}</h4>
                 ${domainGoals.map(g => {
-                  const progress = g.target_value ? Math.min(100, Math.round((g.current_value / g.target_value) * 100)) : 0;
+                  // v63.7.2 — Rendu conditionnel : barre uniquement si quantitatif (target_value > 0).
+                  // Sinon : statut binaire + deadline + bouton "Marquer atteint" pour les actifs.
+                  const isQuantitative = g.target_value && g.target_value > 0;
+                  const progress = isQuantitative ? Math.min(100, Math.round((g.current_value / g.target_value) * 100)) : null;
                   const daysLeft = g.deadline ? Math.ceil((new Date(g.deadline) - new Date()) / 86400000) : null;
+                  const statusLabel = g.status==='completed' ? '✓ ' + (t.completed||'Atteint') : g.status==='abandoned' ? '✕ ' + (t.abandoned||'Abandonné') : (t.inProgress||'En cours');
+                  const statusColor = g.status==='completed' ? '#10b981' : g.status==='abandoned' ? '#ef4444' : 'var(--text)';
+                  const statusBg = g.status==='completed' ? '#10b98115' : g.status==='abandoned' ? '#ef444415' : 'var(--border)';
                   return `
                     <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px">
-                      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-                        <div style="flex:1">
+                      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:8px">
+                        <div style="flex:1;min-width:0">
                           <div style="font-size:12px;font-weight:700;color:var(--text)">${g.title}</div>
-                          <div style="font-size:11px;color:var(--muted);margin-top:2px">${g.description || ''}</div>
+                          ${g.description ? `<div style="font-size:11px;color:var(--muted);margin-top:2px">${g.description}</div>` : ''}
                         </div>
-                        <div style="font-size:11px;font-weight:700;color:${g.status==='completed'?'#10b981':g.status==='abandoned'?'#ef4444':'var(--text)'};background:${g.status==='completed'?'#10b98115':g.status==='abandoned'?'#ef444415':'var(--border)'}20;padding:3px 8px;border-radius:4px">${g.status==='completed'?'✓ '+t.completed:g.status==='abandoned'?'✕ '+t.abandoned:'En cours'}</div>
+                        <div style="font-size:11px;font-weight:700;color:${statusColor};background:${statusBg}20;padding:3px 8px;border-radius:4px;white-space:nowrap">${statusLabel}</div>
                       </div>
-                      <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:6px">
-                        <div style="height:100%;width:${progress}%;background:linear-gradient(90deg,#f59e0b,#d97706);transition:width 0.3s"></div>
-                      </div>
-                      <div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;color:var(--muted)">
-                        <span>${g.current_value}${g.unit?'/'+g.target_value+' '+g.unit:''} (${progress}%)</span>
-                        ${daysLeft !== null ? `<span>${daysLeft > 0 ? daysLeft + ' jours' : 'Aujourd\'hui'}</span>` : ''}
-                      </div>
+                      ${isQuantitative ? `
+                        <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:6px">
+                          <div style="height:100%;width:${progress}%;background:linear-gradient(90deg,#f59e0b,#d97706);transition:width 0.3s"></div>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;color:var(--muted)">
+                          <span>${g.current_value}/${g.target_value}${g.unit?' '+g.unit:''} (${progress}%)</span>
+                          ${daysLeft !== null ? `<span>${daysLeft > 0 ? daysLeft + ' ' + (t.daysShort||'jours') : (t.todayShort||'Aujourd\'hui')}</span>` : ''}
+                        </div>
+                      ` : `
+                        ${daysLeft !== null ? `<div style="font-size:10px;color:var(--muted);margin-bottom:6px">📅 ${daysLeft > 0 ? (t.deadlineIn||'Échéance dans')+' '+daysLeft+' '+(t.daysShort||'jours') : (t.todayShort||'Aujourd\'hui')}</div>` : ''}
+                      `}
                       <div style="display:flex;gap:6px;margin-top:8px">
-                        <button onclick="updateGoalValue('${g.id}')" style="flex:1;padding:4px 8px;border-radius:4px;background:var(--border);border:none;color:var(--text);font-size:10px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">📝 Mettre à jour</button>
-                        ${g.status==='active'?`<button onclick="completeGoal('${g.id}')" style="flex:1;padding:4px 8px;border-radius:4px;background:#10b98115;border:1px solid #10b98130;color:#10b981;font-size:10px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">✓ Complété</button>`:''}
+                        ${isQuantitative && g.status==='active' ? `<button onclick="updateGoalValue('${g.id}')" style="flex:1;padding:4px 8px;border-radius:4px;background:var(--border);border:none;color:var(--text);font-size:10px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">📝 ${t.goalUpdate||'Mettre à jour'}</button>` : ''}
+                        ${g.status==='active' ? `<button onclick="completeGoal('${g.id}')" style="flex:1;padding:4px 8px;border-radius:4px;background:#10b98115;border:1px solid #10b98130;color:#10b981;font-size:10px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">✓ ${t.goalMarkDone||'Marquer atteint'}</button>` : ''}
                         <button onclick="deleteGoal('${g.id}')" title="${t.deleteGoal||'Supprimer'}" style="padding:4px 10px;border-radius:4px;background:#ef444412;border:1px solid #ef444425;color:#ef4444;font-size:10px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif" onmouseover="this.style.background='#ef444425'" onmouseout="this.style.background='#ef444412'">🗑️</button>
                       </div>
                     </div>
