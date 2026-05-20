@@ -1354,8 +1354,15 @@ let chats = {};
 let currentUser = null;
 let userProfile = null;
 let userPlan = 'free'; // 'free', 'plus' or 'pro'
-let dailyMsgCount = 0;
-const FREE_MSG_LIMIT = 5; // v63.5 — passé de 10 → 5 msg/jour (audit pricing 7.3, cohérent backend chat/index.js LIMITS.free.perDay)
+let dailyMsgCount = 0; // v63.8 — free permanent : messages sur 30 jours glissants
+// ── v63.8 — Refonte free plan (essai 14j + free permanent mensuel) ──
+// KILL SWITCH : SV_TRIAL_ENABLED = false → pas d'overlay essai (tout compte free
+// passe direct au free permanent). Le cap mensuel free reste, lui, inconditionnel.
+const SV_TRIAL_ENABLED = true;
+const TRIAL_DAYS = 14;
+const FREE_MSG_LIMIT = 30; // free permanent — 30 msg / 30 jours glissants (cohérent backend LIMITS.free.perMonth)
+let svTrialActive = false; // compte free encore dans ses 14 jours d'essai
+let svTrialDaysLeft = 0;   // jours d'essai restants (pour la bannière)
 
 // ── AGENT ACCESS BY PLAN — extrait dans src/js/helpers-agent-access.js (v62.37 Phase 2)
 let selectedLevel = '';
@@ -1449,10 +1456,12 @@ async function init() {
   // Load profile + count messages in parallel for faster init
   const now = new Date();
   const todayLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+  // v63.8 — comptage sur 30 jours glissants (cap free permanent mensuel)
+  const since30d = new Date(now.getTime() - 30 * 86400000);
   const [{ data: profile }, { count: msgCount }] = await Promise.all([
     sb.from('profiles').select('*').eq('id', currentUser.id).single(),
     sb.from('messages').select('*', { count: 'exact', head: true })
-      .eq('user_id', currentUser.id).eq('role', 'user').gte('created_at', todayLocal.toISOString())
+      .eq('user_id', currentUser.id).eq('role', 'user').gte('created_at', since30d.toISOString())
   ]);
   userProfile = profile;
 
@@ -1466,7 +1475,17 @@ async function init() {
   // Load user plan (admin = always pro)
   userPlan = currentUser.email === 'sportvise.pro@gmail.com' ? 'pro' : (profile?.plan || 'free');
 
-  // Set daily message count (already fetched in parallel above)
+  // v63.8 — Overlay essai : compte free de moins de TRIAL_DAYS jours = accès complet.
+  // Date d'inscription = currentUser.created_at (objet user de la session Supabase).
+  svTrialActive = false;
+  svTrialDaysLeft = 0;
+  if (SV_TRIAL_ENABLED && userPlan === 'free' && currentUser.created_at) {
+    const ageMs = Date.now() - new Date(currentUser.created_at).getTime();
+    const left = Math.ceil((TRIAL_DAYS * 86400000 - ageMs) / 86400000);
+    if (ageMs >= 0 && left > 0) { svTrialActive = true; svTrialDaysLeft = left; }
+  }
+
+  // Set message count (30 jours glissants — affiché pour le free permanent)
   if (userPlan === 'free') {
     dailyMsgCount = msgCount || 0;
   }
@@ -2486,12 +2505,12 @@ async function showPage(page, el) {
   } else if (page === 'defis') {
     document.getElementById('pageTitle').textContent = '🏅 Défis';
     document.getElementById('pageSubtitle').textContent = (T[currentLang]?.pageDefisSubtitle) || 'Relève des défis hebdomadaires et partage tes stats';
-    if (userPlan === 'free') { renderLockedFeature('Défis', '🏅', 'Relève des défis hebdomadaires, partage tes stats et gagne des badges.', 'plus'); }
+    if (userPlan === 'free' && !svTrialActive) { renderLockedFeature('Défis', '🏅', 'Relève des défis hebdomadaires, partage tes stats et gagne des badges.', 'plus'); }
     else { renderDefis(); }
   } else if (page === 'prepa-match') {
     document.getElementById('pageTitle').textContent = '⚡ Prépa Compétition';
     document.getElementById('pageSubtitle').textContent = (T[currentLang]?.pagePrepaSubtitle) || 'Plan de préparation coordonné par tes agents IA';
-    if (userPlan === 'free') { renderLockedFeature('Prépa Compétition', '⚡', 'Plan de préparation J-3 à Jour J coordonné par David, Emma, Clara, Nora et Julie.', 'plus'); }
+    if (userPlan === 'free' && !svTrialActive) { renderLockedFeature('Prépa Compétition', '⚡', 'Plan de préparation J-3 à Jour J coordonné par David, Emma, Clara, Nora et Julie.', 'plus'); }
     else { renderPrepaMatch(); }
   } else if (page === 'connexions') {
     document.getElementById('pageTitle').textContent = '🔗 ' + ((T[currentLang]?.navLabels?.connexions) || 'Synchronisation Strava');
@@ -2862,22 +2881,33 @@ async function renderDashboard() {
          (totalMsgs, agentsUsed, topAgentName, memberDays) restent en amont car utilisés
          pour les badges et exports PDF. -->
 
-    <!-- LIMITE MESSAGES FREE -->
-    ${userPlan === 'free' ? `
+    <!-- v63.8 — Bandeau essai (compte free récent) / compteur free permanent -->
+    ${userPlan === 'free' ? (svTrialActive ? `
+    <div style="background:linear-gradient(135deg,#06b6d415,#10b98115);border:1px solid #06b6d440;border-radius:14px;padding:16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:22px">🎁</div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text)">${t.trialActive} · J-${svTrialDaysLeft}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">${t.trialBannerSub}</div>
+        </div>
+      </div>
+      <button onclick="showPage('abonnement',document.querySelector('[onclick*=abonnement]'))" style="padding:8px 16px;border-radius:8px;border:none;background:#06b6d4;color:#fff;font-weight:700;font-size:11px;cursor:pointer;font-family:'Inter',sans-serif;flex-shrink:0">${t.trialKeepAccess}</button>
+    </div>
+    ` : `
     <div style="background:linear-gradient(135deg,#f59e0b10,#d9770610);border:1px solid #f59e0b30;border-radius:14px;padding:16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px">
       <div style="display:flex;align-items:center;gap:12px">
         <div style="font-size:22px">💬</div>
         <div>
-          <div style="font-size:13px;font-weight:700;color:var(--text)">${t.messagestoday} : ${dailyMsgCount} / ${FREE_MSG_LIMIT}</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:2px">${dailyMsgCount >= FREE_MSG_LIMIT ? t.limitReached + ' — ' + t.upgradeToPro : t.planFree + ' · ' + (FREE_MSG_LIMIT - dailyMsgCount) + ' ' + t.messagesRemaining}</div>
+          <div style="font-size:13px;font-weight:700;color:var(--text)">${t.messagesMonth} : ${dailyMsgCount} / ${FREE_MSG_LIMIT}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">${dailyMsgCount >= FREE_MSG_LIMIT ? t.limitReached + ' — ' + t.upgradeToPro : t.planFree + ' · ' + Math.max(0, FREE_MSG_LIMIT - dailyMsgCount) + ' ' + t.messagesRemaining}</div>
         </div>
       </div>
       <div style="flex:1;max-width:120px;height:6px;background:var(--bg);border-radius:3px;overflow:hidden">
         <div style="height:100%;width:${Math.min(dailyMsgCount/FREE_MSG_LIMIT*100,100)}%;background:${dailyMsgCount >= FREE_MSG_LIMIT ? '#ef4444' : 'linear-gradient(90deg,#f59e0b,#d97706)'};border-radius:3px;transition:width 0.3s"></div>
       </div>
-      ${dailyMsgCount >= FREE_MSG_LIMIT - 3 ? '<button onclick="showPage(\'abonnement\',document.querySelector(\'[onclick*=abonnement]\'))" style="padding:8px 16px;border-radius:8px;border:none;background:#06b6d4;color:#fff;font-weight:700;font-size:11px;cursor:pointer;font-family:\'Inter\',sans-serif;flex-shrink:0">Plus →</button>' : ''}
+      ${dailyMsgCount >= FREE_MSG_LIMIT - 5 ? '<button onclick="showPage(\'abonnement\',document.querySelector(\'[onclick*=abonnement]\'))" style="padding:8px 16px;border-radius:8px;border:none;background:#06b6d4;color:#fff;font-weight:700;font-size:11px;cursor:pointer;font-family:\'Inter\',sans-serif;flex-shrink:0">Plus →</button>' : ''}
     </div>
-    ` : ''}
+    `) : ''}
 
     <!-- PROCHAINS ÉVÉNEMENTS (from calendar) -->
     ${await (async () => {
@@ -4650,10 +4680,17 @@ L'athlète pratique : ${p.sport || 'sport non renseigné'}, niveau : ${p.level |
       let body = {};
       try { body = await res.json(); } catch(_) {}
       const icon = body.scope === 'minute' ? '⏱️' : '🔒';
-      const limitMsg = body.message || 'Limite de messages atteinte.';
-      const showUpgrade = body.plan === 'free' && body.scope === 'day';
+      // v63.8 — message localisé selon le scope (minute / day / month)
+      const tt = T[currentLang] || T.fr;
+      let limitMsg;
+      if (body.scope === 'minute') limitMsg = tt.limitMsgMinute;
+      else if (body.scope === 'month') limitMsg = tt.limitMsgMonth;
+      else if (body.tier === 'trial') limitMsg = tt.limitMsgTrialDay;
+      else limitMsg = tt.limitMsgDay;
+      limitMsg = limitMsg || body.message || 'Limite de messages atteinte.';
+      const showUpgrade = body.scope === 'month';
       const upgradeBtn = showUpgrade
-        ? `<button onclick="showPage('abonnement',document.querySelector('[onclick*=abonnement]'))" style="margin-top:10px;padding:9px 18px;border-radius:8px;border:none;background:#06b6d4;color:#fff;font-weight:700;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif">Passer au Plus — CHF 12/mois →</button>`
+        ? `<button onclick="showPage('abonnement',document.querySelector('[onclick*=abonnement]'))" style="margin-top:10px;padding:9px 18px;border-radius:8px;border:none;background:#06b6d4;color:#fff;font-weight:700;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif">${tt.upgradeBtnPlus}</button>`
         : '';
       const msgsEl = document.getElementById('chatMessages');
       if (msgsEl) {
