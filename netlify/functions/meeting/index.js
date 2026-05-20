@@ -99,12 +99,18 @@ async function getUserPlan(userId) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Quotas par plan (meetings/mois). Free = 0 = paywall complet.
+// Quotas par plan/tier (meetings/mois). Free = 0 = paywall complet.
+// v63.8 — Refonte free plan : tier 'trial' (compte free < TRIAL_DAYS jours)
+// = essai 14 jours avec accès aux réunions (2/mois, comme Plus). Kill switch
+// SV_TRIAL_ENABLED : false = pas d'overlay essai (free reste paywallé à 0).
 // ─────────────────────────────────────────────────────────────
+const SV_TRIAL_ENABLED = true;   // kill switch — false = désactive l'overlay essai
+const TRIAL_DAYS = 14;
 const MEETING_QUOTAS = {
-  free: { perMonth: 0 },          // pas d'accès
-  plus: { perMonth: 2 },          // 2 meetings par mois calendaire
-  pro:  { perMonth: 9999 },       // de facto illimité
+  free:  { perMonth: 0 },         // pas d'accès
+  trial: { perMonth: 2 },         // essai 14 jours — réunions incluses
+  plus:  { perMonth: 2 },         // 2 meetings par mois calendaire
+  pro:   { perMonth: 9999 },      // de facto illimité
 };
 
 // Count meeting usage for a user since the start of the current calendar month.
@@ -471,11 +477,18 @@ exports.handler = async (event) => {
     }
   }
 
-  // ─── Plan + quotas check ───
+  // ─── Plan + quotas check (v63.8 — overlay essai) ───
   const plan = await getUserPlan(user.id);
-  const quota = MEETING_QUOTAS[plan] || MEETING_QUOTAS.free;
 
-  if (plan === 'free' || quota.perMonth === 0) {
+  // Tier effectif : compte free récent (< TRIAL_DAYS jours) → 'trial'.
+  let tier = plan;
+  if (plan === 'free' && SV_TRIAL_ENABLED && user.created_at) {
+    const ageMs = Date.now() - new Date(user.created_at).getTime();
+    if (ageMs >= 0 && ageMs < TRIAL_DAYS * 24 * 3600 * 1000) tier = 'trial';
+  }
+  const quota = MEETING_QUOTAS[tier] || MEETING_QUOTAS.free;
+
+  if (quota.perMonth === 0) {
     await logUsage({ userId: user.id, agentIds, success: false, errorCode: 'plan_required' });
     return {
       statusCode: 403,
