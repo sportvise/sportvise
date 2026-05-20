@@ -27,6 +27,14 @@ var T_DE = {
   // Daily message limit
   messagestoday:'Nachrichten heute', limitReached:'Limit erreicht',
   planFree:'Plan Free', messagesRemaining:'verbleibende Nachrichten', upgradeToPro:'Upgrade zu Pro',
+  // v63.8 — 14-Tage-Testphase + monatlicher Permanent-Free-Plan
+  trialActive:'Kostenlose Testphase aktiv', trialBannerSub:'Voller Zugriff auf alle 11 Agenten und Team-Meetings',
+  trialKeepAccess:'Meinen Plan wählen', messagesMonth:'Nachrichten diesen Monat',
+  limitMsgMinute:'Zu viele Nachrichten auf einmal. Versuch es in einer Minute erneut.',
+  limitMsgDay:'Du hast dein Tageslimit erreicht. Versuch es morgen erneut.',
+  limitMsgTrialDay:'Du hast deine Nachrichten für heute aufgebraucht. Komm morgen wieder — deine Testphase läuft weiter.',
+  limitMsgMonth:'Du hast deine 30 kostenlosen Nachrichten diesen Monat aufgebraucht. Wechsle zu Plus, um ohne Limit weiterzumachen.',
+  upgradeBtnPlus:'Auf Plus wechseln — CHF 12/Monat →',
   // Events section
   noEventsThisWeek:'Keine Ereignisse diese Woche', addMatchesPrompt:'Füge deine Spiele und Trainingseinheiten hinzu, damit sich deine Agenten anpassen →',
   thisWeek:'Diese Woche', seeAll:'Alle anzeigen →', today:'Heute', tomorrow:'Morgen',
@@ -115,7 +123,7 @@ var T_DE = {
   cancelFallback:'Sitzung konnte nicht erstellt werden. Möchtest du den Support kontaktieren?',
   manageSubscription:'Mein Abonnement verwalten', contactQuestion:'Eine Frage?',
   currentPlan:'✅ AKTUELLER PLAN', recommended:'⭐ EMPFOHLEN',
-  freePlan:'Free', freePlanDesc:'SPORTVISE entdecken', freePlanFeatures:['3 KI-Agenten (Lucas, Emma, Clara)','10 Nachrichten / Tag','Dashboard + Fitness Score','Tagesbuch + Kalender','Ziele + Fortschritt'],
+  freePlan:'Free', freePlanDesc:'SPORTVISE entdecken', freePlanFeatures:['14 Tage gratis — 11 Agenten + Meetings','Danach 3 KI-Agenten (Lucas, Emma, Clara)','30 Nachrichten / Monat','Dashboard + Fitness Score','Tagesbuch + Kalender','Ziele + Fortschritt'],
   currentPlanBtn:'Aktueller Plan', backToFree:'Zurück zu Free',
   plusPlan:'Plus', plusPlanDesc:'Maximale Leistung', plusPlanPrice:'CHF 12', plusPlanFeatures:['6 Performance-Agenten (+ David, Nora, Julie)','Unbegrenzte Nachrichten','Wettkampf-Vorbereitung (T-3 bis Tag X)','Wöchentliche Herausforderungen','Wochenbericht + Benachrichtigungen'],
   upgradToPlus:'Upgrade auf Plus →', plusNew:'Neu',
