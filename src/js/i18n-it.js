@@ -27,6 +27,14 @@ var T_IT = {
   // Daily message limit
   messagestoday:'Messaggi oggi', limitReached:'Limite raggiunto',
   planFree:'Piano Free', messagesRemaining:'messaggi rimanenti', upgradeToPro:'Passa a Pro',
+  // v63.8 — Prova di 14 giorni + free permanente mensile
+  trialActive:'Prova gratuita attiva', trialBannerSub:'Accesso completo a tutti gli 11 agenti e alle riunioni di squadra',
+  trialKeepAccess:'Scegli il mio piano', messagesMonth:'Messaggi questo mese',
+  limitMsgMinute:'Troppi messaggi in una volta. Riprova tra un minuto.',
+  limitMsgDay:'Hai raggiunto il limite giornaliero. Riprova domani.',
+  limitMsgTrialDay:'Hai usato i messaggi di oggi. Torna domani — la tua prova è ancora attiva.',
+  limitMsgMonth:'Hai usato i tuoi 30 messaggi gratuiti del mese. Passa a Plus per continuare senza limiti.',
+  upgradeBtnPlus:'Passa a Plus — CHF 12/mese →',
   // Events section
   noEventsThisWeek:'Nessun evento questa settimana', addMatchesPrompt:'Aggiungi le tue partite e allenamenti in modo che i tuoi agenti si adattino →',
   thisWeek:'Questa settimana', seeAll:'Visualizza tutto →', today:'Oggi', tomorrow:'Domani',
@@ -115,7 +123,7 @@ var T_IT = {
   cancelFallback:'Impossibile creare una sessione. Vuoi contattare il supporto?',
   manageSubscription:'Gestisci il mio abbonamento', contactQuestion:'Una domanda?',
   currentPlan:'✅ PIANO ATTUALE', recommended:'⭐ CONSIGLIATO',
-  freePlan:'Free', freePlanDesc:'Scopri SPORTVISE', freePlanFeatures:['3 agenti IA (Lucas, Emma, Clara)','10 messaggi / giorno','Dashboard + Fitness Score','Diario quotidiano + Calendario','Obiettivi + Progressione'],
+  freePlan:'Free', freePlanDesc:'Scopri SPORTVISE', freePlanFeatures:['Prova 14 giorni — 11 agenti + riunioni','Poi 3 agenti IA (Lucas, Emma, Clara)','30 messaggi / mese','Dashboard + Fitness Score','Diario quotidiano + Calendario','Obiettivi + Progressione'],
   currentPlanBtn:'Piano attuale', backToFree:'Torna a Free',
   plusPlan:'Plus', plusPlanDesc:'Prestazione al massimo', plusPlanPrice:'CHF 12', plusPlanFeatures:['6 agenti performance (+ David, Nora, Julie)','Messaggi illimitati','Prep Competizione (G-3 al Giorno X)','Sfide settimanali','Riepilogo settimanale + Notifiche'],
   upgradToPlus:'Passa a Plus →', plusNew:'Nuovo',

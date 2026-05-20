@@ -16,6 +16,8 @@ const PLUS_AGENTS = ['equipe', 'mental', 'nutrition', 'physique', 'sommeil', 're
 
 function isAgentLocked(agentPage) {
   if (!AGENTS[agentPage]) return false; // not an agent page
+  // v63.8 — Essai 14 jours : accès complet aux 11 agents.
+  if (typeof svTrialActive !== 'undefined' && svTrialActive) return false;
   if (userPlan === 'pro') return false; // Pro = full access
   if (userPlan === 'plus') return !PLUS_AGENTS.includes(agentPage);
   return !FREE_AGENTS.includes(agentPage); // free
@@ -31,6 +33,8 @@ function getRequiredPlan(agentPage) {
 const PLUS_FEATURES = ['defis', 'prepa-match'];
 
 function isFeatureLocked(page) {
+  // v63.8 — Essai 14 jours : toutes les features incluses.
+  if (typeof svTrialActive !== 'undefined' && svTrialActive) return false;
   if (userPlan === 'pro' || userPlan === 'plus') return false;
   return PLUS_FEATURES.includes(page);
 }

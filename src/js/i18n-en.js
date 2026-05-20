@@ -27,6 +27,14 @@ var T_EN = {
   // Daily message limit
   messagestoday:'Messages today', limitReached:'Limit reached',
   planFree:'Free Plan', messagesRemaining:'messages remaining', upgradeToPro:'Upgrade to Pro',
+  // v63.8 — 14-day trial + monthly permanent free
+  trialActive:'Free trial active', trialBannerSub:'Full access to all 11 agents and team meetings',
+  trialKeepAccess:'Choose my plan', messagesMonth:'Messages this month',
+  limitMsgMinute:'Too many messages at once. Try again in a minute.',
+  limitMsgDay:'You\'ve reached your daily limit. Try again tomorrow.',
+  limitMsgTrialDay:'You\'ve used your messages for today. Come back tomorrow — your trial is still active.',
+  limitMsgMonth:'You\'ve used your 30 free messages this month. Upgrade to Plus to keep going without limits.',
+  upgradeBtnPlus:'Upgrade to Plus — CHF 12/month →',
   // Events section
   noEventsThisWeek:'No events this week', addMatchesPrompt:'Add your matches and training sessions so your agents can adapt →',
   thisWeek:'This week', seeAll:'See all →', today:'Today', tomorrow:'Tomorrow',
@@ -115,7 +123,7 @@ var T_EN = {
   cancelFallback:'Unable to create a session. Would you like to contact support?',
   manageSubscription:'Manage my subscription', contactQuestion:'Have a question?',
   currentPlan:'✅ CURRENT PLAN', recommended:'⭐ RECOMMENDED',
-  freePlan:'Free', freePlanDesc:'Discover SPORTVISE', freePlanFeatures:['3 AI agents (Lucas, Emma, Clara)','10 messages / day','Dashboard + Fitness Score','Daily journal + Calendar','Goals + Progression'],
+  freePlan:'Free', freePlanDesc:'Discover SPORTVISE', freePlanFeatures:['14-day trial — 11 agents + meetings','Then 3 AI agents (Lucas, Emma, Clara)','30 messages / month','Dashboard + Fitness Score','Daily journal + Calendar','Goals + Progression'],
   currentPlanBtn:'Current plan', backToFree:'Back to Free',
   plusPlan:'Plus', plusPlanDesc:'Perform at your best', plusPlanPrice:'CHF 12', plusPlanFeatures:['6 performance agents (+ David, Nora, Julie)','Unlimited messages','Competition Prep (D-3 to Event Day)','Weekly challenges','Weekly recap + Notifications'],
   upgradToPlus:'Upgrade to Plus →', plusNew:'New',

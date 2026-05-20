@@ -31,6 +31,14 @@ var T_FR = {
   // Daily message limit
   messagestoday:'Messages aujourd\'hui', limitReached:'Limite atteinte',
   planFree:'Plan Free', messagesRemaining:'messages restants', upgradeToPro:'Passer au Pro',
+  // v63.8 — Essai 14 jours + free permanent mensuel
+  trialActive:'Essai gratuit en cours', trialBannerSub:'Accès complet aux 11 agents et aux réunions d\'équipe',
+  trialKeepAccess:'Choisir mon plan', messagesMonth:'Messages ce mois',
+  limitMsgMinute:'Trop de messages d\'un coup. Réessaie dans une minute.',
+  limitMsgDay:'Tu as atteint ta limite quotidienne. Réessaie demain.',
+  limitMsgTrialDay:'Tu as utilisé tes messages du jour. Reviens demain — ton essai reste actif.',
+  limitMsgMonth:'Tu as utilisé tes 30 messages gratuits du mois. Passe au plan Plus pour continuer sans limite.',
+  upgradeBtnPlus:'Passer au Plus — CHF 12/mois →',
   // Events section
   noEventsThisWeek:'Aucun événement cette semaine', addMatchesPrompt:'Ajoute tes matchs et entraînements pour que tes agents s\'adaptent →',
   thisWeek:'Cette semaine', seeAll:'Voir tout →', today:'Auj.', tomorrow:'Demain',
@@ -119,7 +127,7 @@ var T_FR = {
   cancelFallback:'Impossible de créer une session. Veux-tu contacter le support ?',
   manageSubscription:'Gérer mon abonnement', contactQuestion:'Une question ?',
   currentPlan:'✅ PLAN ACTUEL', recommended:'⭐ RECOMMANDÉ',
-  freePlan:'Free', freePlanDesc:'Découvrir SPORTVISE', freePlanFeatures:['3 agents IA (Lucas, Emma, Clara)','10 messages / jour','Dashboard + Fitness Score','Journal quotidien + Calendrier','Objectifs + Progression'],
+  freePlan:'Free', freePlanDesc:'Découvrir SPORTVISE', freePlanFeatures:['Essai 14 jours — 11 agents + réunions','Puis 3 agents IA (Lucas, Emma, Clara)','30 messages / mois','Dashboard + Fitness Score','Journal quotidien + Calendrier','Objectifs + Progression'],
   currentPlanBtn:'Plan actuel', backToFree:'Revenir au Free',
   plusPlan:'Plus', plusPlanDesc:'Performer au max', plusPlanPrice:'CHF 12', plusPlanFeatures:['6 agents performance (+ David, Nora, Julie)','Messages illimités','Prépa Compétition (J-3 à Jour J)','Défis hebdomadaires','Récap hebdomadaire + Notifications'],
   upgradToPlus:'Passer au Plus →', plusNew:'Nouveau',

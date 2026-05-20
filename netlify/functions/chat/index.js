@@ -81,7 +81,7 @@ async function verifyUser(accessToken) {
       },
     });
     if (res.status !== 200 || !res.data?.id) return null;
-    return { id: res.data.id, email: res.data.email };
+    return { id: res.data.id, email: res.data.email, createdAt: res.data.created_at };
   } catch (e) {
     console.warn('[CHAT] verifyUser error:', e.message);
     return null;
@@ -112,14 +112,20 @@ async function getUserPlan(userId) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Rate limit thresholds per plan
-// v63.5 — Free passé de 10 → 5 msg/jour (audit pricing 7.3 : 5/jour suffit pour
-// tester, réduit le coût acquisition de 50% sur les Free non-convertis).
+// Rate limit thresholds per plan/tier
+// v63.8 — Refonte free plan (essai 14j + free permanent mensuel) :
+//   Essai 14 jours : tout compte free récent → tier 'trial' (20 msg/jour, 11 agents).
+//   Free permanent : après l'essai → 30 msg / 30 jours glissants (au lieu de 5/jour).
+//   Kill switch SV_TRIAL_ENABLED : false = pas d'overlay essai, tout compte free
+//   passe direct au free permanent (le cap mensuel free reste, lui, inconditionnel).
 // ─────────────────────────────────────────────────────────────
+const SV_TRIAL_ENABLED = true;   // kill switch — false = désactive l'overlay essai
+const TRIAL_DAYS = 14;
 const LIMITS = {
-  free: { perMinute: 30, perDay: 5 },
-  plus: { perMinute: 30, perDay: 500 },
-  pro:  { perMinute: 60, perDay: 1000 },
+  free:  { perMinute: 30, perMonth: 30 },  // free permanent (post-essai) — 30 msg / 30j glissants
+  trial: { perMinute: 30, perDay: 20 },    // essai 14 jours — accès complet
+  plus:  { perMinute: 30, perDay: 500 },
+  pro:   { perMinute: 60, perDay: 1000 },
 };
 
 // Count chat usage for a user since a given ISO timestamp.
@@ -310,17 +316,31 @@ exports.handler = async (event) => {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Unknown agent' }) };
   }
 
-  // ─── v60 — Rate limit check ───
+  // ─── v60 — Rate limit check (v63.8 — tier essai + cap mensuel free) ───
   const plan = await getUserPlan(user.id);
-  const limits = LIMITS[plan] || LIMITS.free;
+
+  // Tier effectif : overlay 'trial' sur le plan free pour les comptes récents
+  // (< TRIAL_DAYS jours). Date d'inscription = createdAt de l'objet auth user.
+  let tier = plan;
+  if (plan === 'free' && SV_TRIAL_ENABLED && user.createdAt) {
+    const ageMs = Date.now() - new Date(user.createdAt).getTime();
+    if (ageMs >= 0 && ageMs < TRIAL_DAYS * 24 * 3600 * 1000) tier = 'trial';
+  }
+  const limits = LIMITS[tier] || LIMITS.free;
 
   const now = Date.now();
   const oneMinuteAgoIso = new Date(now - 60 * 1000).toISOString();
-  const oneDayAgoIso = new Date(now - 24 * 3600 * 1000).toISOString();
 
-  const [minuteCount, dayCount] = await Promise.all([
+  // Fenêtre du cap de volume : mensuelle (30j glissants) pour le free permanent,
+  // sinon journalière (essai / Plus / Pro).
+  const monthly = limits.perMonth != null;
+  const volumeLimit = monthly ? limits.perMonth : limits.perDay;
+  const volumeWindowMs = monthly ? 30 * 24 * 3600 * 1000 : 24 * 3600 * 1000;
+  const volumeSinceIso = new Date(now - volumeWindowMs).toISOString();
+
+  const [minuteCount, volumeCount] = await Promise.all([
     countUsageSince(user.id, oneMinuteAgoIso),
-    countUsageSince(user.id, oneDayAgoIso),
+    countUsageSince(user.id, volumeSinceIso),
   ]);
 
   if (minuteCount >= limits.perMinute) {
@@ -332,6 +352,7 @@ exports.handler = async (event) => {
         error: 'rate_limit',
         scope: 'minute',
         plan,
+        tier,
         limit: limits.perMinute,
         retry_after: 60,
         message: "Trop de messages d'un coup. Réessaie dans une minute."
@@ -339,19 +360,22 @@ exports.handler = async (event) => {
     };
   }
 
-  if (dayCount >= limits.perDay) {
-    await logUsage({ userId: user.id, agentId, success: false, errorCode: 'rate_limit_day' });
+  if (volumeCount >= volumeLimit) {
+    await logUsage({ userId: user.id, agentId, success: false, errorCode: monthly ? 'rate_limit_month' : 'rate_limit_day' });
     return {
       statusCode: 429,
       headers,
       body: JSON.stringify({
         error: 'rate_limit',
-        scope: 'day',
+        scope: monthly ? 'month' : 'day',
         plan,
-        limit: limits.perDay,
-        message: plan === 'free'
-          ? `Tu as utilisé tes ${limits.perDay} messages gratuits aujourd'hui. Repasse demain ou passe au plan Plus.`
-          : `Tu as atteint ta limite quotidienne (${limits.perDay} messages). Réessaie demain.`
+        tier,
+        limit: volumeLimit,
+        message: monthly
+          ? `Tu as utilisé tes ${volumeLimit} messages gratuits du mois. Passe au plan Plus pour continuer sans limite.`
+          : (tier === 'trial'
+              ? `Tu as utilisé tes ${volumeLimit} messages du jour. Reviens demain — ton essai reste actif.`
+              : `Tu as atteint ta limite quotidienne (${volumeLimit} messages). Réessaie demain.`)
       }),
     };
   }
