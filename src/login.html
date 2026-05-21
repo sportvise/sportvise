@@ -456,7 +456,8 @@
       errEmailExists:"Un compte avec cet email existe peut-être déjà. Essayez de vous connecter.",
       okPwdUpdated:"✅ Mot de passe mis à jour avec succès ! Redirection...",
       okResetSent:"✅ Un email de réinitialisation a été envoyé ! Vérifiez votre boîte de réception.",
-      okSignupConfirm:"✅ Compte créé ! Vérifiez votre boîte email pour confirmer votre inscription avant de vous connecter.",
+      okSignupConfirm:"✅ Compte créé ! Vérifiez votre boîte email — cliquez le lien de confirmation pour activer votre compte, puis connectez-vous.",
+      okSignupRedirect:"✅ Compte créé ! Bienvenue sur SPORTVISE — on vous emmène sur votre espace…",
       btnBackToLoginFinal:"Retour à la connexion →"
     },
     de: {
@@ -501,7 +502,8 @@
       errEmailExists:"Ein Konto mit dieser E-Mail existiert möglicherweise bereits. Versuche dich anzumelden.",
       okPwdUpdated:"✅ Passwort erfolgreich aktualisiert! Weiterleitung...",
       okResetSent:"✅ Eine Reset-E-Mail wurde gesendet! Überprüfe deinen Posteingang.",
-      okSignupConfirm:"✅ Konto erstellt! Überprüfe deinen E-Mail-Posteingang, um deine Anmeldung zu bestätigen, bevor du dich anmeldest.",
+      okSignupConfirm:"✅ Konto erstellt! Überprüfe dein E-Mail-Postfach — klicke den Bestätigungslink, um dein Konto zu aktivieren, und melde dich dann an.",
+      okSignupRedirect:"✅ Konto erstellt! Willkommen bei SPORTVISE — wir bringen dich zu deinem Bereich…",
       btnBackToLoginFinal:"Zurück zur Anmeldung →"
     },
     en: {
@@ -546,7 +548,8 @@
       errEmailExists:"An account with this email may already exist. Try logging in.",
       okPwdUpdated:"✅ Password updated successfully! Redirecting...",
       okResetSent:"✅ A reset email has been sent! Check your inbox.",
-      okSignupConfirm:"✅ Account created! Check your email inbox to confirm your registration before logging in.",
+      okSignupConfirm:"✅ Account created! Check your email inbox — click the confirmation link to activate your account, then log in.",
+      okSignupRedirect:"✅ Account created! Welcome to SPORTVISE — taking you to your space…",
       btnBackToLoginFinal:"Back to login →"
     },
     it: {
@@ -591,7 +594,8 @@
       errEmailExists:"Un account con questa email potrebbe già esistere. Prova ad accedere.",
       okPwdUpdated:"✅ Password aggiornata con successo! Reindirizzamento...",
       okResetSent:"✅ Un'email di reimpostazione è stata inviata! Controlla la tua casella.",
-      okSignupConfirm:"✅ Account creato! Controlla la tua email per confermare l'iscrizione prima di accedere.",
+      okSignupConfirm:"✅ Account creato! Controlla la tua email — clicca il link di conferma per attivare il tuo account, poi accedi.",
+      okSignupRedirect:"✅ Account creato! Benvenuto su SPORTVISE — ti portiamo nel tuo spazio…",
       btnBackToLoginFinal:"Torna all'accesso →"
     }
   };
@@ -773,6 +777,26 @@
     window.location.href = 'dashboard.html?v=26&t=' + Date.now();
   }
 
+  // ── SIGNUP CONFIRMATION — feedback clair après inscription (v63.8.1) ──
+  // Avant : seul retour = un showAlert en haut de page, hors champ de vision
+  // après le clic sur le bouton (en bas du formulaire). Maintenant : panneau
+  // visible qui remplace le formulaire, là où l'utilisateur regarde.
+  function showSignupConfirmation(mode) {
+    const form = document.getElementById('signupForm');
+    if (!form) return;
+    const msg = mode === 'redirect' ? tr('okSignupRedirect') : tr('okSignupConfirm');
+    const backBtn = mode === 'email'
+      ? `<button class="btn-main" style="margin-top:14px;background:transparent;border:1px solid var(--gold);color:var(--gold)" onclick="showTab('login')">${tr('btnBackToLoginFinal')}</button>`
+      : '';
+    form.innerHTML = `
+      <div style="text-align:center;padding:8px 0">
+        <div style="font-size:46px;margin-bottom:10px">🎉</div>
+        <div class="alert success" style="display:block;margin:0">${msg}</div>
+        ${backBtn}
+      </div>`;
+    try { form.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(_) {}
+  }
+
   // ── SIGNUP ────────────────────────────────────────
   async function signup() {
     const name = document.getElementById('signupName').value.trim();
@@ -820,22 +844,14 @@
     }
 
     if (data?.user && !data?.session) {
-      // Confirmation email requise — pas de session active
-      showAlert(tr('okSignupConfirm'), 'success');
-      document.getElementById('signupBtn').style.display = 'none';
-      // Afficher un bouton pour revenir à la connexion
-      const backBtn = document.createElement('button');
-      backBtn.className = 'btn-main';
-      backBtn.style.marginTop = '12px';
-      backBtn.style.background = 'transparent';
-      backBtn.style.border = '1px solid var(--gold)';
-      backBtn.style.color = 'var(--gold)';
-      backBtn.textContent = tr('btnBackToLoginFinal');
-      backBtn.onclick = () => showTab('login');
-      document.getElementById('signupForm').appendChild(backBtn);
+      // Confirmation email requise — pas de session active.
+      showSignupConfirmation('email');
     } else if (data?.session) {
-      // Si Supabase a directement créé une session (confirmation désactivée)
-      await window._cacheCleanDone;
+      // Session créée directement (confirmation email désactivée côté Supabase).
+      // v63.8.1 — feedback visible garanti (1.4s) avant la redirection.
+      showSignupConfirmation('redirect');
+      await new Promise(r => setTimeout(r, 1400));
+      try { await window._cacheCleanDone; } catch(_) {}
       window.location.href = 'dashboard.html?v=26&t=' + Date.now();
     }
   }
