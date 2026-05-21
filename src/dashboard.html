@@ -2581,6 +2581,13 @@ async function renderDashboard() {
   const step4Done = !!(userProfile?.level); // a complété son niveau
   const allDone = step1Done && step2Done && step3Done && step4Done;
 
+  // v63.8.1 — Affichage progressif de l'onboarding (feedback Thomas 20/05).
+  // Un compte sans aucune activité (0 message échangé) ne voit que l'essentiel :
+  // accueil, checklist de démarrage, carte de bienvenue, action du jour. Les blocs
+  // « utilisateur engagé » (streak, transformation, analyse hebdo) n'apparaissent
+  // qu'après la 1re interaction — sinon le nouvel utilisateur est noyé d'infos.
+  const isFreshAccount = totalMsgs === 0;
+
   function checkItem(done, label) {
     return `<div class="checklist-item ${done?'done':''}">
       <div class="checklist-check ${done?'done':''}">${done?'✓':''}</div>
@@ -2681,10 +2688,10 @@ async function renderDashboard() {
     <!-- Container vide rempli en async par renderTransformationView() défini dans
          src/js/transformation-view.js. Empty state si <21 daily_log, sinon 4 KPIs
          comparés baseline vs récent + narratif David (phase 2 à venir). -->
-    <div id="transformationView" style="margin-bottom:16px"></div>
+    ${!isFreshAccount ? '<div id="transformationView" style="margin-bottom:16px"></div>' : ''}
 
-    <!-- STREAK & BADGES WIDGET -->
-    ${await (async () => {
+    <!-- STREAK & BADGES WIDGET — v63.8.1 : masqué tant que le compte est vide (affichage progressif) -->
+    ${!isFreshAccount ? await (async () => {
       const { data: allLogs } = await sb.from('daily_log')
         .select('log_date')
         .eq('user_id', currentUser.id)
@@ -2740,7 +2747,7 @@ async function renderDashboard() {
         </div>
         ${badges.length > 0 ? `<div style="display:flex;gap:6px;flex-wrap:wrap">${badges.map(b => `<div title="${b.desc}" style="padding:4px 10px;border-radius:20px;background:${streakColor}15;border:1px solid ${streakColor}30;font-size:11px;display:flex;align-items:center;gap:4px;color:var(--text);font-weight:600"><span>${b.emoji}</span>${b.label}</div>`).join('')}</div>` : ''}
       </div>`;
-    })()}
+    })() : ''}
 
     <!-- Morning Brief remplace les agents proactifs (modal au lancement) -->
 
@@ -3045,7 +3052,8 @@ async function renderDashboard() {
   // affiche directement. Sinon → trigger generation Netlify (fire-and-forget).
   // Injection en 2ème position si welcome card présente, sinon en 1ère.
   // Setimeout 200ms pour séquencer après welcome card, AVANT check-in card.
-  if (isOnboardDone()) {
+  // v63.8.1 — pas d'analyse hebdo pour un compte frais (affichage progressif).
+  if (isOnboardDone() && !isFreshAccount) {
     setTimeout(async () => {
       try {
         const wi = await loadWeeklyInsightForDisplay();
@@ -3082,7 +3090,7 @@ async function renderDashboard() {
   // avant le streak widget). Empty state si <21 daily_log, sinon 4 KPIs + narratif.
   // Best-effort, jamais bloquant. Voir src/js/transformation-view.js + PRD.
   // SetTimeout 100ms pour laisser l'innerHTML se stabiliser avant le 1er query.
-  if (isOnboardDone() && typeof renderTransformationView === 'function') {
+  if (isOnboardDone() && !isFreshAccount && typeof renderTransformationView === 'function') {
     setTimeout(() => {
       try {
         renderTransformationView();
@@ -6447,9 +6455,16 @@ function isWelcomeCardDismissed() {
   try { return !!localStorage.getItem(`sv_welcome_card_dismissed_${currentUser.id}`); } catch(_) { return false; }
 }
 
+// v63.8.1 — Anti-flash : empêche les générations concurrentes de la welcome card.
+// Bug observé (vidéo Thomas 20/05) : l'onboarding (L1103) ET le rendu dashboard
+// (L3026, shouldRegenerate) déclenchaient generateWelcomeCardAsync en parallèle
+// → 2 appels Claude → 2 contenus différents injectés → la carte clignotait.
+let _welcomeCardInFlight = false;
 async function generateWelcomeCardAsync(payload) {
   // v63.5.13 — Respecte le dismissal : évite un appel API inutile + un re-inject.
   if (isWelcomeCardDismissed()) return;
+  if (_welcomeCardInFlight) return;
+  _welcomeCardInFlight = true;
   try {
     const session = await sb.auth.getSession();
     const token = session?.data?.session?.access_token;
@@ -6478,6 +6493,8 @@ async function generateWelcomeCardAsync(payload) {
     }
   } catch(e) {
     console.warn('[WELCOME-CARD] generate error:', e);
+  } finally {
+    _welcomeCardInFlight = false;
   }
 }
 
