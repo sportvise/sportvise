@@ -764,7 +764,7 @@
       <div class="footer-desc"><span data-i18n="footerDesc">Le premier service de management sportif par IA pensé pour les athlètes suisses.</span></div>
       <div class="footer-ch" data-i18n="footerSwissBased">🇨🇭 Fondé en Suisse · 2026</div>
     </div>
-    <div class="footer-col"><h4 data-i18n="footerProduct">Produit</h4><a href="#agents" data-i18n="footerLinkAgents">Agents IA</a><a href="#tarifs" data-i18n="footerLinkPricing">Tarifs</a><a href="/login.html" data-i18n="footerLinkLogin">Connexion</a></div>
+    <div class="footer-col"><h4 data-i18n="footerProduct">Produit</h4><a href="#agents" data-i18n="footerLinkAgents">Agents IA</a><a href="#tarifs" data-i18n="footerLinkPricing">Tarifs</a><a href="/login.html" data-i18n="footerLinkLogin">Connexion</a><a href="/install.html" data-i18n="footerLinkInstall" id="footerInstallLink">📲 Installer l'app</a></div>
     <div class="footer-col"><h4 data-i18n="footerLegal">Légal</h4><a href="/terms_fr.html" data-legal-section="terms" data-i18n="footerLinkTos">CGU</a><a href="/privacy_fr.html" data-legal-section="privacy" data-i18n="footerLinkPrivacy">Confidentialité</a><a href="/legal_fr.html" data-legal-section="legal" data-i18n="footerLinkLegal">Mentions légales</a></div>
     <div class="footer-col"><h4 data-i18n="footerContact">Contact</h4><a href="mailto:info@sportvise.ch">info@sportvise.ch</a><a href="https://www.instagram.com/sportvise.ch/" target="_blank" rel="noopener noreferrer">Instagram</a><a href="https://www.linkedin.com/in/sportvise-ch-a8183b40a/" target="_blank" rel="noopener noreferrer">LinkedIn</a></div>
   </div>
@@ -918,7 +918,7 @@
       b2bCta:"Discuter d'un partenariat →",
       b2bNote:"Réponse sous 48h ouvrées · sportvise.pro@gmail.com",
       footerProduct:"Produit", footerLegal:"Légal", footerContact:"Contact",
-      footerLinkAgents:"Agents IA", footerLinkPricing:"Tarifs", footerLinkLogin:"Connexion",
+      footerLinkAgents:"Agents IA", footerLinkPricing:"Tarifs", footerLinkLogin:"Connexion", footerLinkInstall:"📲 Installer l'app",
       footerLinkTos:"CGU", footerLinkPrivacy:"Confidentialité", footerLinkLegal:"Mentions légales",
       footerCopyright:"© 2026 SPORTVISE · Suisse 🇨🇭",
       levelLabel:"Tu es à quel niveau ?",
@@ -1029,7 +1029,7 @@
       b2bCta:"Partnerschaft besprechen →",
       b2bNote:"Antwort innert 48h Werktagen · sportvise.pro@gmail.com",
       footerProduct:"Produkt", footerLegal:"Rechtliches", footerContact:"Kontakt",
-      footerLinkAgents:"KI-Agenten", footerLinkPricing:"Preise", footerLinkLogin:"Anmelden",
+      footerLinkAgents:"KI-Agenten", footerLinkPricing:"Preise", footerLinkLogin:"Anmelden", footerLinkInstall:"📲 App installieren",
       footerLinkTos:"AGB", footerLinkPrivacy:"Datenschutz", footerLinkLegal:"Impressum",
       footerCopyright:"© 2026 SPORTVISE · Schweiz 🇨🇭",
       levelLabel:"Auf welchem Niveau bist du?",
@@ -1140,7 +1140,7 @@
       b2bCta:"Discuss a partnership →",
       b2bNote:"Reply within 48 business hours · sportvise.pro@gmail.com",
       footerProduct:"Product", footerLegal:"Legal", footerContact:"Contact",
-      footerLinkAgents:"AI Agents", footerLinkPricing:"Pricing", footerLinkLogin:"Log in",
+      footerLinkAgents:"AI Agents", footerLinkPricing:"Pricing", footerLinkLogin:"Log in", footerLinkInstall:"📲 Install the app",
       footerLinkTos:"Terms", footerLinkPrivacy:"Privacy", footerLinkLegal:"Legal Notice",
       footerCopyright:"© 2026 SPORTVISE · Switzerland 🇨🇭",
       levelLabel:"What's your level?",
@@ -1251,7 +1251,7 @@
       b2bCta:"Discutere una partnership →",
       b2bNote:"Risposta entro 48h lavorative · sportvise.pro@gmail.com",
       footerProduct:"Prodotto", footerLegal:"Legale", footerContact:"Contatto",
-      footerLinkAgents:"Agenti IA", footerLinkPricing:"Prezzi", footerLinkLogin:"Accedi",
+      footerLinkAgents:"Agenti IA", footerLinkPricing:"Prezzi", footerLinkLogin:"Accedi", footerLinkInstall:"📲 Installa l'app",
       footerLinkTos:"CGU", footerLinkPrivacy:"Privacy", footerLinkLegal:"Note legali",
       footerCopyright:"© 2026 SPORTVISE · Svizzera 🇨🇭",
       levelLabel:"A che livello sei?",
@@ -1408,6 +1408,54 @@
       } catch(e) {}
     };
   }
+</script>
+<!-- v63.9 — Teaser mobile PWA : bannière basse sur la landing pour visiteurs mobiles non connectés.
+     Visible uniquement si : mobile + pas en standalone + pas déjà dismissed (7j).
+     Lien direct vers /install.html pour un guide complet selon device. -->
+<div id="landingPWATeaser" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;padding:12px 16px 16px;background:linear-gradient(180deg,transparent,rgba(7,9,26,0.97) 25%);pointer-events:none">
+  <div style="pointer-events:auto;max-width:480px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(13,16,48,0.95);border:1px solid rgba(245,158,11,0.4);border-radius:14px;padding:14px 16px;box-shadow:0 -4px 20px rgba(245,158,11,0.12)">
+    <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
+      <span style="font-size:20px;flex-shrink:0">📲</span>
+      <div style="min-width:0">
+        <div id="landingPWATeaserTitle" style="font-size:13px;font-weight:700;color:#f0f4ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Installer SPORTVISE</div>
+        <div id="landingPWATeaserSub" style="font-size:11px;color:rgba(240,244,255,0.5);margin-top:1px">Accès direct depuis l'écran d'accueil</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+      <a id="landingPWATeaserBtn" href="/install.html" style="padding:8px 14px;border-radius:8px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-weight:700;font-size:12px;text-decoration:none;white-space:nowrap">Voir comment</a>
+      <button onclick="document.getElementById('landingPWATeaser').style.display='none';try{const e=Date.now()+7*24*60*60*1e3;localStorage.setItem('sv_pwa_lp_dismissed',String(e))}catch(e){}" style="background:none;border:none;color:rgba(240,244,255,0.4);font-size:16px;cursor:pointer;padding:4px;line-height:1">✕</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  try {
+    // Masquer si standalone (déjà installée)
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) return;
+    // Masquer sur desktop
+    if (!/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) return;
+    // Masquer si dismissed dans les 7j
+    const dismissed = localStorage.getItem('sv_pwa_lp_dismissed');
+    if (dismissed) {
+      const exp = parseInt(dismissed, 10);
+      if (!isNaN(exp) && Date.now() < exp) return;
+      localStorage.removeItem('sv_pwa_lp_dismissed');
+    }
+    // i18n du teaser
+    const lang = localStorage.getItem('sv_lang') || 'fr';
+    const titles = { fr:'Installer SPORTVISE', de:'SPORTVISE installieren', en:'Install SPORTVISE', it:'Installa SPORTVISE' };
+    const subs = { fr:'Accès direct depuis l\'écran d\'accueil', de:'Direktzugriff vom Startbildschirm', en:'Direct access from your home screen', it:'Accesso diretto dalla schermata Home' };
+    const btns = { fr:'Voir comment', de:'Anleitung', en:'See how', it:'Come fare' };
+    document.getElementById('landingPWATeaserTitle').textContent = titles[lang] || titles.fr;
+    document.getElementById('landingPWATeaserSub').textContent = subs[lang] || subs.fr;
+    document.getElementById('landingPWATeaserBtn').textContent = btns[lang] || btns.fr;
+    // Afficher après 3 secondes (non intrusif)
+    setTimeout(function() {
+      document.getElementById('landingPWATeaser').style.display = 'block';
+    }, 3000);
+  } catch(e) {}
+})();
 </script>
 </body>
 </html>
