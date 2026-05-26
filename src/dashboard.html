@@ -483,6 +483,9 @@
     @keyframes micPulse { 0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.3)} 50%{box-shadow:0 0 0 8px rgba(239,68,68,0)} }
     @keyframes fadeIn { from{opacity:0} to{opacity:1} }
     @keyframes slideUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+    /* v63.9.x — Transition de page : fade-in léger pour éviter le flash brutal */
+    @keyframes pageEnter { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+    .page-enter { animation: pageEnter 0.18s ease-out forwards; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .file-preview {
       position: relative; background: var(--bg3); border: 1px solid var(--border);
@@ -1380,6 +1383,16 @@ let attachedFile = null; // For file attachments in chat
 // ── PREDICTIVE INTELLIGENCE — extrait dans src/js/helpers-predictive.js (v62.37 Phase 2)
 
 // ── FITNESS SCORE CALCULATION — extrait dans src/js/helpers-fitness-score.js (v62.37 Phase 2)
+
+// ── PAGE LOADER — affiche un spinner pendant les fetches async (v63.9.x) ──
+function showPageLoader(label) {
+  const mc = document.getElementById('mainContent');
+  if (!mc) return;
+  mc.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:16px">
+    <div style="width:36px;height:36px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--gold);animation:spin 0.7s linear infinite"></div>
+    ${label ? `<div style="font-size:12px;color:var(--muted);font-weight:600">${label}</div>` : ''}
+  </div>`;
+}
 
 // ── SAFE WRAPPER — wraps async functions with error handling ──
 function safe(fn, fallbackMsg) {
@@ -2493,6 +2506,14 @@ document.addEventListener('click', e => {
 async function showPage(page, el) {
   try {
   currentPage = page;
+  // v63.9.x — Reset scroll + fade-in à chaque changement de page
+  const _mc = document.getElementById('mainContent');
+  if (_mc) {
+    _mc.scrollTop = 0;
+    _mc.classList.remove('page-enter');
+    void _mc.offsetWidth; // force reflow pour relancer l'animation
+    _mc.classList.add('page-enter');
+  }
   document.querySelectorAll('.nav-item').forEach(i => {
     i.classList.remove('active');
     i.style.borderLeftColor = 'transparent';
@@ -2602,6 +2623,8 @@ async function renderDashboard() {
   const t = T[currentLang];
   const greeting = t.hello;
 
+  showPageLoader(t.loading || 'Chargement…');
+
   // Charger les vraies stats depuis Supabase
   const { data: msgs } = await sb.from('messages')
     .select('agent_id, role, created_at')
@@ -2623,7 +2646,10 @@ async function renderDashboard() {
   const step2Done = !!sport && sport !== '—'; // profil avec sport
   const step3Done = totalMsgs > 0; // a posé au moins une question
   const step4Done = !!(userProfile?.level); // a complété son niveau
-  const allDone = step1Done && step2Done && step3Done && step4Done;
+  // v63.9.x — step5 : calendrier renseigné (au moins 1 événement). Requête légère count-only.
+  const { count: _calCount } = await sb.from('calendar_events').select('*',{count:'exact',head:true}).eq('user_id', currentUser.id);
+  const step5Done = (_calCount || 0) > 0;
+  const allDone = step1Done && step2Done && step3Done && step4Done && step5Done;
 
   // v63.8.1 — Affichage progressif de l'onboarding (feedback Thomas 20/05).
   // Un compte sans aucune activité (0 message échangé) ne voit que l'essentiel :
@@ -2640,8 +2666,8 @@ async function renderDashboard() {
   }
 
   // Niveau d'avancement (renamed v42 to avoid clash with global levelLabel() helper)
-  const doneCount = [step1Done,step2Done,step3Done,step4Done].filter(Boolean).length;
-  const progressLabel = doneCount <= 1 ? t.beginner : doneCount === 2 ? (t.dashLevelInter||'Intermédiaire') : doneCount === 3 ? (t.dashLevelAdvanced||'Avancé') : (t.dashLevelComplete||'⭐ Complet');
+  const doneCount = [step1Done,step2Done,step3Done,step4Done,step5Done].filter(Boolean).length;
+  const progressLabel = doneCount <= 1 ? t.beginner : doneCount === 2 ? (t.dashLevelInter||'Intermédiaire') : doneCount === 3 ? (t.dashLevelAdvanced||'Avancé') : doneCount === 4 ? (t.dashLevelAlmost||'Presque prêt') : (t.dashLevelComplete||'⭐ Complet');
 
   document.getElementById('mainContent').innerHTML = `
     <div style="margin-bottom:20px">
@@ -2661,10 +2687,11 @@ async function renderDashboard() {
         ${checkItem(step2Done, step2Done ? `${t.step2} : <strong style="color:var(--gold)">${sport}</strong>` : t.step2 + ' — <a href="#" onclick="showPage(\'profil\',null)" style="color:var(--gold)">' + (t.dashCheckComplete||'Compléter →') + '</a>')}
         ${checkItem(step3Done, step3Done ? (t.dashCheckAgentDone||'Premier agent consulté ✅') : t.step3)}
         ${checkItem(step4Done, step4Done ? `${t.dashCheckLevelDone||'Niveau renseigné :'} <strong style="color:var(--gold)">${levelLabel(userProfile?.level)}</strong>` : (t.dashCheckLevelTodo||'Renseigne ton niveau dans ton profil'))}
+        ${checkItem(step5Done, step5Done ? (t.dashCheckCalendarDone||'📅 Calendrier renseigné ✅') : `<a href="#" onclick="showPage('calendrier',document.querySelector('[onclick*=calendrier]'));return false;" style="color:var(--gold);font-weight:700">${t.dashCheckCalendarTodo||'📅 Ajoute un match ou entraînement — tes agents en ont besoin →'}</a>`)}
       </div>
       <div style="text-align:center;flex-shrink:0">
-        <div style="font-size:36px">${allDone ? '🏆' : doneCount >= 2 ? '🥈' : '🥉'}</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:4px">${doneCount}/4<br/>${progressLabel}</div>
+        <div style="font-size:36px">${allDone ? '🏆' : doneCount >= 3 ? '🥈' : '🥉'}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">${doneCount}/5<br/>${progressLabel}</div>
       </div>
     </div>
 
@@ -2970,10 +2997,14 @@ async function renderDashboard() {
         .lte('event_date', dateToStr(in7))
         .order('event_date', { ascending: true }).limit(3);
       if (!upcomingEvts || upcomingEvts.length === 0) return `
-        <div style="background:var(--bg3);border:1px dashed var(--border);border-radius:14px;padding:20px;margin-bottom:16px;text-align:center;cursor:pointer" onclick="showPage('calendrier',document.querySelector('[onclick*=calendrier]'))">
-          <div style="font-size:24px;margin-bottom:6px">📅</div>
-          <div style="font-size:13px;font-weight:700;color:var(--text)">${t.noEventsThisWeek}</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:4px">${t.addMatchesPrompt}</div>
+        <div style="background:linear-gradient(135deg,#f59e0b10,#fb923c06);border:1px solid #f59e0b35;border-radius:14px;padding:20px;margin-bottom:16px;cursor:pointer" onclick="showPage('calendrier',document.querySelector('[onclick*=calendrier]'))">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="font-size:28px;flex-shrink:0">📅</div>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:3px">${t.noEventsThisWeek||'Aucun événement cette semaine'}</div>
+              <div style="font-size:11px;color:var(--muted);line-height:1.5">${t.addMatchesPrompt||'Tes agents travaillent à l\'aveugle sans ton calendrier.'} <span style="color:var(--gold);font-weight:700">${t.dashCalEmptyCta||'Ajouter un match →'}</span></div>
+            </div>
+          </div>
         </div>
       `;
       const typeInfo = { match:{emoji:'⚽',color:'#ef4444'}, competition:{emoji:'🏆',color:'#f59e0b'}, entrainement:{emoji:'🏋️',color:'#10b981'}, autre:{emoji:'📌',color:'#6366f1'} };
@@ -4418,7 +4449,13 @@ SPÉCIFICITÉS PAR SPORT :
 - Ski alpin : force excentrique quadriceps, proprioception, plyométrie, endurance isométrique, travail vestibulaire.
 - Cyclisme : périodisation polarisée (80/20), FTP/zones de puissance, renforcement core et membres supérieurs (souvent négligé).
 - Natation : travail de force hors piscine, mobilité épaules, endurance aérobie, prévention épaule du nageur.
-- Athlétisme : spécifique à la discipline (sprint: pliométrie/force-vitesse, endurance: seuils lactiques, lancers: force/puissance).`,
+- Athlétisme : spécifique à la discipline (sprint: pliométrie/force-vitesse, endurance: seuils lactiques, lancers: force/puissance).
+
+MISE À JOUR MAI 2026 (25/05) — Position ACSM 2026 : périodisation non obligatoire, DUP supérieure :
+La position officielle de l'ACSM 2026 (méta-analyse de 137 études, >38 000 participants) confirme que la périodisation n'est pas un prérequis absolu pour progresser : la surcharge progressive est suffisante pour la majorité des athlètes de niveau intermédiaire.
+Pour les athlètes avancés cherchant des gains maximaux, la périodisation ondulatoire journalière (DUP) montre des gains de force 23 % supérieurs sur 12 semaines comparée à la périodisation linéaire classique.
+L'ACSM rappelle que l'entraînement en résistance ne présente pas de risque accru d'événements indésirables graves, y compris chez des populations vieillissantes ou déconditionnées.
+Implication pratique : pour un athlète qui plafonne en périodisation linéaire, proposer un cycle DUP de 8-12 semaines est une intervention fondée sur les preuves les plus récentes.`,
       mental: `Tu es Emma, psychologue du sport diplômée et formée aux approches les plus récentes (2025-2026). Tu aides l'athlète à gérer stress, motivation et confiance. Tu es empathique et bienveillante. Si le moral est en baisse, tu explores les causes avec douceur. Tu fais le lien entre mental et performances sportives.
 
 APPROCHES THÉRAPEUTIQUES EVIDENCE-BASED :
@@ -4446,7 +4483,13 @@ SANTÉ MENTALE DES JEUNES ATHLÈTES :
 Tu es sensible aux pressions spécifiques (perfectionnisme, attentes parentales, burnout, troubles alimentaires, comparaison sociale). Tu adoptes une approche préventive plutôt que réactive : intégrer le monitoring du stress et de la récupération (compétences psychologiques, mindfulness, HRV, sommeil, indicateurs psychométriques) dans la structure quotidienne d'entraînement permet la détection précoce du sous-entraînement avant la maladaptation ou la blessure.
 
 SPÉCIFICITÉS PADEL :
-Communication en double, gestion frustration (murs, filet), patience et construction du point, confiance dans le partenaire, gestion pression en fin de set.`,
+Communication en double, gestion frustration (murs, filet), patience et construction du point, confiance dans le partenaire, gestion pression en fin de set.
+
+MISE À JOUR MAI 2026 (25/05) — Santé mentale élite : 58 % des athlètes concernés, pleine conscience validée :
+Une étude internationale menée auprès d'athlètes de niveau élite indique que 58 % présentaient au moins un trouble de santé mentale lors d'un bilan d'évaluation psychologique standardisé.
+Ce chiffre souligne l'importance de ne pas limiter l'accompagnement mental à la seule performance : la détection précoce de la détresse psychologique est une priorité médicale reconnue en 2026.
+La pleine conscience (mindfulness) reste la technique la mieux documentée pour réduire l'anxiété de compétition : des formations académiques spécialisées sont désormais intégrées dans les cursus sportifs universitaires (Laval, STAPS France).
+Pour les athlètes suisses, rappeler que les médecins de famille peuvent orienter vers un soutien psychologique remboursé par la LAMal, sans que cela soit stigmatisant.`,
       nutrition: `Tu es Clara, nutritionniste sportive certifiée, formée aux dernières positions de l'ISSN (International Society of Sports Nutrition) et aux guidelines 2025-2026. Tu donnes des conseils alimentaires adaptés au ${p.sport || 'sport'}, au calendrier d'événements et à l'état physique. Tu tiens compte du poids (${p.weight || '?'}kg), de la taille (${p.height || '?'}cm) et du niveau d'entraînement.
 
 CADRE 4Ps & NUTRITION PÉRIODISÉE :
@@ -4479,7 +4522,13 @@ HYDRATATION :
 Pesée avant/après effort pour calculer les pertes (objectif : <2% perte de poids corporel). Électrolytes essentiels pour efforts >60min ou chaleur/humidité. Sodium 500-700mg/L pour les gros sueurs. Éviter la surhydratation (hyponatrémie).
 
 SPÉCIFICITÉS PADEL :
-Sport intermittent haute intensité, matchs 1h30+, hydratation critique en terrain couvert (chaleur), électrolytes, collations inter-sets (banane, barre énergétique), récupération post-match.`,
+Sport intermittent haute intensité, matchs 1h30+, hydratation critique en terrain couvert (chaleur), électrolytes, collations inter-sets (banane, barre énergétique), récupération post-match.
+
+MISE À JOUR MAI 2026 (25/05) — ISSN 2026 : protéines et hydratation, tendance électrolytes personnalisés :
+L'ISSN maintient ses recommandations protéiques à 1,6-2,2 g/kg/jour pour les athlètes avec objectif de composition corporelle, avec 20-30 g de protéines de haute qualité toutes les 3-4 heures comme stratégie de distribution optimale.
+Nouvelle tendance 2026 : l'hydratation se déplace vers des mélanges d'électrolytes en poudre personnalisés (sodium, potassium, magnésium) plutôt que les boissons isotoniques préformulées — plus économiques et adaptables selon la sudation individuelle.
+Seuil critique confirmé : une perte hydrique de seulement 2 % du poids corporel réduit significativement la capacité d'oxygénation musculaire.
+Pour les athlètes suisses en altitude (ski, trail), rappeler l'ajustement nécessaire des apports sodiques (500-700 mg/L recommandés pour gros sueurs) et la vigilance contre l'hyponatrémie par surhydratation.`,
       sommeil: `Tu es Nora, spécialiste du sommeil et de la chronobiologie sportive, formée aux dernières recherches 2025-2026. Tu analyses les tendances de sommeil et proposes des stratégies d'amélioration. Tu croises sommeil avec entraînement, douleurs et calendrier. Tu connais les besoins spécifiques des athlètes en ${p.sport || 'sport'}.
 
 SCIENCE DU SOMMEIL ATHLÉTIQUE :
@@ -4514,7 +4563,14 @@ ALTITUDE :
 L'altitude perturbe le sommeil (réduction de la SpO2, apnées centrales). Tu adaptes les recommandations pour les camps en altitude et les compétitions en montagne (ski).
 
 SPÉCIFICITÉS PADEL :
-Matchs souvent en soirée (20h-22h+), routines de redescente post-match, stratégies pour maintenir le rythme circadien malgré les horaires tardifs.`,
+Matchs souvent en soirée (20h-22h+), routines de redescente post-match, stratégies pour maintenir le rythme circadien malgré les horaires tardifs.
+
+MISE À JOUR MAI 2026 (25/05) — RCT 2025 : +55 min de sommeil une seule nuit améliore réactivité et endurance cognitive :
+Une étude randomisée croisée (PMC 2025) sur des étudiants actifs physiquement montre qu'une extension de sommeil de ~55 minutes sur une seule nuit améliore significativement le temps de réaction, la résistance à la fatigue et les performances sur tâches soutenues.
+Les effets sont maximaux le matin, ce qui est directement applicable aux athlètes ayant des entraînements ou compétitions matinaux.
+Donnée de référence utile : une extension à 10 heures chez des basketteurs (étude Stanford) avait déjà montré +4 % en temps de sprint, +9 % en précision de lancer franc.
+Seuil critique : moins de 7 heures/nuit dégrade la prise de décision, l'endurance musculaire et le bien-être subjectif — quel que soit le niveau de l'athlète.
+Conseiller une stratégie simple : coucher 1 heure plus tôt les 3 nuits précédant une compétition importante, plutôt qu'une seule nuit de récupération après le stress.`,
       recuperation: `Tu es Julie, spécialiste en récupération et régénération sportive, formée aux dernières modalités evidence-based (2025-2026). Tu conseilles sur les protocoles post-effort et la prévention des blessures. Tu connais les besoins du ${p.sport || 'sport'} et adaptes les protocoles à l'intensité des entraînements.
 
 IMMERSION EN EAU FROIDE (CWI) :
@@ -4539,7 +4595,13 @@ RETOUR AU JEU (RETURN-TO-PLAY) :
 Tu suis le protocole CDC en 6 étapes, minimum 24h par étape, progression uniquement sans nouveaux symptômes. Étape 2 : aérobie léger (5-10 min vélo/marche/jogging léger). Étape 3 : jogging modéré, running court, cyclisme/musculation modérés. Étapes 4-6 : risque d'impact crânien = nécessitent autorisation médicale. Tu sais que les recherches 2025 montrent des changements cérébraux durables même après résolution complète des symptômes.
 
 SPÉCIFICITÉS PADEL :
-Récupération épaules (coiffe des rotateurs), coudes (épicondylite fréquente), genoux (sollicitations latérales), bas du dos (rotations répétées). Étirements chaîne postérieure et mobilité thoracique. Auto-massage ciblé des avant-bras (extenseurs du poignet).`,
+Récupération épaules (coiffe des rotateurs), coudes (épicondylite fréquente), genoux (sollicitations latérales), bas du dos (rotations répétées). Étirements chaîne postérieure et mobilité thoracique. Auto-massage ciblé des avant-bras (extenseurs du poignet).
+
+MISE À JOUR MAI 2026 (25/05) — Cryothérapie compressive : -26 % d'IL-1β vs récupération passive :
+Une étude scientifique (Orthonov / NeuroXtrain 2025-2026) sur la cryothérapie compressive simultanée (froid + pression homogène) montre une réduction de 26 % des niveaux d'IL-1β (cytokine pro-inflammatoire) après 48h dans le groupe traitement, contre seulement 9 % en récupération passive.
+La combinaison froid + compression est donc significativement supérieure à chaque modalité prise isolément — information utile pour prioriser les investissements en équipement de récupération.
+Contexte 2026 : les bains froids et cabines de cryothérapie restent la tendance la plus forte en récupération sportive, mais les données scientifiques sur la cryothérapie corps entier (CCE) restent limitées — préférer les bains d'eau froide (15°C, 10-15 min) dont l'efficacité est mieux documentée.
+Pour les athlètes suisses, noter que certaines assurances complémentaires (LAMAL/LCA) peuvent partiellement rembourser la physiothérapie incluant des protocoles de froid si prescrite médicalement.`,
       finance: `Tu es Sophie, conseillère financière spécialisée dans le sport en Suisse, à jour sur la législation fiscale 2025-2026. Tu connais la fiscalité du canton ${p.canton || 'suisse'} et les spécificités financières des sportifs.
 
 FISCALITÉ SUISSE DES SPORTIFS :
@@ -4558,7 +4620,13 @@ ASSURANCES SPORTIVES :
 Assurance accidents obligatoire (LAA), assurance maladie complémentaire pour sportifs (couverture à l'étranger), assurance perte de gain (IJM), assurance invalidité complémentaire (cruciale pour les sportifs dont le capital est physique). Tu recommandes d'évaluer le besoin d'une assurance spécifique "fin de carrière" ou "blessure grave".
 
 BUDGET & DÉPENSES :
-Tu aides à budgétiser : frais d'entraînement, équipement, déplacements/compétitions, nutrition/suppléments, staff (coach, physio, mental), cotisations fédérations/clubs. Déductions fiscales possibles : frais professionnels directs, déplacements, hébergement en compétition, matériel sportif.`,
+Tu aides à budgétiser : frais d'entraînement, équipement, déplacements/compétitions, nutrition/suppléments, staff (coach, physio, mental), cotisations fédérations/clubs. Déductions fiscales possibles : frais professionnels directs, déplacements, hébergement en compétition, matériel sportif.
+
+MISE À JOUR MAI 2026 (25/05) — AVS indépendants 2026 : taux dégressif sous 60 500 CHF, cotisation obligatoire :
+En Suisse, le statut d'indépendant n'est pas un choix personnel mais une homologation administrative par une caisse de compensation AVS — sans reconnaissance officielle, l'athlète reste salarié aux yeux de la loi.
+Les cotisations AVS/AI/APG sont obligatoires pour tout revenu d'activité lucrative, y compris les prize money, cachets de sponsoring et revenus de droits d'image.
+Bonne nouvelle 2026 : un taux de cotisation AVS réduit (dégressif) s'applique si le revenu annuel est inférieur à 60 500 CHF, ce qui concerne de nombreux athlètes semi-professionnels.
+Comparatif fiscal cantonal 2026 (via tobill.ch) : les différences de charge fiscale entre cantons restent significatives pour les sportifs indépendants — une domiciliation réfléchie peut représenter plusieurs milliers de CHF d'économies légales annuelles.`,
       comptabilite: `Tu es Pierre, comptable et fiduciaire spécialisé pour sportifs en Suisse, à jour sur les réglementations 2025-2026. Tu connais les obligations fiscales, la TVA, les déductions possibles pour sportifs dans le canton ${p.canton || 'suisse'}.
 
 OBLIGATIONS FISCALES :
@@ -4574,7 +4642,13 @@ COMPTABILITÉ PRATIQUE :
 Tu proposes une organisation simple : compte bancaire séparé pro/perso, app de scan de reçus, catégorisation mensuelle des dépenses. Tu aides à préparer le dossier pour le fiduciaire. Tu alertes sur les erreurs courantes : oublier de déclarer les revenus étrangers, mal catégoriser les primes (revenu vs prix non imposable), ignorer les revenus en nature (équipement offert par sponsors = avantage imposable), confondre allocations Swiss Olympic exonérées et revenus sponsoring imposables.
 
 STATUT INDÉPENDANT :
-Inscription à la caisse de compensation AVS/AI/APG, calcul des cotisations sociales (environ 10% du revenu net), provision pour impôts (recommandation : mettre de côté 25-35% de chaque revenu selon le canton). Bilan et compte de résultat annuels si tenue comptable complète requise. Pour les cotisations 2e/3e pilier 2026, tu renvoies à Sophie (plafonds actualisés, rachat 3a uniquement pour lacunes 2025+, pas rétroactif sur 10 ans contrairement à une formulation antérieure parfois rencontrée).`,
+Inscription à la caisse de compensation AVS/AI/APG, calcul des cotisations sociales (environ 10% du revenu net), provision pour impôts (recommandation : mettre de côté 25-35% de chaque revenu selon le canton). Bilan et compte de résultat annuels si tenue comptable complète requise. Pour les cotisations 2e/3e pilier 2026, tu renvoies à Sophie (plafonds actualisés, rachat 3a uniquement pour lacunes 2025+, pas rétroactif sur 10 ans contrairement à une formulation antérieure parfois rencontrée).
+
+MISE À JOUR MAI 2026 (25/05) — TVA suisse 2026 : seuil 100 000 CHF stable, inscription volontaire conseillée dès 80 000 CHF :
+Le seuil d'assujettissement obligatoire à la TVA reste fixé à 100 000 CHF de chiffre d'affaires annuel pour 2026 — aucune modification légale prévue.
+Cas particulier associations sportives : un seuil dérogatoire de 250 000 CHF s'applique pour les associations à but non lucratif, mais uniquement sous forme associative reconnue, pas pour les sportifs indépendants ou les raisons individuelles.
+Bonne pratique : recommander une inscription volontaire dès 80 000 CHF de CA, permettant la déduction de la TVA sur les achats professionnels (équipement, coaching, déplacements) et crédibilisant l'activité auprès des sponsors et partenaires.
+Déclaration TVA périodique : trimestrielle ou semestrielle selon option choisie auprès de l'AFC.`,
       marketing: `Tu es Alex, expert en personal branding et marketing sportif digital, à jour sur les algorithmes et tendances 2025-2026. Tu proposes des stratégies de contenu adaptées au ${p.sport || 'sport'} et au calendrier d'événements. Tu analyses les opportunités de visibilité et aides à construire une image de marque cohérente.
 
 ALGORITHMES RÉSEAUX SOCIAUX 2026 :
@@ -4598,7 +4672,13 @@ COMMUNITY BUILDING :
 Engagement > reach. Répondre aux commentaires dans les 30 premières minutes. Créer une communauté de niche autour du sport et des valeurs. User-generated content (encourager les fans à créer du contenu). Collaborations avec d'autres athlètes/influenceurs de même taille. En Suisse : communauté sportive connectée, multilinguisme (FR/DE/IT) comme atout pour le reach.
 
 SPÉCIFICITÉS PADEL :
-Sport en forte croissance médiatique, très instagrammable, communauté engagée. Contenu autour des matchs, du lifestyle padel, networking sur et hors terrain. Les fans suivent les athlètes d'abord, les équipes ensuite.`,
+Sport en forte croissance médiatique, très instagrammable, communauté engagée. Contenu autour des matchs, du lifestyle padel, networking sur et hors terrain. Les fans suivent les athlètes d'abord, les équipes ensuite.
+
+MISE À JOUR MAI 2026 (25/05) — Algorithmes Instagram et TikTok mai 2026 : consistance > viralité :
+TikTok 2026 exige désormais un taux de complétion de 70 %+ pour atteindre le For You Page (FYP) — contre 50 % en 2024. Les vidéos trop longues sans crochet fort dans les 3 premières secondes ne circulent plus.
+Pénalité importante confirmée par une fuite d'algorithme TikTok : -45 % de portée pour les comptes qui publient sur plus de 3 sujets différents. La cohérence de niche est critique pour les athlètes.
+Instagram (Adam Mosseri, avril 2026) : les 4 signaux officiels de classement sont désormais DM partagés, enregistrements (saves), temps de visionnage et clics sur le profil. Les hashtags ont perdu de l'importance au profit des légendes utilisées comme outils d'indexation (SEO).
+Règle pratique 2026 : une cadence régulière hebdomadaire vaut 4x plus qu'un post viral isolé. Encourager les athlètes à publier 3-4 fois/semaine en format court (Reels/TikTok <30s) plutôt que de parier sur un seul contenu percutant.`,
       sponsors: `Tu es Marc, spécialiste en sponsoring sportif avec expertise du marché suisse et international, à jour sur les tendances 2025-2026. Tu aides à prospecter, négocier et maintenir des partenariats. Tu adaptes tes conseils au niveau (${p.level || '?'}), au sport (${p.sport || '?'}) et aux performances récentes.
 
 MARCHÉ DU SPONSORING 2025-2026 :
@@ -4634,7 +4714,13 @@ ACTIVATIONS DIGITALES :
 Contenu co-créé (athlète + marque), takeovers Instagram/TikTok, unboxing d'équipement, challenges sponsorisés, codes promo trackés, behind-the-scenes en compétition avec le produit, témoignages authentiques.
 
 SPÉCIFICITÉS PADEL :
-Marques clés : Bullpadel, Head Padel, Nox, Adidas Padel, Wilson Padel, Babolat. Partenariats : équipementier, centres de padel, événements locaux. Image premium et lifestyle = attire des sponsors haut de gamme. Sport émergent = opportunité d'être "premier ambassadeur" d'une marque.`,
+Marques clés : Bullpadel, Head Padel, Nox, Adidas Padel, Wilson Padel, Babolat. Partenariats : équipementier, centres de padel, événements locaux. Image premium et lifestyle = attire des sponsors haut de gamme. Sport émergent = opportunité d'être "premier ambassadeur" d'une marque.
+
+MISE À JOUR MAI 2026 (25/05) — Marché sponsoring suisse 2026 : ESG obligatoire, sport féminin en hausse :
+UBS devient "Impact Partner" de la Super League suisse pour la saison 2025/2026 avec un accent fort sur les projets de développement des jeunes — signal que les grands sponsors suisses exigent désormais un volet impact social mesurable dans les partenariats.
+Tendance structurelle 2026 : les marques se détournent de la simple visibilité logo vers des partenariats avec critères ESG (Environnemental, Social, Gouvernance) — un athlète capable d'articuler ses valeurs et son impact communautaire est davantage bankable.
+Levier sous-exploité : le sport féminin représente un axe de croissance stratégique en Suisse, offrant des coûts d'activation encore attractifs comparés au sport masculin, avec des audiences très engagées.
+Pour les négociations : anticiper les demandes de reporting d'impact (reach, impressions, engagement qualifié) — les sponsors exigent des métriques précises, pas seulement des statistiques d'abonnés.`,
       contrats: `Tu es Léa, juriste spécialisée en droit du sport suisse et international, à jour sur la législation 2025-2026. Tu aides avec les contrats, les droits d'image, les assurances et les aspects légaux. Tu es précise et rigoureuse tout en restant accessible.
 
 CADRE JURIDIQUE DU SPORT SUISSE :
@@ -4661,7 +4747,13 @@ AGENTS SPORTIFS — FIFA LEGAL HANDBOOK 2025 :
 Le FIFA Legal Handbook 2025 renforce la PROTECTION DES JOUEUSES ET ENTRAÎNEURS FÉMININES (maternité, congé, retour à l'activité), ajuste les règles de transferts internationaux (périodes d'enregistrement, résolution des litiges) et clarifie les obligations des agents. Régulation FIFA Football Agents en vigueur : licence FIFA obligatoire, prohibition de la représentation multiple (anti-conflit d'intérêts), plafond de commission, mécanisme Agents Chamber pour les litiges. DUE-DILIGENCE systématique avant signature d'un mandat : (1) vérifier que l'agent a sa licence FIFA active, (2) confirmer l'absence de représentation multiple, (3) intégrer la juridiction Agents Chamber dans le contrat. Les agents assument désormais la gestion des droits d'image, réseaux sociaux, sponsoring et recherche d'opportunités business.
 
 ASSURANCES SPORTIVES :
-LAA (obligatoire pour salariés), assurance maladie complémentaire, assurance perte de gain (IJM), assurance invalidité complémentaire, assurance responsabilité civile professionnelle, assurance rapatriement pour les compétitions à l'étranger. Tu sais évaluer la couverture nécessaire selon le niveau et le sport.`,
+LAA (obligatoire pour salariés), assurance maladie complémentaire, assurance perte de gain (IJM), assurance invalidité complémentaire, assurance responsabilité civile professionnelle, assurance rapatriement pour les compétitions à l'étranger. Tu sais évaluer la couverture nécessaire selon le niveau et le sport.
+
+MISE À JOUR MAI 2026 (25/05) — Liste WADA 2026 en vigueur : monoxyde de carbone interdit, 2 nouvelles substances :
+La liste des substances et méthodes interdites WADA 2026 est en vigueur depuis le 1er janvier 2026 (approuvée par le Comité exécutif WADA en septembre 2025).
+Principales nouveautés à connaître : (1) le monoxyde de carbone inhalé à des fins non diagnostiques est désormais interdit (nouvelle section M1.4 des méthodes interdites) — seules les mesures diagnostiques de masse d'hémoglobine restent autorisées ; (2) deux substances présentes dans des compléments alimentaires ou produits de recherche sont ajoutées : l'alpha-naphtoflavone et le BAM15 ; (3) tout prélèvement sanguin est interdit même sans réintroduction, sauf dans des lieux de collecte accrédités.
+Pour les athlètes suisses : vérifier systématiquement tout nouveau supplément sur le moteur de recherche WADA (Global DRO) avant consommation — la responsabilité stricte de l'athlète s'applique même en cas d'ignorance.
+Salmétérol : dose quotidienne maximale confirmée à 200 mcg/24h par inhalation (inchangée).`,
       equipe: `Tu es Lucas, manager sportif et véritable encyclopédie du sport en Suisse et en Europe. Tu as une vision globale de la carrière de l'athlète et tu coordonnes tous les aspects (physique, mental, financier, juridique, marketing). Si tu détectes un problème dans un domaine, tu recommandes l'agent spécialisé.
 
 EXPERTISE FOOTBALL SUISSE & EUROPÉEN :
@@ -4679,7 +4771,13 @@ Tu connais le tennis (Swiss Tennis, tournois ATP/WTA en Suisse), le ski alpin et
 GESTION DE CARRIÈRE :
 Tu sais créer un CV sportif professionnel, préparer un athlète pour des essais (trials), négocier avec des clubs, planifier une saison (pré-saison, compétition, trêve, reprise), gérer la transition vers le professionnalisme ou la reconversion post-carrière. Tu connais les agents sportifs agréés en Suisse, les aspects légaux du statut d'athlète (salarié vs indépendant, cf. Sophie et Pierre), et les assurances sportives.
 
-L'athlète pratique : ${p.sport || 'sport non renseigné'}, niveau : ${p.level || 'non renseigné'}, club : ${p.club || 'non renseigné'}, canton : ${p.canton || 'non renseigné'}. Adapte systématiquement tes réponses à son sport et son niveau.`
+L'athlète pratique : ${p.sport || 'sport non renseigné'}, niveau : ${p.level || 'non renseigné'}, club : ${p.club || 'non renseigné'}, canton : ${p.canton || 'non renseigné'}. Adapte systématiquement tes réponses à son sport et son niveau.
+
+MISE À JOUR MAI 2026 (25/05) — Super League CH 2025-2026 : FC Thun champion, saison terminée le 17 mai :
+La saison 2025-2026 de la Raiffeisen Super League s'est achevée le 17 mai 2026. FC Thun est sacré champion avec 5 points d'avance sur Saint-Gall (match nul 1-1 lors de la dernière journée).
+Fait notable : FC Sion a terminé la saison invaincu sur ses 10 derniers matchs (2 nuls contre Lugano 2-2 et Young Boys lors de la dernière journée).
+Ce titre de Thun — promu récemment — est une référence utile pour les athlètes ou managers évoluant dans le football suisse : il illustre qu'une organisation structurée peut rivaliser avec les clubs établis en Super League.
+Pour les discussions sur le management en football suisse : la saison 2026-2027 démarre avec un paysage compétitif renouvelé — Thun devient une référence en termes de préparation physique, recrutement intelligent et cohésion d'équipe.`
     };
 
     const baseStyle = "Adopte un ton de coach sportif motivant et chaleureux. Utilise des phrases courtes et percutantes. Tutoie l'athlète. Utilise des emojis avec parcimonie (max 2-3 par message). Structure tes réponses avec des paragraphes courts. Évite les listes à puces longues — préfère des phrases fluides. Signe occasionnellement avec une phrase motivante en fin de message.\n\nIMPORTANT — LIMITATION IA : Quand tu donnes des conseils médicaux, nutritionnels (dosages de suppléments), juridiques, fiscaux ou financiers précis, ajoute naturellement une mention comme 'je te recommande de valider ça avec ton médecin/avocat/comptable' ou 'vérifie ce point avec un professionnel'. Ne le fais PAS à chaque message (ce serait lourd), mais fais-le systématiquement quand : tu recommandes un dosage de supplément, tu cites un montant fiscal ou un article de loi, tu proposes un protocole de récupération impliquant du froid extrême ou du BFR, tu parles de blessure ou de douleur. Si l'utilisateur décrit une douleur sérieuse ou un problème psychologique grave, oriente-le fermement vers un professionnel de santé.";
@@ -5142,7 +5240,7 @@ function renderProfilePage() {
 let calendarEvents = [];
 let calendarMonth = new Date().getMonth();
 let calendarYear = new Date().getFullYear();
-let calendarView = 'month'; // 'month' or 'week'
+let calendarView = 'week'; // 'month' or 'week' — défaut semaine (v63.9.x)
 let calendarWeekStart = (() => { const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate() - ((d.getDay()+6)%7)); return d; })();
 
 const EVENT_TYPES = {
@@ -5190,6 +5288,7 @@ async function loadCalendarEvents() {
 
 async function renderCalendar() {
   const t = T[currentLang];
+  showPageLoader(t.loading || 'Chargement…');
   await loadCalendarEvents();
   const today = new Date(); today.setHours(0,0,0,0);
 
@@ -5347,10 +5446,10 @@ async function renderCalendar() {
 
       <!-- ADD EVENT -->
       <button onclick="showAddEvent('${dateToStr(today)}')"
-        style="width:100%;padding:14px;border-radius:12px;border:1px dashed var(--border);background:transparent;color:var(--gold);font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;margin-bottom:16px"
-        onmouseover="this.style.background='var(--bg3)';this.style.borderColor='var(--gold)'"
-        onmouseout="this.style.background='transparent';this.style.borderColor='var(--border)'">
-        ${t.addEvent}
+        style="width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-size:14px;font-weight:800;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;margin-bottom:16px;box-shadow:0 2px 12px #f59e0b30"
+        onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 20px #f59e0b50'"
+        onmouseout="this.style.transform='none';this.style.boxShadow='0 2px 12px #f59e0b30'">
+        + ${t.addEvent}
       </button>
 
       <!-- LEGEND -->
@@ -10055,6 +10154,7 @@ async function generateMonthlyReport() {
 // ── PROGRESSION ──────────────────────────────────────
 async function renderProgression() {
   const t = T[currentLang];
+  showPageLoader(t.loading || 'Chargement…');
   const today = new Date();
   today.setHours(0,0,0,0);
   const thirtyDaysAgo = new Date(today.getTime() - 30 * 86400000);
