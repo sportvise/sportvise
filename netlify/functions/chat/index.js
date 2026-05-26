@@ -530,7 +530,7 @@ Tu réponds dans la langue de l'athlète (instruction de langue déjà fournie p
   const inputTokens = data.usage?.input_tokens ?? null;
   const outputTokens = data.usage?.output_tokens ?? null;
 
-  console.log(`[CHAT] model=${modelKey} id=${modelConfig.id} agent=${agentId} email=${effectiveEmail || 'anon'} input=${inputTokens} output=${outputTokens} latency=${latencyMs}ms plan=${plan} day=${dayCount + 1}/${limits.perDay}`);
+  console.log(`[CHAT] model=${modelKey} id=${modelConfig.id} agent=${agentId} email=${effectiveEmail || 'anon'} input=${inputTokens} output=${outputTokens} latency=${latencyMs}ms plan=${plan} tier=${tier} usage=${volumeCount + 1}/${volumeLimit}`);
 
   // Log usage (non-blocking, fire-and-await for consistency)
   await logUsage({
