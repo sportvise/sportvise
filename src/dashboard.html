@@ -4918,8 +4918,11 @@ Pour les discussions sur le management en football suisse : la saison 2026-2027 
     const data = await res.json();
     reply = data.reply;
   } catch (err) {
-    await new Promise(r => setTimeout(r, 800));
-    reply = agent.getResponse(msg);
+    // v63.10.1 — Ne plus servir l'ancienne démo hardcodée (getResponse) comme fallback :
+    // ces réponses sont génériques, en vouvoiement, et induisent l'utilisateur en erreur.
+    // On affiche un message d'erreur honnête à la place.
+    console.error('[sendMsg] API error:', err?.message || err);
+    reply = '⚠️ Une erreur de connexion est survenue. Réessaie dans quelques instants — si le problème persiste, contacte info@sportvise.ch.';
   }
 
   chats[page].push({ from:'agent', text:reply, ts:now() });
