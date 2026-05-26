@@ -231,6 +231,14 @@ var T_EN = {
   briefPrediction:'Predictive intelligence',
   // v63.5.5 — Memory card ultra-light (Levier #1 Phase 0)
   memoryCardTitle:'What {name} knows about you', memoryCardEdit:'Edit',
+  // v63.6.0 — Memory card Phase A (Levier #1)
+  memoryBtnDescribe:'+ Describe me', memoryBtnEdit:'✏️ Edit',
+  memoryBtnDescribeTt:'Add context to personalise your coaching',
+  memoryBtnEditTt:'Edit my context',
+  memoryModalTitle:'My athletic context',
+  memoryModalSub:'This information will be used by all your agents to personalise their advice.',
+  memoryModalPlaceholder:'E.g.: I\'m training for a marathon in June, 5x/week, but tend to overtrain. I want to improve my consistency.',
+  memoryModalClear:'Clear', memoryModalSave:'Save',
   // v63.5.8 — Brief conversation-driven Phase 0 (Levier #2)
   briefOpenQuestions:'Conversations to resume', briefOpenQuestionAwaiting:'is waiting for your reply', briefOpenQuestionResume:'Resume',
   // v63.5.10 — Cross-agent routing Phase 0 (Levier #3)

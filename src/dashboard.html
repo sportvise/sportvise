@@ -3369,86 +3369,144 @@ async function renderChat(page) {
 }
 
 // ── v63.5.5 — MEMORY CARD ULTRA-LIGHT (Levier #1 Phase 0) ──────────
-// Affiche un encart compact "Ce que [agent] sait de toi" entre chat-header
-// et ai-disclaimer dans renderChat. Lit UNIQUEMENT userProfile (déjà chargé
-// au login, L1257). Aucun fetch DB, aucun appel async, aucun nouveau global
-// — zéro risque de régression sur le chemin critique de renderChat.
+// ── v63.6.0 — MEMORY CARD (Levier #1 Phase A) ──────────────────────────────
+// Encart sobre entre chat-header et ai-disclaimer.
+// Design : 1 phrase résumé template-based + bouton "Me décrire" (ou "Modifier").
 //
-// Si userProfile.sport absent → fonction retourne '' (encart caché, comportement
-// identique à pre-v63.5.5).
+// Deux états :
+//  A) athlete_context VIDE → phrase générée (sport · niveau · location) + bouton "+ Me décrire"
+//  B) athlete_context RENSEIGNÉ → texte de l'athlète (tronqué 90 chars) + bouton "✏️ Modifier"
 //
-// Réutilise les helpers existants de i18n-helpers.js : sportLabel, sportIcon,
-// levelLabel, cantonLabel (concat au build, donc disponibles globalement).
-// Fallback défensif via typeof === 'function' au cas où l'ordre de concat
-// changerait.
+// Click bouton → openAthleteContextModal() : textarea libre, sauvegarde en DB
+// dans profiles.athlete_context. Ce texte est ensuite injecté dans le profil
+// envoyé à TOUS les agents (sendMsg → profileContext).
 //
-// Click sur l'encart → showPage('profil') pour permettre à l'utilisateur
-// de corriger/compléter ce que SPORTVISE sait de lui.
-// v63.5.6 hotfix : était 'profile' (page inexistante) → 'profil' (correct, cf. L620 sidebar).
-//
-// v63.6+ enrichira avec : last event, last daily_log, last subject, goals
-// (cf. SPEC_v636_memoire_visible.md). v63.5.5 = MVP pre-launch, 2-4 tags max.
+// Sync — lit uniquement userProfile (global chargé au login). Zéro fetch.
 function renderMemoryCardLite(page, agent) {
-  // Guard : pas de profil ou pas de sport → pas d'encart (utilisateur tout neuf)
   if (!userProfile || !userProfile.sport) return '';
 
   const t = T[currentLang] || T.fr;
+  const hasContext = !!(userProfile.athlete_context && userProfile.athlete_context.trim().length > 3);
 
-  // Build tags from userProfile only (no async fetches)
-  const tags = [];
-
-  // Tag 1 — Sport (toujours présent si on est dans cette branche)
-  const sportEm   = (typeof sportIcon  === 'function') ? sportIcon(userProfile.sport)            : '🏆';
+  // ── Phrase résumé template ──
+  const sportEm   = (typeof sportIcon  === 'function') ? sportIcon(userProfile.sport) : '🏆';
   const sportName = (typeof sportLabel === 'function') ? sportLabel(userProfile.sport, currentLang) : userProfile.sport;
-  tags.push({ icon: sportEm, label: sportName });
+  const lvlName   = userProfile.level && (typeof levelLabel === 'function') ? levelLabel(userProfile.level, currentLang) : '';
+  const location  = userProfile.club
+    ? userProfile.club.trim().slice(0, 30)
+    : userProfile.canton && (typeof cantonLabel === 'function')
+      ? cantonLabel(userProfile.canton, currentLang)
+      : '';
 
-  // Tag 2 — Niveau (si renseigné)
-  if (userProfile.level) {
-    const lvlName = (typeof levelLabel === 'function') ? levelLabel(userProfile.level, currentLang) : userProfile.level;
-    tags.push({ icon: '🎯', label: lvlName });
-  }
+  const summaryParts = [`${sportEm} ${sportName}`];
+  if (lvlName)   summaryParts.push(lvlName);
+  if (location)  summaryParts.push(location);
+  const summaryLine = summaryParts.join(' · ');
 
-  // Tag 3 — Canton (si renseigné)
-  if (userProfile.canton) {
-    const cName = (typeof cantonLabel === 'function') ? cantonLabel(userProfile.canton, currentLang) : userProfile.canton;
-    tags.push({ icon: '📍', label: cName });
-  }
+  // ── Contenu affiché ──
+  const displayText = hasContext
+    ? escapeHtml(userProfile.athlete_context.trim().slice(0, 90) + (userProfile.athlete_context.trim().length > 90 ? '…' : ''))
+    : escapeHtml(summaryLine);
 
-  // Tag 4 — Club (si renseigné, text libre)
-  if (userProfile.club && typeof userProfile.club === 'string' && userProfile.club.trim().length > 0) {
-    tags.push({ icon: '🏟️', label: userProfile.club.trim().slice(0, 40) });
-  }
-
-  // Tag 5 — Position (si renseignée, text libre, agents performance/equipe surtout)
-  if (userProfile.position && typeof userProfile.position === 'string' && userProfile.position.trim().length > 0) {
-    tags.push({ icon: '🧭', label: userProfile.position.trim().slice(0, 40) });
-  }
-
-  const title = (t.memoryCardTitle || 'Ce que {name} sait de toi').replace('{name}', agent.name);
-  const editLabel = t.memoryCardEdit || 'Éditer';
+  const btnLabel  = hasContext ? (t.memoryBtnEdit   || '✏️ Modifier') : (t.memoryBtnDescribe || '+ Me décrire');
+  const btnTitle  = hasContext ? (t.memoryBtnEditTt || 'Modifier mon contexte') : (t.memoryBtnDescribeTt || 'Ajouter du contexte pour personnaliser les conseils');
 
   return `
-    <div class="memory-card-lite" onclick="showPage('profil')"
-         style="margin:8px 16px 0;padding:8px 12px;background:linear-gradient(135deg,${agent.color}10,${agent.color}04);border:1px solid ${agent.color}25;border-radius:10px;cursor:pointer;transition:border-color 0.2s"
-         onmouseover="this.style.borderColor='${agent.color}55'"
-         onmouseout="this.style.borderColor='${agent.color}25'">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
-        <div style="font-size:10px;font-weight:800;color:${agent.color};text-transform:uppercase;letter-spacing:0.5px">
-          📌 ${escapeHtml(title)}
-        </div>
-        <div style="font-size:10px;color:var(--muted2);font-weight:600">
-          ${escapeHtml(editLabel)} →
-        </div>
+    <div class="memory-card-lite"
+         style="margin:8px 16px 0;padding:8px 14px;background:${agent.color}08;border-top:1px solid ${agent.color}18;border-bottom:1px solid ${agent.color}18;display:flex;align-items:center;gap:10px">
+      <div style="flex:1;font-size:12px;color:var(--muted);line-height:1.4;${hasContext ? 'color:var(--text);font-style:italic' : ''}">
+        ${displayText}
       </div>
-      <div style="display:flex;flex-wrap:wrap;gap:4px">
-        ${tags.map(tag => `
-          <span style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;background:${agent.color}15;border:1px solid ${agent.color}25;border-radius:12px;font-size:11px;color:var(--text);font-weight:500;line-height:1.4">
-            <span aria-hidden="true">${tag.icon}</span><span>${escapeHtml(tag.label)}</span>
-          </span>
-        `).join('')}
+      <button onclick="event.stopPropagation();openAthleteContextModal('${page}')"
+              title="${escapeHtml(btnTitle)}"
+              style="flex-shrink:0;padding:4px 10px;border-radius:20px;border:1px solid ${agent.color}40;background:transparent;color:${agent.color};font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;transition:all 0.15s"
+              onmouseover="this.style.background='${agent.color}15'"
+              onmouseout="this.style.background='transparent'">
+        ${escapeHtml(btnLabel)}
+      </button>
+    </div>
+  `;
+}
+
+// ── Modal "Me décrire / Modifier mon contexte" ──────────────────────────────
+// Textarea libre → sauvegardé dans profiles.athlete_context (Supabase).
+// Injecté ensuite dans profileContext → tous les agents en bénéficient.
+function openAthleteContextModal(page) {
+  const existing = document.getElementById('athleteContextModal');
+  if (existing) existing.remove();
+
+  const t = T[currentLang] || T.fr;
+  const current = userProfile?.athlete_context || '';
+  const agent = AGENTS[page];
+  const accentColor = agent?.color || '#f59e0b';
+
+  const overlay = document.createElement('div');
+  overlay.id = 'athleteContextModal';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:flex-end;justify-content:center;padding:16px;animation:fadeIn 0.2s ease';
+  overlay.innerHTML = `
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px 16px 12px 12px;padding:20px;width:100%;max-width:600px;box-shadow:0 -8px 32px rgba(0,0,0,0.4)">
+      <div style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:4px">${t.memoryModalTitle || 'Ajoute ton contexte'}</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">${t.memoryModalSub || 'Blessures, objectif de saison, contraintes, situation actuelle… Tout ce que tes agents doivent savoir pour mieux t\'aider.'}</div>
+      <textarea id="athleteContextInput"
+        style="width:100%;min-height:100px;padding:12px;border-radius:10px;border:1px solid ${accentColor}40;background:var(--bg);color:var(--text);font-size:13px;font-family:'Inter',sans-serif;resize:vertical;line-height:1.6;box-sizing:border-box;outline:none"
+        placeholder="${t.memoryModalPlaceholder || 'Ex : Je prépare les playoffs, mon genou droit est fragile depuis 3 semaines, je cherche à passer Semi-pro cette saison…'}"
+        maxlength="500">${escapeHtml(current)}</textarea>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;margin-bottom:14px">
+        <span id="athleteContextCount" style="font-size:10px;color:var(--muted)">${current.length}/500</span>
+        ${current.length > 0 ? `<button onclick="clearAthleteContext('${page}')" style="font-size:11px;color:var(--muted);background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif">${t.memoryModalClear || 'Effacer'}</button>` : ''}
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="document.getElementById('athleteContextModal').remove()"
+          style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">
+          ${t.cancel || 'Annuler'}
+        </button>
+        <button onclick="saveAthleteContext('${page}')"
+          style="flex:2;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,${accentColor},${accentColor}cc);color:#07091a;font-size:13px;font-weight:800;cursor:pointer;font-family:'Inter',sans-serif">
+          ${t.memoryModalSave || 'Enregistrer →'}
+        </button>
       </div>
     </div>
   `;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+
+  // Compteur de caractères live
+  const ta = document.getElementById('athleteContextInput');
+  const counter = document.getElementById('athleteContextCount');
+  if (ta && counter) ta.addEventListener('input', () => { counter.textContent = ta.value.length + '/500'; });
+
+  // Focus textarea avec curseur en fin de texte
+  setTimeout(() => { if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); } }, 50);
+}
+
+async function saveAthleteContext(page) {
+  const ta = document.getElementById('athleteContextInput');
+  if (!ta) return;
+  const value = ta.value.trim().slice(0, 500);
+
+  const btn = document.querySelector('#athleteContextModal button:last-child');
+  if (btn) { btn.textContent = '…'; btn.disabled = true; }
+
+  try {
+    const { error } = await sb.from('profiles').update({ athlete_context: value || null }).eq('id', currentUser.id);
+    if (error) throw error;
+    if (userProfile) userProfile.athlete_context = value || null;
+    document.getElementById('athleteContextModal')?.remove();
+    // Re-render la memory card inline sans recharger tout le chat
+    const card = document.querySelector('.memory-card-lite');
+    if (card) card.outerHTML = renderMemoryCardLite(page, AGENTS[page]);
+  } catch(e) {
+    console.error('[CONTEXT] save error', e);
+    const t = T[currentLang] || T.fr;
+    if (btn) { btn.textContent = t.memoryModalSave || 'Enregistrer →'; btn.disabled = false; }
+  }
+}
+
+async function clearAthleteContext(page) {
+  if (userProfile) userProfile.athlete_context = null;
+  const ta = document.getElementById('athleteContextInput');
+  if (ta) ta.value = '';
+  await saveAthleteContext(page);
 }
 
 // ── v63.5.10 — CROSS-AGENT ROUTING ULTRA-LIGHT (Levier #3 Phase 0) ──────
@@ -4387,7 +4445,8 @@ async function sendMsg(page) {
       p.canton ? `Canton: ${cantonLabel(p.canton, 'fr')}` : '',
       p.weight ? `Poids: ${p.weight}kg` : '',
       p.height ? `Taille: ${p.height}cm` : '',
-      bmi ? `IMC: ${bmi}` : ''
+      bmi ? `IMC: ${bmi}` : '',
+      p.athlete_context ? `Contexte personnel (en ses propres mots): ${p.athlete_context}` : ''
     ].filter(Boolean).join(', ');
 
     // Gather all context in parallel for speed.

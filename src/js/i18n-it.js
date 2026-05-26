@@ -231,6 +231,14 @@ var T_IT = {
   briefPrediction:'Intelligenza predittiva',
   // v63.5.5 — Memory card ultra-light (Levier #1 Phase 0)
   memoryCardTitle:'Cosa {name} sa di te', memoryCardEdit:'Modifica',
+  // v63.6.0 — Memory card Phase A (Levier #1)
+  memoryBtnDescribe:'+ Descrivimi', memoryBtnEdit:'✏️ Modifica',
+  memoryBtnDescribeTt:'Aggiungi contesto per personalizzare i consigli',
+  memoryBtnEditTt:'Modifica il mio contesto',
+  memoryModalTitle:'Il mio contesto sportivo',
+  memoryModalSub:'Queste informazioni saranno usate da tutti i tuoi agenti per personalizzare i consigli.',
+  memoryModalPlaceholder:'Es.: mi sto preparando per una maratona a giugno, mi alleno 5x/settimana ma tendo a sovraccaricarmi. Voglio migliorare la regolarità.',
+  memoryModalClear:'Cancella', memoryModalSave:'Salva',
   // v63.5.8 — Brief conversation-driven Phase 0 (Levier #2)
   briefOpenQuestions:'Conversazioni da riprendere', briefOpenQuestionAwaiting:'aspetta le tue risposte', briefOpenQuestionResume:'Riprendi',
   // v63.5.10 — Cross-agent routing Phase 0 (Levier #3)
