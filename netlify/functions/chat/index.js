@@ -317,7 +317,19 @@ exports.handler = async (event) => {
   }
 
   // ─── v60 — Rate limit check (v63.8 — tier essai + cap mensuel free) ───
-  const plan = await getUserPlan(user.id);
+  let plan = await getUserPlan(user.id);
+
+  // ─── ADMIN_EMAILS override (chantier #2 v63.11.3) ───
+  // Les emails admin (env var ADMIN_EMAILS, séparés par virgule) sont toujours
+  // traités comme plan 'pro' côté backend, indépendamment de la valeur en DB.
+  // Permet de supprimer le hack frontend fragile (dashboard.html ~ligne 1496).
+  const _adminEmailsRaw = process.env.ADMIN_EMAILS || '';
+  if (_adminEmailsRaw && user.email) {
+    const _adminSet = new Set(
+      _adminEmailsRaw.split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
+    );
+    if (_adminSet.has(String(user.email).trim().toLowerCase())) plan = 'pro';
+  }
 
   // Tier effectif : overlay 'trial' sur le plan free pour les comptes récents
   // (< TRIAL_DAYS jours). Date d'inscription = createdAt de l'objet auth user.

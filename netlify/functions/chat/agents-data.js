@@ -2,27 +2,128 @@
 // Agents IA spécialisés pour tous les sports populaires en Suisse
 
 const SPORTS_SUISSE = `
-SPORTS & LIGUES SUISSES (connaissance complète) :
-- Football : SFL Super League, Challenge League, Promotion League, 1ère Ligue. Clubs : FC Zurich, BSC Young Boys, FC Basel, FC Servette, FC Lausanne-Sport, FC Sion, FC Lugano, Grasshopper, FC Winterthur, FC Yverdon-Sport. Fédération : Swiss Football Association (ASF/SFV).
-- Hockey sur glace : NLA (National League), Swiss League (SL). Clubs NLA : HC Davos, SC Bern, ZSC Lions, EV Zug, HC Lausanne, HC Fribourg-Gottéron, HC Lugano, Genève-Servette HC, HC Bienne, EHC Biel, SCL Tigers, HC Ambri-Piotta. Fédération : Swiss Ice Hockey.
-- Ski alpin & snowboard : FIS, Swiss Ski. Stations : Verbier, Zermatt, St-Moritz, Davos, Wengen, Adelboden, Crans-Montana, Les Gets. Compétitions : Lauberhorn, Hahnenkamm, Coupe du Monde FIS.
-- Tennis : Swiss Tennis (ST). Tournois : Swiss Indoors Bâle, Geneva Open, Lausanne. Traditions Roger Federer/Martina Hingis.
-- Cyclisme : Swiss Cycling. Courses : Tour de Romandie, Tour de Suisse, Championnats suisses. Clubs régionaux VD, GE, ZH.
-- Natation : Swiss Aquatics. Centres : Bellerive Lausanne, Hallenbad Zürich, Piscines olympiques. Championnats suisses.
-- Athlétisme : Swiss Athletics. Meetings : Athletissima Lausanne (Diamond League), Weltklasse Zürich (Diamond League). Stades : Pontaise, Letzigrund.
-- Basketball : Swiss Basketball League (SBL). Clubs : BBC Monthey, Union Neuchâtel Basket, Starwings Basket, Nyon Basket, BBC Lausanne. Fédération : Swiss Basketball.
-- Volleyball : NLA Volleyball. Clubs : Lausanne UC, VC Kanti Schaffhausen, NUC Volleyball. Fédération : Swiss Volley.
-- Unihockey/Floorball : NLA Unihockey (très populaire en Suisse !). Clubs : UHC Waldkirch-St.Gallen, Floorball Köniz, SV Wiler-Ersigen, UHC Uster. Fédération : Swiss Unihockey.
-- Handball : Swiss Handball League (SHL). Clubs : RTV 1879 Basel, Pfadi Winterthur, Kadetten Schaffhausen, HC Kriens-Luzern. Fédération : Swiss Handball.
-- Gymnastics/Gym : Swiss Gymnastics (très fort en Suisse, nombreux clubs). Compétitions nationales et internationales.
-- Arts martiaux & Judo : Swiss Judo, Swiss Karate. Fédérations cantonales actives.
-- Rugby : Rugby Club Suisse. Super League Rugby. Clubs : SC Breissgau, RC Lausanne, RC Zürich.
-- Golf : Swiss Golf. Nombreux parcours (Crans-sur-Sierre, Golf de Genève, Lausanne GC). Open de Suisse.
-- Triathlon/Running : Triathlon de Lausanne, Zurich Triathlon, 20km de Lausanne, Grand-Prix de Berne, Morat-Fribourg.
-- Cyclisme sur piste & BMX : Swiss Cycling. Centre mondial de cyclisme sur piste à Aigle (UCI HQ).
-- Boxe : Swiss Boxing Federation. Clubs régionaux actifs en Suisse Romande.
-- Sports de glace (autre) : Curling (très populaire en Suisse), Patinage artistique, Patinage de vitesse. Swiss Curling.
-- Esports : Scène émergente en Suisse. Tournois ESWC, ESL Switzerland.`;
+SPORTS & LIGUES SUISSES — DONNÉES 2025-2026 (mis à jour mai 2026) :
+
+FOOTBALL (ASF/SFV — football.ch) :
+Structure : Super League (1ère div, 12 clubs) → Challenge League (2e div, 10 clubs) → Promotion League (3e div, 18 clubs) → 1ère Ligue (4e div, régionale).
+Saison : août → mai/juin. Trêve hivernale mi-décembre → fin janvier. Transferts : été (1er juin–15 sept), hiver (15 jan–15 fév).
+
+Super League 2025-2026 (Brack Super League, 12 clubs, 38 journées) :
+FC Basel (BS) | Grasshopper Club Zürich (ZH) | FC Lausanne-Sport (VD) | FC Lugano (TI) | FC Luzern (LU) | FC Servette (GE) | FC St. Gallen (SG) | FC Sion (VS) | FC Thun (BE) | FC Winterthur (ZH) | BSC Young Boys (BE) | FC Zürich (ZH)
+Format 2025-26 : phase de championnat (26 j) puis Championship Group (top 6) et Relegation Group (6 derniers), chacun 12 j supplémentaires.
+
+Challenge League 2025-2026 (10 clubs) :
+FC Aarau (AG) | FC Rapperswil-Jona (SG) | FC Wil (SG) | FC Vaduz (FL/Liechtenstein) | FC Yverdon-Sport (VD) | Neuchâtel Xamax (NE) | Stade Nyonnais (VD) | Stade Lausanne Ouchy (VD) | Étoile Carouge FC (GE) | AC Bellinzona (TI)
+
+Promotion League 2025-2026 (Hoval Promotion League, 18 clubs, 34 journées) :
+Kriens (LU) | Bruhl SG (SG) | FC Biel-Bienne (BE) | FC Basel II (BS) | Bavois (VD) | BSC Young Boys II (BE) | FC Schaffhausen (SH) | FC Bulle (FR) | FC Cham (ZG) | FC Zürich II (ZH) | Grand-Saconnex (GE) | FC Luzern II (LU) | BSC Breitenrain (BE) | FC Kreuzlingen (TG) | FC Lugano II (TI) | Paradiso (TI) | FC Lausanne-Sport II (VD) | FC Vevey (VD)
+IMPORTANT : FC Fribourg n'est PAS en Promotion League. FC Bulle (VD→FR) est le club fribourgeois de 3e division. FC Fribourg évolue en ligues régionales cantonales (3e ligue fribourgeoise).
+
+CLUBS PAR CANTON (football, niveaux élite) :
+Berne (BE) : BSC Young Boys (SL), FC Thun (SL), Breitenrain (PL), YB II (PL), FC Biel-Bienne (PL)
+Zurich (ZH) : FC Zürich (SL), Grasshopper (SL), FC Winterthur (SL), FC Zürich II (PL)
+Genève (GE) : FC Servette (SL), Étoile Carouge (CL), Grand-Saconnex (PL)
+Vaud (VD) : FC Lausanne-Sport (SL), FC Yverdon-Sport (CL), Stade Nyonnais (CL), Stade Lausanne Ouchy (CL), Bavois (PL), LS II (PL), Vevey (PL)
+Bâle (BS) : FC Basel (SL), FC Basel II (PL)
+Valais (VS) : FC Sion (SL)
+Tessin (TI) : FC Lugano (SL), AC Bellinzona (CL), FC Lugano II (PL), Paradiso (PL)
+St-Gall (SG) : FC St. Gallen (SL), FC Rapperswil-Jona (CL), FC Wil (CL), Bruhl SG (PL)
+Lucerne (LU) : FC Luzern (SL), Kriens (PL), FC Luzern II (PL)
+Fribourg (FR) : FC Bulle (PL — 3e division nationale), FC Fribourg (ligues régionales)
+Neuchâtel (NE) : Neuchâtel Xamax (CL)
+Schaffhausen (SH) : FC Schaffhausen (PL)
+Zoug (ZG) : FC Cham (PL)
+Thurgovie (TG) : FC Kreuzlingen (PL)
+Grisons (GR) : FC Chur 97 (1ère Ligue)
+Argovie (AG) : FC Aarau (CL)
+(SL = Super League, CL = Challenge League, PL = Promotion League)
+
+HOCKEY SUR GLACE (SIHF — sihf.ch) :
+National League 2025-2026 (14 clubs, 52 matchs par équipe) — Défenseur du titre : ZSC Lions :
+HC Ajoie (JU – Porrentruy) | HC Ambrì-Piotta (TI) | SC Bern (BE – PostFinance Arena 17'031 places) | EHC Biel/Bienne (BE – Tissot Arena) | HC Davos (GR) | HC Fribourg-Gottéron (FR – BCF Arena) | Genève-Servette HC (GE) | EHC Kloten (ZH – SWISS Arena) | Lausanne HC (VD – Vaudoise Aréna) | HC Lugano (TI – Cornèr Arena) | SCL Tigers (BE – Langnau) | SC Rapperswil-Jona Lakers (SG) | ZSC Lions (ZH – Swiss Life Arena 12'000 pl.) | EV Zug (ZG – Bossard Arena)
+Format : 6 premiers → playoffs directs, 7e–10e → play-ins, 2 derniers → playouts vs Swiss League.
+Qualifiés CHL 2025-26 : ZSC Lions, Lausanne HC, SC Bern, EV Zug.
+
+Swiss League 2025-2026 (2e division, 11 clubs) :
+EHC Arosa (GR) | EHC Basel (BS) | HC La Chaux-de-Fonds (NE) | GCK Lions (ZH – club école ZSC) | EHC Olten (SO) | SC Rapperswil-Jona Lakers II | HC Sierre (VS – Lonza Arena) | HC Thurgau (TG) | EHC Visp (VS) | HC Winterthur (ZH) | HC Chur (GR)
+
+CLUBS HOCKEY PAR CANTON :
+Berne (BE) : SC Bern (NL), EHC Biel (NL), SCL Tigers/Langnau (NL)
+Zurich (ZH) : ZSC Lions (NL), EHC Kloten (NL), GCK Lions (SL), HC Winterthur (SL)
+Vaud (VD) : Lausanne HC (NL)
+Genève (GE) : Genève-Servette HC (NL)
+Grisons (GR) : HC Davos (NL), EHC Arosa (SL), HC Chur (SL)
+Fribourg (FR) : HC Fribourg-Gottéron (NL)
+Tessin (TI) : HC Lugano (NL), HC Ambrì-Piotta (NL)
+Zoug (ZG) : EV Zug (NL)
+St-Gall (SG) : SC Rapperswil-Jona Lakers (NL)
+Valais (VS) : HC Sierre (SL), EHC Visp (SL)
+Jura (JU) : HC Ajoie (NL)
+Neuchâtel (NE) : HC La Chaux-de-Fonds (SL)
+Soleure (SO) : EHC Olten (SL)
+Thurgovie (TG) : HC Thurgau (SL)
+
+SKI ALPIN & SNOWBOARD (Swiss Ski — swiss-ski.ch) :
+Swiss-Ski 2025-26 : 117 athlètes sélectionnés (60 femmes, 57 hommes), 21 en équipe nationale A.
+3 groupes : Mastery (Coupe du Monde élite), Elite (Europa Cup + WC), Elite Development (juniors).
+Bilan 2025 : 13 médailles aux Championnats du Monde de Saalbach, Nation Cup gagnée, 5 globes de cristal, 64 podiums WC.
+Stations de compétition suisses : Lauberhorn Wengen (DH/SG hommes, janvier), Adelboden (GS/SL hommes, janvier), Crans-Montana (DH/SG femmes, mars), St-Moritz (DH/SG décembre, Hahnenkamm Kitzbühel voisin).
+Glacier d'été (préparation) : Saas-Fee (VS), Zermatt (VS), Titlis (OW).
+Formation élite : Snowsports Switzerland, centres régionaux par canton (VS fort en ski alpin, GR fort en ski nordique).
+
+BASKETBALL (Swiss Basketball — swissbasketball.ch) :
+Swiss Basketball League (SBL) 2025-2026 : 9 clubs.
+Principaux clubs : Fribourg Olympic (FR — club référence suisse, multiple champion) | Lions de Genève (GE — champion 2025-26) | Union Neuchâtel Basket (NE) | Starwings Basket Regio Basel (BS/BL) | Pully Lausanne Basketball (VD) | BBC Monthey (VS) | Jubilee Basket Berne (BE) | Nyon Basket (VD) | Swiss Central Basket (LU)
+Saison : octobre → avril, playoffs mai. Coupe de Suisse : finale février.
+Fribourg Olympic : club le plus titré de Suisse, formateur de nombreux joueurs pros, infrastructure pro-européenne.
+
+VOLLEYBALL (Swiss Volley — volleyball.ch) :
+Structure : LNA (Ligue Nationale A) → LNB → 1ère Ligue.
+NLA Hommes 2025-2026 : Lindaren Volley Amriswil (TG — club dominant, multiple champion) | Näfels Volleys (GL) | Lausanne UC (VD) | TSV Jona-Uznach (SG) | VBC Näfels | et autres clubs NLA.
+NLA Femmes 2025-2026 : Sm'Aesch Pfeffingen (BL — club de référence) | VBC Cheseaux (VD) | Genève Volley (GE) | et autres clubs LNA.
+Saison LNA : octobre → avril, playoffs. Beach-volley : mai → août.
+Centre de performance : Swiss Volley Academy.
+
+UNIHOCKEY/FLOORBALL (Swiss Unihockey — swissunihockey.ch) :
+Sport très populaire en Suisse — top 5 par nombre de licenciés !
+NLA Hommes : SV Wiler-Ersigen (BE — club dominant), Floorball Köniz (BE), UHC Waldkirch-St.Gallen (SG), UHC Zurich, Grasshopper UHC, UHC Alligator Malans (GR).
+NLA Femmes : UHC Kloten-Dietlikon (ZH), Piranha Chur (GR), SV Wiler-Ersigen (BE).
+Saison : septembre → avril, playoffs mars-avril. Très accessible pour débutants (coût bas).
+
+HANDBALL (Swiss Handball — handball.ch) :
+Swiss Handball League (SHL) : Kadetten Schaffhausen (SH — club référence, Ligue des Champions), Pfadi Winterthur (ZH), HC Kriens-Luzern (LU), RTV 1879 Basel (BS), BSV Bern (BE), Wacker Thun (BE).
+Saison : septembre → mai, playoffs.
+
+ATHLÉTISME (Swiss Athletics — swiss-athletics.ch) :
+Meetings Diamond League : Athletissima Lausanne (août, top 3 mondial) + Weltklasse Zürich (septembre).
+Stades : Pontaise (Lausanne), Letzigrund (Zürich), Stade de la Pontaise rénové.
+Courses populaires suisses : 20km de Lausanne (avril), Grand-Prix de Berne (mai), Morat-Fribourg (octobre, 17 km, 20'000+ participants), Escalade Genève (décembre).
+Centre d'entraînement : UCI/OFSPO Macolin.
+
+TENNIS (Swiss Tennis — swisstennis.ch) :
+Tournois ATP/WTA suisses : Swiss Indoors Basel (ATP 500, octobre) | Geneva Open (ATP 250, mai, terre) | Ladies Open Lausanne (WTA 250, juillet).
+Héritage Federer (Bâle) et Hingis (Thurgovie). Formation : Swiss Tennis National Training Centre (Bienne).
+Interclub : mars → septembre.
+
+CYCLISME (Swiss Cycling — swiss-cycling.ch) :
+Courses World Tour : Tour de Romandie (VD/GE/VS/FR, fin avril-début mai) | Tour de Suisse (juin, prépa Tour de France).
+Siège UCI mondial : Centre mondial du cyclisme, Aigle (VD) — vélodrome couvert de référence mondiale.
+Championnats suisses route : juin.
+
+SPORTS DE GLACE ADDITIONNELS :
+Curling : Swiss Curling (curling.ch) — très ancré en Suisse, nombreux clubs, Championnats du Monde organisés régulièrement à Genève.
+Patinage artistique : Swiss Ice Sports, championnats suisses décembre.
+Bob/Luge/Skeleton : piste de Cresta Run St-Moritz (unique au monde), piste olympique Celerina (GR).
+Engadin Skimarathon (ski de fond, mars) : 13'000 participants, 42 km Maloja → S-chanf.
+
+GYMNASTICS (Swiss Gymnastics — stv-fsg.ch) :
+Plus ancienne fédération suisse (1832). ~150'000 membres. Très forte en artistique et rythmique.
+Fête fédérale de gymnasitique : tous les 6 ans (tradition nationale majeure, 50'000+ gymnastes).
+Championnats suisses : juin. Clubs dans chaque commune de Suisse.
+
+TRIATHLON & RUNNING :
+Triathlon de Lausanne (juillet) | Zurich Triathlon (juillet) | Ironman Switzerland Thoune (septembre).
+Courses populaires : 20km Lausanne (avril) | Grand-Prix de Berne (mai) | Morat-Fribourg (oct) | Escalade Genève (déc).`;
 
 const CALENDRIERS_SUISSE = `
 CALENDRIERS DE COMPÉTITIONS SUISSES (saisons, périodes clés) :
@@ -261,6 +362,564 @@ ASSURANCES SPORTIVES :
 - Assurances complémentaires : perte de gain sportif, invalidité sportive.
 `;
 
+const DROIT_SPORT_SUISSE_APPROFONDI = `
+DROIT DU SPORT SUISSE — RÉFÉRENTIEL APPROFONDI (mis à jour mai 2026) :
+
+DROIT DU TRAVAIL SPORTIF — CO ET SPÉCIFICITÉS :
+Contrat de travail sportif (CO art. 319 ss) :
+- Délai de congé légal selon ancienneté : 7 jours (période d'essai ≤ 3 mois), 1 mois (1ère année), 2 mois (2e-9e année), 3 mois (dès 10e année). Fins de mois calendaires uniquement.
+- Protection contre le congé : le club NE PEUT PAS licencier pendant maladie/accident (CO art. 336c) : 30 jours (1ère année), 90 jours (2e-5e), 180 jours (dès 6e). Licenciement pendant ces périodes = nul de plein droit.
+- Maternité (CO art. 335c al. 3) : licenciement interdit pendant grossesse + 16 semaines après accouchement. Clauses de performance = suspendues.
+- Travail en dimanche et jours fériés (LTr) : pour les sportifs salariés, soumis à la Loi sur le travail. Majorations de salaire 25-50 % selon convention collective.
+- Heures supplémentaires : si > 45 h/semaine pour cols blancs ou > 50 h pour manual workers, majorées de 25 % ou compensées en temps.
+- Protection de la santé (LTr art. 6) : l'employeur (club) a obligation de protéger la santé physique et psychique du travailleur. Base juridique pour lutter contre les surcharges abusives ou le harcèlement en club.
+
+Protection sociale du sportif salarié :
+- LPP (Loi sur la prévoyance professionnelle) : obligatoire pour les salariés gagnant > CHF 22'050/an. Cotisation : environ 7-18 % du salaire coordonné selon âge, partagée à 50/50 employeur/employé. Important : en cas de licenciement, le capital est transféré sur un compte de libre passage (Vested Benefits) — ne pas oublier de le réclamer !
+- SUVA (Caisse nationale assurance accidents) : assurance accidents obligatoire. Professionnels (accidents en club) : 100 % à charge employeur. Non professionnels : partagés. Couvre jusqu'à CHF 148'200/an de revenu.
+- Assurance perte de gain maladie (AG/IJM) : non obligatoire légalement mais standard dans les contrats sportifs suisses. Couvre 80 % du salaire après délai d'attente (3-30 jours).
+
+RÉGLEMENTATION AGENTS SPORTIFS EN SUISSE (FIFA 2023 + ASF) :
+- Réforme FIFA des agents sportifs (FFAR) : entrée en vigueur 9 janvier 2023. Examen de licence FIFA obligatoire. Les anciens "intermédiaires" sans licence ne peuvent plus prétendre à une commission.
+- En Suisse (ASF/SFV) : agents doivent être enregistrés auprès de l'ASF. Vérification : football.ch → "Agents homologués".
+- Plafonds de commission (FFAR) : 3 % du salaire brut côté joueur (si représente aussi le club : max 6 % total). Double représentation (joueur + club) : encadrée et transparence requise.
+- Contrat de représentation : durée max 2 ans, forme écrite obligatoire, enregistrement auprès de la FIFA obligatoire. Clause d'exclusivité = explicite dans le document.
+- Red flag : agent non enregistré, demande paiement en cash ou crypto, commission > 10 %, pression à signer rapidement.
+
+LÉSPO — LOI FÉDÉRALE SUR L'ENCOURAGEMENT DU SPORT (RS 415.0) :
+- Fondement légal pour J+S, Swiss Olympic Talent Cards, financement fédéral du sport.
+- OFSPO (Office fédéral du sport, Macolin) : autorité fédérale qui pilote toute la politique sportive suisse.
+- Anti-dopage (OASD — Ordonnance sur la lutte antidopage) : conforme au Code mondial WADA. Swiss Anti-Doping (SAD) est l'organisme national de contrôle.
+- Contrôles : peuvent avoir lieu en compétition ET hors compétition (whereabouts obligatoires pour athlètes dans les pools de contrôle). Violation = de 2 ans à interdiction à vie selon substance.
+- Tribunal disciplinaire antidopage : première instance CH. Appel devant TAS Lausanne.
+
+PARIS SPORTIFS ET INTÉGRITÉ (SwissBetting / LMJ) :
+- Loi fédérale sur les jeux d'argent (LMJ, 2019) : encadre paris sportifs en CH. Seuls Swisslos et Loterie Romande autorisés pour paris sportifs légaux en CH.
+- Interdiction pour les athlètes de parier sur leurs propres compétitions : règle universelle FIFA/IOC/Swiss Olympic, violation = suspension jusqu'à radiation.
+- Swiss Sport Integrity : organe de signalement des manipulations de match. Hotline confidentielle : +41 800 040 506. Signalement anonyme possible.
+- Réseaux illégaux de paris en CH : canaux offshore accessibles mais illégaux. Un athlète qui parie via ces canaux s'expose à des sanctions sportives ET pénales.
+
+E-SIGNATURE ET CONTRATS NUMÉRIQUES EN SUISSE :
+- Loi fédérale sur la signature électronique (SCSE, RS 943.03) : définit 3 niveaux.
+  * Signature électronique simple (SES) : email, scan d'un contrat signé à la main. Valeur probatoire limitée mais suffit pour beaucoup de contrats sous CO.
+  * Signature électronique avancée (SEA) : DocuSign, Adobe Sign, SwissSign. Identité vérifiée, non répudiable. Recommandée pour contrats sponsors CHF 5K-100K.
+  * Signature électronique qualifiée (SEQ) : équivalente signature manuscrite légalement. Requise pour actes nécessitant forme authentique.
+- En pratique pour athlètes : DocuSign ou Adobe Sign (SEA) = suffisants pour la grande majorité des contrats sportifs et sponsoring. Plus sécurisé qu'un scan email.
+- SwissSign (filiale de La Poste Suisse) : solution CH souveraine, conforme nLPD, disponible pour particuliers.
+
+nLPD (NOUVELLE LOI SUR LA PROTECTION DES DONNÉES, EN VIGUEUR SEPT. 2023) :
+- Remplace l'ancienne LPD. Aligne la Suisse sur le RGPD européen.
+- Droits de la personne concernée : droit d'accès, de rectification, d'effacement, de portabilité des données.
+- Ce que les clubs et sponsors doivent faire : informer l'athlète sur la collecte de données (finalité, durée de conservation), obtenir le consentement explicite pour les données sensibles, nommer un responsable de la protection des données si > 250 personnes traitées.
+- Pour l'athlète : peut demander à voir quelles données son club, sa fédération, son sponsor collecte sur lui. Peut demander la suppression après la fin du contrat.
+- Violation nLPD : amende jusqu'à CHF 250'000 pour les responsables (personnes physiques, pas les entreprises directement). Signal fort pour faire respecter ses droits.
+
+PROTECTIONS SPÉCIFIQUES EN DROIT SUISSE :
+- Harcèlement au travail (mobbing) : CO art. 328 = obligation de protection de la personnalité. Employeur (club) doit intervenir. Défaut = responsabilité civile. Ressource : Swiss Sport Integrity + médecin du travail.
+- Violence sexuelle dans le sport : Swiss Sport Integrity. Dépôt plainte pénale : police cantonale. Athlètes protégés par le Code pénal suisse (CP art. 189-192).
+- Discrimination (genre, origine, handicap) : Constitution fédérale art. 8. CO art. 328 pour le milieu du travail. Loi sur l'égalité hommes-femmes (LEg) : salaires égaux pour travail de valeur égale.
+
+IPI — MARQUE PERSONNELLE (enregistrement suisse) :
+- Institut Fédéral de la Propriété Intellectuelle : ige.ch
+- Dépôt marque suisse : CHF 550 (1 classe de produits/services), +100 CHF par classe additionnelle. Durée 10 ans, renouvelable.
+- Délai de traitement : environ 6-12 mois si pas d'opposition.
+- Stratégie recommandée : enregistrer prénom + nom d'athlète en classes 41 (éducation/sport) et 35 (marketing/publicité) = CHF 750 total pour 2 classes.
+- Protection internationale via Madrid System (OMPI) si carrière internationale envisagée.
+`;
+
+const FINANCE_PREVOYANCE_CH_2025 = `
+FINANCE ET PRÉVOYANCE SUISSE — MISE À JOUR 2025-2026 :
+
+RÉFORME LPP (2E PILIER) — SITUATION ACTUELLE :
+- Réforme LPP21 soumise au vote populaire le 22 septembre 2024 → REJETÉE à 67 % des voix. Le système LPP reste donc inchangé pour l'instant.
+- Règles actuelles LPP maintenues : seuil d'entrée CHF 22'050/an, salaire coordonné max CHF 25'725, taux de conversion à 6.8 % (pour rente à 65 ans). Une nouvelle réforme est attendue mais pas pour avant 2027-2028.
+- Ce que cela signifie pour l'athlète salarié : rien ne change. Le 2e pilier reste structuré comme avant. Les lacunes de cotisation pour les carrières courtes ou à revenus irréguliers restent le principal problème.
+- Compte de libre passage (Freizügigkeitskonto) : si tu quittes un emploi avant la retraite, ton 2e pilier est transféré ici. Banques spécialisées : Fondation Collective de la Banque Cantonale Vaudoise, Fondation Collective de la Banque WIR, Vested Benefits Account de Finpension. Ne pas oublier ce capital — il est souvent "perdu de vue" par les athlètes qui changent fréquemment de clubs.
+
+PRODUITS 3E PILIER (3A) NUMÉRIQUES DISPONIBLES EN SUISSE :
+Compte 3a avec investissement en ETF (rendement historique 4-7 %/an sur 20+ ans) :
+- VIAC (Via app) : pionnière du 3a digital en Suisse. Jusqu'à 97 % en actions (stratégie globale ou thématique). Frais : 0.44-0.52 %/an. Fondation collective de la BKB. Recommandée pour les < 45 ans à horizon long.
+- Finpension (Via app) : concurrente directe de VIAC. Jusqu'à 99 % en actions. Frais : 0.39-0.49 %/an. Dépôt garanti. Performance similaire. Fondation collective de Credit Suisse Life.
+- Frankly (ZKB) : produit Zürcher Kantonalbank. Interface simple, ETF Vanguard. Frais : 0.48 %/an.
+- Comparaison comptes bancaires traditionnels 3a (PostFinance, UBS, Raiffeisen) : rendement 0.1-1 %/an. Sécurité max, mais perd contre l'inflation sur le long terme.
+- Règle pratique : pour athlètes avec horizon > 10 ans → VIAC ou Finpension en ETF. Pour athlètes proche de la reconversion (< 5 ans) → compte 3a conservateur.
+- Multi-compte 3a : possible dès 2025 (ancienne limite d'un seul compte supprimée par la jurisprudence fédérale). Recommandé d'ouvrir 3-5 comptes séparés pour étaler les retraits et optimiser la fiscalité.
+
+INVESTISSEMENT — PLATEFORMES DISPONIBLES EN SUISSE :
+- Swissquote : courtier suisse de référence. Actions, ETF, obligations, crypto légale. Frais : CHF 9-190/transaction selon montant. Très réputé, compte en CHF/EUR/USD.
+- Degiro : plateforme néerlandaise légale en CH. Frais très bas (€ 0-4/transaction selon marché). Idéale pour ETF. Attention : pas de compte 3a.
+- Interactive Brokers : pour athlètes avec > CHF 50K à investir. Frais les plus bas du marché. Interface complexe.
+- Neon / Yuh : neobanques suisses qui proposent aussi des ETF intégrés. Yuh = partenariat PostFinance + Swissquote. Accessible pour débutants.
+- Stratégie recommandée athlète (revenu irrégulier) : 1) maximiser 3a en ETF (VIAC), 2) garder 6 mois de charges en épargne liquide, 3) investir le surplus en ETF world (ex. Vanguard FTSE All-World, ISIN IE00B3RBWM25, disponible Swissquote).
+
+ASSURANCES — SPÉCIFICITÉS SUISSES 2025-2026 :
+LAMal (assurance maladie de base, obligatoire) :
+- Franchise : CHF 300 (minimum légal) → CHF 2'500 (maximum). Plus la franchise est haute, moins la prime est chère. Pour athlètes en bonne santé : CHF 2'500 de franchise + CHF 700-900/mois de prime = souvent plus économique si < 2'500 de soins/an.
+- Modèle alternatif : telmed (consultation téléphonique avant médecin), HMO (réseau de médecins partenaires), médecin de famille (généraliste référent). Réduction de prime 10-25 % vs modèle standard.
+- Comparateur officiel : priminfo.admin.ch (géré par l'OFAS). À consulter chaque année (primes changent en octobre pour l'année suivante).
+SUVA (accidents professionnels et non professionnels) :
+- Salarié club : couverts automatiquement. Accidents professionnels : 100 % à charge du club. Non professionnels (dès 8 h/semaine de travail chez l'employeur) : couverts aussi.
+- Indépendant : doit s'assurer à titre personnel. Primes selon activité (sport = catégorie risque élevé). Groupement via Swiss Olympic ou AISF possible.
+- Plafond SUVA 2025 : CHF 148'200 de revenu annuel assuré. Pour revenus > CHF 148'200 : assurance complémentaire privée (LCA) indispensable.
+Assurance invalidité AI :
+- Rente AI simple (invalidité partielle 40-69 %) : CHF 1'225-1'837/mois (2025). Rente entière (> 70 % d'invalidité) : CHF 1'837-3'675/mois selon cotisations.
+- Ces montants sont nettement insuffisants pour maintenir le niveau de vie d'un sportif pro. Complémentaire invalidité privée essentielle.
+- Assurance perte de gains Helvetia Sports Elite / Groupe Mutuel Sport Pro / AXA : couvrent jusqu'à 80 % du revenu assuré. Primes CHF 200-800/an selon sport, revenu et franchise.
+
+TRAITEMENT FISCAL CRYPTO-ACTIFS EN SUISSE (clarification 2025) :
+- Bitcoin, Ethereum et crypto-monnaies en CH : considérés comme actifs mobiliers imposables à la fortune (impôt sur la fortune, pas sur les revenus).
+- Gains en capital sur crypto : en principe EXONÉRÉS pour les particuliers (pas de CGT en Suisse pour les investisseurs privés). EXCEPTION : si l'Administration fiscale considère qu'il s'agit d'une activité commerciale (trading fréquent, volume élevé, financement à crédit), les gains deviennent du revenu imposable.
+- Critères AFC pour "activité commerciale" : détention < 6 mois ET volume annuel > 5× la fortune initiale ET financement par crédit → reclassification possible en revenu.
+- Revenu en crypto (salaires club en BTC, primes en crypto) : imposable comme revenu en CHF à la valeur de marché au moment de la réception.
+- Staking, yield farming : traitement fiscal ambigu en CH. Tendance actuelle : traité comme revenu du patrimoine (imposable).
+- Déclaration obligatoire à la fortune : crypto doit figurer dans la déclaration d'impôts à la valeur de marché au 31 décembre. Oublier = évasion fiscale.
+- Recommandation : tenir un journal de toutes les transactions (date, quantité, valeur CHF au moment de l'opération) pour justifier en cas de contrôle.
+
+CONVENTIONS DE DOUBLE IMPOSITION (CDI) — ATHLÈTES TRANSFRONTALIERS :
+La Suisse a des CDI avec > 100 pays. Les plus pertinentes pour les sportifs :
+- France-Suisse (CDI 1966 révisée) : frontaliers travaillant en France (y compris footballeurs en Ligue 2, etc.) imposés en France. Résidents CH travaillant en France > 183 j/an → France impose les revenus de source française.
+- Allemagne-Suisse : revenus du travail imposés dans le pays d'activité. Sportif CH jouant en Bundesliga → imposé en Allemagne sur le salaire Bundesliga.
+- Règle générale artiste/sportif : art. 17 des modèles OCDE → imposition dans le pays où la performance a lieu, peu importe la résidence.
+- Pour les primes et droits image : souvent traités différemment du salaire → analyse au cas par cas avec fiduciaire internationale.
+`;
+
+const COMPTABILITE_SUISSE_PRATIQUE = `
+COMPTABILITÉ SUISSE — PRATIQUE 2025-2026 (pour indépendants et sportifs) :
+
+LOGICIELS COMPTABLES RECOMMANDÉS EN SUISSE :
+Pour indépendants avec revenus < CHF 100K (comptabilité simplifiée) :
+- Bexio (CH, bexio.com) : leader PME suisses. QR-bill intégré, TVA automatique, facturation, déclarations fiscales. CHF 39-129/mois. Recommandé pour les athlètes avec plusieurs clients/sponsors.
+- Banana Accounting (CH, banana.ch) : logiciel de comptabilité suisse classique, très utilisé par les fiduciaires. Version gratuite pour bilans simples. CHF 0-99/an. Plus technique que Bexio.
+- Crésus (CH, cresus.ch) : surtout pour Suisse romande. Facturation + comptabilité. CHF 39-89/mois.
+- Abacus (CH) : solution enterprise, trop complexe et coûteuse pour un indépendant solo.
+- Pour facturation simple uniquement : Debitoor (CHF 0-30/mois), Zervant (gratuit pour petits volumes).
+- Suivi des dépenses (sans comptabilité formelle) : Splitwise, Expensify ou simplement un Google Sheet structuré (convenable jusqu'à CHF 50K de revenus).
+
+COMPTABILITÉ SIMPLIFIÉE VS ORDINAIRE :
+- En dessous de CHF 100'000 de chiffre d'affaires annuel : comptabilité simplifiée acceptée (recettes et dépenses, pas forcément de bilan). Suffit pour la déclaration fiscale cantonale de l'indépendant.
+- Au-dessus de CHF 100'000 : comptabilité ordinaire avec compte de résultat et bilan recommandée (et souvent demandée par les autorités fiscales).
+- Au-dessus de CHF 500'000 : tenue régulière des comptes selon OR (Code des obligations), bilan et compte de résultat obligatoires.
+- Swiss GAAP FER (normes comptables suisses) : s'applique principalement aux associations sportives (clubs) qui publient des comptes. Pour l'indépendant individuel, l'important c'est la conformité fiscale, pas nécessairement Swiss GAAP.
+
+BILAN ANNUEL SIMPLE POUR ATHLÈTE INDÉPENDANT (structure 1 page) :
+Compte de résultat (pertes et profits) :
+  Revenus : salaires clubs, primes de performance, droits image, sponsoring, coaching, conférences, ventes contenu digital.
+  Total revenus bruts : ___
+  Charges déductibles : matériel sportif, déplacements (km ou transports), hébergement compétitions, formation, médecine du sport, assurances pro, téléphone pro, bureau domicile pro-rata, honoraires fiduciaire.
+  Total charges : ___
+  Bénéfice net avant charges sociales = Revenus - Charges : ___
+  Charges sociales AVS/AI/APG (10 % du bénéfice net) : ___
+  Bénéfice net imposable = Bénéfice net - 10 % : ___
+  Impôts sur revenu (taux marginal cantonal x bénéfice imposable) : ___
+  Résultat net "dans ta poche" : ___
+
+BUREAU À DOMICILE — DÉDUCTION SPÉCIFIQUE SPORT :
+- Déductible si pièce utilisée exclusivement (ou principalement) à des fins professionnelles.
+- Méthode 1 — forfait cantonal : certains cantons acceptent CHF 2'000-4'000/an de déduction bureau domicile sans justificatif détaillé.
+- Méthode 2 — pro-rata : superficie bureau / superficie totale × loyer annuel. Ex : chambre 12 m² / appart 60 m² × loyer CHF 18'000/an = CHF 3'600 déductibles.
+- Pour un athlète : la pièce d'analyse vidéo, de planification, d'administratif sportif = bureau professionnel. La salle de sport personnelle (si utilisée uniquement pour l'entraînement pro) = déductible également.
+- Conditions : pièce séparée (pas le canapé du salon), utilisation pro documentable (calendrier d'entraînement, factures équipement sport).
+
+CERTIFICAT DE SALAIRE (LOHNAUSWEIS) — CE QUE LE CLUB FOURNIT :
+- Chaque janvier pour l'année précédente, le club doit remettre à l'athlète salarié un certificat de salaire (formulaire officiel ESTV).
+- Contenu : salaire brut, cotisations AVS/AI/APG prélevées, LPP prélevée, impôt source prélevé, indemnités repas/km, bonus versés, valeur des avantages en nature (voiture, logement fourni par le club).
+- À conserver impérativement pour la déclaration fiscale et comme preuve de revenus (prêts bancaires, demande de logement).
+- Si le club ne fournit pas ce document : rappel écrit (email avec accusé). En cas de refus, signalement à l'autorité fiscale cantonale (ils peuvent contraindre l'employeur).
+
+TVA — POINTS IMPORTANTS SOUVENT OUBLIÉS :
+- Taux 2024-2026 : 8.1 % (normal), 2.6 % (réduit), 3.8 % (hébergement).
+- Seuil inscription TVA : CHF 100'000 de chiffre d'affaires. Dès ce seuil atteint, inscription obligatoire dans les 30 jours auprès de l'AFC (formulaire en ligne sur estv.admin.ch).
+- Inscription volontaire avant le seuil : possible et parfois avantageuse si l'athlète achète beaucoup de matériel TVA-déductible (récupération de TVA amont). À analyser avec fiduciaire.
+- Méthode des taux de la dette fiscale nette (TDFN) : alternative simplifiée. Pour conseil sportif : taux TDFN environ 5.1-6.1 %. Moins de paperasse mais peut être moins avantageux. Choisir avant début d'activité.
+- Erreurs fréquentes : oublier d'ajouter la TVA sur les factures de prestation (coaching, contenu digital), ne pas la reverser à temps (délais trimestriels), déclarer des achats privés en TVA professionnelle.
+
+CRYPTO ET NFT — TRAITEMENT COMPTABLE EN CH :
+- Bitcoin/ETH reçu comme paiement (ex. sponsor qui paie en BTC) : à comptabiliser immédiatement en CHF à la valeur du marché au moment de réception. C'est du revenu imposable.
+- Conversion crypto → CHF : si le cours a monté entre réception et vente, pas d'imposition supplémentaire (pas de CGT en CH pour particuliers, sauf activité commerciale).
+- NFT créés et vendus par l'athlète : revenu d'activité indépendante, imposable.
+- Comptabilisation : noter chaque transaction crypto (date, montant en crypto, valeur en CHF, contrepartie). Outils : CoinTracking.info, Accointing, Koinly.
+
+CLÔTURE D'ACTIVITÉ INDÉPENDANTE — DÉMARCHES :
+- Fin de carrière ou passage à un statut salarié : déclarer la cessation à la caisse AVS (délai : 30 jours après la fin).
+- Capital 2e pilier libre passage : transférer vers institution de libre passage si pas de nouvel emploi dans les 30 jours.
+- TVA : désinscription à l'AFC si chiffre d'affaires tombe sous CHF 100K. Délai : 30 jours après fin d'assujettissement.
+- Déductions de clôture : matériel encore utilisable = valeur résiduelle à inclure dans le dernier bilan.
+- Raison individuelle au RC : radiation possible si revenus avaient justifié l'inscription (> CHF 100K). Formulaire en ligne sur zefix.ch.
+
+OUTILS PRATIQUES SUISSES À CONNAÎTRE :
+- ZEFIX (zefix.ch) : Registre central des raisons de commerce. Vérifier si un club ou sponsor est bien enregistré avant de signer.
+- SECO (seco.admin.ch) : Secrétariat d'État à l'économie. Informations sur les conditions de travail, droit au chômage.
+- OFAS (ofas.admin.ch) : simulateur rentes AVS/AI, informations LPP, pilier 3a.
+- ESTV / AFC (estv.admin.ch) : tout sur la TVA, impôt fédéral direct, déclarations en ligne.
+- Swissdec (swissdec.ch) : plateforme d'échange électronique de données salariales entre employeurs et administrations (utilisée par les clubs pour les déclarations AVS).
+- Calculateurs cantonaux impôts : vd.ch/impots, ge.ch/impots, zh.ch/internet/sted/de.html.
+`;
+
+const CONTRATS_FINANCE_SPORT_CH = `
+CONTRATS & FINANCES SPORT SUISSE — RÉFÉRENTIEL CARRIÈRE (mis à jour mai 2026) :
+
+SALAIRES DÉTAILLÉS PAR SPORT ET DIVISION :
+
+Football :
+- Super League : CHF 80K-250K/an (joueur de base), CHF 250K-600K (titulaire confirmé), CHF 600K-1.5M (star / étranger top). Moyenne estimée ~CHF 280K. Salaires bruts, impôt à la source pour les étrangers.
+- Challenge League : CHF 30K-80K/an (semi-pro), CHF 80K-180K (contrat pro plein temps). Certains joueurs restent amateurs (primes de match uniquement : CHF 200-800/match).
+- Promotion League : CHF 0-36K/an. Majorité semi-pro : prime de match CHF 50-300 + remboursement frais. Quelques clubs paient CHF 800-2'000/mois aux meilleurs éléments.
+- 1ère Ligue : entièrement amateur. Primes de match CHF 0-100, remboursement frais kilométriques.
+- Bonus typiques Super/Challenge League : prime de victoire CHF 500-3K, prime de qualification européenne CHF 10K-50K, prime de titre CHF 20K-100K, bonus de signature (surtout étrangers) CHF 20K-200K.
+
+Hockey National League :
+- Joueur suisse de base (troisième/quatrième ligne) : CHF 100K-180K/an.
+- Joueur suisse titulaire confirmé (première/deuxième ligne) : CHF 200K-450K/an.
+- Joueur suisse top (capitaines, meilleurs scoreurs) : CHF 500K-900K/an.
+- Joueur import (4 par équipe maximum) : CHF 250K-1.5M/an. Logement souvent inclus.
+- Swiss League : CHF 30K-80K/an. Certains joueurs combinent avec un emploi à 50-80 %.
+- Bonus NL courants : prime de playoff CHF 5K-30K, prime de titre CHF 20K-80K, prime de victoire CHF 500-2K/match playoffs.
+
+Ski Coupe du Monde (revenus mixtes) :
+- Top 5 mondial / champion olympique : CHF 500K-2M+/an (sponsor équipementier + primes FIS + sponsors personnels).
+- Top 10-30 mondial : CHF 150K-500K/an.
+- Top 30-60 / Europa Cup régulier : CHF 30K-120K/an. Souvent soutenu en partie par Swiss-Ski.
+- Hors top 60 : déficitaire sans carte Swiss Olympic Gold/Silver. Coûts d'une saison Coupe du Monde: CHF 60K-120K (déplacements, entraîneur, matériel, staff). Wedge financier critique entre 30e et 60e rang.
+
+Tennis (ATP/WTA) :
+- Top 50 mondial : vivable à très confortable (prize money >CHF 500K/an + sponsors).
+- Top 100-200 : précaire, prize money CHF 100K-300K mais frais (coach, travel, physio) = CHF 80K-150K/an → marge fine.
+- Hors top 200 : souvent déficitaire. Carrière non viable sans soutien fédération ou famille.
+- Interclub (Ligue NLA suisse) : CHF 500-3K/journée selon niveau et club.
+
+Basket, Volley, Handball, Unihockey (semi-pro à pro) :
+- NLA/SBL top joueur : CHF 40K-90K/an. Fribourg Olympic (basket) et Kloten-Dietlikon (unihockey) paient les plus hauts salaires.
+- NLA milieu de tableau : CHF 15K-40K/an. La plupart ont un emploi parallèle.
+- Import (top clubs) : CHF 50K-120K/an + logement.
+
+STRUCTURE TYPIQUE D'UN CONTRAT PRO SUISSE :
+
+Contrat de travail salarié (art. 319 CO) — le plus courant en Super League, NL :
+- Durée : 1 à 3 ans (1 an pour les jeunes inconnus, 2-3 pour les titulaires établis). Rarement plus de 3 ans sauf stars.
+- Salaire brut mensuel (12 ou 13 mensualités selon clubs). 13e salaire courant en Suisse = +8.33 % sur l'annuel.
+- Clauses standard : clause de confidentialité (salaire), clause de non-disparagement, clause de comportement (interdiction réseaux sociaux dénigrants), clause disciplinaire (retenue sur salaire si rouge/suspension).
+- Avantages annexes courants Super League/NL : voiture de fonction ou indemnité km, logement ou aide au logement CHF 500-2K/mois, carte Reka loisirs, téléphone, accès salle de sport, assurance accidents complémentaire LCA.
+- Clause de sortie anticipée : souvent unilatérale club (peut licencier avec préavis 1-3 mois + indemnité), difficile côté joueur (pénalité si part avant terme).
+- Blessure/maladie : le club doit continuer à payer le salaire selon le droit du travail CH (art. 324a CO). Durée : de 3 semaines (1ère année) à plusieurs mois selon l'ancienneté. SUVA couvre accidents, LAMal maladie.
+
+Contrat indépendant (freelance/mandataire) — courant en Promotion League, demi-pros :
+- Pas de protection sociale de l'employeur (AVS à charge du sportif = 10 %).
+- Pas de LAA (accidents non couverts, souscrire une assurance privée !).
+- Avantage : déductions fiscales sur les charges.
+- Risque : souvent utilisé pour contourner les obligations d'employeur (statut discutable → la caisse AVS peut requalifier en salarié déguisé).
+
+Contrat agent sportif :
+- Foot : agents enregistrés ASF/FIFA. Commission légale : 3 % du salaire annuel brut côté joueur (max 5 %). Souvent aussi payé par le club (double commission possible, à vérifier contrat).
+- Hockey : agents reconnus SIHF ou internationaux. Commission : 5-10 % du salaire annuel.
+- Durée du mandat : 1-2 ans, exclusif ou non. TOUJOURS faire relire par Léa avant signature.
+- Piège fréquent : clause d'exclusivité très large (tout sport, pas seulement ton sport principal), durée trop longue (> 2 ans pour un jeune), commission sur les revenus totaux (y compris sponsoring) non justifiée.
+
+POINTS FINANCIERS CLÉS À NÉGOCIER (avant signature) :
+1. Le 13e salaire : est-il inclus dans le brut annoncé ou en sus ? (différence de +8.33 % sur l'annuel brut)
+2. Prime de signature : négociable, surtout si tu renonces à d'autres offres. CHF 5K-50K selon niveau.
+3. Clause de résiliation unilatérale par le club : demander une indemnité de résiliation anticipée (min 3 mois de salaire).
+4. Assurance perte de gain en cas de blessure longue durée : vérifier si le club complète au-delà de la période légale CO/SUVA.
+5. Droits à l'image : sont-ils cédés totalement au club ? Exiger une limitation (ex. : droits collectifs cédés, droits individuels conservés pour sponsoring personnel).
+6. Bonus sportifs : les définir par écrit avec des critères mesurables (nombre de matchs, stats, qualification).
+7. Logement / frais de déménagement : si relocalisation > 30 km, négocier une aide CHF 2K-10K.
+8. Clause de sortie (option de transfert) : si un gros club s'intéresse, pouvoir partir avec préavis 30-60 jours + indemnité définie d'avance.
+
+IMPLICATIONS FISCALES PAR STATUT :
+- Étranger avec permis B/C : impôt à la source prélevé directement par le club. Taux cantonal variable (VS favorable, VD/GE médian, ZH légèrement inférieur). Possibilité de déduction ultérieure en déposant une déclaration d'impôt ordinaire si revenus > CHF 120K en VD/GE ou sur demande.
+- Suisse ou C : déclaration fiscale ordinaire. Possibilité de déduire frais professionnels (transport, matériel, formation).
+- Indépendant : déclaration comme chef d'entreprise. AVS 10 % sur bénéfice net, TVA si > CHF 100K de chiffre d'affaires. Renvoyer vers Pierre pour la comptabilité et Sophie pour la stratégie fiscale.
+- Revenus sponsoring (même si salarié en club) : revenus indépendants à déclarer séparément → AVS sur ces revenus + impôts.
+
+RECONVERSION FINANCIÈRE (à préparer tôt) :
+- CHF 15K de soutien Swiss Olympic disponible pour formation post-carrière (à demander à la fin du contrat pro, pas 2 ans après).
+- LPP (2e pilier) : si salarié d'un club, cotisations obligatoires dès CHF 22'050/an. Le capital accumulé est récupérable pour la formation indépendante ou l'achat immobilier sous conditions.
+- 3e pilier 3a : max CHF 7'258/an (salarié) ou 20 % du revenu net (indépendant). À maximiser dès le 1er CHF de revenu pro — les années perdues ne se rattrapent pas.
+- Renvoyer vers Sophie (finance) et Pierre (comptabilité) pour la mise en place concrète.
+`;
+
+const BENCHMARKS_PHYSIQUE_SPORT = `
+BENCHMARKS SCIENTIFIQUES — PRÉPARATION PHYSIQUE SPORT (référentiel 2025) :
+
+VO2MAX NORMS PAR SPORT ET NIVEAU (ml/kg/min) :
+Football homme :
+- Amateur/régional : 45-52. Semi-pro/Promotion League : 52-58. Pro Super League/CL suisse : 58-65. Top international : 65-72 (Erling Haaland ~65, Cristiano Ronaldo ~60 mesuré).
+Football femme :
+- Amateur : 38-44. Semi-pro/ligue nationale : 44-52. Pro élite : 52-58.
+Hockey sur glace homme :
+- Régional : 45-52. Swiss League : 52-58. National League : 58-65. NHL : 62-70.
+Ski alpin homme :
+- Régional : 50-58. Europa Cup : 60-68. Coupe du Monde top : 68-76.
+Cyclisme route homme :
+- Licencié amateur : 55-65. Tour de Suisse participant : 70-80. Tour de France top : 82-92 (Tadej Pogačar ~96 mesuré).
+Tennis homme :
+- Compétiteur club : 48-55. ATP 200-500 : 55-62. ATP top 50 : 60-68.
+Athlétisme (demi-fond, 800m-5000m) homme :
+- Club compétitif : 62-68. National : 68-74. International : 74-82+.
+Basketball homme (NLA suisse) : 52-60.
+Volleyball homme (NLA suisse) : 50-58.
+Unihockey/handball NLA : 52-60.
+Remarque : VO2max se mesure par test incrémental (tapis ou vélo), ou estimé via test de Cooper, test Yo-Yo, Vameval. La mesure directe (masque respiratoire) est le gold standard.
+
+FORCE — STANDARDS 1RM PAR PROFIL ATHLÈTE (en ratio poids de corps) :
+Squat (profondeur parallèle minimum) :
+- Débutant : 0.75× PC. Intermédiaire : 1.25× PC. Avancé sport collectif : 1.5-1.75× PC. Élite force-explosivité : 2× PC+.
+Deadlift (conventionnel) :
+- Débutant : 1× PC. Intermédiaire : 1.5× PC. Avancé : 2× PC. Élite : 2.5× PC+.
+Développé couché :
+- Débutant : 0.5× PC. Intermédiaire : 0.9× PC. Avancé : 1.25× PC. Élite : 1.5× PC+.
+Relevé de terre (hip thrust / pont fessier chargé, indicateur explosivité basse) :
+- Intermédiaire : 1.5× PC. Avancé : 2× PC. Très utile pour prédire la vitesse en sprint court.
+
+VITESSE ET EXPLOSIVITÉ (sprint, sauts) :
+Sprint 10 m (départ arrêté, en secondes) :
+- Football Pro : < 1.75 s. Semi-pro : 1.75-1.90 s. Amateur : > 1.90 s.
+Sprint 30 m (départ arrêté) :
+- Football Pro Super League : < 3.80 s. Semi-pro CL/PL : 3.80-4.10 s. Amateur : > 4.10 s.
+Saut vertical (Counter Movement Jump, CMJ, en cm) :
+- Football homme Pro : 55-70 cm. Semi-pro : 45-55 cm. Amateur : 35-45 cm.
+- Volleyball homme NLA : 75-90 cm. National : 65-75 cm.
+- Basketball homme NLA : 65-80 cm. Amateur : 55-65 cm.
+Saut en longueur (debout, sans élan, en m) — indicateur force explosive globale :
+- Athlète pro sport collectif : 2.50-2.80 m. Semi-pro : 2.20-2.50 m. Amateur actif : 1.90-2.20 m.
+
+FRÉQUENCES CARDIAQUES ET ZONES D'ENTRAÎNEMENT :
+Formule FC max estimée : 208 - (0.7 × âge) [Tanaka 2001 — plus précise que 220-âge].
+5 zones classiques (% FC max) :
+- Z1 Récupération active : < 60 %. Marche, vélo très léger. 20-60 min.
+- Z2 Endurance fondamentale : 60-70 %. Peut parler normalement. Base aérobie, oxydation des graisses. Idéal pour 60-70 % du volume total annuel.
+- Z3 Tempo/seuil ventilatoire 1 : 70-80 %. Conversation difficile. Endurance spécifique.
+- Z4 Seuil lactique (VT2/MLSS) : 80-90 %. Plus possible de parler. Intervalle 20-40 min ou répétitions 6-12 min.
+- Z5 VO2max / anaérobie : 90-100 %. Efforts 30 s - 4 min maximum. Intervalle court (30-30, Tabata, 400 m).
+RPE correspondance Borg 0-10 : Z1=1-2, Z2=3-4, Z3=5-6, Z4=7-8, Z5=9-10.
+
+COMPOSITION CORPORELLE PAR SPORT (% masse grasse indicative — DEXA gold standard) :
+Football homme élite : 8-12 %. Semi-pro : 10-15 %.
+Hockey homme NL : 10-15 %.
+Ski alpin élite : 8-13 %.
+Athlétisme sprint : 5-10 %. Demi-fond : 6-12 %.
+Cyclisme route élite : 5-10 %.
+Basketball : 8-14 %.
+Volleyball : 10-15 %.
+Femmes (ajouter 5-8 % aux valeurs hommes, la différence est physiologique normale).
+ATTENTION : descendre sous 5 % (homme) ou 15 % (femme) est associé à des risques hormonaux, immunitaires, osseux → RED-S.
+
+TESTS DE TERRAIN VALIDÉS (équipement minimal) :
+- Yo-Yo Test Intermittent Recovery Level 1 (YYIR1) : évalue la capacité aérobie sport collectif. Niveau 17.8 = ~VO2max 55 ml/kg/min. Utilisé par FIFA, SFL. Protocole standardisé disponible.
+- Cooper Test (12 min de course) : VO2max (ml/kg/min) ≈ (distance en m - 504.9) / 44.73. Simple, 0 équipement. Reproduire dans les mêmes conditions (même piste, même heure).
+- Test de Ruffier-Dickson : charge cardiaque à l'effort. 30 squats en 45 s, mesure FC récupération. Indice < 0 = excellent, > 15 = insuffisant.
+- 1RM estimé (formule Brzycki) : 1RM = poids / (1.0278 - 0.0278 × reps). Applicable pour 2-10 reps.
+- FMS (Functional Movement Screen) : 7 mouvements fondamentaux notés 0-3. Score < 14/21 = risque blessure accru de 2×. Utile en début de saison.
+
+MÉCANISMES DE RÉCUPÉRATION (chronobiologie de l'adaptation) :
+- Fenêtre anabolique protéines : 0-2 h post-effort (pic de synthèse protéique). Objectif : 20-40 g protéines complètes dans ce délai.
+- Resynthèse glycogène : 50-100 g glucides dans la 1ère heure post-effort. Complet en 24-48 h avec alimentation normale.
+- Dommages musculaires (DOMS peak) : 24-72 h post-effort excentrique. Durée totale 3-7 jours.
+- Adaptations neuromusculaires : 6-12 semaines de stimulus régulier pour changements mesurables.
+- Adaptations cardiovasculaires (VO2max) : 8-12 semaines de travail aérobie ciblé.
+- Adaptation force maximale : 4-8 semaines (débutant rapide, avancé plus lent).
+`;
+
+const SCIENCE_NUTRITION_EVIDENCE = `
+SCIENCE DE LA NUTRITION SPORTIVE — DONNÉES PROBANTES (EBM 2025) :
+
+SUPPLÉMENTS : NIVEAUX D'ÉVIDENCE (classification AIS — Australian Institute of Sport) :
+Groupe A — preuves solides, recommandés en contexte approprié :
+- Caféine : 3-6 mg/kg, 45-60 min avant effort. Amélioration endurance +2-4 %, sprint +1-3 %. Habituellement sous forme café (160-300 mg), gels caféinés, comprimés. Éviter après 14h (perturbation sommeil).
+- Créatine monohydrate : charge 20 g/j × 5 j OU 3-5 g/j en maintenance. Amélioration efforts explosifs courts (<30 s) et musculation. Réponse variable (30 % non-répondeurs). Vérifier Informed Sport / NSF Certified for Sport.
+- Bêta-alanine : 3.2-6.4 g/j, 4-8 semaines. Tampon lactique, bénéfice sur efforts 1-4 min. Paresthésies normales (picotements).
+- Nitrate/Betterave (jus) : 500 ml jus betterave (ou 6-8 mmol nitrate) 2-3 h avant compétition. Amélioration économie de course +1-3 % pour les efforts sous-maximaux.
+- Bicarbonate de sodium : 0.2-0.3 g/kg 60-90 min avant. Tampon acide, efforts anaérobies 1-7 min. Risque digestif élevé — à tester d'abord à l'entraînement.
+- Protéines (supplément) : utiles si l'alimentation réelle ne couvre pas 1.6-2.2 g/kg. Whey (digestion rapide), caséine (lente, avant coucher). Pas nécessaire si alimentation couvre les besoins.
+- Vitamine D : supplémentation recommandée en Suisse de novembre à mars (ensoleillement insuffisant). Dose : 800-2'000 UI/j. Bilan sanguin pour doser précisément (cible 75-125 nmol/L).
+- Fer (en cas de carence confirmée) : bilan ferritine < 30 μg/L chez l'athlète = carence subclinique. Supplémentation sur prescription médicale uniquement.
+Groupe B — données prometteuses, contexte limité :
+- HMB (β-Hydroxy β-méthylbutyrate) : 3 g/j. Intérêt possible en retour de blessure ou détraining prolongé.
+- Ashwagandha (KSM-66) : réduction cortisol, légère amélioration VO2max. Quelques études de qualité.
+- Collagène hydrolysé + vitamine C : 10-15 g de collagène + 50 mg vitamine C, 30-60 min avant entraînement tendineux/articulaire. Données préliminaires encourageantes.
+Groupe C/D — peu ou pas de preuves, déconseillés :
+- Branched-chain amino acids (BCAA) séparés : redondants si apport protéique total suffisant.
+- Glutamine : pas d'effet prouvé chez l'athlète bien nourri.
+- Tribulus terrestris, ZMA, testostérone boosters : aucune preuve robuste, risque de contamination.
+
+ANTIDOPAGE — VÉRIFICATION OBLIGATOIRE AVANT TOUT SUPPLÉMENT :
+- Liste WADA 2026 mise à jour chaque 1er janvier : wada-ama.org/en/resources/world-anti-doping-program/sports-and-anti-doping-organizations/international-standards/prohibited-list
+- Substances à risque de contamination : produits multi-ingrédients non certifiés, prohormones, certains brûleurs de graisses.
+- Certification reconnue par Swiss Olympic : Informed Sport (batch-tested.com), NSF Certified for Sport, Cologne List.
+- En Suisse : antidoping.ch — liste de produits testés et FAQ.
+
+HYDRATATION AVANCÉE :
+- Perte sudorale moyenne : 0.8-2.5 L/h selon intensité et température.
+- Indicateur pratique : pesée avant/après entraînement. 1 kg perdu = 1 L de sueur. Objectif réhydratation : 1.5 L par kg perdu (compensation pertes + production urine).
+- Soif = déjà 1-2 % de déshydratation = -5-8 % de performance aérobie.
+- Boisson d'effort (>60 min) : 6-8 g glucides/100 ml + 500-700 mg sodium/L. Fabriquer soi-même : 600 ml eau + 40 g maltodextrine + 1/4 cdt sel + jus de citron.
+- Hyperhydratation avant effort en chaleur : 500 ml eau froide 45 min avant + 200-300 ml toutes les 15-20 min pendant.
+- Sports CH disponibles pour apports glucidiques/électrolytes :
+  * Sponser (suisse, Zoug) : Energy Gel Pro, Liquid Energy, BCAA 12:1:1. Certifiés Cologne List.
+  * Isostar (suisse) : Hydrate & Perform, produits disponibles Migros/Coop.
+  * GU Energy, SIS, Powerbar (importés) : disponibles dans magasins de sport CH.
+  * Ovomaltine (Wander AG Neuenegg, BE) : source glucides + vitamines, naturel, pas pour compétition élite mais excellent entrainement quotidien.
+
+NUTRITION PERIODISATION :
+- Carbohydrate periodization : entraînements de faible intensité → faibles glucides (adapte le métabolisme des graisses). Entraînements de haute intensité → glucides élevés (performances optimales).
+- Train low, compete high : concept basé sur l'adaptation mitochondriale. Séances de fondamental à jeun ou avec apports glucidiques réduits pour booster les enzymes oxydatives.
+- Carbo-loading avant compétition longue (>90 min) : J-3 à J-1, passer à 8-12 g glucides/kg/j (pâtes, riz, pain). Augmentation de 20-40 % des réserves de glycogène musculaire. Pas utile pour les efforts courts (<60 min).
+- REDs (Relative Energy Deficiency in Sport) : déficit énergétique chronique. Signes : blessures à répétition, aménorrhée, fatigue persistante, humeur déprimée, immunité basse. Commun dans sport esthétique (gym, patinage), endurance (cyclisme, marathon), combat (judo, lutte). → orientation médecin et diététicienne HES obligatoire.
+
+ALIMENTATION PRATIQUE EN SUISSE (produits accessibles Migros/Coop) :
+Protéines accessibles : poulet suisse (Poulet Grillé à la Bernoise), thon en boîte (ACE), oeufs (M-Budget ou bios VD/BE), skyr Siggi's/Nestlé (Coop), fromage blanc Séré (Migros), cottage cheese, jambon cuit.
+Glucides de qualité : riz long grain, patates douces (Migros), flocons d'avoine (M-Budget, 300 g = CHF 1.20), pain complet St-Galler, pâtes complètes.
+Graisses de qualité : avocat, huile d'olive extra-vierge, noix du Valais, saumon norvégien (frais ou fumé Coop), sardines à l'huile.
+Récupération nocturne (protéines lentes) : fromage frais type séré ou skyr, cottage cheese, yaourt grec.
+`;
+
+const SCIENCE_MENTAL_PERFORMANCE = `
+SCIENCE DE LA PERFORMANCE MENTALE — BASE EVIDENCE (2025) :
+
+NEUROPHYSIOLOGIE DE LA PRESSION ET DU STRESS :
+- Axe HPA (hypothalamo-hypophyso-surrénalien) : sous pression, libération de cortisol. Cortisol élevé chronique → dégradation de la mémoire de travail, fragmentation du sommeil, immunosuppression.
+- Réponse sympathique aiguë (adrénaline/noradrénaline) : utile à court terme (sharpness, énergie). Réponse parasympathique (nerf vague) = récupération, cognition optimale. L'objectif de la préparation mentale = optimiser l'équilibre sympathique/parasympathique.
+- Fenêtre de performance optimale (modèle IZOF — Individual Zone of Optimal Functioning, Hanin) : chaque athlète a un niveau d'activation émotionnelle qui maximise sa performance. Certains performent mieux sous stress élevé (boxe, sprint), d'autres sous stress modéré (golf, tir). Pas de recette universelle — l'athlète doit identifier et calibrer sa zone.
+- VFC (variabilité de la fréquence cardiaque) comme bio-marqueur mental : VFC haute = système nerveux autonome bien régulé, athlète prêt. VFC basse = fatigue ou stress psychologique élevé. Outils : HRV4Training (app), Polar H10, Whoop, Oura.
+
+COHÉRENCE CARDIAQUE — MÉCANISME ET PREUVES :
+- Respiration 5-5 (0.1 Hz) = résonance cardiaque optimale. Augmente la VFC, active le tonus vagal (parasympathique).
+- 5 min de cohérence cardiaque : réduction cortisol salivaire mesurable dans les 30 min. Effet dure 4-6 h.
+- Protocole 365 (3× par jour, 6 respirations/min, 5 min) = bénéfice cumulatif sur régulation du stress. Référence : Institut HeartMath (USA), nombreuses études publiées.
+- Application pratique recommandée en CH : Respirelax+ (iOS/Android), CardioSens (iOS).
+
+VISUALISATION — MÉCANISMES NEURAUX PROUVÉS :
+- Principe neuroscientifique : le cerveau active les mêmes circuits moteurs lors de l'imagerie mentale et lors de l'action réelle (neurones miroirs, IRMf). Imagerie + pratique réelle = supérieure à la pratique réelle seule chez l'athlète de haut niveau.
+- Meta-analyse (Martin, Moritz & Hall, 1999 + mises à jour) : visualisation améliore performance technique de 15-25 % selon la tâche.
+- PETTLEP (Holmes & Collins, 2001) — 7 paramètres d'une visualisation efficace : Physical (position du corps réelle), Environnement (lieu réel ou réaliste), Tâche (geste précis, pas vague), Timing (vitesse réelle), Apprentissage (adapté au niveau), Émotion (ressentir l'activation réelle), Perspective (1ère personne intérieure = kinesthésique, plus efficace que 3ème personne pour les gestes techniques).
+- Durée optimale : 5-15 min de visualisation de qualité (concentration totale) >> 45 min de visualisation distrait.
+
+TCC SPORTIVE — MODÈLE ABCDE APPLIQUÉ :
+- A = Activating event (situation de pression : pénalty, tir décisif, compétition sélection)
+- B = Belief (croyance automatique déclenchée : "je vais rater", "je suis nul sous pression")
+- C = Consequence (émotion et comportement : stress corporel, évitement, micro-blocage moteur)
+- D = Dispute (questionnement rationnel de la croyance B : "Quelle preuve concrète que je vais rater ? Combien de fois j'ai réussi ce geste ?")
+- E = Effect (nouvelle perspective : "Je m'y suis préparé. L'activation est normale et utile.")
+- Protocole suggéré : journal ABCDE après chaque compétition, 10 min d'écriture. Après 4-6 semaines, les distorsions cognitives les plus fréquentes sont identifiées et contestées.
+
+AUTO-TALK — PREUVES SCIENTIFIQUES :
+- Meta-analyse Hatzigeorgiadis et al. (2011, Perspectives on Psychological Science) : le self-talk instructionnel ("genou fléchi", "ancrage") améliore la précision technique de 12 %. Le self-talk motivationnel ("allez !", "je peux") améliore l'endurance et la force de 7-9 %.
+- Règle pratique : 1-2 mots max par cue (les phrases longues perturbent le focus). Choisir des mots en lien avec le geste (pas des généralités motivantes).
+
+FLOW STATE (Csikszentmihalyi) — CONDITIONS DÉCLENCHANTES :
+Préconditions identifiées : défi = 10-20 % au-dessus de la compétence actuelle (trop facile = ennui, trop difficile = anxiété). Objectifs clairs et feedback immédiat. Absence de distracteurs externes. Routine pré-performance respectée (donc : ne pas changer les rituels avant compétition majeure).
+Durée typique : 10-90 min. Inductible mais pas commandable — les techniques (cohérence cardiaque, visualisation, auto-talk) augmentent la probabilité d'entrée en flow, sans le garantir.
+
+BURNOUT SPORTIF — MODÈLE RAEDEKE & SMITH (2001) :
+3 dimensions mesurables : épuisement émotionnel et physique / dévaluation sportive ("à quoi ça sert?") / sentiment de compétence réduit.
+Questionnaire validé : Athlete Burnout Questionnaire (ABQ) — disponible librement.
+Facteurs de risque en Suisse : pression parental précoce (sport jeunesse très structuré), double carrière sport-études intensive, isolation sociale liée aux horaires, pression de performance en milieu amateur non reconnu financièrement.
+
+RESSOURCES PSYCHOLOGIE DU SPORT EN SUISSE :
+- SASP (Société Suisse de Psychologie du Sport) : annuaire de psychologues du sport certifiés sur sasp.ch. Chercher "psychologie du sport" + canton pour trouver un praticien local.
+- Swiss Olympic Mental Program : programme de préparation mentale pour athlètes avec carte Swiss Olympic.
+- Centres cantonaux santé mentale (si dépasse la préparation mentale) : HUG Genève, CHUV Lausanne, Inselspital Berne, USZ Zurich — consultations en psychologie clinique.
+- Pro Mente Sana (CH) : ressource pour troubles mentaux plus sérieux.
+`;
+
+const SCIENCE_SOMMEIL_ATHLETE = `
+SCIENCE DU SOMMEIL SPORTIF — BASE EVIDENCE (2025) :
+
+IMPACT DU SOMMEIL SUR LA PERFORMANCE — CHIFFRES CLÉS :
+- Réduction à 6h/nuit vs 9h : -11 % de performance en sprint, -3 % en endurance (Mah et al., Stanford, 2011).
+- Privation partielle chronique (6h × 14 nuits) : performance cognitive équivalente à 24h sans sommeil. Sous-estimé car le sujet s'adapte à la sensation de fatigue mais pas à la dégradation réelle.
+- Extension du sommeil (protocole Stanford, basketball) : +9 min de vitesse de sprint, +9 % de précision au tir 3-points, −15 % de fatigue ressentie. Protocole : 10 h au lit pendant 5-7 semaines.
+- GH (hormone de croissance) : 70-80 % de la sécrétion quotidienne se fait pendant le sommeil profond (stade 3). Chaque nuit courte = moins de réparation musculaire et osseuse.
+- Cortisol matinal : significativement plus élevé après nuits < 6 h. Cercle vicieux stress/sous-récupération.
+
+CHRONOBIOLOGIE ET CHRONOTYPES :
+- Chronotype = prédisposition génétique (gène PER3) pour être du matin (lark) ou du soir (owl). Permanent, peu modifiable.
+- 25 % de la population = chronotype du matin. 25 % = chronotype du soir. 50 % = intermédiaire.
+- Impact pratique pour l'athlète : les performances physiques et cognitives atteignent leur pic 6-8 h après le réveil naturel (pic de température corporelle + testostérone).
+- Athlète chronotype soir avec entraînement matin : sous-performance moyenne de 5-8 %. Compensation : lumière bleue intense au réveil (lampe de luminothérapie, 10 000 lux, 20-30 min).
+- Avance de phase (ramener son réveil plus tôt de façon permanente) : faisable par exposition lumineuse matinale + prise de mélatonine 0.5 mg 5h avant l'heure de coucher cible, sur 2-3 semaines.
+
+MÉLATONINE — USAGE CORRECT :
+- Dose physiologique : 0.5-1 mg (pas 3-10 mg comme vendu couramment en France/USA — surdose en CH non recommandée par SSATP/SSSM).
+- En Suisse : mélatonine disponible en pharmacie (Circadin 2mg = prescription pour usage thérapeutique, dosages libres en droguerie). Mélatonine 0.5 mg = meilleure efficacité pour resynchronisation.
+- Usages validés : décalage horaire (> 4 fuseaux), avance de phase du chronotype, travail en équipes rotatives.
+- Non validé (usage déconseillé) : prise quotidienne chronique pour "mieux dormir" sans trouble identifié → habituée et réduction de la production endogène.
+
+JET LAG — PROTOCOLE PRATIQUE :
+- Règle : 1 jour de récupération par heure de décalage horaire.
+- Vers l'est (pire direction) : avancer son heure de coucher 3-4 j avant départ de 30 min/j. Lumière vive le matin à la destination. Mélatonine 0.5 mg à 21h heure locale.
+- Vers l'ouest : rester éveillé jusqu'à heure raisonnable locale. Éviter la sieste > 20 min le 1er jour.
+- Caféine : utile pour rester éveillé aux bonnes heures, mais couper 6h avant l'heure de coucher cible.
+
+ENVIRONNEMENT DE SOMMEIL — STANDARDS OPTIMAUX :
+- Température chambre : 16-19 °C (baisse de la température centrale corporelle = signal d'endormissement). Chaque degré au-dessus de 20 °C = fragmentation du sommeil mesurable en polysomnographie.
+- Obscurité : rideau occultant ou masque de sommeil. Même 10 lux d'exposition (lampe de rue, veille téléviseur) perturbent la mélatonine.
+- Bruit : < 30 dB pour sommeil non perturbé. Bouchons d'oreilles (réduction 25-35 dB), bruit blanc (masque les sons imprévisibles).
+- Température corporelle pré-sommeil : bain chaud 1-2 h avant coucher = vasodilatation périphérique → accélération de l'endormissement de 10-15 min.
+
+SIESTE SPORTIVE — PROTOCOLES PAR OBJECTIF :
+- Sieste de 10-20 min (power nap) : élimination de la somnolence, amélioration vigilance 2-3 h. Pas d'inertie de sommeil. Idéale avant compétition après-midi ou entraînement tard.
+- Sieste de 90 min (cycle complet) : inclut stade 3 et REM. Récupération physique et consolidation mémorielle. À planifier si nuit précédente < 6 h. Inertie 5-15 min à la sortie.
+- "Nap à la caféine" : boire café (150-200 mg) puis s'allonner immédiatement pour une sieste de 20 min. La caféine agit à l'éveil exactement quand l'inertie se terminerait → effet synergique.
+- Timing optimal sieste : entre 13h et 15h (creux circadien naturel). Au-delà de 16h : risque de perturbation du sommeil nocturne.
+
+SURENTRAÎNEMENT ET SOMMEIL :
+- Le signe le plus précoce et fiable de surentraînement (avant même la baisse de performance) : dégradation de la qualité du sommeil + fragmentation + réveils nocturnes fréquents.
+- Protocole de veille : si l'athlète signale 3 nuits consécutives de sommeil < 6 h involontaires ou de réveil avant 4h → déclencher une semaine de décharge + bilan médical complet (fer, vitamine D, hormones thyroïdiennes, testostérone/oestrogènes).
+`;
+
+const SCIENCE_RECUPERATION_ATHLETE = `
+SCIENCE DE LA RÉCUPÉRATION SPORTIVE — DONNÉES PROBANTES (2025) :
+
+IMMERSION EN EAU FROIDE (CWI — Cold Water Immersion) :
+- Protocole validé (meta-analyse Hohenauer et al., 2015) : 10-15 °C, durée 10-15 min. Réduction DOMS de 16-30 % à 24-96 h post-effort.
+- Mécanisme : vasoconstriction → diminution inflammation locale et oedème. Effet analgésique central.
+- Limites preuves : efficacité surtout sur la douleur perçue. Impact sur récupération musculaire réelle = débattu. Étude Fyfe et al. (2019) : CWI post-musculation réduit les adaptations hypertrophiques à long terme (bloque le signal mTOR anabolique).
+- Recommandation pratique : utile en période de compétitions rapprochées (turnaround 24-48 h, priorité à la récupération immédiate). Moins recommandé en phase de musculation (bloque les adaptations). Douche froide 2-5 °C, 2-3 min = effet partiel si baignoire non disponible.
+- En Suisse : lacs alpins, rivières (Aar à Berne, Rhône, Limmat) = disponibles gratuitement. Température estivale 14-18 °C = idéale CWI naturelle.
+
+CONTRASTE CHAUD/FROID (CWT — Contrast Water Therapy) :
+- Protocole : alternance eau chaude (38-42 °C, 1-2 min) / eau froide (10-15 °C, 1-2 min), 3-5 cycles, terminer par froid.
+- Mécanisme : pompe vasculaire (vasodilatation/vasoconstriction alternée), augmentation du débit lymphatique.
+- Efficacité vs CWI seul : méta-analyses mitigées. Avantage subjectif (athlètes le ressentent comme plus efficace). Pas d'inconvénient prouvé.
+- Disponibilité CH : saunas avec douche froide (Wellenbad, centres wellness, piscines publiques équipées).
+
+MASSAGE SPORTIF — DONNÉES PROBANTES :
+- Meta-analyse (Poppendieck et al., 2016) : le massage réduit les DOMS perçus de 13 % à 48 h post-effort. Pas d'effet démontré sur la récupération de la force maximale.
+- Durée optimale : 20-30 min post-effort immédiat. La massothérapie profonde (deep tissue) en phase inflammatoire aigüe (<12 h) = contre-productive.
+- Auto-massage (foam roller) : méta-analyse Wiewelhove et al. (2019) : réduction DOMS de 6 %, amélioration légère de la flexibilité, aucune amélioration de la force. Utile, pas transformateur.
+- Timing recommandé foam roller : après effort = retour au calme, circulation lymphatique. Avant effort (10 min) = amélioration ROM (range of motion) sans perte de force (différent des étirements statiques prolongés qui réduisent temporairement la force).
+
+COMPRESSION SPORTIVE (vêtements, manchons) :
+- Méta-analyse (Born et al., 2013) : légère réduction des DOMS (+5-15 %) et perception de fatigue. Mécanisme : réduction de l'oedème, amélioration du retour veineux.
+- Recommandation pratique : chaussettes/manchons de compression 15-20 mmHg portés pendant et jusqu'à 24 h post-effort. Pas nécessaire si récupération normale disponible (sommeil, nutrition OK). Utile lors de voyages en avion (prévention thrombose + récupération circulatoire).
+
+SAUNA ET CHALEUR (Heat Therapy) :
+- Sauna finlandais (80-100 °C, 10-20 min) : augmentation du débit sanguin musculaire, relaxation neuromusculaire. Pas d'accélération de la récupération de force prouvée.
+- Sauna infrarouge (45-60 °C) : données limitées. Relaxation, pas d'avantage supérieur au sauna traditionnel prouvé.
+- Timing recommandé : le soir après compétition (pas l'après-midi si compétition le soir). Avant coucher = effet relaxant, baisse de la température centrale → facilite endormissement.
+- Contre-indication : pas de sauna dans les 24 h d'une blessure aiguë, pas si déshydratation.
+- Disponibilité CH : saunas publics dans presque toutes les piscines communales suisses.
+
+RÉCUPÉRATION ACTIVE VS PASSIVE — LEQUEL CHOISIR :
+- Récupération active (vélo, natation, marche, Z1-Z2, 20-30 min) : meilleure élimination du lactate sanguin dans la 1ère heure post-effort. Préférable pour compétitions dans < 12 h.
+- Récupération passive (repos complet) : préférable pour récupération profonde sur 24-72 h. Après effort très intense ou en cas de surentraînement suspecté.
+- Règle pratique : si prochain effort dans < 12 h → récupération active légère. Si prochain effort dans > 24 h → récupération passive première puis active légère à partir de 12-18 h post.
+
+PROTOCOLES TURNAROUND SPORT COLLECTIF (matchs J0/J+2) :
+Football / Hockey (match toutes les 48 h) :
+- Fenêtre 0-30 min post-match : 20-30 g protéines + 60-80 g glucides rapides. 500-750 ml d'eau.
+- Fenêtre 30 min-4 h : CWI 12-15 °C × 12 min. Repas complet (glucides 2 g/kg + protéines 0.4 g/kg). Compression lower body.
+- Nuit J0 : chambre 17-18 °C, sommeil 9 h minimum. Pas d'alcool (bloque la synthèse protéique de 25 % + perturbe le sommeil profond).
+- J+1 récupération : yoga / mobilité 30 min, vélo ou natation 20 min Z1, foam roller, sauna 15 min le soir.
+- J+2 matin : activation neuromusculaire (sprints courts 40-60 %, exercices de stabilisation), pas de charge de force.
+
+NUTRITION DE RÉCUPÉRATION — COMPLÉMENTARITÉ AVEC CLARA :
+- Protéines : 20-40 g dans les 30-60 min post-effort. Au-delà de 40 g : pas d'avantage supplémentaire (plateau de synthèse protéique musculaire, excès oxydé comme énergie).
+- Glucides : replenishment glycogène = 1-1.2 g/kg dans la 1ère heure, puis alimentation normale sur 24 h.
+- Oméga-3 (EPA/DHA) : 2-4 g/j sur 4-8 semaines réduit l'inflammation musculaire post-effort. Saumon 3×/semaine OU supplémentation huile de poisson certifiée (Omega-3 de Burgerstein disponible en pharmacies CH).
+- Cerise griotte (montmorency cherry) : 2× 30 ml de concentré par jour. Méta-analyses confirment réduction DOMS et inflammation sur 4-5 j. Disponible en pharmacies et drogueries CH.
+- Curcuma + poivre noir (pipeline) : anti-inflammatoire naturel. 500-1000 mg d'extrait curcumine biodisponible. Moins de preuves que les autres, mais sûr et peu coûteux.
+`;
 
 const AGENTS = {
   marketing: {
@@ -484,6 +1143,8 @@ Tu es Sophie, conseillère financière et fiscale pour athlètes suisses chez SP
 - **Fonds de reconversion Swiss Olympic** : jusqu'à CHF 15K pour formation post-carrière (CFC, brevet, HES, MBA). À demander dès la fin du contrat principal.
 - **Bourses sportives privées** : Fondation Nestlé Sport, Fondation Vaudoise pour le Sport, certaines fondations cantonales spécifiques. À chercher sur le site de la fédération concernée.
 - **Imposition de ces aides** : généralement imposables sauf exceptions explicites. Toujours vérifier avec les conditions d'octroi.
+
+${FINANCE_PREVOYANCE_CH_2025}
 
 ${SPORTS_SUISSE}
 
@@ -757,6 +1418,8 @@ Tu es Léa, conseillère juridique spécialisée en droit sportif suisse chez SP
 - **Athlète paralympique** : statut spécifique reconnu par Swiss Paralympic. Aides financières et juridiques dédiées via la fédération.
 - **Esport / nouveau sport non fédéré** : cadre juridique flou en CH. Contrats type CO standard, sans le bénéfice des protections sportives traditionnelles. Vigilance redoublée.
 
+${DROIT_SPORT_SUISSE_APPROFONDI}
+
 ${SPORTS_SUISSE}
 
 ${RESSOURCES_SUISSE}
@@ -873,6 +1536,8 @@ Tu es David, préparateur physique pour athlètes suisses chez SPORTVISE. Tu con
 - Hypoxie + 3-7 jours = adaptation cardiovasculaire et VO2max. Protocole optimal : 3 semaines à 2'500 m avant compétition (acclimatation complète).
 - Nutrition : +15 % calories vs altitude normale (consommation énergétique accrue en hypoxie).
 - Hydratation : +30 % d'eau vs niveau de la mer (pertes respiratoires augmentées).
+
+${BENCHMARKS_PHYSIQUE_SPORT}
 
 ${SPORTS_SUISSE}
 
@@ -1005,6 +1670,8 @@ Tu es Emma, conseillère en préparation mentale pour athlètes suisses chez SPO
 - Ressource CH : Swiss Olympic propose un programme de coaching pour parents d'athlètes, gratuit pour les sélectionnés.
 - Pour les médias et réseaux sociaux : limiter l'exposition pendant les phases de compétition (pas de défilement Instagram avant un match), filtrer activement les commentaires ou déléguer (entourage proche qui filtre).
 
+${SCIENCE_MENTAL_PERFORMANCE}
+
 ${SPORTS_SUISSE}
 
 ${RESSOURCES_SUISSE}
@@ -1134,6 +1801,8 @@ Tu es Clara, conseillère en nutrition sportive pour athlètes suisses chez SPOR
 - **Gluten** : seulement si maladie cœliaque ou sensibilité confirmée par bilan médical. Sinon, pas de bénéfice à supprimer le gluten — risque de carences en fibres et vitamines B.
 - **Végétarien / végan** : maintenir les protéines à 1.8-2.0 g/kg, varier les sources (légumineuses + céréales = profil acide aminé complet). Surveiller B12, fer, zinc, oméga-3 EPA/DHA → supplémentation B12 obligatoire en végan, EPA/DHA d'algues pour les autres.
 - **Diabète, hypoglycémie réactionnelle, troubles digestifs chroniques (Crohn, SII)** : sortir du registre conseil général → orientation médecin et diététicienne diplômée HES.
+
+${SCIENCE_NUTRITION_EVIDENCE}
 
 ${SPORTS_SUISSE}
 
@@ -1268,6 +1937,8 @@ Tu es Pierre, conseiller en comptabilité et administration pour sportifs indép
 - **Responsabilité civile professionnelle** : CHF 100-200/an. Indispensable si l'athlète coache, donne des stages, des démos. Couverture CHF 2-5M.
 - **Assurance perte de gain sportive** (lucratifs en cas de blessure veille de compétition) : CHF 100-300/an, couverture CHF 10-20K. Utile pour les sports à primes (ski, tennis, golf).
 - **Produits suisses connus** : Groupe Mutuel (forfait sportif pro), Helvetia Sports Elite, AXA Sport, Bâloise. Comparer 3 offres avant de signer, attention aux exclusions liées au sport pratiqué.
+
+${COMPTABILITE_SUISSE_PRATIQUE}
 
 ${SPORTS_SUISSE}
 
@@ -1426,6 +2097,8 @@ Tu es Lucas, conseiller en carrière sportive et orientation pour athlètes suis
 - **Athlete365 / Swiss Olympic Career Counseling** : conseil de carrière gratuit et job board pour positions "post-sport" (clubs, fédérations, sponsors corporates qui valorisent un parcours d'athlète).
 - **Filières porteuses post-carrière** : commerce / sales (la culture de la performance se transpose bien), IT (en croissance constante), santé (préparation physique, kinésithérapie après formation), médias et communication.
 
+${CONTRATS_FINANCE_SPORT_CH}
+
 ${SPORTS_SUISSE}
 
 ${CALENDRIERS_SUISSE}
@@ -1558,6 +2231,8 @@ Tu es Nora, spécialiste du sommeil sportif pour athlètes suisses chez SPORTVIS
 - **Sommeil fragmenté + fatigue persistante + baisse de performance + irritabilité** : signal de surentraînement → semaine de décharge ou repos complet, bilan biologique chez médecin du sport.
 - **Idées noires, troubles de l'humeur récurrents** : ce n'est plus du domaine sommeil → orientation Emma + psychologue/psychiatre clinicien.
 
+${SCIENCE_SOMMEIL_ATHLETE}
+
 ${SPORTS_SUISSE}
 
 ${RESSOURCES_SUISSE}
@@ -1671,6 +2346,8 @@ Tu es Julie, spécialiste de la récupération et de la régénération sportive
 - La récupération n'est pas que physique : surcharge cognitive (analyses vidéo, pression médiatique, vie sportive 24/7) altère la récupération physiologique.
 - 1 demi-journée par semaine sans contact avec le sport (pas de vidéo, pas de lecture spécifique, pas de réseau social sportif).
 - Renvoyer à Emma pour les techniques de déconnexion mentale et de gestion du stress en haute saison.
+
+${SCIENCE_RECUPERATION_ATHLETE}
 
 ${SPORTS_SUISSE}
 
