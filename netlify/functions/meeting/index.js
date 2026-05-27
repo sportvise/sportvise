@@ -478,7 +478,16 @@ exports.handler = async (event) => {
   }
 
   // ─── Plan + quotas check (v63.8 — overlay essai) ───
-  const plan = await getUserPlan(user.id);
+  let plan = await getUserPlan(user.id);
+
+  // ─── ADMIN_EMAILS override (chantier #2 v63.11.3) ───
+  const _adminEmailsRaw = process.env.ADMIN_EMAILS || '';
+  if (_adminEmailsRaw && user.email) {
+    const _adminSet = new Set(
+      _adminEmailsRaw.split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
+    );
+    if (_adminSet.has(String(user.email).trim().toLowerCase())) plan = 'pro';
+  }
 
   // Tier effectif : compte free récent (< TRIAL_DAYS jours) → 'trial'.
   let tier = plan;
