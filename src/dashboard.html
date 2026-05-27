@@ -404,6 +404,11 @@
       background: var(--bg3); border: 1px solid var(--border); border-radius: 12px;
       padding: 16px 18px; margin-bottom: 16px; display: flex; align-items: center; gap: 14px; flex-shrink: 0;
     }
+    /* Chat header collapse */
+    .chat-collapsible { transition: max-height 0.25s ease, opacity 0.25s ease, padding 0.25s ease, margin 0.25s ease; overflow: hidden; }
+    .chat-header-collapsed .chat-collapsible { max-height: 0 !important; opacity: 0; padding-top: 0 !important; padding-bottom: 0 !important; margin-top: 0 !important; margin-bottom: 0 !important; border: none !important; }
+    #chatCollapseBtn { transform: rotate(0deg); transition: transform 0.25s ease; }
+    .chat-header-collapsed #chatCollapseBtn { transform: rotate(180deg); }
     .chat-avatar {
       width: 44px; height: 44px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;
@@ -1487,8 +1492,8 @@ async function init() {
     sb.from('profiles').upsert({ id: currentUser.id, email: currentUser.email });
   }
 
-  // Load user plan (admin = always pro)
-  userPlan = currentUser.email === 'sportvise.pro@gmail.com' ? 'pro' : (profile?.plan || 'free');
+  // Load user plan depuis la DB (plan géré côté backend via ADMIN_EMAILS env var — v63.11.3)
+  userPlan = profile?.plan || 'free';
 
   // v63.8 — Overlay essai : compte free de moins de TRIAL_DAYS jours = accès complet.
   // Date d'inscription = currentUser.created_at (objet user de la session Supabase).
@@ -3342,18 +3347,18 @@ async function renderChat(page) {
             title="Disponible avec le plan Pro">
             🔒 ${T[currentLang].exportPdf}
           </button>`}
-          <button onclick="toggleAutoRead(this)" title="Lecture auto des réponses"
-            style="padding:5px 12px;border-radius:7px;border:1px solid var(--border);background:${autoReadEnabled?'#6366f130':'transparent'};color:${autoReadEnabled?'#6366f1':'var(--muted2)'};font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s">
-            🔊 Auto
+          <button id="chatCollapseBtn" onclick="toggleChatHeader()" title="Réduire / agrandir l'en-tête"
+            style="padding:4px 8px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:14px;cursor:pointer;line-height:1;transition:all 0.2s">
+            ⌃
           </button>
         </div>
       </div>
-      ${renderMemoryCardLite(page, agent)}
+      <div class="chat-collapsible" id="chatHeaderExtras" style="max-height:300px">${renderMemoryCardLite(page, agent)}
       <div class="ai-disclaimer" style="padding:6px 16px;background:${agent.color}08;border-bottom:1px solid ${agent.color}15;display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted);line-height:1.3">
         <span style="font-size:12px">ℹ️</span>
         <span>${(t.agentDisclaimer || '{name} est un assistant IA. Ses conseils ne remplacent pas l\'avis d\'un professionnel qualifié (médecin, avocat, comptable).').replace('{name}', agent.name)} <a href="#" onclick="event.preventDefault();showDisclaimer()" style="color:${agent.color};text-decoration:underline;font-weight:600">${t.agentDisclaimerLink || 'En savoir plus'}</a></span>
       </div>
-      ${getQuickActions(page, agent)}
+      ${getQuickActions(page, agent)}</div>
       <div class="chat-messages" id="chatMessages">${renderMessages(page, agent)}</div>
       <div id="filePreviewArea"></div>
       <div class="chat-input-row">
@@ -8708,7 +8713,7 @@ function showDisclaimer() {
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
   modal.onclick = (e) => { if(e.target === modal) modal.remove(); };
   modal.innerHTML = `
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;max-width:500px;width:100%;padding:28px;color:var(--text);max-height:80vh;overflow-y:auto">
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;max-width:500px;width:100%;padding:28px;color:var(--text);max-height:80vh;overflow-y:auto">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
         <h3 style="font-size:18px;font-weight:800">Avertissement important</h3>
         <button onclick="this.closest('div[style*=fixed]').remove()" style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer">&times;</button>
@@ -8724,6 +8729,16 @@ function showDisclaimer() {
     </div>
   `;
   document.body.appendChild(modal);
+}
+
+function toggleChatHeader() {
+  const container = document.querySelector('.chat-container');
+  if (!container) return;
+  const collapsed = container.classList.toggle('chat-header-collapsed');
+  const extras = document.getElementById('chatHeaderExtras');
+  if (extras) extras.style.maxHeight = collapsed ? '0' : '300px';
+  const btn = document.getElementById('chatCollapseBtn');
+  if (btn) btn.title = collapsed ? 'Agrandir l\'en-tête' : 'Réduire l\'en-tête';
 }
 
 function toggleAutoRead(btn) {
