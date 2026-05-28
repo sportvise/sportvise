@@ -490,15 +490,15 @@ INTERDIT en session 1 :
 Format : 8-15 lignes max, tutoiement, ton chaleureux et professionnel, pas d'emoji décoratif.`;
   }
 
-  // ─── Chantier #5 — Calendar capture via chat (v63.11.4) ───────────────────
-  // Déclenché quand : calendrier vide + au moins 1 réponse agent précédente.
-  // Ne se déclenche PAS en session 1 (agent se présente déjà) ni après 6 échanges.
-  if (calendarEmpty && agentExchangeCount >= 1 && agentExchangeCount <= 5) {
-    systemWithLang += `\n\n[ONBOARDING CALENDRIER — CAPTURE AUTOMATIQUE]
-L'athlète n'a encore aucun événement dans son calendrier sportif.
-
-Si dans SON MESSAGE il mentionne explicitement une date + un événement sportif (match, entraînement, compétition, repos, blessure), tu dois :
-1. Confirmer dans ta réponse que tu l'as noté ("Je l'ajoute à ton calendrier.").
+  // ─── Chantier #12 — Calendar capture via chat (v63.12.1) ──────────────────
+  // Actif dès le 2e échange (agentExchangeCount >= 1), calendrier vide ou non.
+  // Session 1 exclue volontairement (l'agent se présente déjà dans ce contexte).
+  // La condition calendarEmpty et la limite de 5 échanges ont été levées.
+  const _excCount = typeof agentExchangeCount === 'number' ? agentExchangeCount : 0;
+  if (_excCount >= 1) {
+    systemWithLang += `\n\n[CALENDRIER — CAPTURE AUTOMATIQUE]
+Si dans SON MESSAGE l'athlète mentionne explicitement une date + un événement sportif (match, entraînement, compétition, repos, blessure), tu dois :
+1. Confirmer brièvement dans ta réponse que tu l'as ajouté à son calendrier ("Noté, je l'ajoute à ton calendrier.").
 2. Ajouter à la TOUTE FIN de ta réponse, sur une ligne seule, ce tag :
 [CAL_EVENT:type=entrainement|date=2026-06-15|title=Entraînement|time=10:00]
 
@@ -507,7 +507,7 @@ Date : YYYY-MM-DD obligatoire — si l'athlète dit "samedi" ou "dans 3 jours", 
 Time : HH:MM — inclus uniquement si mentionné, sinon omets le champ time
 Title : nom de l'événement tel que l'athlète l'a nommé (max 60 chars)
 
-Si l'athlète ne mentionne PAS de date précise et d'événement, n'inclus PAS le tag. Ne force jamais la question calendrier si le sujet n'est pas abordé.`;
+RÈGLE STRICTE : n'inclus le tag QUE si l'athlète mentionne explicitement une date ET un événement dans son message. Ne force jamais la question calendrier si le sujet n'est pas abordé.`;
   }
 
   // Build conversation with more history for better memory
