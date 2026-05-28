@@ -563,4 +563,16 @@ var T_EN = {
   tvNoDataWindow: 'No data yet in this window.',
   tvError: 'Cannot load your transformation view right now.',
 
+  // v63.11.6 — Performance metrics (Chantier #6)
+  perfMetricsTitle: 'Performance Metrics',
+  perfMetricsSub: 'Track your key indicators over time',
+  perfMetricPoids: 'Weight', perfMetricSprint: 'Sprint 30m', perfMetricVo2: 'Est. VO2max', perfMetricDistance: 'Weekly distance',
+  perfUnitKg: 'kg', perfUnitSec: 's', perfUnitMl: 'ml/kg/min', perfUnitKm: 'km',
+  perfLogFormTitle: 'Log a measurement',
+  perfMetricLabel: 'Metric', perfValueLabel: 'Value', perfDateLabel: 'Date',
+  perfLogSave: 'Save', perfLogSaved: '✅ Measurement saved!', perfLogError: '⚠️ Error — please retry',
+  perfVsLabel: 'vs previous',
+  perfEmptyTitle: 'No measurements yet',
+  perfEmptySub: 'Log your first measurement below or tell an agent (e.g. "I ran 30m in 4.2s today")',
+
 };

@@ -563,4 +563,16 @@ var T_DE = {
   tvNoDataWindow: 'Noch keine Daten in diesem Zeitraum.',
   tvError: 'Deine Transformationsansicht kann derzeit nicht geladen werden.',
 
+  // v63.11.6 — Leistungsmetriken (Chantier #6)
+  perfMetricsTitle: 'Leistungsmetriken',
+  perfMetricsSub: 'Verfolge deine wichtigsten Indikatoren im Zeitverlauf',
+  perfMetricPoids: 'Gewicht', perfMetricSprint: 'Sprint 30m', perfMetricVo2: 'VO2max (geschätzt)', perfMetricDistance: 'Wöchentliche Distanz',
+  perfUnitKg: 'kg', perfUnitSec: 's', perfUnitMl: 'ml/kg/min', perfUnitKm: 'km',
+  perfLogFormTitle: 'Messung erfassen',
+  perfMetricLabel: 'Indikator', perfValueLabel: 'Wert', perfDateLabel: 'Datum',
+  perfLogSave: 'Speichern', perfLogSaved: '✅ Messung gespeichert!', perfLogError: '⚠️ Fehler — nochmals versuchen',
+  perfVsLabel: 'vs. vorherige',
+  perfEmptyTitle: 'Noch keine Messungen',
+  perfEmptySub: 'Erfasse deine erste Messung unten oder sag es einem Agenten (z.B. "Ich habe 30m in 4,2s gelaufen")',
+
 };
