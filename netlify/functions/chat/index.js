@@ -298,7 +298,7 @@ exports.handler = async (event) => {
   } catch (_) {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'invalid_body' }) };
   }
-  const { agentId, message, history, lang, profile, otherAgents, calendar, style, goals, dailyLog, smartContext, image, imageType, userEmail } = parsed;
+  const { agentId, message, history, lang, profile, otherAgents, calendar, style, goals, dailyLog, smartContext, image, imageType, userEmail, calendarEmpty, agentExchangeCount } = parsed;
 
   if (!agentId || !message) {
     await logUsage({ userId: user.id, agentId, success: false, errorCode: 'invalid_payload' });
@@ -465,25 +465,49 @@ ${smartContext}`;
   // ou hors contexte car le modèle tente d'être utile à tout prix).
   const isFirstMessageWithAgent = !history || history.length === 0;
   if (isFirstMessageWithAgent) {
-    systemWithLang += `\n\n[SESSION 1 — DÉBUT DE RELATION AVEC L'ATHLÈTE]
-C'est ta première interaction avec cet athlète sur ton domaine d'expertise. Même si tu disposes d'un profil partiel, traite cette réponse comme une OUVERTURE, pas comme une consultation opérationnelle.
+    systemWithLang += `\n\n[SESSION 1 — DÉBUT DE RELATION AVEC L'ATHLÈTE — v63.11.3]
+C'est ta première interaction avec cet athlète sur ton domaine d'expertise.
 
-Ta SEULE mission pour cette première réponse :
-1. Présente-toi en 1 phrase courte (nom, rôle dans SPORTVISE).
-2. Explique en 1 phrase pourquoi tu vas poser des questions avant de prescrire.
-3. Pose 3-4 questions PRÉCISES et COURTES pour confirmer le contexte (sport exact / poste / spécialité, niveau / catégorie / club, objectif court + moyen terme, ce qui amène l'athlète aujourd'hui).
-4. Annonce ce qui suit en 1 phrase ("Dès que j'ai ces infos, on construit du concret avec des chiffres et des étapes").
+Regarde le profil disponible dans ce contexte (sport, niveau, club, objectif) :
 
-INTERDIT pour cette première réponse :
-- Donner des fourchettes chiffrées (salaires, durées, distances, calories, charges, prix sponsors)
-- Nommer un club, un dirigeant, un sponsor, un médecin, un produit, une marque
-- Esquisser un plan 1/3/5 ans, une routine hebdomadaire, un protocole structuré
-- Citer un calendrier de compétition, un mercato, une période précise
-- Prescrire un exercice, un programme, un dosage, un protocole nutrition
+→ SI le profil contient sport + niveau (même partiels) :
+  1. Présente-toi en 1 phrase (nom, rôle SPORTVISE).
+  2. Réponds directement et utilement à la question posée — avec des éléments concrets adaptés au profil disponible.
+  3. Termine par UNE seule question pour affiner le contexte manquant le plus utile.
 
-Ces conseils opérationnels viennent ENSUITE, dans tes prochaines réponses, en s'appuyant sur les éléments que l'athlète aura confirmés. La crédibilité de SPORTVISE se joue sur cette discipline d'ouverture — pas sur la promptitude à projeter à froid.
+→ SI le profil est vide ou quasi-vide :
+  1. Présente-toi en 1 phrase (nom, rôle SPORTVISE).
+  2. Donne quand même une réponse de valeur à la question (une réponse vraie et utile existe même sans profil complet).
+  3. Termine par UNE seule question — la plus importante pour personnaliser tes prochaines réponses.
 
-Tu réponds dans la langue de l'athlète (instruction de langue déjà fournie plus haut). Tutoiement par défaut, ton chaleureux mais professionnel, format texte court (8-15 lignes max), pas d'emoji décoratif.`;
+RÈGLE ABSOLUE : tu donnes TOUJOURS du contenu utile dès la première réponse. Bloquer tout conseil sous prétexte que le profil est incomplet = athlète qui repart sans valeur = échec.
+
+INTERDIT en session 1 :
+- Poser 3-4 questions d'un coup (surcharge qui décourage)
+- Projeter des chiffres non vérifiés si profil vide (salaires, doses, charges spécifiques)
+- Inventer un contexte que l'athlète n'a pas confirmé
+
+Format : 8-15 lignes max, tutoiement, ton chaleureux et professionnel, pas d'emoji décoratif.`;
+  }
+
+  // ─── Chantier #5 — Calendar capture via chat (v63.11.4) ───────────────────
+  // Déclenché quand : calendrier vide + au moins 1 réponse agent précédente.
+  // Ne se déclenche PAS en session 1 (agent se présente déjà) ni après 6 échanges.
+  if (calendarEmpty && agentExchangeCount >= 1 && agentExchangeCount <= 5) {
+    systemWithLang += `\n\n[ONBOARDING CALENDRIER — CAPTURE AUTOMATIQUE]
+L'athlète n'a encore aucun événement dans son calendrier sportif.
+
+Si dans SON MESSAGE il mentionne explicitement une date + un événement sportif (match, entraînement, compétition, repos, blessure), tu dois :
+1. Confirmer dans ta réponse que tu l'as noté ("Je l'ajoute à ton calendrier.").
+2. Ajouter à la TOUTE FIN de ta réponse, sur une ligne seule, ce tag :
+[CAL_EVENT:type=entrainement|date=2026-06-15|title=Entraînement|time=10:00]
+
+Types valides : match, competition, entrainement, repos, blessure
+Date : YYYY-MM-DD obligatoire — si l'athlète dit "samedi" ou "dans 3 jours", calcule depuis la date du jour fournie dans le contexte
+Time : HH:MM — inclus uniquement si mentionné, sinon omets le champ time
+Title : nom de l'événement tel que l'athlète l'a nommé (max 60 chars)
+
+Si l'athlète ne mentionne PAS de date précise et d'événement, n'inclus PAS le tag. Ne force jamais la question calendrier si le sujet n'est pas abordé.`;
   }
 
   // Build conversation with more history for better memory
@@ -550,17 +574,63 @@ Tu réponds dans la langue de l'athlète (instruction de langue déjà fournie p
     inputTokens, outputTokens, latencyMs, success: true
   });
 
+  // ─── Chantier #5 — Parse [CAL_EVENT:...] tag, insert into Supabase ───────
+  let replyText = data.content[0].text;
+  let calendarCreated = null;
+  const calEventMatch = replyText.match(/\[CAL_EVENT:([^\]]+)\]/);
+  if (calEventMatch) {
+    replyText = replyText.replace(calEventMatch[0], '').trim();
+    const fields = {};
+    calEventMatch[1].split('|').forEach(part => {
+      const eqIdx = part.indexOf('=');
+      if (eqIdx > 0) fields[part.slice(0, eqIdx).trim()] = part.slice(eqIdx + 1).trim();
+    });
+    const validTypes = ['match', 'competition', 'entrainement', 'repos', 'blessure'];
+    const eventType = validTypes.includes(fields.type) ? fields.type : 'entrainement';
+    const eventDate = fields.date || null;
+    if (eventDate && /^\d{4}-\d{2}-\d{2}$/.test(eventDate)) {
+      const eventPayload = {
+        user_id: user.id,
+        title: (fields.title || 'Événement sportif').slice(0, 100),
+        event_type: eventType,
+        event_date: eventDate,
+        event_time: (fields.time && /^\d{2}:\d{2}$/.test(fields.time)) ? fields.time : null,
+        duration_minutes: 90,
+        notes: 'Ajouté automatiquement via conversation SPORTVISE'
+      };
+      try {
+        await httpRequest({
+          hostname: supabaseHost(),
+          path: '/rest/v1/calendar_events',
+          method: 'POST',
+          headers: {
+            apikey: SUPABASE_SERVICE_KEY,
+            Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+            'Content-Type': 'application/json',
+            Prefer: 'return=minimal'
+          },
+          body: JSON.stringify(eventPayload)
+        });
+        calendarCreated = { title: eventPayload.title, date: eventDate, type: eventType };
+        console.log('[CHAT] calendar event created via chat:', calendarCreated);
+      } catch (e) {
+        console.warn('[CHAT] calendar insert failed (non-blocking):', e.message);
+      }
+    }
+  }
+
   return {
     statusCode: 200,
     headers,
     body: JSON.stringify({
-      reply: data.content[0].text,
+      reply: replyText,
       agent: agent.name,
       model: modelKey,
       modelId: modelConfig.id,
       inputTokens,
       outputTokens,
-      latencyMs
+      latencyMs,
+      ...(calendarCreated ? { calendarCreated } : {})
     })
   };
 };

@@ -568,4 +568,16 @@ var T_FR = {
   tvNoDataWindow: 'Pas encore de données sur cette fenêtre.',
   tvError: 'Impossible de charger ta vue transformation pour l\'instant.',
 
+  // v63.11.6 — Métriques de performance (Chantier #6)
+  perfMetricsTitle: 'Métriques de performance',
+  perfMetricsSub: 'Suis tes indicateurs clés dans le temps',
+  perfMetricPoids: 'Poids', perfMetricSprint: 'Sprint 30m', perfMetricVo2: 'VO2max estimé', perfMetricDistance: 'Distance hebdo',
+  perfUnitKg: 'kg', perfUnitSec: 's', perfUnitMl: 'ml/kg/min', perfUnitKm: 'km',
+  perfLogFormTitle: 'Enregistrer une mesure',
+  perfMetricLabel: 'Indicateur', perfValueLabel: 'Valeur', perfDateLabel: 'Date',
+  perfLogSave: 'Enregistrer', perfLogSaved: '✅ Mesure enregistrée !', perfLogError: '⚠️ Erreur — réessaye',
+  perfVsLabel: 'vs précédent',
+  perfEmptyTitle: 'Aucune mesure encore',
+  perfEmptySub: 'Enregistre ta première mesure ci-dessous ou dis-le à un agent (ex : "j\'ai fait le 30m en 4.2s")',
+
 };
