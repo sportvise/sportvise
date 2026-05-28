@@ -4869,7 +4869,10 @@ Pour les discussions sur le management en football suisse : la saison 2026-2027 
         style: `${dateContext}\n\n${agentPrompt}\n\n${baseStyle}\n${referralInstruction}`,
         // v45 — backend uses userEmail to opt-in beta users on the Sonnet model
         // (env var AI_MODEL_BETA_USERS). Falls back silently to Haiku if absent.
-        userEmail: currentUser?.email || null
+        userEmail: currentUser?.email || null,
+        // Chantier #5 — Calendar capture via chat
+        calendarEmpty: calendarContext ? calendarContext.startsWith('CALENDRIER VIDE') : true,
+        agentExchangeCount: (chats[page] || []).filter(m => m.from === 'agent').length
     };
     if (attachedImageData) {
       requestBody.image = attachedImageData;
@@ -4922,6 +4925,14 @@ Pour les discussions sur le management en football suisse : la saison 2026-2027 
     if (!res.ok) throw new Error('API error');
     const data = await res.json();
     reply = data.reply;
+    // Chantier #5 — Calendrier créé via chat → toast + refresh
+    if (data.calendarCreated) {
+      const tt = T[currentLang] || T.fr;
+      const evLabel = data.calendarCreated.title || 'Événement';
+      showToast(`📅 ${evLabel} ajouté à ton calendrier`);
+      // Refresh calendar data for next message context (non-blocking)
+      getCalendarContext().then(ctx => { calendarContext = ctx; }).catch(() => {});
+    }
   } catch (err) {
     // v63.10.1 — Ne plus servir l'ancienne démo hardcodée (getResponse) comme fallback :
     // ces réponses sont génériques, en vouvoiement, et induisent l'utilisateur en erreur.
@@ -10228,6 +10239,38 @@ async function generateMonthlyReport() {
   }
 }
 
+// ── PERFORMANCE LOG (v63.11.6 — Chantier #6) ─────────
+async function logPerformance(metricName, value, logDate) {
+  const t = T[currentLang] || T.fr;
+  const numVal = parseFloat(value);
+  if (isNaN(numVal) || String(value).trim() === '') {
+    showToast(t.perfLogError || '⚠️ Valeur invalide');
+    return;
+  }
+  const unitMap = {
+    poids: t.perfUnitKg || 'kg',
+    sprint_30m: t.perfUnitSec || 's',
+    vo2max: t.perfUnitMl || 'ml/kg/min',
+    distance_hebdo: t.perfUnitKm || 'km'
+  };
+  const unit = unitMap[metricName] || '';
+  try {
+    const { error } = await sb.from('performance_logs').insert({
+      user_id: currentUser.id,
+      log_date: logDate || dateToStr(new Date()),
+      metric_name: metricName,
+      value: numVal,
+      unit
+    });
+    if (error) throw error;
+    showToast(t.perfLogSaved || '✅ Mesure enregistrée !');
+    renderProgression();
+  } catch(e) {
+    console.error('[PERF] log error', e);
+    showToast(t.perfLogError || '⚠️ Erreur — réessaye');
+  }
+}
+
 // ── PROGRESSION ──────────────────────────────────────
 async function renderProgression() {
   const t = T[currentLang];
@@ -10251,6 +10294,12 @@ async function renderProgression() {
   const { data: allGoals } = await sb.from('goals')
     .select('*')
     .eq('user_id', currentUser.id);
+
+  const { data: perfLogs } = await sb.from('performance_logs')
+    .select('id,log_date,metric_name,value,unit')
+    .eq('user_id', currentUser.id)
+    .order('log_date', { ascending: true });
+  const perfData = perfLogs || [];
 
   const moodEmojis = t.moodEmojis || ['😫','😕','😐','🙂','😁'];
   const scores = fitnessScores || [];
@@ -10427,6 +10476,98 @@ async function renderProgression() {
         </div>
       </div>
       ` : ''}
+
+      <!-- PERFORMANCE METRICS (v63.11.6) -->
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:20px">
+        <h3 style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:4px">📊 ${t.perfMetricsTitle || 'Métriques de performance'}</h3>
+        <p style="font-size:11px;color:var(--muted);margin-bottom:14px">${t.perfMetricsSub || 'Suis tes indicateurs clés dans le temps'}</p>
+        ${(() => {
+          const metrics = [
+            { key:'poids',          label: t.perfMetricPoids    || 'Poids',          unit: t.perfUnitKg  || 'kg',         color:'#f59e0b', emoji:'⚖️',  decimals:1, lowerBetter:false },
+            { key:'sprint_30m',     label: t.perfMetricSprint   || 'Sprint 30m',      unit: t.perfUnitSec || 's',          color:'#ef4444', emoji:'⚡',  decimals:2, lowerBetter:true  },
+            { key:'vo2max',         label: t.perfMetricVo2      || 'VO2max estimé',   unit: t.perfUnitMl  || 'ml/kg/min',  color:'#06b6d4', emoji:'🫁',  decimals:1, lowerBetter:false },
+            { key:'distance_hebdo', label: t.perfMetricDistance || 'Distance hebdo',  unit: t.perfUnitKm  || 'km',         color:'#10b981', emoji:'🏃',  decimals:1, lowerBetter:false },
+          ];
+          const activeMetrics = metrics.map(m => ({
+            ...m,
+            logs: perfData.filter(p => p.metric_name === m.key)
+          })).filter(m => m.logs.length > 0);
+
+          const metricsHtml = activeMetrics.map(m => {
+            const latest = m.logs[m.logs.length - 1];
+            const prev   = m.logs.length >= 2 ? m.logs[m.logs.length - 2] : null;
+            const diff   = prev ? (latest.value - prev.value) : null;
+            const diffStr = diff !== null ? (diff > 0 ? '+' + diff.toFixed(m.decimals) : diff.toFixed(m.decimals)) : null;
+            const trendGood = diff !== null ? (m.lowerBetter ? diff < 0 : diff > 0) : null;
+            const trendColor = trendGood === null ? 'var(--muted)' : trendGood ? '#10b981' : '#ef4444';
+            const vsLabel = t.perfVsLabel || 'vs précédent';
+            let sparkline = '';
+            if (m.logs.length >= 2) {
+              const pts = m.logs.slice(-12);
+              const vals = pts.map(l => parseFloat(l.value));
+              const minV = Math.min(...vals); const maxV = Math.max(...vals);
+              const range = maxV - minV || 1;
+              const svgPts = vals.map((v,i) => {
+                const x = (i / (vals.length - 1)) * 96 + 2;
+                const y = 78 - ((v - minV) / range * 60) + 2;
+                return x + ',' + y;
+              });
+              const lx = svgPts[svgPts.length-1].split(',')[0];
+              const ly = svgPts[svgPts.length-1].split(',')[1];
+              sparkline = '<svg viewBox="0 0 100 90" preserveAspectRatio="none" style="width:80px;height:36px;display:block;flex-shrink:0">'
+                + '<polyline points="' + svgPts.join(' ') + '" fill="none" stroke="' + m.color + '" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>'
+                + '<circle cx="' + lx + '" cy="' + ly + '" r="3.5" fill="' + m.color + '"/>'
+                + '</svg>';
+            }
+            return '<div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)">'
+              + '<div style="font-size:20px;width:28px;text-align:center;flex-shrink:0">' + m.emoji + '</div>'
+              + '<div style="flex:1;min-width:0">'
+              +   '<div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:2px">' + m.label + '</div>'
+              +   '<div style="font-size:17px;font-weight:800;color:' + m.color + '">' + parseFloat(latest.value).toFixed(m.decimals) + ' <span style="font-size:10px;font-weight:400;color:var(--muted)">' + m.unit + '</span></div>'
+              +   (diffStr !== null ? '<div style="font-size:10px;color:' + trendColor + ';font-weight:600;margin-top:1px">' + diffStr + ' ' + m.unit + ' ' + vsLabel + '</div>' : '')
+              + '</div>'
+              + (sparkline ? sparkline : '')
+              + '</div>';
+          }).join('');
+
+          const emptyState = perfData.length === 0 ? '<div style="text-align:center;padding:22px 0 14px;border:1px dashed var(--border);border-radius:10px;margin-bottom:12px">'
+            + '<div style="font-size:30px;margin-bottom:8px">📏</div>'
+            + '<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">' + (t.perfEmptyTitle || 'Aucune mesure encore') + '</div>'
+            + '<div style="font-size:11px;color:var(--muted);max-width:280px;margin:0 auto;line-height:1.5">' + (t.perfEmptySub || 'Enregistre ta première mesure ci-dessous') + '</div>'
+            + '</div>' : '';
+
+          return emptyState + metricsHtml;
+        })()}
+        <!-- Quick log form -->
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+          <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px">${t.perfLogFormTitle || 'Enregistrer une mesure'}</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+            <div style="flex:2;min-width:130px">
+              <div style="font-size:10px;color:var(--muted);margin-bottom:4px">${t.perfMetricLabel || 'Indicateur'}</div>
+              <select id="perfMetricSelect" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;font-family:'Inter',sans-serif">
+                <option value="poids">${t.perfMetricPoids || 'Poids'} (${t.perfUnitKg || 'kg'})</option>
+                <option value="sprint_30m">${t.perfMetricSprint || 'Sprint 30m'} (${t.perfUnitSec || 's'})</option>
+                <option value="vo2max">${t.perfMetricVo2 || 'VO2max'} (${t.perfUnitMl || 'ml/kg/min'})</option>
+                <option value="distance_hebdo">${t.perfMetricDistance || 'Distance hebdo'} (${t.perfUnitKm || 'km'})</option>
+              </select>
+            </div>
+            <div style="flex:1;min-width:70px">
+              <div style="font-size:10px;color:var(--muted);margin-bottom:4px">${t.perfValueLabel || 'Valeur'}</div>
+              <input id="perfValueInput" type="number" step="0.01" placeholder="0.00"
+                style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;font-family:'Inter',sans-serif;box-sizing:border-box"/>
+            </div>
+            <div style="flex:1;min-width:110px">
+              <div style="font-size:10px;color:var(--muted);margin-bottom:4px">${t.perfDateLabel || 'Date'}</div>
+              <input id="perfDateInput" type="date" value="${dateToStr(new Date())}"
+                style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;font-family:'Inter',sans-serif;box-sizing:border-box"/>
+            </div>
+            <button onclick="logPerformance(document.getElementById('perfMetricSelect').value,document.getElementById('perfValueInput').value,document.getElementById('perfDateInput').value)"
+              style="padding:9px 16px;border-radius:8px;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-weight:700;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;flex-shrink:0;white-space:nowrap">
+              ${t.perfLogSave || 'Enregistrer'}
+            </button>
+          </div>
+        </div>
+      </div>
 
       <!-- RAPPORT MENSUEL PDF -->
       ${userPlan === 'pro' && logs.length >= 7 ? `
