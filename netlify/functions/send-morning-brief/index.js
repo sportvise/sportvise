@@ -149,26 +149,41 @@ async function fetchOptedInUsers(limit) {
 
 // ─────────────────────────────────────────────────────────────
 // Pour chaque user, récupère le contexte du jour : prochain événement +
-// dernière entrée daily_log (pour adapter le ton si fatigue/douleurs)
+// dernière entrée daily_log + flag calendrier vide + flag objectifs vides
+// v63.11.7 — Chantier #7 : 2 queries supplémentaires (count calendrier / goals)
 // ─────────────────────────────────────────────────────────────
 async function fetchUserContext(userId) {
   const today = new Date();
   const todayStr = today.toLocaleDateString('en-CA', { timeZone: 'Europe/Zurich' });
   const yesterdayStr = new Date(today.getTime() - 86400000).toLocaleDateString('en-CA', { timeZone: 'Europe/Zurich' });
-
-  // Prochain événement aujourd'hui ou demain (max 2j ahead pour "Aujourd'hui : X")
   const dayAfterStr = new Date(today.getTime() + 86400000).toLocaleDateString('en-CA', { timeZone: 'Europe/Zurich' });
 
-  const [eventsRes, logRes] = await Promise.all([
+  const [eventsRes, logRes, anyCalRes, goalsRes] = await Promise.all([
+    // Prochain événement aujourd'hui ou demain
     httpRequest({
       hostname: supabaseHost(),
       path: `/rest/v1/calendar_events?user_id=eq.${userId}&event_date=gte.${todayStr}&event_date=lte.${dayAfterStr}&select=title,event_type,event_date,event_time,location&order=event_date.asc,event_time.asc&limit=1`,
       method: 'GET',
       headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` },
     }),
+    // Journal d'hier
     httpRequest({
       hostname: supabaseHost(),
       path: `/rest/v1/daily_log?user_id=eq.${userId}&log_date=eq.${yesterdayStr}&select=mood,energy,sleep_quality,pain_level,training_done&limit=1`,
+      method: 'GET',
+      headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` },
+    }),
+    // Au moins 1 événement dans le calendrier (onboarding check)
+    httpRequest({
+      hostname: supabaseHost(),
+      path: `/rest/v1/calendar_events?user_id=eq.${userId}&select=id&limit=1`,
+      method: 'GET',
+      headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` },
+    }),
+    // Au moins 1 objectif actif
+    httpRequest({
+      hostname: supabaseHost(),
+      path: `/rest/v1/goals?user_id=eq.${userId}&status=eq.active&select=id&limit=1`,
       method: 'GET',
       headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` },
     }),
@@ -176,13 +191,19 @@ async function fetchUserContext(userId) {
 
   return {
     todayStr,
-    nextEvent: (eventsRes.data && eventsRes.data[0]) || null,
-    yesterdayLog: (logRes.data && logRes.data[0]) || null,
+    nextEvent:     (eventsRes.data && eventsRes.data[0]) || null,
+    yesterdayLog:  (logRes.data   && logRes.data[0])    || null,
+    calendarEmpty: !anyCalRes.data || anyCalRes.data.length === 0,
+    goalsEmpty:    !goalsRes.data  || goalsRes.data.length === 0,
   };
 }
 
 // ─────────────────────────────────────────────────────────────
 // Construit le texte du brief matinal pour un user.
+// v63.11.7 — 3 états selon données disponibles :
+//   'empty'    → calendrier vide → invitation à remplir le planning
+//   'no_goals' → calendrier rempli mais 0 objectif actif → invite à créer 1 objectif
+//   'full'     → données complètes → brief enrichi (événement + météo de forme)
 // Garde court : <200 chars. i18n basique selon profile.lang.
 // ─────────────────────────────────────────────────────────────
 function buildBriefPayload(profile, ctx) {
@@ -192,6 +213,13 @@ function buildBriefPayload(profile, ctx) {
   const TEMPLATES = {
     fr: {
       hello: firstName ? `Bonjour ${firstName} !` : 'Bonjour !',
+      // État 'empty' — calendrier jamais rempli
+      calendarEmptyBody: `Prépare ta semaine en 2 minutes : ajoute ton prochain match ou entraînement. Tes agents seront prêts !`,
+      // État 'no_goals' — calendrier OK mais 0 objectif
+      noGoalsBody: (e) => e
+        ? `${e.event_date === ctx.todayStr ? 'Aujourd\'hui' : 'Demain'} : ${e.title}. Conseil : fixe 1 objectif → tes agents t'accompagnent vers lui.`
+        : `Tes agents sont là. Il manque un objectif pour orienter leurs conseils — ça prend 30 secondes.`,
+      // État 'full' — brief enrichi
       eventToday: (e) => `Aujourd'hui : ${e.title}${e.event_time ? ' à ' + e.event_time.slice(0,5) : ''}.`,
       eventTomorrow: (e) => `Demain : ${e.title}${e.event_time ? ' à ' + e.event_time.slice(0,5) : ''}.`,
       noEvent: `Pas d'événement aujourd'hui.`,
@@ -203,6 +231,10 @@ function buildBriefPayload(profile, ctx) {
     },
     de: {
       hello: firstName ? `Guten Morgen, ${firstName}!` : 'Guten Morgen!',
+      calendarEmptyBody: `Plane deine Woche in 2 Minuten: füge dein nächstes Match oder Training hinzu. Deine Agenten sind bereit!`,
+      noGoalsBody: (e) => e
+        ? `${e.event_date === ctx.todayStr ? 'Heute' : 'Morgen'}: ${e.title}. Tipp: setz ein Ziel → deine Agenten begleiten dich dorthin.`
+        : `Deine Agenten sind da. Ein Ziel fehlt noch, um ihre Tipps zu fokussieren — dauert 30 Sekunden.`,
       eventToday: (e) => `Heute: ${e.title}${e.event_time ? ' um ' + e.event_time.slice(0,5) : ''}.`,
       eventTomorrow: (e) => `Morgen: ${e.title}${e.event_time ? ' um ' + e.event_time.slice(0,5) : ''}.`,
       noEvent: `Kein Termin heute.`,
@@ -214,6 +246,10 @@ function buildBriefPayload(profile, ctx) {
     },
     en: {
       hello: firstName ? `Good morning, ${firstName}!` : 'Good morning!',
+      calendarEmptyBody: `Plan your week in 2 minutes: add your next match or training. Your agents will be ready!`,
+      noGoalsBody: (e) => e
+        ? `${e.event_date === ctx.todayStr ? 'Today' : 'Tomorrow'}: ${e.title}. Tip: set a goal → your agents will guide you toward it.`
+        : `Your agents are here. One goal is missing to focus their advice — takes 30 seconds.`,
       eventToday: (e) => `Today: ${e.title}${e.event_time ? ' at ' + e.event_time.slice(0,5) : ''}.`,
       eventTomorrow: (e) => `Tomorrow: ${e.title}${e.event_time ? ' at ' + e.event_time.slice(0,5) : ''}.`,
       noEvent: `No event today.`,
@@ -225,6 +261,10 @@ function buildBriefPayload(profile, ctx) {
     },
     it: {
       hello: firstName ? `Buongiorno, ${firstName}!` : 'Buongiorno!',
+      calendarEmptyBody: `Pianifica la tua settimana in 2 minuti: aggiungi la prossima partita o allenamento. I tuoi agenti saranno pronti!`,
+      noGoalsBody: (e) => e
+        ? `${e.event_date === ctx.todayStr ? 'Oggi' : 'Domani'}: ${e.title}. Consiglio: fissa 1 obiettivo → i tuoi agenti ti accompagneranno.`
+        : `I tuoi agenti sono qui. Manca un obiettivo per orientare i loro consigli — ci vogliono 30 secondi.`,
       eventToday: (e) => `Oggi: ${e.title}${e.event_time ? ' alle ' + e.event_time.slice(0,5) : ''}.`,
       eventTomorrow: (e) => `Domani: ${e.title}${e.event_time ? ' alle ' + e.event_time.slice(0,5) : ''}.`,
       noEvent: `Nessun evento oggi.`,
@@ -237,10 +277,32 @@ function buildBriefPayload(profile, ctx) {
   };
   const t = TEMPLATES[lang] || TEMPLATES.fr;
 
-  // Body construction
+  // ── Détermination de l'état ─────────────────────────────────
+  // État 1 : calendrier jamais alimenté → appel à l'action onboarding
+  if (ctx.calendarEmpty) {
+    return {
+      title: `SPORTVISE ☀️`,
+      body: `${t.hello} ${t.calendarEmptyBody}`.slice(0, 200),
+      url: '/dashboard.html',
+      tag: `morning-brief-${ctx.todayStr}`,
+    };
+  }
+
+  // État 2 : calendrier OK mais aucun objectif actif → orienter vers objectifs
+  if (ctx.goalsEmpty) {
+    const body = `${t.hello} ${t.noGoalsBody(ctx.nextEvent)}`.slice(0, 200);
+    return {
+      title: `SPORTVISE ☀️`,
+      body,
+      url: '/dashboard.html',
+      tag: `morning-brief-${ctx.todayStr}`,
+    };
+  }
+
+  // État 3 : données complètes → brief enrichi (comportement historique amélioré)
   let parts = [];
 
-  // 1. Event line (today preferred, tomorrow fallback)
+  // 3a. Ligne événement (aujourd'hui prioritaire, demain fallback)
   if (ctx.nextEvent) {
     if (ctx.nextEvent.event_date === ctx.todayStr) {
       parts.push(t.eventToday(ctx.nextEvent));
@@ -251,23 +313,20 @@ function buildBriefPayload(profile, ctx) {
     parts.push(t.noEvent);
   }
 
-  // 2. Tip from yesterday's daily_log (priority: pain > sleep > energy > positive)
+  // 3b. Météo de forme depuis le journal d'hier (priorité : douleurs > sommeil > énergie > positif)
   if (ctx.yesterdayLog) {
     const log = ctx.yesterdayLog;
-    if (log.pain_level >= 4) parts.push(t.highPain);
-    else if (log.sleep_quality && log.sleep_quality <= 2) parts.push(t.lowSleep);
-    else if (log.energy && log.energy <= 2) parts.push(t.lowEnergy);
+    if (log.pain_level >= 4)                                        parts.push(t.highPain);
+    else if (log.sleep_quality && log.sleep_quality <= 2)           parts.push(t.lowSleep);
+    else if (log.energy && log.energy <= 2)                         parts.push(t.lowEnergy);
     else if (log.sleep_quality >= 4 && log.energy >= 4 && log.pain_level <= 1) parts.push(t.goodForm);
   } else {
-    // Pas de log hier → rappel doux
     parts.push(t.askJournal);
   }
 
-  const body = parts.join(' ');
-
   return {
-    title: `SPORTVISE ☀️ ${t.hello.replace(/\bSPORTVISE\b/g, '').trim()}`.trim() || 'SPORTVISE',
-    body: body.slice(0, 200),
+    title: `SPORTVISE ☀️ ${t.hello}`.slice(0, 100),
+    body: parts.join(' ').slice(0, 200),
     url: '/dashboard.html',
     tag: `morning-brief-${ctx.todayStr}`,
   };
