@@ -1554,6 +1554,8 @@ async function init() {
 
   // Apply saved language
   setLang(currentLang);
+  // Chantier #14 — Repeupler le cache Strava depuis Supabase si localStorage vide
+  hydrateStravaFromSupabase().catch(e => console.warn('[STRAVA] hydration skip:', e.message));
   showPage('dashboard', document.querySelector('.nav-item.active'));
 
   // v63.3.0 — Dispatcher event 'sv-dashboard-ready' pour trigger des opt-in modals
@@ -2483,6 +2485,15 @@ async function saveProfile() {
   const profileData = { id: currentUser.id, email: currentUser.email, full_name, sport, birth_date, weight, height, level, position, club, canton };
   await sb.from('profiles').upsert(profileData);
   userProfile = profileData;
+
+  // Chantier #15 — Auto-import calendrier fédération au 1er save si sport + club supportés
+  // Non-bloquant (fire-and-forget) : ne retarde pas la fermeture du modal.
+  if (sport && club && FED_CAL_SPORTS[sport]) {
+    const _fedFlag = `sv_fed_cal_${currentUser.id}_${sport}_${encodeURIComponent(club)}`;
+    if (!localStorage.getItem(_fedFlag)) {
+      importFederationCalendar(false).catch(e => console.warn('[FED_CAL] auto-import:', e.message));
+    }
+  }
 
   // Close modal
   document.getElementById('profileModal')?.remove();
@@ -5522,12 +5533,18 @@ async function renderCalendar() {
 
       ${calendarView === 'month' ? renderMonthView(today) : renderWeekView(today)}
 
-      <!-- ADD EVENT -->
+      <!-- ADD EVENT + IMPORT ICS -->
       <button onclick="showAddEvent('${dateToStr(today)}')"
-        style="width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-size:14px;font-weight:800;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;margin-bottom:16px;box-shadow:0 2px 12px #f59e0b30"
+        style="width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-size:14px;font-weight:800;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;margin-bottom:8px;box-shadow:0 2px 12px #f59e0b30"
         onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 20px #f59e0b50'"
         onmouseout="this.style.transform='none';this.style.boxShadow='0 2px 12px #f59e0b30'">
         + ${t.addEvent}
+      </button>
+      <button onclick="showIcsImport()"
+        style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;margin-bottom:16px"
+        onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--gold)'"
+        onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">
+        ${t.icsImportBtn || '📥 Importer .ics'}
       </button>
 
       <!-- LEGEND -->
@@ -5883,6 +5900,248 @@ function showAddEvent(dateStr) {
   document.body.appendChild(modal);
   modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
 }
+
+// ─── Chantier #13 — Import iCal / .ics (v63.12.2) ───────────────────────────
+// Modale d'import : file input → parser .ics vanilla JS → preview avec checkboxes
+// → bulk insert Supabase. Aucune migration DB requise (pas de colonne source).
+// Compatible : Google Calendar, Apple Calendar, Outlook (.ics RFC 5545).
+
+let _icsEvents = []; // événements parsés — état local pour la prévisualisation
+
+function detectIcsEventType(summary) {
+  const s = (summary || '').toLowerCase();
+  if (/\bmatch\b|game\b|\bjeu\b|partie/.test(s)) return 'match';
+  if (/compet|tournoi|championship|champio|\bcup\b|coupe|finale/.test(s)) return 'competition';
+  if (/\brepos\b|\brest\b|\boff\b|récup|recovery|\bpause\b/.test(s)) return 'repos';
+  if (/blessure|injury|injure/.test(s)) return 'blessure';
+  return 'entrainement';
+}
+
+function parseIcsDate(val) {
+  // val peut être : YYYYMMDD, YYYYMMDDTHHMMSS, YYYYMMDDTHHMMSSZ
+  const clean = (val || '').replace(/Z$/, '').trim();
+  if (clean.length < 8) return null;
+  const y = clean.slice(0, 4);
+  const m = clean.slice(4, 6);
+  const d = clean.slice(6, 8);
+  const dateStr = `${y}-${m}-${d}`;
+  // Validation basique
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return null;
+  let timeStr = null;
+  if (clean.length >= 15) {
+    const h = clean.slice(9, 11);
+    const mn = clean.slice(11, 13);
+    if (/^\d{2}$/.test(h) && /^\d{2}$/.test(mn)) timeStr = `${h}:${mn}`;
+  }
+  return { dateStr, timeStr };
+}
+
+function icsUnescape(val) {
+  return (val || '').replace(/\\,/g, ',').replace(/\\;/g, ';').replace(/\\n/gi, ' ').replace(/\\\\/g, '\\').trim();
+}
+
+function showIcsImport() {
+  document.getElementById('icsImportModal')?.remove();
+  const t = T[currentLang] || T.fr;
+
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.id = 'icsImportModal';
+  modal.innerHTML = `
+    <div class="modal-box" style="max-width:460px">
+      <div style="font-size:28px;margin-bottom:8px">📥</div>
+      <div class="modal-title">${t.icsImportTitle || 'Importer depuis Google / Apple / Outlook'}</div>
+      <div class="modal-sub">${t.icsImportSub || 'Exporte ton calendrier en .ics puis sélectionne le fichier.'}</div>
+
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.7">
+        ${t.icsImportHowTo || '<b>Google Calendar :</b> Paramètres → Exporter'}
+      </div>
+
+      <!-- File input stylisé -->
+      <label for="icsFileInput" style="display:block;width:100%;padding:13px;border-radius:10px;border:2px dashed var(--border);background:var(--bg3);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;text-align:center;font-family:\'Inter\',sans-serif;transition:all 0.2s;box-sizing:border-box;margin-bottom:16px"
+        onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'"
+        onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'"
+        id="icsFileLabel">
+        ${t.icsImportSelectFile || '📂 Sélectionner un fichier .ics'}
+      </label>
+      <input type="file" id="icsFileInput" accept=".ics,.ical" style="display:none" onchange="handleIcsFile(this)">
+
+      <!-- Zone de prévisualisation -->
+      <div id="icsPreviewArea"></div>
+
+      <!-- Boutons -->
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button onclick="document.getElementById('icsImportModal')?.remove()"
+          style="flex:1;padding:13px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:14px;font-weight:600;cursor:pointer;font-family:\'Inter\',sans-serif">
+          ${t.cancel || 'Annuler'}
+        </button>
+        <button id="icsImportConfirmBtn" onclick="importIcsEvents()" style="display:none;flex:2;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-size:13px;font-weight:700;cursor:pointer;font-family:\'Inter\',sans-serif">
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+}
+
+function handleIcsFile(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  // Mettre à jour le label avec le nom du fichier
+  const label = document.getElementById('icsFileLabel');
+  if (label) label.textContent = '📄 ' + file.name;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    _icsEvents = parseIcsContent(e.target.result);
+    renderIcsPreview(_icsEvents);
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function parseIcsContent(text) {
+  const events = [];
+  // Unfold continuation lines (RFC 5545 §3.1)
+  const unfolded = text.replace(/\r\n[ \t]/g, '').replace(/\n[ \t]/g, '');
+  // Extraire les blocs VEVENT
+  const re = /BEGIN:VEVENT([\s\S]*?)END:VEVENT/g;
+  let match;
+  while ((match = re.exec(unfolded)) !== null) {
+    const block = match[1];
+    const props = {};
+    block.split(/\r?\n/).forEach(line => {
+      if (!line.trim()) return;
+      const colon = line.indexOf(':');
+      if (colon < 1) return;
+      const rawKey = line.slice(0, colon).toUpperCase();
+      const val = line.slice(colon + 1);
+      // On garde la clé de base (avant ";") pour les lookups simples
+      const baseKey = rawKey.split(';')[0];
+      if (!props[baseKey]) props[baseKey] = val; // première occurrence gagne
+      props[rawKey] = val; // conserver aussi la clé complète (TZID etc.)
+    });
+
+    // DTSTART — trouver parmi les clés qui commencent par DTSTART
+    const dtKey = Object.keys(props).find(k => k === 'DTSTART' || k.startsWith('DTSTART;'));
+    if (!dtKey) continue;
+    const parsed = parseIcsDate(props[dtKey]);
+    if (!parsed) continue;
+
+    const summary = icsUnescape(props['SUMMARY'] || '');
+    const location = icsUnescape(props['LOCATION'] || '') || null;
+
+    events.push({
+      title: (summary || 'Événement importé').slice(0, 100),
+      event_type: detectIcsEventType(summary),
+      event_date: parsed.dateStr,
+      event_time: parsed.timeStr,
+      location: location ? location.slice(0, 100) : null,
+      intensity: 'moyenne',
+      duration_minutes: 90,
+      notes: 'Importé depuis .ics'
+    });
+  }
+  return events;
+}
+
+function renderIcsPreview(events) {
+  const t = T[currentLang] || T.fr;
+  const area = document.getElementById('icsPreviewArea');
+  const btn = document.getElementById('icsImportConfirmBtn');
+  if (!area) return;
+
+  if (!events || events.length === 0) {
+    area.innerHTML = `<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">${t.icsImportNoData || 'Aucun événement trouvé dans ce fichier .ics'}</div>`;
+    if (btn) btn.style.display = 'none';
+    return;
+  }
+
+  const foundText = (t.icsImportFoundEvents || '{n} événements trouvés :').replace('{n}', events.length);
+  area.innerHTML = `
+    <div style="margin-bottom:10px">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px">${foundText}</div>
+      <div style="display:flex;gap:14px">
+        <button onclick="icsToggleAll(true)" style="font-size:11px;color:var(--gold);background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;padding:0">${t.icsSelectAll || 'Tout cocher'}</button>
+        <button onclick="icsToggleAll(false)" style="font-size:11px;color:var(--muted);background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif;padding:0">${t.icsDeselectAll || 'Tout décocher'}</button>
+      </div>
+    </div>
+    <div style="max-height:260px;overflow-y:auto;border:1px solid var(--border);border-radius:10px;margin-bottom:16px">
+      ${events.map((ev, i) => `
+        <label style="display:flex;align-items:center;gap:12px;padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.15s"
+          onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='transparent'">
+          <input type="checkbox" class="ics-ev-cb" id="icsEv${i}" checked style="width:15px;height:15px;accent-color:#f59e0b;flex-shrink:0" onchange="icsUpdateCount()">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(ev.title)}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">${ev.event_date}${ev.event_time ? ' · ' + ev.event_time : ''} · ${EVENT_TYPES[ev.event_type]?.emoji || ''} ${eventTypeLabel(ev.event_type)}</div>
+          </div>
+        </label>
+      `).join('')}
+    </div>
+  `;
+
+  icsUpdateCount();
+}
+
+function icsToggleAll(checked) {
+  document.querySelectorAll('.ics-ev-cb').forEach(cb => { cb.checked = checked; });
+  icsUpdateCount();
+}
+
+function icsUpdateCount() {
+  const t = T[currentLang] || T.fr;
+  const n = document.querySelectorAll('.ics-ev-cb:checked').length;
+  const btn = document.getElementById('icsImportConfirmBtn');
+  if (!btn) return;
+  if (n > 0) {
+    btn.style.display = 'block';
+    btn.textContent = (t.icsImportConfirm || 'Importer {n} événement(s)').replace('{n}', n);
+  } else {
+    btn.style.display = 'none';
+  }
+}
+
+async function importIcsEvents() {
+  const t = T[currentLang] || T.fr;
+  if (!currentUser?.id) return;
+
+  const checkboxes = Array.from(document.querySelectorAll('.ics-ev-cb'));
+  const selected = _icsEvents.filter((_, i) => checkboxes[i]?.checked);
+
+  if (selected.length === 0) {
+    showToast(t.icsImportNone || 'Aucun événement sélectionné');
+    return;
+  }
+
+  const btn = document.getElementById('icsImportConfirmBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
+
+  const rows = selected.map(ev => ({
+    user_id: currentUser.id,
+    title: ev.title,
+    event_type: ev.event_type,
+    event_date: ev.event_date,
+    event_time: ev.event_time || null,
+    duration_minutes: ev.duration_minutes,
+    location: ev.location || null,
+    intensity: ev.intensity,
+    notes: ev.notes
+  }));
+
+  const { error } = await sb.from('calendar_events').insert(rows);
+
+  if (error) {
+    if (btn) { btn.disabled = false; icsUpdateCount(); }
+    showToast('❌ ' + error.message);
+    return;
+  }
+
+  document.getElementById('icsImportModal')?.remove();
+  const msg = (t.icsImportSuccess || '{n} événement(s) importé(s)').replace('{n}', rows.length);
+  showToast('✅ ' + msg, 4000);
+  renderCalendar();
+}
+// ─── fin Chantier #13 ────────────────────────────────────────────────────────
 
 let selectedEventType = 'match';
 let selectedIntensity = 'moyenne';
@@ -11488,6 +11747,35 @@ async function syncStrava() {
         count: data.count,
         weekStats: data.weekStats
       }));
+      // ─── Chantier #14 — Persist Strava activities to Supabase (cross-device, cache-proof)
+      // Non-bloquant : localStorage reste la source primaire pour getStravaContext().
+      // Upsert sur (user_id, strava_id) — idempotent, safe en cas de double sync.
+      // Prérequis DB : table strava_activities (voir SQL dans ROADMAP_TODO.md).
+      if (data.activities && data.activities.length > 0) {
+        const stravaRows = data.activities.map(a => ({
+          user_id: currentUser.id,
+          strava_id: a.strava_id,
+          activity_name: a.name,
+          activity_type: a.type,
+          sport_type: a.sport_type || null,
+          activity_date: a.date,
+          start_time: a.start_time || null,
+          duration_min: a.duration_min || null,
+          distance_km: a.distance_km ? parseFloat(a.distance_km) : null,
+          elevation_m: a.elevation_m || null,
+          avg_heartrate: a.avg_heartrate || null,
+          max_heartrate: a.max_heartrate || null,
+          calories: a.calories || null,
+          suffer_score: a.suffer_score || null,
+          intensity: a.intensity || null,
+          sportvise_type: a.sportvise_type || null,
+          summary: a.summary || null,
+          synced_at: data.synced_at
+        }));
+        sb.from('strava_activities').upsert(stravaRows, { onConflict: 'user_id,strava_id' })
+          .then(({ error }) => { if (error) console.warn('[STRAVA] Supabase upsert warning:', error.message); })
+          .catch(e => console.warn('[STRAVA] Supabase upsert non-bloquant:', e.message));
+      }
       showToast('✅ ' + data.count + ' ' + (t.connStravaActivities || 'activités').toLowerCase() + ' ✓');
       // Re-render entire connexions page to refresh "last sync" line in status
       showPage('connexions');
@@ -11504,6 +11792,52 @@ async function syncStrava() {
     console.error('Strava sync error:', e);
     showToast('⚠️ Erreur réseau Strava');
   }
+}
+
+// ─── Chantier #14 — Hydration Strava depuis Supabase au démarrage ─────────────
+// Si localStorage vide (navigateur neuf, cache vidé, autre device) mais l'user
+// a une connexion Strava active → charger les 30 dernières activités depuis Supabase
+// et repeupler le cache localStorage. Évite le "0 activités" erroné post-clear cache.
+// Non-bloquant : appelé en fire-and-forget depuis init().
+async function hydrateStravaFromSupabase() {
+  const conn = getStravaConnection();
+  if (!conn || !conn.access_token) return; // Strava pas connecté — rien à faire
+  const cacheKey = `sv_strava_act_${currentUser.id}`;
+  const existingCache = localStorage.getItem(cacheKey);
+  if (existingCache) {
+    try { if (JSON.parse(existingCache).length > 0) return; } catch(_) {}
+  }
+  // Cache vide — charger depuis Supabase
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
+  const { data, error } = await sb.from('strava_activities')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .gte('activity_date', thirtyDaysAgo)
+    .order('activity_date', { ascending: false })
+    .limit(30);
+  if (error) { console.warn('[STRAVA] Hydration Supabase error:', error.message); return; }
+  if (!data || data.length === 0) return;
+  // Reconstituer le format attendu par getStravaContext() / displayStravaActivities()
+  const activities = data.map(r => ({
+    strava_id: r.strava_id,
+    name: r.activity_name,
+    type: r.activity_type,
+    sport_type: r.sport_type,
+    date: r.activity_date,
+    start_time: r.start_time,
+    duration_min: r.duration_min,
+    distance_km: r.distance_km != null ? String(r.distance_km) : null,
+    elevation_m: r.elevation_m,
+    avg_heartrate: r.avg_heartrate,
+    max_heartrate: r.max_heartrate,
+    calories: r.calories,
+    suffer_score: r.suffer_score,
+    intensity: r.intensity,
+    sportvise_type: r.sportvise_type,
+    summary: r.summary
+  }));
+  localStorage.setItem(cacheKey, JSON.stringify(activities));
+  console.log(`[STRAVA] Hydrated ${activities.length} activités depuis Supabase`);
 }
 
 function displayStravaActivities(activities, weekStats) {
@@ -11848,11 +12182,174 @@ function renderConnexions() {
     // débloque la majorité des cas Garmin.
 
     '<div id="stravaActivities" style="margin-top:24px"></div>' +
+
+    // ─── Chantier #15 — Carte "Calendrier officiel fédérations" ───────────────
+    '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:24px;margin-top:20px">' +
+      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">' +
+        '<div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;font-size:22px">🏟️</div>' +
+        '<div><h3 style="margin:0;color:var(--text)">' + (t.fedCalTitle || 'Calendrier officiel') + '</h3>' +
+        '<div style="font-size:12px;color:var(--muted)">' + (t.fedCalSupportedSports || 'Football · Hockey · Basketball') + '</div></div>' +
+      '</div>' +
+      '<div id="fedCalSection"></div>' +
+    '</div>' +
+
   '</div>';
 
   if (activities.length) {
     displayStravaActivities(activities, syncInfo.weekStats);
   }
+
+  // Rendre le statut fédération après le build du DOM
+  const fedSection = document.getElementById('fedCalSection');
+  if (fedSection) {
+    const _sport = sportKey(userProfile?.sport);
+    const _club = (userProfile?.club || '').trim();
+    const _flagKey = `sv_fed_cal_${currentUser.id}_${_sport}_${encodeURIComponent(_club)}`;
+    const _lastSync = localStorage.getItem(_flagKey);
+    _renderFedCalStatus(fedSection, t, _sport, _club, null, userProfile?.club || _club);
+  }
+}
+
+// ─── Chantier #15 — Import calendrier officiel fédérations (v63.12.4) ────────
+// Fetch des prochains matchs du club de l'athlète via sports-data.js
+// (football SFL 207, hockey NL 38, basketball SBL 100).
+// Les fixtures sont insérées dans calendar_events avec source='federation'.
+// Avant chaque import : delete WHERE source='federation' AND user_id = X pour éviter les doublons.
+// Prérequis DB : ALTER TABLE calendar_events ADD COLUMN IF NOT EXISTS source VARCHAR(30);
+
+const FED_CAL_SPORTS = {
+  football:   { sport: 'football',   league: 207, label: 'SFL Super League' },
+  hockey:     { sport: 'hockey',     league: 38,  label: 'National League' },
+  basketball: { sport: 'basketball', league: 100, label: 'SB League' }
+};
+
+async function importFederationCalendar(force = false) {
+  const t = T[currentLang] || T.fr;
+  if (!currentUser?.id) return;
+
+  const sport = sportKey(userProfile?.sport);
+  const club = (userProfile?.club || '').trim();
+
+  if (!FED_CAL_SPORTS[sport] || !club) {
+    showToast(t.fedCalNotSupported || '⚠️ Sport ou club non renseigné');
+    const btn = document.getElementById('fedCalImportBtn');
+    if (btn) { btn.disabled = false; btn.textContent = t.fedCalImportBtn || '📅 Importer'; }
+    return;
+  }
+
+  // Rate-limit : 1 sync automatique max par 24h sauf si force = true
+  const flagKey = `sv_fed_cal_${currentUser.id}_${sport}_${encodeURIComponent(club)}`;
+  if (!force) {
+    const last = localStorage.getItem(flagKey);
+    if (last && Date.now() - parseInt(last) < 86400000) {
+      showToast(t.fedCalAlreadySynced || '✓ Matchs déjà synchronisés aujourd\'hui');
+      return;
+    }
+  }
+
+  const btn = document.getElementById('fedCalImportBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
+
+  try {
+    const cfg = FED_CAL_SPORTS[sport];
+    const res = await fetch(
+      `/.netlify/functions/sports-data?sport=${cfg.sport}&action=team-fixtures&league=${cfg.league}&club=${encodeURIComponent(club)}`
+    );
+    if (!res.ok) throw new Error('API error ' + res.status);
+    const json = await res.json();
+    const tf = json?.data;
+
+    if (!tf?.teamFound || !Array.isArray(tf.fixtures) || tf.fixtures.length === 0) {
+      const noClub = !tf?.teamFound;
+      showToast(noClub
+        ? (t.fedCalClubNotFound || `⚠️ Club "${club}" non trouvé — vérifie ton profil`)
+        : (t.fedCalNoFixtures || '⚠️ Aucun match à venir'));
+      if (btn) { btn.disabled = false; btn.textContent = t.fedCalImportBtn || '📅 Importer'; }
+      return;
+    }
+
+    // Supprimer les anciens matchs importés depuis la fédération (évite doublons au re-sync)
+    await sb.from('calendar_events')
+      .delete()
+      .eq('user_id', currentUser.id)
+      .eq('source', 'federation');
+
+    const teamName = tf.teamName || club;
+    const rows = tf.fixtures.map(f => {
+      const d = new Date(f.date);
+      const dateStr = d.toISOString().split('T')[0];
+      const hh = d.getHours().toString().padStart(2, '0');
+      const mm = d.getMinutes().toString().padStart(2, '0');
+      const timeStr = (hh !== '00' || mm !== '00') ? `${hh}:${mm}` : null;
+      const opponent = f.isHome ? f.away : f.home;
+      const isHome = !!f.isHome;
+      const venueStr = isHome ? 'Domicile' : 'Extérieur';
+
+      return {
+        user_id: currentUser.id,
+        title: `${teamName} vs ${opponent}`,
+        event_type: 'match',
+        event_date: dateStr,
+        event_time: timeStr,
+        duration_min: sport === 'basketball' ? 60 : 90,
+        location: f.venue || null,
+        intensity: 'intense',
+        notes: `${venueStr}${f.round ? ' · ' + f.round : ''} · ${cfg.label}`,
+        source: 'federation'
+      };
+    });
+
+    const { error } = await sb.from('calendar_events').insert(rows);
+    if (error) throw new Error(error.message);
+
+    localStorage.setItem(flagKey, String(Date.now()));
+    const msg = (t.fedCalSuccess || '{n} match(s) de {club} importés')
+      .replace('{n}', rows.length)
+      .replace('{club}', teamName);
+    showToast('✅ ' + msg, 5000);
+    if (btn) { btn.disabled = false; btn.textContent = t.fedCalSync || '🔄 Resynchroniser'; }
+    renderCalendar();
+
+    // Rafraîchir la section fédération dans la page connexions si elle est visible
+    const fedSection = document.getElementById('fedCalSection');
+    if (fedSection) _renderFedCalStatus(fedSection, t, sport, club, rows.length, teamName);
+
+  } catch(e) {
+    console.error('[FED_CAL]', e);
+    showToast('❌ ' + e.message);
+    if (btn) { btn.disabled = false; btn.textContent = t.fedCalImportBtn || '📅 Importer'; }
+  }
+}
+
+// Rendu inline du bloc fédération dans la page Connexions
+function _renderFedCalStatus(container, t, sport, club, lastCount, teamName) {
+  const flagKey = `sv_fed_cal_${currentUser.id}_${sport}_${encodeURIComponent(club)}`;
+  const lastSync = localStorage.getItem(flagKey);
+  const isSupported = !!(FED_CAL_SPORTS[sport] && club);
+  const cfg = FED_CAL_SPORTS[sport];
+
+  let statusHtml = '';
+  if (!isSupported) {
+    statusHtml = `<p style="color:var(--muted);margin:12px 0;font-size:13px">${t.fedCalNotSupported || '⚠️ Disponible pour football, hockey et basketball.'}<br><span style="font-size:11px;opacity:0.7">${t.fedCalSupportedSports || 'Football · Hockey · Basketball'}</span></p>`;
+  } else if (lastSync) {
+    const d = new Date(parseInt(lastSync));
+    const syncStr = d.toLocaleString(currentLang || 'fr', { dateStyle: 'short', timeStyle: 'short' });
+    statusHtml = `<div style="color:#22c55e;font-size:13px;margin:12px 0;display:flex;align-items:center;gap:8px">
+      <span style="font-size:18px">●</span>
+      <span>${t.connStravaConnected || 'Synchronisé'} — ${teamName || club}${lastCount ? ' · ' + lastCount + ' matchs' : ''} · ${syncStr}</span>
+    </div>`;
+  } else {
+    statusHtml = `<p style="color:var(--muted);margin:12px 0;font-size:13px">${t.fedCalSub || 'Importe les prochains matchs de ton club.'}</p>`;
+  }
+
+  const btnLabel = lastSync ? (t.fedCalSync || '🔄 Resynchroniser') : (t.fedCalImportBtn || '📅 Importer les matchs de mon club');
+  container.innerHTML = statusHtml +
+    (isSupported
+      ? `<button id="fedCalImportBtn" onclick="importFederationCalendar(true)"
+          style="background:var(--bg3);color:var(--text);border:1px solid var(--border);padding:10px 20px;border-radius:10px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px">
+          ${btnLabel}
+        </button>`
+      : '');
 }
 
 // ── ABONNEMENT ──────────────────────────────────────
