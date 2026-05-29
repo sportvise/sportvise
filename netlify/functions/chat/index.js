@@ -574,49 +574,63 @@ RÈGLE STRICTE : n'inclus le tag QUE si l'athlète mentionne explicitement une d
     inputTokens, outputTokens, latencyMs, success: true
   });
 
-  // ─── Chantier #5 — Parse [CAL_EVENT:...] tag, insert into Supabase ───────
+  // ─── Chantier #5 + v63.12.5 fix — Parse TOUS les [CAL_EVENT:...] d'une réponse ─
+  // Correction critique : .match() sans flag 'g' ne capturait que le 1er tag → les
+  // programmes multi-séances (David) n'inséraient qu'1 événement sur N.
+  // Fix : .matchAll() + loop → tous les tags sont parsés, tous les tags sont supprimés
+  // du texte affiché. Insert séquentiel pour éviter les doublons sur rate-limit Supabase.
   let replyText = data.content[0].text;
-  let calendarCreated = null;
-  const calEventMatch = replyText.match(/\[CAL_EVENT:([^\]]+)\]/);
-  if (calEventMatch) {
-    replyText = replyText.replace(calEventMatch[0], '').trim();
+  const calEventMatches = [...replyText.matchAll(/\[CAL_EVENT:([^\]]+)\]/g)];
+  // Supprimer TOUS les tags de la réponse visible (même si l'insert échoue)
+  replyText = replyText.replace(/\[CAL_EVENT:[^\]]+\]/g, '').replace(/\n{3,}/g, '\n\n').trim();
+
+  const calendarCreatedList = [];
+  const validTypes = ['match', 'competition', 'entrainement', 'repos', 'blessure'];
+
+  for (const match of calEventMatches) {
     const fields = {};
-    calEventMatch[1].split('|').forEach(part => {
+    match[1].split('|').forEach(part => {
       const eqIdx = part.indexOf('=');
       if (eqIdx > 0) fields[part.slice(0, eqIdx).trim()] = part.slice(eqIdx + 1).trim();
     });
-    const validTypes = ['match', 'competition', 'entrainement', 'repos', 'blessure'];
     const eventType = validTypes.includes(fields.type) ? fields.type : 'entrainement';
     const eventDate = fields.date || null;
-    if (eventDate && /^\d{4}-\d{2}-\d{2}$/.test(eventDate)) {
-      const eventPayload = {
-        user_id: user.id,
-        title: (fields.title || 'Événement sportif').slice(0, 100),
-        event_type: eventType,
-        event_date: eventDate,
-        event_time: (fields.time && /^\d{2}:\d{2}$/.test(fields.time)) ? fields.time : null,
-        duration_minutes: 90,
-        notes: 'Ajouté automatiquement via conversation SPORTVISE'
-      };
-      try {
-        await httpRequest({
-          hostname: supabaseHost(),
-          path: '/rest/v1/calendar_events',
-          method: 'POST',
-          headers: {
-            apikey: SUPABASE_SERVICE_KEY,
-            Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
-            'Content-Type': 'application/json',
-            Prefer: 'return=minimal'
-          },
-          body: JSON.stringify(eventPayload)
-        });
-        calendarCreated = { title: eventPayload.title, date: eventDate, type: eventType };
-        console.log('[CHAT] calendar event created via chat:', calendarCreated);
-      } catch (e) {
-        console.warn('[CHAT] calendar insert failed (non-blocking):', e.message);
-      }
+    if (!eventDate || !/^\d{4}-\d{2}-\d{2}$/.test(eventDate)) continue;
+
+    const eventPayload = {
+      user_id: user.id,
+      title: (fields.title || 'Événement sportif').slice(0, 100),
+      event_type: eventType,
+      event_date: eventDate,
+      event_time: (fields.time && /^\d{2}:\d{2}$/.test(fields.time)) ? fields.time : null,
+      duration_minutes: fields.duration ? Math.min(parseInt(fields.duration) || 90, 480) : 90,
+      notes: 'Ajouté automatiquement via conversation SPORTVISE'
+    };
+    try {
+      await httpRequest({
+        hostname: supabaseHost(),
+        path: '/rest/v1/calendar_events',
+        method: 'POST',
+        headers: {
+          apikey: SUPABASE_SERVICE_KEY,
+          Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=minimal'
+        },
+        body: JSON.stringify(eventPayload)
+      });
+      calendarCreatedList.push({ title: eventPayload.title, date: eventDate, type: eventType });
+    } catch (e) {
+      console.warn('[CHAT] calendar insert failed (non-blocking):', eventDate, e.message);
     }
+  }
+
+  // calendarCreated : null | objet unique | tableau (frontend gère les 3 cas)
+  const calendarCreated = calendarCreatedList.length === 0 ? null
+    : calendarCreatedList.length === 1 ? calendarCreatedList[0]
+    : calendarCreatedList;
+  if (calendarCreatedList.length > 0) {
+    console.log(`[CHAT] ${calendarCreatedList.length} calendar event(s) created via chat`);
   }
 
   return {
