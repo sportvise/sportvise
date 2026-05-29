@@ -243,6 +243,20 @@
       display: flex; align-items: center; justify-content: center;
       margin-left: auto; flex-shrink: 0;
     }
+    /* v63.16 — Disclosure progressive sidebar */
+    .nav-toggle {
+      display: flex; align-items: center; gap: 6px;
+      width: 100%; padding: 4px 16px 5px;
+      font-size: 11px; font-weight: 500; color: var(--muted);
+      background: transparent; border: none; border-left: 3px solid transparent;
+      cursor: pointer; font-family: 'Inter', sans-serif; text-align: left;
+      transition: color 0.15s; letter-spacing: 0.01em;
+    }
+    .nav-toggle:hover { color: var(--muted2); }
+    .nav-toggle-arrow { font-size: 8px; transition: transform 0.22s ease; display: inline-block; opacity: 0.55; }
+    .nav-toggle.open .nav-toggle-arrow { transform: rotate(90deg); }
+    .nav-collapsible { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+    .nav-divider { height: 1px; background: var(--border); margin: 6px 12px; opacity: 0.5; }
     .topbar-bell {
       position: relative;
       width: 28px; height: 28px;
@@ -605,49 +619,72 @@
       <div class="user-plan">⚡ Plan Pro</div>
     </div>
   </div>
+  <!-- v63.16 — Sidebar redesign : 2 classes agents (Performance/Business) + Mon Espace restructuré -->
   <nav class="nav">
+    <!-- Navigation primaire -->
     <button class="nav-item active" style="border-left-color:#f59e0b" onclick="showPage('dashboard',this)">
       🏠 <span>Dashboard</span>
     </button>
-    <!-- v63.1.0 — Réunion d'équipe (multi-agent meeting) en 2e position. Trigger global,
-         pas de showPage() puisque c'est une modal-overlay. Style distinctif (border gold)
-         pour signaler que c'est une feature spéciale, pas un agent simple. -->
     <button class="nav-item" id="navItemTeamMeeting" style="border-left:3px solid #f59e0b;background:linear-gradient(90deg,rgba(245,158,11,0.08),transparent)" onclick="openTeamMeeting()">
       🤝 <span id="navItemTeamMeetingLabel">Réunion d'équipe</span>
     </button>
-    <!-- v63.15 — Section "Pour toi" : 3-4 agents recommandés selon le sport (injection JS) -->
-    <div id="navRecommended" style="display:none"></div>
-    <div class="nav-section">💼 AGENTS IA BUSINESS</div>
-    <button class="nav-item" onclick="showPage('equipe',this)">💼 <span data-nav="equipe">Lucas — Manager</span></button>
-    <button class="nav-item" onclick="showPage('marketing',this)">🎯 <span data-nav="marketing">Alex — Marketing</span></button>
-    <button class="nav-item" onclick="showPage('sponsors',this)">🤝 <span data-nav="sponsors">Marc — Sponsors</span></button>
-    <button class="nav-item" onclick="showPage('contrats',this)">⚖️ <span data-nav="contrats">Léa — Contrats</span></button>
-    <button class="nav-item" onclick="showPage('finance',this)">💶 <span data-nav="finance">Sophie — Finance</span></button>
-    <button class="nav-item" onclick="showPage('comptabilite',this)">📊 <span data-nav="comptabilite">Pierre — Compta</span></button>
-    <div class="nav-section">💪 AGENTS IA PERFORMANCE</div>
-    <button class="nav-item" onclick="showPage('physique',this)">🏋️ <span data-nav="physique">David — Physique</span></button>
-    <button class="nav-item" onclick="showPage('mental',this)">🧠 <span data-nav="mental">Emma — Mental</span></button>
-    <button class="nav-item" onclick="showPage('nutrition',this)">🥗 <span data-nav="nutrition">Clara — Nutrition</span></button>
-    <button class="nav-item" onclick="showPage('sommeil',this)">😴 <span data-nav="sommeil">Nora — Sommeil</span></button>
-    <button class="nav-item" onclick="showPage('recuperation',this)">♻️ <span data-nav="recuperation">Julie — Récupération</span></button>
-    <!-- v62.14 — Marketplace cachée temporairement pour soft launch. Les 6 programmes pré-écrits
-         actuels (statiques, mêmes pour tous) contredisent le pitch SPORTVISE 'agents qui se
-         souviennent et personnalisent'. Refonte prévue post-soft-launch : PDF programme
-         professionnel sur mesure généré dynamiquement par chaque agent (cf. task #34).
-         La page reste en DOM/code accessible via /marketplace si un user connaît l'URL,
-         mais retirée de la nav. -->
+
+    <!-- ─── PERFORMANCE ─── -->
+    <div class="nav-divider"></div>
+    <div class="nav-section" id="navSectionPerformance">🏃 PERFORMANCE</div>
+    <button class="nav-item" onclick="showPage('physique',this)">🏋️ <span data-nav="physique">Physique</span></button>
+    <button class="nav-item" onclick="showPage('mental',this)">🧠 <span data-nav="mental">Mental</span></button>
+    <button class="nav-item" onclick="showPage('nutrition',this)">🥗 <span data-nav="nutrition">Nutrition</span></button>
+    <button id="navPerfToggle" class="nav-toggle" onclick="_svToggleNavSection(this,'navPerfMore')">
+      <span class="nav-toggle-arrow">▸</span>
+      <span id="navPerfMoreLabel">Sommeil · Récupération</span>
+    </button>
+    <div id="navPerfMore" class="nav-collapsible">
+      <button class="nav-item" onclick="showPage('sommeil',this)">😴 <span data-nav="sommeil">Sommeil</span></button>
+      <button class="nav-item" onclick="showPage('recuperation',this)">💪 <span data-nav="recuperation">Récupération</span></button>
+    </div>
+
+    <!-- ─── BUSINESS ─── -->
+    <div class="nav-divider"></div>
+    <div class="nav-section" id="navSectionBusiness">💼 BUSINESS</div>
+    <button class="nav-item" onclick="showPage('equipe',this)">🤝 <span data-nav="equipe">Management</span></button>
+    <button class="nav-item" onclick="showPage('finance',this)">💶 <span data-nav="finance">Finance</span></button>
+    <button class="nav-item" onclick="showPage('marketing',this)">📱 <span data-nav="marketing">Marketing</span></button>
+    <button id="navBizToggle" class="nav-toggle" onclick="_svToggleNavSection(this,'navBizMore')">
+      <span class="nav-toggle-arrow">▸</span>
+      <span id="navBizMoreLabel">Sponsors · Contrats · Compta</span>
+    </button>
+    <div id="navBizMore" class="nav-collapsible">
+      <button class="nav-item" onclick="showPage('sponsors',this)">🤝 <span data-nav="sponsors">Sponsors</span></button>
+      <button class="nav-item" onclick="showPage('contrats',this)">📋 <span data-nav="contrats">Contrats</span></button>
+      <button class="nav-item" onclick="showPage('comptabilite',this)">📊 <span data-nav="comptabilite">Comptabilité</span></button>
+    </div>
+
+    <!-- Marketplace cachée (accessible via URL directe) -->
     <div class="nav-section" style="display:none">🏪 MARKETPLACE</div>
     <button class="nav-item" style="display:none" onclick="showPage('marketplace',this)">🏪 <span data-nav="marketplace">Programmes</span></button>
-    <div class="nav-section">📋 MON ESPACE PERSONNEL</div>
+
+    <!-- ─── MON ESPACE ─── -->
+    <div class="nav-divider"></div>
+    <div class="nav-section" id="navSectionMySpace">📋 MON ESPACE</div>
     <button class="nav-item" onclick="showPage('calendrier',this)">📅 <span data-nav="calendrier">Calendrier</span></button>
-    <button class="nav-item" onclick="showPage('objectifs',this)">🎯 <span data-nav="objectifs">Objectifs</span></button>
     <button class="nav-item" onclick="showPage('journal',this)">📓 <span data-nav="journal">Journal</span></button>
-    <button class="nav-item" onclick="showPage('progression',this)">📈 <span data-nav="progression">Progression</span></button>
-    <button class="nav-item" onclick="showPage('favoris',this)">⭐ <span data-nav="favoris">Mes Favoris</span></button>
-    <button class="nav-item" onclick="showPage('defis',this)">🏅 <span data-nav="defis">Défis</span></button>
     <button class="nav-item" onclick="showPage('prepa-match',this)">⚡ <span data-nav="prepa-match">Prépa Compétition</span></button>
-    <div class="nav-section">👤 MON COMPTE</div>
-    <button class="nav-item" onclick="showPage('parrainage',this)">🎁 <span data-nav="parrainage">Parrainage</span></button>
+    <button id="navMoreToolsToggle" class="nav-toggle" onclick="_svToggleNavSection(this,'navMoreTools')">
+      <span class="nav-toggle-arrow">▸</span>
+      <span id="navMoreToolsLabel">Objectifs · Progression · Défis</span>
+    </button>
+    <div id="navMoreTools" class="nav-collapsible">
+      <button class="nav-item" onclick="showPage('objectifs',this)">🎯 <span data-nav="objectifs">Objectifs</span></button>
+      <button class="nav-item" onclick="showPage('progression',this)">📈 <span data-nav="progression">Progression</span></button>
+      <button class="nav-item" onclick="showPage('favoris',this)">⭐ <span data-nav="favoris">Mes Favoris</span></button>
+      <button class="nav-item" onclick="showPage('defis',this)">🏅 <span data-nav="defis">Défis</span></button>
+      <button class="nav-item" onclick="showPage('parrainage',this)">🎁 <span data-nav="parrainage">Parrainage</span></button>
+    </div>
+
+    <!-- ─── MON COMPTE ─── -->
+    <div class="nav-divider"></div>
+    <div class="nav-section" id="navSectionMyAccount">👤 MON COMPTE</div>
     <button class="nav-item" onclick="showPage('profil',this)">👤 <span data-nav="profil">Mon Profil</span></button>
     <button class="nav-item" onclick="showPage('connexions',this)">🔗 <span data-nav="connexions">Synchronisation Strava</span></button>
     <button class="nav-item" onclick="showPage('abonnement',this)">💳 <span data-nav="abonnement">Abonnement</span></button>
@@ -1218,55 +1255,32 @@ function loadTheme() {
 }
 loadTheme();
 
-// ── v63.15 — SIDEBAR "POUR TOI" — agents recommandés selon le sport ─────────
-// Mapping sport_key → 3-4 pages agents par ordre de priorité pour ce sport.
-// Sources : SPORTS_CATALOG keys. "Default" = profil sans sport renseigné.
-const _SV_RECO = {
-  football:        ['physique','equipe','mental','contrats'],
-  hockey:          ['physique','equipe','mental','contrats'],
-  basketball:      ['physique','equipe','mental','nutrition'],
-  volleyball:      ['physique','equipe','mental','nutrition'],
-  handball:        ['physique','equipe','mental','nutrition'],
-  floorball:       ['physique','equipe','mental','nutrition'],
-  rugby:           ['physique','equipe','recuperation','contrats'],
-  skiing:          ['physique','mental','recuperation','finance'],
-  tennis:          ['mental','physique','equipe','nutrition'],
-  padel:           ['mental','physique','equipe','nutrition'],
-  golf:            ['mental','physique','finance','equipe'],
-  cycling:         ['physique','nutrition','recuperation','sommeil'],
-  swimming:        ['physique','nutrition','recuperation','sommeil'],
-  athletics:       ['physique','nutrition','recuperation','sommeil'],
-  triathlon:       ['physique','nutrition','recuperation','sommeil'],
-  'trail-running': ['physique','nutrition','recuperation','sommeil'],
-  boxing:          ['physique','nutrition','mental','sommeil'],
-  'martial-arts':  ['physique','nutrition','mental','sommeil'],
-  gymnastics:      ['mental','physique','nutrition','recuperation'],
-  dance:           ['mental','physique','nutrition','recuperation'],
-  climbing:        ['physique','mental','nutrition','recuperation'],
-};
-const _SV_RECO_DEFAULT = ['physique','mental','equipe','finance'];
+// ── v63.16 — SIDEBAR : classes fixes Performance / Business ──────────────────
+// Toggle expand/collapse d'une section collapsible
+function _svToggleNavSection(toggleBtn, collapseId) {
+  const c = document.getElementById(collapseId);
+  if (!c) return;
+  const isOpen = toggleBtn.classList.contains('open');
+  if (isOpen) {
+    c.style.maxHeight = '0';
+    toggleBtn.classList.remove('open');
+  } else {
+    c.style.maxHeight = '500px';
+    toggleBtn.classList.add('open');
+  }
+  try { localStorage.setItem('sv_nav_' + collapseId, isOpen ? '0' : '1'); } catch(_) {}
+}
 
-function _svRenderRecommendedAgents(sport) {
-  const container = document.getElementById('navRecommended');
-  if (!container) return;
-  // Normalise via le helper sportKey déjà existant (gère legacy labels FR)
-  const key = (typeof sportKey === 'function' ? sportKey(sport) : (sport || '').toLowerCase().trim()) || '';
-  if (!key) { container.style.display = 'none'; return; }
-
-  const pages = _SV_RECO[key] || _SV_RECO_DEFAULT;
-  const t = T[currentLang] || T.fr;
-  const sectionLabel = (t.navSectionForYou || 'Pour toi').toUpperCase();
-  const navL = t.navLabels || {};
-
-  const items = pages.map(function(page) {
-    const ag = AGENTS[page];
-    if (!ag) return '';
-    const label = navL[page] || ag.name;
-    return '<button class="nav-item" onclick="showPage(\'' + page + '\',this)" data-reco-page="' + page + '">' + ag.emoji + ' <span>' + label + '</span></button>';
-  }).join('');
-
-  container.innerHTML = '<div class="nav-section nav-section-reco" id="navRecommendedLabel">⭐ ' + sectionLabel + '</div>' + items;
-  container.style.display = '';
+// Restaure l'état des sections collapsibles depuis localStorage
+function _svRestoreNavState() {
+  ['navPerfMore', 'navBizMore', 'navMoreTools'].forEach(function(id) {
+    if (localStorage.getItem('sv_nav_' + id) === '1') {
+      const el  = document.getElementById(id);
+      const btn = document.querySelector('[onclick*="_svToggleNavSection"][onclick*="' + id + '"]');
+      if (el)  el.style.maxHeight = '500px';
+      if (btn) btn.classList.add('open');
+    }
+  });
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -1295,25 +1309,30 @@ function setLang(lang) {
     const btn = document.getElementById('lang-'+l);
     if (btn) btn.style.opacity = l === lang ? '1' : '0.35';
   });
-  // Update nav labels
+  // Update nav labels — v63.16 : ID-based, sections Performance / Business
   const t = T[lang];
-  // v63.15 — :not(.nav-section-reco) pour exclure la section "Pour toi" des indices statiques
-  const navSections = document.querySelectorAll('.nav-section:not(.nav-section-reco)');
-  // v47 fix: 5 nav-sections in DOM (Marketplace was added later between performanceAgents & mySpace) — re-indexed.
-  if (navSections[0]) navSections[0].textContent = '💼 ' + (t.businessAgents || 'Agents Business').toUpperCase();
-  if (navSections[1]) navSections[1].textContent = '💪 ' + (t.performanceAgents || 'Agents Performance').toUpperCase();
-  if (navSections[2]) navSections[2].textContent = '🏪 ' + (t.marketplace || 'Marketplace').toUpperCase();
-  if (navSections[3]) navSections[3].textContent = '📋 ' + (t.mySpace || 'Mon Espace Personnel').toUpperCase();
-  if (navSections[4]) navSections[4].textContent = '👤 ' + (t.myAccount || 'Mon Compte').toUpperCase();
+  const _nPerf = document.getElementById('navSectionPerformance');
+  if (_nPerf) _nPerf.textContent = '🏃 ' + (t.navSectionPerformance || 'Performance').toUpperCase();
+  const _nBiz = document.getElementById('navSectionBusiness');
+  if (_nBiz) _nBiz.textContent = '💼 ' + (t.navSectionBusiness || 'Business').toUpperCase();
+  const _nSpace = document.getElementById('navSectionMySpace');
+  if (_nSpace) _nSpace.textContent = '📋 ' + (t.mySpace || 'Mon Espace').toUpperCase();
+  const _nAccount = document.getElementById('navSectionMyAccount');
+  if (_nAccount) _nAccount.textContent = '👤 ' + (t.myAccount || 'Mon Compte').toUpperCase();
 
-  // v63.15 — Mettre à jour le label et les items de la section "Pour toi"
-  const recoLabel = document.getElementById('navRecommendedLabel');
-  if (recoLabel) recoLabel.textContent = '⭐ ' + (t.navSectionForYou || 'Pour toi').toUpperCase();
-  document.querySelectorAll('[data-reco-page]').forEach(function(btn) {
-    const pg = btn.getAttribute('data-reco-page');
-    const sp = btn.querySelector('span');
-    if (sp && t.navLabels && t.navLabels[pg]) sp.textContent = t.navLabels[pg];
-  });
+  // Toggles labels — reconstruits depuis navLabels traduits
+  const _nPML = document.getElementById('navPerfMoreLabel');
+  if (_nPML && t.navLabels) {
+    _nPML.textContent = [t.navLabels.sommeil||'Sommeil', t.navLabels.recuperation||'Récupération'].join(' · ');
+  }
+  const _nBML = document.getElementById('navBizMoreLabel');
+  if (_nBML && t.navLabels) {
+    _nBML.textContent = [t.navLabels.sponsors||'Sponsors', t.navLabels.contrats||'Contrats', t.navLabels.comptabilite||'Compta'].join(' · ');
+  }
+  const _nMTL = document.getElementById('navMoreToolsLabel');
+  if (_nMTL && t.navLabels) {
+    _nMTL.textContent = [t.navLabels.objectifs||'Objectifs', t.navLabels.progression||'Progression', t.navLabels.defis||'Défis'].join(' · ');
+  }
 
   // Translate all sidebar nav items via data-nav attributes
   document.querySelectorAll('[data-nav]').forEach(el => {
@@ -1620,8 +1639,8 @@ async function init() {
   // Update sidebar locks based on plan
   updateSidebarLocks();
 
-  // v63.15 — Section "Pour toi" : agents recommandés selon le sport de l'athlète
-  _svRenderRecommendedAgents(userProfile?.sport);
+  // v63.16 — Restauration état collapsibles sidebar
+  _svRestoreNavState();
 
   // Show admin link only for admin user
   if (currentUser.email === 'sportvise.pro@gmail.com') {
@@ -2785,72 +2804,115 @@ async function renderDashboard() {
   const doneCount = [step1Done,step2Done,step3Done,step4Done,step5Done].filter(Boolean).length;
   const progressLabel = doneCount <= 1 ? t.beginner : doneCount === 2 ? (t.dashLevelInter||'Intermédiaire') : doneCount === 3 ? (t.dashLevelAdvanced||'Avancé') : doneCount === 4 ? (t.dashLevelAlmost||'Presque prêt') : (t.dashLevelComplete||'⭐ Complet');
 
+  // v63.17 — Derniers agents consultés (dérivé de msgs déjà chargés, 0 requête supplémentaire)
+  const _agentLastSeen = {};
+  userMsgs.forEach(function(m) {
+    if (!_agentLastSeen[m.agent_id] || m.created_at > _agentLastSeen[m.agent_id]) {
+      _agentLastSeen[m.agent_id] = m.created_at;
+    }
+  });
+  const _recentAgents = Object.entries(_agentLastSeen)
+    .sort(function(a, b) { return b[1] > a[1] ? 1 : -1; })
+    .slice(0, 2);
+  function _svTimeAgo(isoDate) {
+    const diff = Math.floor((Date.now() - new Date(isoDate)) / 60000);
+    if (diff < 90) return t.dashResumeJustNow || 'à l\'instant';
+    if (diff < 1440) return Math.floor(diff / 60) + (t.dashResumeHoursAgo || ' h');
+    const days = Math.floor(diff / 1440);
+    return (t.dashResumeAgo || 'il y a') + ' ' + days + ' ' + (days > 1 ? (t.dashResumeDays || 'jours') : (t.dashResumeDay || 'jour'));
+  }
+
+  // v63.17 — Sous-ligne header contextuelle (priorité décroissante)
+  const _lastMsgDate = userMsgs.length > 0
+    ? new Date(userMsgs.reduce(function(best, m) { return m.created_at > best ? m.created_at : best; }, userMsgs[0].created_at))
+    : null;
+  const _daysSinceMsg = _lastMsgDate ? Math.floor((Date.now() - _lastMsgDate) / 86400000) : null;
+  let _headerSub = '';
+  if (_recentAgents.length > 0 && _daysSinceMsg !== null && _daysSinceMsg >= 3) {
+    // Absent depuis 3+ jours → pointer vers le dernier agent consulté
+    const _topAgId = _recentAgents[0][0];
+    const _topAg   = AGENTS[_topAgId];
+    const _topLabel = (t.navLabels && t.navLabels[_topAgId]) || (_topAg && _topAg.name) || '';
+    _headerSub = '<a href="#" onclick="showPage(\'' + _topAgId + '\',null);return false;" style="color:var(--gold);font-weight:700;text-decoration:none">'
+      + (_topAg ? _topAg.emoji + ' ' : '') + _topLabel
+      + ' — ' + (t.dashHeaderResume || 'reprendre →') + '</a>';
+  } else if (streak >= 3) {
+    // Streak actif → le valoriser
+    _headerSub = '<span style="color:#f59e0b;font-weight:600">🔥 Streak ' + streak + ' ' + (streak > 1 ? (t.dashStreakDays||'jours') : (t.dashStreakDay||'jour')) + '</span>';
+  } else if (sportRaw) {
+    // Profil avec sport → afficher le sport
+    _headerSub = t.sport + ' : <span style="color:var(--gold);font-weight:700">' + sport + '</span>';
+  } else {
+    // Fallback compte vide/nouveau
+    _headerSub = t.dashHeaderWelcome || 'Ton bureau d\'athlète est prêt.';
+  }
+
   document.getElementById('mainContent').innerHTML = `
     <div style="margin-bottom:20px">
       <h1 style="font-size:22px;font-weight:800;color:var(--text)">${greeting}, ${name} 👋</h1>
-      <p style="color:var(--muted);margin-top:4px;font-size:13px">
-        ${t.sport} : <span style="color:var(--gold);font-weight:700">${sport}</span>
-        · ${t.welcome} 🇨🇭
-      </p>
+      <p style="color:var(--muted);margin-top:4px;font-size:13px">${_headerSub}</p>
     </div>
+
+    <!-- WIDGET CONTINUER UNE CONVERSATION — v63.17 (masqué sur compte vide) -->
+    ${_recentAgents.length > 0 ? `
+    <div style="margin-bottom:16px">
+      <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">${t.dashResumeTitle||'Continuer une conversation'}</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        ${_recentAgents.map(function([agId, lastAt]) {
+          const ag = AGENTS[agId];
+          if (!ag) return '';
+          const label = (t.navLabels && t.navLabels[agId]) || ag.name;
+          return '<button onclick="showPage(\'' + agId + '\',null)" style="flex:1;min-width:140px;display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--bg3);cursor:pointer;text-align:left;font-family:\'Inter\',sans-serif;transition:all 0.18s" onmouseover="this.style.borderColor=\'' + (ag.color||'#f59e0b') + '\';this.style.transform=\'translateY(-1px)\'" onmouseout="this.style.borderColor=\'var(--border)\';this.style.transform=\'none\'">' +
+            '<div style="font-size:22px;flex-shrink:0">' + ag.emoji + '</div>' +
+            '<div style="flex:1;min-width:0">' +
+              '<div style="font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + label + '</div>' +
+              '<div style="font-size:10px;color:var(--muted);margin-top:1px">' + _svTimeAgo(lastAt) + '</div>' +
+            '</div>' +
+            '<div style="font-size:11px;color:' + (ag.color||'var(--gold)') + ';font-weight:700;flex-shrink:0">' + (t.dashResumeCta||'Reprendre →') + '</div>' +
+          '</button>';
+        }).join('')}
+      </div>
+    </div>
+    ` : ''}
 
     <!-- WELCOME BANNER / ONBOARDING -->
     ${!allDone ? `
-    <div class="welcome-banner">
-      <div style="flex:1">
-        <div style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:8px">${t.startTitle}</div>
-        ${checkItem(step1Done, t.step1)}
-        ${checkItem(step2Done, step2Done ? `${t.step2} : <strong style="color:var(--gold)">${sport}</strong>` : t.step2 + ' — <a href="#" onclick="showPage(\'profil\',null)" style="color:var(--gold)">' + (t.dashCheckComplete||'Compléter →') + '</a>')}
-        ${checkItem(step3Done, step3Done ? (t.dashCheckAgentDone||'Premier agent consulté ✅') : t.step3)}
-        ${checkItem(step4Done, step4Done ? `${t.dashCheckLevelDone||'Niveau renseigné :'} <strong style="color:var(--gold)">${levelLabel(userProfile?.level)}</strong>` : (t.dashCheckLevelTodo||'Renseigne ton niveau dans ton profil'))}
-        ${checkItem(step5Done, step5Done ? (t.dashCheckCalendarDone||'📅 Calendrier renseigné ✅') : `<a href="#" onclick="showPage('calendrier',document.querySelector('[onclick*=calendrier]'));return false;" style="color:var(--gold);font-weight:700">${t.dashCheckCalendarTodo||'📅 Ajoute un match ou entraînement — tes agents en ont besoin →'}</a>`)}
-      </div>
-      <div style="text-align:center;flex-shrink:0">
-        <div style="font-size:36px">${allDone ? '🏆' : doneCount >= 3 ? '🥈' : '🥉'}</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:4px">${doneCount}/5<br/>${progressLabel}</div>
-      </div>
-    </div>
-
-    <!-- QUICK ONBOARDING QUESTIONS (shown only if profile incomplete) -->
-    ${!step2Done || !step4Done ? `
-    <div id="onboardingQuiz" style="background:linear-gradient(135deg,#f59e0b08,#06b6d408);border:1px solid var(--gold)30;border-radius:14px;padding:20px;margin-bottom:16px">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-        <div style="font-size:22px">🎯</div>
-        <div>
-          <div style="font-size:13px;font-weight:800;color:var(--text)">${t.dashQuickProfileTitle||'Complète ton profil en 30 secondes'}</div>
-          <div style="font-size:11px;color:var(--muted)">${t.dashQuickProfileSub||'Nos agents seront plus pertinents avec ces infos'}</div>
+    <!-- v63.17 — Onboarding fusionné : checklist + questions rapides dans un seul card -->
+    <div class="welcome-banner" style="flex-direction:column;align-items:stretch;gap:0">
+      <!-- En-tête : titre + progression -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="font-size:14px;font-weight:800;color:var(--text)">${t.startTitle}</div>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+          <div style="font-size:24px">${doneCount >= 4 ? '🥇' : doneCount >= 3 ? '🥈' : '🥉'}</div>
+          <div style="text-align:right">
+            <div style="font-size:14px;font-weight:900;color:var(--gold)">${doneCount}/5</div>
+            <div style="font-size:10px;color:var(--muted)">${progressLabel}</div>
+          </div>
         </div>
       </div>
-
+      <!-- Checklist -->
+      ${checkItem(step1Done, t.step1)}
+      ${checkItem(step2Done, step2Done ? `${t.step2} : <strong style="color:var(--gold)">${sport}</strong>` : t.step2 + ' — <a href="#" onclick="showPage(\'profil\',null)" style="color:var(--gold)">' + (t.dashCheckComplete||'Compléter →') + '</a>')}
+      ${checkItem(step3Done, step3Done ? (t.dashCheckAgentDone||'Premier agent consulté ✅') : t.step3)}
+      ${checkItem(step4Done, step4Done ? `${t.dashCheckLevelDone||'Niveau renseigné :'} <strong style="color:var(--gold)">${levelLabel(userProfile?.level)}</strong>` : (t.dashCheckLevelTodo||'Renseigne ton niveau dans ton profil'))}
+      ${checkItem(step5Done, step5Done ? (t.dashCheckCalendarDone||'📅 Calendrier renseigné ✅') : `<a href="#" onclick="showPage('calendrier',document.querySelector('[onclick*=calendrier]'));return false;" style="color:var(--gold);font-weight:700">${t.dashCheckCalendarTodo||'📅 Ajoute un match ou entraînement — tes agents en ont besoin →'}</a>`)}
+      <!-- Questions rapides intégrées si profil incomplet -->
       ${!step4Done ? `
-      <div style="margin-bottom:12px">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase">${t.dashQuickLevelLabel||'Ton niveau'}</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase">${t.dashQuickLevelLabel||'Ton niveau'}</div>
+        <div id="onboardingQuiz" style="display:flex;gap:6px;flex-wrap:wrap">
           ${ONBOARDING_LEVEL_KEYS.map(k => { const it = LEVELS_CATALOG.find(l=>l.key===k); return `
             <button onclick="quickOnboard('level','${it.key}',this)" style="padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.background='#f59e0b15'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--bg)'">${it.labels[currentLang]||it.labels.fr}</button>
           `; }).join('')}
         </div>
       </div>
       ` : ''}
-
-      ${!userProfile?.birth_date ? `
-      <div style="margin-bottom:12px">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase">${t.dashQuickGoalLabel||'Ton objectif principal'}</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-          ${GOALS_CATALOG.map(it => `
-            <button onclick="quickOnboard('goal','${it.key}',this)" style="padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;display:flex;align-items:center;gap:4px;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">${it.icon} ${it.labels[currentLang]||it.labels.fr}</button>
-          `).join('')}
-        </div>
-      </div>
-      ` : ''}
-
-      <!-- v63.5.2 — CTA Profil détaillé : pour aller plus loin que le quick quiz -->
+      <!-- CTA profil détaillé -->
       <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
-        <div style="font-size:11px;color:var(--muted);flex:1;min-width:180px">${t.dashProfileMoreLabel||'Plus tes agents te connaissent (position, club, taille, poids…), plus leurs conseils sont précis.'}</div>
+        <div style="font-size:11px;color:var(--muted);flex:1;min-width:160px">${t.dashProfileMoreLabel||'Plus tes agents te connaissent, plus leurs conseils sont précis.'}</div>
         <button onclick="showProfileModal()" style="padding:8px 14px;border-radius:8px;border:1px solid #f59e0b40;background:transparent;color:var(--gold);font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;transition:all 0.2s" onmouseover="this.style.background='#f59e0b15'" onmouseout="this.style.background='transparent'">${t.dashProfileMoreCta||'📋 Profil détaillé →'}</button>
       </div>
     </div>
-    ` : ''}
     ` : `
     <div class="welcome-banner" style="background:linear-gradient(135deg,#10b98110,#05966910);border-color:#10b98130">
       <div style="flex:1">
@@ -2976,95 +3038,17 @@ async function renderDashboard() {
       '</div>';
     })()}
 
-    <!-- CITATION MOTIVANTE DU JOUR — v62.29 i18n × 4 langs -->
-    ${(() => {
-      const CITATIONS = {
-        fr: [
-          {text:"Le talent gagne des matchs, le travail d'équipe et l'intelligence gagnent des championnats.",auteur:"Michael Jordan"},
-          {text:"Je n'ai pas échoué. J'ai trouvé 10 000 moyens qui ne fonctionnent pas.",auteur:"Thomas Edison"},
-          {text:"La douleur que tu ressens aujourd'hui sera la force que tu ressentiras demain.",auteur:"Arnold Schwarzenegger"},
-          {text:"Chaque champion a d'abord été un concurrent qui a refusé d'abandonner.",auteur:"Rocky Balboa"},
-          {text:"La seule limite à notre réalisation de demain sera nos doutes d'aujourd'hui.",auteur:"F.D. Roosevelt"},
-          {text:"On ne naît pas vainqueur, on le devient.",auteur:"Usain Bolt"},
-          {text:"La motivation te met en marche, l'habitude te fait continuer.",auteur:"Jim Ryun"},
-          {text:"Le succès n'est pas final, l'échec n'est pas fatal, c'est le courage de continuer qui compte.",auteur:"Winston Churchill"},
-          {text:"Ne rêve pas de gagner, entraîne-toi pour ça.",auteur:"Mo Farah"},
-          {text:"L'excellence n'est pas un acte, mais une habitude.",auteur:"Aristote"},
-          {text:"Le sport ne construit pas le caractère, il le révèle.",auteur:"Heywood Broun"},
-          {text:"Le corps réalise ce que l'esprit croit.",auteur:"Napoleon Hill"},
-          {text:"Ce n'est pas la taille du chien dans le combat, c'est la taille du combat dans le chien.",auteur:"Mark Twain"},
-          {text:"L'adversité fait surgir en nous des capacités qui seraient autrement restées endormies.",auteur:"Horace"}
-        ],
-        de: [
-          {text:"Talent gewinnt Spiele, aber Teamwork und Intelligenz gewinnen Meisterschaften.",auteur:"Michael Jordan"},
-          {text:"Ich bin nicht gescheitert. Ich habe 10'000 Wege gefunden, die nicht funktionieren.",auteur:"Thomas Edison"},
-          {text:"Der Schmerz, den du heute spürst, wird morgen deine Stärke sein.",auteur:"Arnold Schwarzenegger"},
-          {text:"Jeder Champion war zuerst ein Konkurrent, der sich weigerte aufzugeben.",auteur:"Rocky Balboa"},
-          {text:"Die einzige Grenze für unser Erreichen von morgen sind unsere Zweifel von heute.",auteur:"F.D. Roosevelt"},
-          {text:"Niemand wird als Sieger geboren — man wird einer.",auteur:"Usain Bolt"},
-          {text:"Motivation bringt dich in Bewegung, Gewohnheit hält dich am Laufen.",auteur:"Jim Ryun"},
-          {text:"Erfolg ist nicht endgültig, Scheitern ist nicht fatal — der Mut weiterzumachen zählt.",auteur:"Winston Churchill"},
-          {text:"Träume nicht vom Sieg, trainiere dafür.",auteur:"Mo Farah"},
-          {text:"Exzellenz ist keine Tat, sondern eine Gewohnheit.",auteur:"Aristoteles"},
-          {text:"Sport baut keinen Charakter auf, er offenbart ihn.",auteur:"Heywood Broun"},
-          {text:"Der Körper schafft, was der Geist glaubt.",auteur:"Napoleon Hill"},
-          {text:"Es ist nicht die Grösse des Hundes im Kampf, sondern die Grösse des Kampfes im Hund.",auteur:"Mark Twain"},
-          {text:"Widrigkeit weckt in uns Fähigkeiten, die sonst geschlummert hätten.",auteur:"Horaz"}
-        ],
-        en: [
-          {text:"Talent wins games, but teamwork and intelligence win championships.",auteur:"Michael Jordan"},
-          {text:"I have not failed. I've just found 10,000 ways that won't work.",auteur:"Thomas Edison"},
-          {text:"The pain you feel today will be the strength you feel tomorrow.",auteur:"Arnold Schwarzenegger"},
-          {text:"Every champion was once a contender who refused to give up.",auteur:"Rocky Balboa"},
-          {text:"The only limit to our realization of tomorrow will be our doubts of today.",auteur:"F.D. Roosevelt"},
-          {text:"You're not born a winner, you become one.",auteur:"Usain Bolt"},
-          {text:"Motivation gets you going, habit keeps you going.",auteur:"Jim Ryun"},
-          {text:"Success is not final, failure is not fatal: it is the courage to continue that counts.",auteur:"Winston Churchill"},
-          {text:"Don't dream of winning, train for it.",auteur:"Mo Farah"},
-          {text:"Excellence is not an act, but a habit.",auteur:"Aristotle"},
-          {text:"Sports do not build character. They reveal it.",auteur:"Heywood Broun"},
-          {text:"What the mind believes, the body achieves.",auteur:"Napoleon Hill"},
-          {text:"It's not the size of the dog in the fight, it's the size of the fight in the dog.",auteur:"Mark Twain"},
-          {text:"Adversity awakens in us abilities that would otherwise have remained dormant.",auteur:"Horace"}
-        ],
-        it: [
-          {text:"Il talento vince le partite, ma il lavoro di squadra e l'intelligenza vincono i campionati.",auteur:"Michael Jordan"},
-          {text:"Non ho fallito. Ho trovato 10'000 modi che non funzionano.",auteur:"Thomas Edison"},
-          {text:"Il dolore che senti oggi sarà la forza che sentirai domani.",auteur:"Arnold Schwarzenegger"},
-          {text:"Ogni campione è stato prima un concorrente che si è rifiutato di arrendersi.",auteur:"Rocky Balboa"},
-          {text:"L'unico limite alla realizzazione di domani saranno i nostri dubbi di oggi.",auteur:"F.D. Roosevelt"},
-          {text:"Non si nasce vincitori, lo si diventa.",auteur:"Usain Bolt"},
-          {text:"La motivazione ti mette in moto, l'abitudine ti fa continuare.",auteur:"Jim Ryun"},
-          {text:"Il successo non è definitivo, il fallimento non è fatale: è il coraggio di continuare che conta.",auteur:"Winston Churchill"},
-          {text:"Non sognare di vincere, allenati per farlo.",auteur:"Mo Farah"},
-          {text:"L'eccellenza non è un atto, ma un'abitudine.",auteur:"Aristotele"},
-          {text:"Lo sport non costruisce il carattere, lo rivela.",auteur:"Heywood Broun"},
-          {text:"Il corpo realizza ciò che la mente crede.",auteur:"Napoleon Hill"},
-          {text:"Non è la dimensione del cane nel combattimento, ma la dimensione del combattimento nel cane.",auteur:"Mark Twain"},
-          {text:"L'avversità risveglia in noi capacità che altrimenti sarebbero rimaste dormienti.",auteur:"Orazio"}
-        ]
-      };
-      const citations = CITATIONS[currentLang] || CITATIONS.fr;
-      // Deterministic daily selection based on date
-      const dayIndex = Math.floor(Date.now() / 86400000) % citations.length;
-      const c = citations[dayIndex];
-      return `<div style="background:linear-gradient(135deg,#f59e0b08,#d9770608);border:1px solid #f59e0b20;border-radius:14px;padding:16px;margin-bottom:16px;display:flex;align-items:flex-start;gap:12px">
-        <div style="font-size:22px;flex-shrink:0">💡</div>
-        <div>
-          <div style="font-size:12px;font-weight:600;color:var(--text);font-style:italic;line-height:1.5">"${c.text}"</div>
-          <div style="font-size:11px;color:var(--gold);margin-top:6px;font-weight:700">— ${c.auteur}</div>
-        </div>
-      </div>`;
-    })()}
-
-    <!-- SPORTVISE SCORE WIDGET -->
+    <!-- SPORTVISE SCORE WIDGET — v63.17 : citation retirée, empty state amélioré -->
     ${await (async () => {
       const svScore = await computeSportViseScore();
       if (!svScore) {
-        return `<div style="background:linear-gradient(135deg,#f59e0b08,#fbbf2408);border:1px solid #f59e0b25;border-radius:14px;padding:20px;margin-bottom:16px;text-align:center;cursor:pointer" onclick="showPage('journal',document.querySelector('[onclick*=journal]'))">
-          <div style="font-size:28px;margin-bottom:6px">S</div>
-          <div style="font-size:13px;font-weight:700;color:var(--text)">Score SPORTVISE</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:4px">${t.fillJournal}</div>
+        return `<div style="background:linear-gradient(135deg,#f59e0b08,#fbbf2408);border:1px solid #f59e0b25;border-radius:14px;padding:18px;margin-bottom:16px;display:flex;align-items:center;gap:14px;cursor:pointer" onclick="showPage('journal',document.querySelector('[onclick*=journal]'))">
+          <div style="font-size:28px;flex-shrink:0">📓</div>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px">${t.dashScoreTitle||'Ton Score SPORTVISE'}</div>
+            <div style="font-size:11px;color:var(--muted);line-height:1.5">${t.dashScoreSub||'Remplis 3 jours de journal pour voir ton score de forme, récupération et charge.'}</div>
+          </div>
+          <div style="color:var(--gold);font-size:12px;font-weight:700;flex-shrink:0">${t.dashSeeArrow||'Voir →'}</div>
         </div>`;
       }
       return renderSportViseScore(svScore);
