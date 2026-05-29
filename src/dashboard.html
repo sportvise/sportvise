@@ -493,6 +493,8 @@
     @keyframes pageEnter { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
     .page-enter { animation: pageEnter 0.18s ease-out forwards; }
     @keyframes spin { to { transform: rotate(360deg); } }
+    /* v63.15 — Tooltip "Me décrire" */
+    @keyframes svTooltipIn { from{opacity:0;transform:translateY(-5px)} to{opacity:1;transform:translateY(0)} }
     .file-preview {
       position: relative; background: var(--bg3); border: 1px solid var(--border);
       border-radius: 12px; padding: 10px; margin: 0 12px 8px 12px;
@@ -613,6 +615,8 @@
     <button class="nav-item" id="navItemTeamMeeting" style="border-left:3px solid #f59e0b;background:linear-gradient(90deg,rgba(245,158,11,0.08),transparent)" onclick="openTeamMeeting()">
       🤝 <span id="navItemTeamMeetingLabel">Réunion d'équipe</span>
     </button>
+    <!-- v63.15 — Section "Pour toi" : 3-4 agents recommandés selon le sport (injection JS) -->
+    <div id="navRecommended" style="display:none"></div>
     <div class="nav-section">💼 AGENTS IA BUSINESS</div>
     <button class="nav-item" onclick="showPage('equipe',this)">💼 <span data-nav="equipe">Lucas — Manager</span></button>
     <button class="nav-item" onclick="showPage('marketing',this)">🎯 <span data-nav="marketing">Alex — Marketing</span></button>
@@ -1214,6 +1218,58 @@ function loadTheme() {
 }
 loadTheme();
 
+// ── v63.15 — SIDEBAR "POUR TOI" — agents recommandés selon le sport ─────────
+// Mapping sport_key → 3-4 pages agents par ordre de priorité pour ce sport.
+// Sources : SPORTS_CATALOG keys. "Default" = profil sans sport renseigné.
+const _SV_RECO = {
+  football:        ['physique','equipe','mental','contrats'],
+  hockey:          ['physique','equipe','mental','contrats'],
+  basketball:      ['physique','equipe','mental','nutrition'],
+  volleyball:      ['physique','equipe','mental','nutrition'],
+  handball:        ['physique','equipe','mental','nutrition'],
+  floorball:       ['physique','equipe','mental','nutrition'],
+  rugby:           ['physique','equipe','recuperation','contrats'],
+  skiing:          ['physique','mental','recuperation','finance'],
+  tennis:          ['mental','physique','equipe','nutrition'],
+  padel:           ['mental','physique','equipe','nutrition'],
+  golf:            ['mental','physique','finance','equipe'],
+  cycling:         ['physique','nutrition','recuperation','sommeil'],
+  swimming:        ['physique','nutrition','recuperation','sommeil'],
+  athletics:       ['physique','nutrition','recuperation','sommeil'],
+  triathlon:       ['physique','nutrition','recuperation','sommeil'],
+  'trail-running': ['physique','nutrition','recuperation','sommeil'],
+  boxing:          ['physique','nutrition','mental','sommeil'],
+  'martial-arts':  ['physique','nutrition','mental','sommeil'],
+  gymnastics:      ['mental','physique','nutrition','recuperation'],
+  dance:           ['mental','physique','nutrition','recuperation'],
+  climbing:        ['physique','mental','nutrition','recuperation'],
+};
+const _SV_RECO_DEFAULT = ['physique','mental','equipe','finance'];
+
+function _svRenderRecommendedAgents(sport) {
+  const container = document.getElementById('navRecommended');
+  if (!container) return;
+  // Normalise via le helper sportKey déjà existant (gère legacy labels FR)
+  const key = (typeof sportKey === 'function' ? sportKey(sport) : (sport || '').toLowerCase().trim()) || '';
+  if (!key) { container.style.display = 'none'; return; }
+
+  const pages = _SV_RECO[key] || _SV_RECO_DEFAULT;
+  const t = T[currentLang] || T.fr;
+  const sectionLabel = (t.navSectionForYou || 'Pour toi').toUpperCase();
+  const navL = t.navLabels || {};
+
+  const items = pages.map(function(page) {
+    const ag = AGENTS[page];
+    if (!ag) return '';
+    const label = navL[page] || ag.name;
+    return '<button class="nav-item" onclick="showPage(\'' + page + '\',this)" data-reco-page="' + page + '">' + ag.emoji + ' <span>' + label + '</span></button>';
+  }).join('');
+
+  container.innerHTML = '<div class="nav-section nav-section-reco" id="navRecommendedLabel">⭐ ' + sectionLabel + '</div>' + items;
+  container.style.display = '';
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 function setLang(lang) {
   // v63.5.6 — Capture l'ancienne lang AVANT mutation pour détecter changement réel.
   // Bug fix : welcome_card et weekly_insight stockent leur contenu en DB dans la
@@ -1241,13 +1297,23 @@ function setLang(lang) {
   });
   // Update nav labels
   const t = T[lang];
-  const navSections = document.querySelectorAll('.nav-section');
+  // v63.15 — :not(.nav-section-reco) pour exclure la section "Pour toi" des indices statiques
+  const navSections = document.querySelectorAll('.nav-section:not(.nav-section-reco)');
   // v47 fix: 5 nav-sections in DOM (Marketplace was added later between performanceAgents & mySpace) — re-indexed.
   if (navSections[0]) navSections[0].textContent = '💼 ' + (t.businessAgents || 'Agents Business').toUpperCase();
   if (navSections[1]) navSections[1].textContent = '💪 ' + (t.performanceAgents || 'Agents Performance').toUpperCase();
   if (navSections[2]) navSections[2].textContent = '🏪 ' + (t.marketplace || 'Marketplace').toUpperCase();
   if (navSections[3]) navSections[3].textContent = '📋 ' + (t.mySpace || 'Mon Espace Personnel').toUpperCase();
   if (navSections[4]) navSections[4].textContent = '👤 ' + (t.myAccount || 'Mon Compte').toUpperCase();
+
+  // v63.15 — Mettre à jour le label et les items de la section "Pour toi"
+  const recoLabel = document.getElementById('navRecommendedLabel');
+  if (recoLabel) recoLabel.textContent = '⭐ ' + (t.navSectionForYou || 'Pour toi').toUpperCase();
+  document.querySelectorAll('[data-reco-page]').forEach(function(btn) {
+    const pg = btn.getAttribute('data-reco-page');
+    const sp = btn.querySelector('span');
+    if (sp && t.navLabels && t.navLabels[pg]) sp.textContent = t.navLabels[pg];
+  });
 
   // Translate all sidebar nav items via data-nav attributes
   document.querySelectorAll('[data-nav]').forEach(el => {
@@ -1553,6 +1619,9 @@ async function init() {
 
   // Update sidebar locks based on plan
   updateSidebarLocks();
+
+  // v63.15 — Section "Pour toi" : agents recommandés selon le sport de l'athlète
+  _svRenderRecommendedAgents(userProfile?.sport);
 
   // Show admin link only for admin user
   if (currentUser.email === 'sportvise.pro@gmail.com') {
@@ -3415,6 +3484,8 @@ async function renderChat(page) {
     </div>
   `;
   scrollChat();
+  // v63.15 — init auto-dismiss du tooltip "Me décrire" si présent
+  _svInitDescribeTooltip();
 }
 
 // ── v63.5.5 — MEMORY CARD ULTRA-LIGHT (Levier #1 Phase 0) ──────────
@@ -3460,22 +3531,49 @@ function renderMemoryCardLite(page, agent) {
   const btnLabel  = hasContext ? (t.memoryBtnEdit   || '✏️ Modifier') : (t.memoryBtnDescribe || '+ Me décrire');
   const btnTitle  = hasContext ? (t.memoryBtnEditTt || 'Modifier mon contexte') : (t.memoryBtnDescribeTt || 'Ajouter du contexte pour personnaliser les conseils');
 
+  // v63.15 — Tooltip au 1er accès : visible si pas de contexte ET jamais vu
+  const showTooltip = !hasContext && !localStorage.getItem('sv_tooltip_describe_seen');
+  const tooltipText = escapeHtml(t.tooltipDescribeText || 'Complète pour des conseils sur mesure');
+
   return `
     <div class="memory-card-lite"
          style="margin:8px 16px 0;padding:8px 14px;background:${agent.color}08;border-top:1px solid ${agent.color}18;border-bottom:1px solid ${agent.color}18;display:flex;align-items:center;gap:10px">
       <div style="flex:1;font-size:12px;color:var(--muted);line-height:1.4;${hasContext ? 'color:var(--text);font-style:italic' : ''}">
         ${displayText}
       </div>
-      <button onclick="event.stopPropagation();openAthleteContextModal('${page}')"
-              title="${escapeHtml(btnTitle)}"
-              style="flex-shrink:0;padding:4px 10px;border-radius:20px;border:1px solid ${agent.color}40;background:transparent;color:${agent.color};font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;transition:all 0.15s"
-              onmouseover="this.style.background='${agent.color}15'"
-              onmouseout="this.style.background='transparent'">
-        ${escapeHtml(btnLabel)}
-      </button>
+      <div style="position:relative;flex-shrink:0">
+        <button onclick="event.stopPropagation();_svMarkTooltipSeen();openAthleteContextModal('${page}')"
+                title="${escapeHtml(btnTitle)}"
+                style="padding:4px 10px;border-radius:20px;border:1px solid ${agent.color}40;background:transparent;color:${agent.color};font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;transition:all 0.15s"
+                onmouseover="this.style.background='${agent.color}15'"
+                onmouseout="this.style.background='transparent'">
+          ${escapeHtml(btnLabel)}
+        </button>
+        ${showTooltip ? `<div id="svDescribeTooltip" style="position:absolute;top:calc(100% + 9px);right:0;z-index:20;background:#1e293b;border:1px solid ${agent.color}50;border-radius:8px;padding:7px 12px;font-size:11px;color:#f1f5f9;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.45);pointer-events:none;animation:svTooltipIn 0.35s ease"><div style="position:absolute;top:-5px;right:15px;width:8px;height:8px;background:#1e293b;border-top:1px solid ${agent.color}50;border-left:1px solid ${agent.color}50;transform:rotate(45deg)"></div>✨ ${tooltipText}</div>` : ''}
+      </div>
     </div>
   `;
 }
+
+// ── v63.15 — Tooltip "Me décrire" ────────────────────────────────────────────
+// _svMarkTooltipSeen() : fade-out + localStorage. Appelé au clic du bouton
+//   ou après 5s par _svInitDescribeTooltip().
+// _svInitDescribeTooltip() : hooké après scrollChat() dans le render du chat.
+function _svMarkTooltipSeen() {
+  try { localStorage.setItem('sv_tooltip_describe_seen', '1'); } catch(_) {}
+  const el = document.getElementById('svDescribeTooltip');
+  if (!el) return;
+  el.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(-4px)';
+  setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 380);
+}
+function _svInitDescribeTooltip() {
+  if (document.getElementById('svDescribeTooltip')) {
+    setTimeout(_svMarkTooltipSeen, 5000);
+  }
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 // ── Modal "Me décrire / Modifier mon contexte" ──────────────────────────────
 // Textarea libre → sauvegardé dans profiles.athlete_context (Supabase).

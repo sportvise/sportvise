@@ -5,22 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>SPORTVISE — Management Sportif IA · Suisse</title>
   <!-- ── Sentry error reporting (v58 P0 #7) — landing surface ─────── -->
-  <script src="https://browser.sentry-cdn.com/8.45.0/bundle.min.js" crossorigin="anonymous"></script>
-  <script>
-  (function () {
-    if (!window.Sentry) return;
-    if (!/sportvise\.ch$/i.test(location.hostname)) return;
+  <!-- v63.14 : async pour ne pas bloquer le rendu initial (4-5s blank éliminé) -->
+  <script async src="https://browser.sentry-cdn.com/8.45.0/bundle.min.js" crossorigin="anonymous" onload="(function(){
+    if(!window.Sentry)return;
+    if(!/sportvise\.ch$/i.test(location.hostname))return;
     Sentry.init({
-      dsn: 'https://815c2a765347b04e879535be1a600826@o4511314258165760.ingest.de.sentry.io/4511314265309264',
-      environment: 'production',
-      release: 'sportvise-landing',
-      sendDefaultPii: false,
-      sampleRate: 1.0,
-      ignoreErrors: [/ResizeObserver loop/i, 'Script error.', /Load failed/i, /NetworkError/i],
-      denyUrls: [/\/extensions\//i, /^chrome-extension:\/\//i, /^moz-extension:\/\//i, /^safari-(web-)?extension:\/\//i]
+      dsn:'https://815c2a765347b04e879535be1a600826@o4511314258165760.ingest.de.sentry.io/4511314265309264',
+      environment:'production',
+      release:'sportvise-landing',
+      sendDefaultPii:false,
+      sampleRate:1.0,
+      ignoreErrors:[/ResizeObserver loop/i,'Script error.',/Load failed/i,/NetworkError/i],
+      denyUrls:[/\/extensions\//i,/^chrome-extension:\/\//i,/^moz-extension:\/\//i,/^safari-(web-)?extension:\/\//i]
     });
-  })();
-  </script>
+  })()"></script>
   <script>
   // SW REGISTER v22 — register sw.js v22 (cache intelligent, bandwidth Netlify -)
   // Voir dashboard.html pour le rationale complet. Pattern identique sur les 3
@@ -510,7 +508,7 @@
     <div class="stats-grid animate">
       <div class="stat-item"><div class="stat-num gradient-text">11</div><div class="stat-label" data-i18n="stat1">Agents IA spécialisés</div></div>
       <div class="stat-item"><div class="stat-num gradient-text">24/7</div><div class="stat-label" data-i18n="stat2">Disponibilité totale</div></div>
-      <div class="stat-item"><div class="stat-num gradient-text">Gratuit</div><div class="stat-label" data-i18n="stat3">Pour commencer dès maintenant</div></div>
+      <div class="stat-item"><div class="stat-num gradient-text" data-i18n="statFree">Gratuit</div><div class="stat-label" data-i18n="stat3">Pour commencer dès maintenant</div></div>
       <div class="stat-item"><div class="stat-num" style="background:none;-webkit-text-fill-color:initial;color:var(--text)">🇨🇭</div><div class="stat-label" data-i18n="stat4">Droit & fiscalité CH</div></div>
     </div>
   </div>
@@ -775,10 +773,20 @@
 </footer>
 
 <script>
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(e => { if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target);} });
-  }, {threshold:0.1});
-  document.querySelectorAll('.animate').forEach(el => observer.observe(el));
+  // v63.14 : déclenchement immédiat pour les éléments déjà dans le viewport
+  // + rootMargin 150px pour anticiper les sections suivantes → plus de dark gap
+  function _svShowVisible() {
+    const vH = window.innerHeight;
+    document.querySelectorAll('.animate:not(.visible)').forEach(function(el) {
+      if (el.getBoundingClientRect().top < vH + 150) el.classList.add('visible');
+    });
+  }
+  _svShowVisible();
+  requestAnimationFrame(_svShowVisible);
+  const observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) { if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target);} });
+  }, {threshold:0.05, rootMargin:'0px 0px 150px 0px'});
+  document.querySelectorAll('.animate').forEach(function(el) { observer.observe(el); });
   function toggleFaq(btn) {
     const item = btn.closest('.faq-item');
     const open = item.classList.contains('open');
@@ -827,7 +835,7 @@
       heroDesc:"SPORTVISE injecte votre journal, votre RPE et votre calendrier dans chaque conversation. Pas un chatbot g\u00e9n\u00e9rique \u2014 un management sportif qui vous conna\u00eet et adapte ses conseils \u00e0 votre \u00e9tat du jour.",
       heroCta1:"Cr\u00e9er mon compte gratuit \u2192", heroCta2:"D\u00e9couvrir les agents IA",
       heroSocial:"\ud83d\udd12 Aucune carte de cr\u00e9dit requise \u00b7 Donn\u00e9es prot\u00e9g\u00e9es LPD \ud83c\udde8\ud83c\udded",
-      stat1:"Agents IA sp\u00e9cialis\u00e9s", stat2:"Disponibilit\u00e9 totale", stat3:"Pour commencer d\u00e8s maintenant", stat4:"Droit & fiscalit\u00e9 CH",
+      stat1:"Agents IA sp\u00e9cialis\u00e9s", stat2:"Disponibilit\u00e9 totale", stat3:"Pour commencer d\u00e8s maintenant", stat4:"Droit & fiscalit\u00e9 CH", statFree:"Gratuit",
       agentsTag:"Votre \u00e9quipe IA", agentsTitle:"11 agents experts<br/>\u00e0 votre service", agentsDesc:"Chaque agent conna\u00eet parfaitement le march\u00e9 sportif suisse \u2014 droit, fiscalit\u00e9, culture et r\u00e9seaux locaux.",
       howTag:"Simple & Rapide", howTitle:"Lancez-vous en 3 \u00e9tapes", howDesc:"Pas de paperasse. Votre \u00e9quipe d\u2019agents IA est op\u00e9rationnelle d\u00e8s votre inscription.",
       step1Title:"Cr\u00e9e ton profil athl\u00e8te", step1Desc:"Sport, niveau, club, objectif : 30 secondes au signup. Strava et calendrier optionnels, \u00e0 brancher plus tard si tu veux enrichir le contexte.",
@@ -938,7 +946,7 @@
       heroDesc:"SPORTVISE bezieht Ihr Trainingstagebuch, Ihren RPE und Ihren Kalender in jedes Gespr\u00e4ch ein. Kein generischer Chatbot \u2014 ein Sportmanagement, das Sie kennt und seine Empfehlungen an Ihre Tagesform anpasst.",
       heroCta1:"Kostenloses Konto erstellen \u2192", heroCta2:"KI-Agenten entdecken",
       heroSocial:"\ud83d\udd12 Keine Kreditkarte erforderlich \u00b7 Daten gesch\u00fctzt gem\u00e4ss DSG \ud83c\udde8\ud83c\udded",
-      stat1:"Spezialisierte KI-Agenten", stat2:"Totale Verf\u00fcgbarkeit", stat3:"Sofort kostenlos starten", stat4:"Schweizer Recht & Steuern",
+      stat1:"Spezialisierte KI-Agenten", stat2:"Totale Verf\u00fcgbarkeit", stat3:"Sofort kostenlos starten", stat4:"Schweizer Recht & Steuern", statFree:"Kostenlos",
       agentsTag:"Ihr KI-Team", agentsTitle:"11 Experten-Agenten<br/>zu Ihrem Dienst", agentsDesc:"Jeder Agent kennt den Schweizer Sportmarkt perfekt \u2014 Recht, Steuern, Kultur und lokale Netzwerke.",
       howTag:"Einfach & Schnell", howTitle:"Starten Sie in 3 Schritten", howDesc:"Kein Papierkram. Ihr KI-Agenten-Team ist sofort nach der Anmeldung einsatzbereit.",
       step1Title:"Erstelle dein Athletenprofil", step1Desc:"Sport, Niveau, Club, Ziel: 30 Sekunden bei der Anmeldung. Strava und Kalender sind optional und können später für mehr Kontext verbunden werden.",
@@ -1049,7 +1057,7 @@
       heroDesc:"SPORTVISE brings your journal, RPE and calendar into every conversation. Not a generic chatbot \u2014 sports management that knows you and tailors its advice to how you feel today.",
       heroCta1:"Create my free account \u2192", heroCta2:"Discover our AI agents",
       heroSocial:"\ud83d\udd12 No credit card required \u00b7 Data protected by Swiss law \ud83c\udde8\ud83c\udded",
-      stat1:"Specialized AI agents", stat2:"Total availability", stat3:"Start for free right now", stat4:"Swiss law & taxes",
+      stat1:"Specialized AI agents", stat2:"Total availability", stat3:"Start for free right now", stat4:"Swiss law & taxes", statFree:"Free",
       agentsTag:"Your AI team", agentsTitle:"11 expert agents<br/>at your service", agentsDesc:"Each agent knows the Swiss sports market perfectly \u2014 law, taxes, culture and local networks.",
       howTag:"Simple & Fast", howTitle:"Get started in 3 steps", howDesc:"No paperwork. Your AI agent team is operational from the moment you sign up.",
       step1Title:"Build your athlete profile", step1Desc:"Sport, level, club, goal: 30 seconds at signup. Strava and calendar are optional, plug them in later if you want to enrich the context.",
@@ -1160,7 +1168,7 @@
       heroDesc:"SPORTVISE integra il tuo diario, l\u2019RPE e il calendario in ogni conversazione. Non un chatbot generico \u2014 una gestione sportiva che ti conosce e adatta i consigli alla tua forma del giorno.",
       heroCta1:"Crea il mio account gratuito \u2192", heroCta2:"Scopri gli agenti IA",
       heroSocial:"\ud83d\udd12 Nessuna carta di credito richiesta \u00b7 Dati protetti LPD \ud83c\udde8\ud83c\udded",
-      stat1:"Agenti IA specializzati", stat2:"Disponibilit\u00e0 totale", stat3:"Inizia gratis subito", stat4:"Diritto e fiscalit\u00e0 CH",
+      stat1:"Agenti IA specializzati", stat2:"Disponibilit\u00e0 totale", stat3:"Inizia gratis subito", stat4:"Diritto e fiscalit\u00e0 CH", statFree:"Gratuito",
       agentsTag:"Il tuo team IA", agentsTitle:"11 agenti esperti<br/>al tuo servizio", agentsDesc:"Ogni agente conosce perfettamente il mercato sportivo svizzero \u2014 diritto, fiscalit\u00e0, cultura e reti locali.",
       howTag:"Semplice & Veloce", howTitle:"Inizia in 3 passaggi", howDesc:"Nessuna burocrazia. Il tuo team di agenti IA \u00e8 operativo dal momento della registrazione.",
       step1Title:"Crea il tuo profilo atleta", step1Desc:"Sport, livello, club, obiettivo: 30 secondi alla registrazione. Strava e calendario sono opzionali, da collegare più tardi se vuoi arricchire il contesto.",
