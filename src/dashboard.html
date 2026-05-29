@@ -2836,9 +2836,6 @@ async function renderDashboard() {
     _headerSub = '<a href="#" onclick="showPage(\'' + _topAgId + '\',null);return false;" style="color:var(--gold);font-weight:700;text-decoration:none">'
       + (_topAg ? _topAg.emoji + ' ' : '') + _topLabel
       + ' — ' + (t.dashHeaderResume || 'reprendre →') + '</a>';
-  } else if (streak >= 3) {
-    // Streak actif → le valoriser
-    _headerSub = '<span style="color:#f59e0b;font-weight:600">🔥 Streak ' + streak + ' ' + (streak > 1 ? (t.dashStreakDays||'jours') : (t.dashStreakDay||'jour')) + '</span>';
   } else if (sportRaw) {
     // Profil avec sport → afficher le sport
     _headerSub = t.sport + ' : <span style="color:var(--gold);font-weight:700">' + sport + '</span>';
