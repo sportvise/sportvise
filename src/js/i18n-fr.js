@@ -156,6 +156,7 @@ var T_FR = {
   // Modal-related
   completeProfileModal:'Complète ton profil',
   profileTitle:'Mon Profil Athlète',
+  navSectionForYou: 'Pour toi',
   navLabels: {
     marketing:'Alex — Marketing', finance:'Sophie — Finance', sponsors:'Marc — Sponsors',
     contrats:'Léa — Contrats', physique:'David — Physique', mental:'Emma — Mental',
@@ -263,6 +264,7 @@ var T_FR = {
   memoryBtnDescribe:'+ Me décrire', memoryBtnEdit:'✏️ Modifier',
   memoryBtnDescribeTt:'Ajouter du contexte pour personnaliser les conseils',
   memoryBtnEditTt:'Modifier mon contexte',
+  tooltipDescribeText:'Complète pour des conseils sur mesure',
   memoryModalTitle:'Mon contexte sportif',
   memoryModalSub:'Ces informations seront utilisées par tous tes agents pour personnaliser leurs conseils.',
   memoryModalPlaceholder:'Ex : je prépare un marathon en juin, je m\'entraîne 5x/semaine mais j\'ai tendance à surcharger. Je veux progresser en régularité.',

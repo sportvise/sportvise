@@ -152,6 +152,7 @@ var T_EN = {
   // Modal-related
   completeProfileModal:'Complete your profile',
   profileTitle:'My Athlete Profile',
+  navSectionForYou: 'For you',
   navLabels: {
     marketing:'Alex — Marketing', finance:'Sophie — Finance', sponsors:'Marc — Sponsors',
     contrats:'Léa — Contracts', physique:'David — Physical', mental:'Emma — Mental',
@@ -259,6 +260,7 @@ var T_EN = {
   memoryBtnDescribe:'+ Describe me', memoryBtnEdit:'✏️ Edit',
   memoryBtnDescribeTt:'Add context to personalise your coaching',
   memoryBtnEditTt:'Edit my context',
+  tooltipDescribeText:'Add context for tailored advice',
   memoryModalTitle:'My athletic context',
   memoryModalSub:'This information will be used by all your agents to personalise their advice.',
   memoryModalPlaceholder:'E.g.: I\'m training for a marathon in June, 5x/week, but tend to overtrain. I want to improve my consistency.',
