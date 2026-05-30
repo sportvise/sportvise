@@ -208,19 +208,20 @@ async function logUsage({ userId, agentId, model, inputTokens, outputTokens, lat
 const MODEL_CONFIG = {
   haiku: {
     id: process.env.AI_MODEL_DEFAULT || 'claude-haiku-4-5-20251001',
-    maxTokens: 1200,
+    maxTokens: 2000,
     temperature: 1.0,
     systemPrefix: ''
   },
   sonnet: {
     id: process.env.AI_MODEL_BETA || 'claude-sonnet-4-6',
-    maxTokens: 800,
+    maxTokens: 3500,
     temperature: 0.4,
     systemPrefix: `[CONSIGNES DE STYLE STRICTES — À RESPECTER POUR CHAQUE RÉPONSE]
-- Réponds en 2 à 3 paragraphes courts maximum (pas plus).
+- Pour les réponses conversationnelles : 2 à 3 paragraphes courts maximum.
+- EXCEPTION PLANS : si tu génères un plan d'entraînement ou de nutrition sur plusieurs jours, ignore la limite de paragraphes. Découpe en parties de 5 jours maximum. À la fin de chaque partie, demande explicitement : "Veux-tu que je te donne la suite ?" Ne laisse JAMAIS un plan se couper au milieu d'une journée.
 - Tutoie systématiquement l'athlète (jamais de "vous").
 - Termine par UNE seule question OU UN seul appel à l'action concret — pas les deux.
-- Pas de listes à puces ni de listes numérotées, SAUF si la réponse en a vraiment besoin (ex : étapes ordonnées d'un protocole). Privilégie des phrases fluides en prose.
+- Pas de listes à puces ni de listes numérotées, SAUF si la réponse en a vraiment besoin (ex : étapes ordonnées d'un protocole, plan journalier). Privilégie des phrases fluides en prose.
 - N'invente JAMAIS d'URL, de lien, de site web, de marque ni de produit que tu n'es pas certain d'avoir vu apparaître dans le contexte fourni. Si tu ne connais pas un lien précis, dis "cherche sur Google" ou "demande à ta fédération".
 - Ton conversationnel et concret, pas académique.
 
@@ -228,13 +229,14 @@ const MODEL_CONFIG = {
   },
   opus: {
     id: process.env.AI_MODEL_PREMIUM || 'claude-opus-4-6',
-    maxTokens: 800,
+    maxTokens: 3500,
     temperature: 0.4,
     systemPrefix: `[CONSIGNES DE STYLE STRICTES — À RESPECTER POUR CHAQUE RÉPONSE]
-- Réponds en 2 à 3 paragraphes courts maximum (pas plus).
+- Pour les réponses conversationnelles : 2 à 3 paragraphes courts maximum.
+- EXCEPTION PLANS : si tu génères un plan d'entraînement ou de nutrition sur plusieurs jours, ignore la limite de paragraphes. Découpe en parties de 5 jours maximum. À la fin de chaque partie, demande explicitement : "Veux-tu que je te donne la suite ?" Ne laisse JAMAIS un plan se couper au milieu d'une journée.
 - Tutoie systématiquement l'athlète (jamais de "vous").
 - Termine par UNE seule question OU UN seul appel à l'action concret — pas les deux.
-- Pas de listes à puces ni de listes numérotées, SAUF si la réponse en a vraiment besoin (ex : étapes ordonnées d'un protocole). Privilégie des phrases fluides en prose.
+- Pas de listes à puces ni de listes numérotées, SAUF si la réponse en a vraiment besoin (ex : étapes ordonnées d'un protocole, plan journalier). Privilégie des phrases fluides en prose.
 - N'invente JAMAIS d'URL, de lien, de site web, de marque ni de produit que tu n'es pas certain d'avoir vu apparaître dans le contexte fourni. Si tu ne connais pas un lien précis, dis "cherche sur Google" ou "demande à ta fédération".
 - Ton conversationnel et concret, pas académique.
 - Tu es l'expert haut de gamme du plan Pro : appuie-toi sur ta capacité de raisonnement pour aller plus loin dans la spécificité (chiffres précis, références aux particularités du sport pratiqué, anticipation de la prochaine question de l'athlète).
@@ -589,10 +591,21 @@ RÈGLE STRICTE : n'inclus le tag QUE si l'athlète mentionne explicitement une d
 
   for (const match of calEventMatches) {
     const fields = {};
-    match[1].split('|').forEach(part => {
+    // v63.18 — Extract description first (must be last field; may contain | if user includes pipes)
+    // Everything after "description=" until end of tag content is the description.
+    let rawTag = match[1];
+    const descIdx = rawTag.indexOf('description=');
+    let descValue = null;
+    if (descIdx !== -1) {
+      descValue = rawTag.slice(descIdx + 'description='.length).trim();
+      rawTag = rawTag.slice(0, descIdx);
+    }
+    rawTag.split('|').forEach(part => {
       const eqIdx = part.indexOf('=');
       if (eqIdx > 0) fields[part.slice(0, eqIdx).trim()] = part.slice(eqIdx + 1).trim();
     });
+    if (descValue) fields.description = descValue;
+
     const eventType = validTypes.includes(fields.type) ? fields.type : 'entrainement';
     const eventDate = fields.date || null;
     if (!eventDate || !/^\d{4}-\d{2}-\d{2}$/.test(eventDate)) continue;
@@ -604,7 +617,7 @@ RÈGLE STRICTE : n'inclus le tag QUE si l'athlète mentionne explicitement une d
       event_date: eventDate,
       event_time: (fields.time && /^\d{2}:\d{2}$/.test(fields.time)) ? fields.time : null,
       duration_minutes: fields.duration ? Math.min(parseInt(fields.duration) || 90, 480) : 90,
-      notes: 'Ajouté automatiquement via conversation SPORTVISE'
+      notes: fields.description ? fields.description.slice(0, 1000) : 'Ajouté via SPORTVISE'
     };
     try {
       await httpRequest({
