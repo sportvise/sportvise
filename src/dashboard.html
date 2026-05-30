@@ -658,14 +658,14 @@
     <!-- ─── BUSINESS ─── -->
     <div class="nav-divider"></div>
     <div class="nav-section" id="navSectionBusiness">💼 BUSINESS</div>
-    <button class="nav-item" onclick="showPage('equipe',this)">🤝 <span data-nav="equipe">Management</span></button>
-    <button class="nav-item" onclick="showPage('finance',this)">💶 <span data-nav="finance">Finance</span></button>
-    <button class="nav-item" onclick="showPage('marketing',this)">📱 <span data-nav="marketing">Marketing</span></button>
     <button id="navBizToggle" class="nav-toggle" onclick="_svToggleNavSection(this,'navBizMore')">
       <span class="nav-toggle-arrow">▸</span>
-      <span id="navBizMoreLabel">Sponsors · Contrats · Compta</span>
+      <span id="navBizMoreLabel">Management · Finance · Marketing</span>
     </button>
     <div id="navBizMore" class="nav-collapsible">
+      <button class="nav-item" onclick="showPage('equipe',this)">🤝 <span data-nav="equipe">Management</span></button>
+      <button class="nav-item" onclick="showPage('finance',this)">💶 <span data-nav="finance">Finance</span></button>
+      <button class="nav-item" onclick="showPage('marketing',this)">📱 <span data-nav="marketing">Marketing</span></button>
       <button class="nav-item" onclick="showPage('sponsors',this)">🤝 <span data-nav="sponsors">Sponsors</span></button>
       <button class="nav-item" onclick="showPage('contrats',this)">📋 <span data-nav="contrats">Contrats</span></button>
       <button class="nav-item" onclick="showPage('comptabilite',this)">📊 <span data-nav="comptabilite">Comptabilité</span></button>
@@ -3103,7 +3103,34 @@ async function renderDashboard() {
         .gte('event_date', dateToStr(today))
         .lte('event_date', dateToStr(in7))
         .order('event_date', { ascending: true }).limit(3);
-      if (!upcomingEvts || upcomingEvts.length === 0) return `
+      if (!upcomingEvts || upcomingEvts.length === 0) {
+        // v63.20 — Empty state éducatif : si l'user a déjà parlé à un agent mais
+        // n'a aucun event, on lui montre comment le calendrier + agents s'articulent.
+        const calTotalEmpty = (_calCount || 0) === 0;
+        const hasSpokenToAgent = totalMsgs > 0;
+        if (calTotalEmpty && hasSpokenToAgent) {
+          return `
+          <div style="background:linear-gradient(135deg,#f59e0b10,#fb923c06);border:1px solid #f59e0b35;border-radius:14px;padding:20px;margin-bottom:16px">
+            <div style="display:flex;align-items:flex-start;gap:12px">
+              <div style="font-size:28px;flex-shrink:0">📅</div>
+              <div style="flex:1">
+                <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:4px">${t.calEdTitle||'Tes agents peuvent remplir ton calendrier'}</div>
+                <div style="font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:12px">${t.calEdSub||'Demande à David un programme d\'entraînement — il ajoutera chaque séance directement ici en un clic.'}</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <button onclick="(function(){var input=document.getElementById('chatInput');showPage('physique',null);setTimeout(function(){var inp=document.getElementById('chatInput');if(inp){inp.value='${(t.calEdAgentMsg||'Crée-moi un programme d\'entraînement pour cette semaine et ajoute les séances à mon calendrier').replace(/'/g,"\\'")}';inp.focus();}},400);})()"
+                    style="padding:7px 14px;border-radius:8px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">
+                    🏋️ ${t.calEdCtaAgent||'Demander un programme à David →'}
+                  </button>
+                  <button onclick="showPage('calendrier',null)"
+                    style="padding:7px 14px;border-radius:8px;background:transparent;border:1px solid var(--border);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">
+                    ${t.calEdCtaManual||'Ajouter manuellement'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>`;
+        }
+        return `
         <div style="background:linear-gradient(135deg,#f59e0b10,#fb923c06);border:1px solid #f59e0b35;border-radius:14px;padding:20px;margin-bottom:16px;cursor:pointer" onclick="showPage('calendrier',document.querySelector('[onclick*=calendrier]'))">
           <div style="display:flex;align-items:center;gap:12px">
             <div style="font-size:28px;flex-shrink:0">📅</div>
@@ -3112,8 +3139,8 @@ async function renderDashboard() {
               <div style="font-size:11px;color:var(--muted);line-height:1.5">${t.addMatchesPrompt||'Tes agents travaillent à l\'aveugle sans ton calendrier.'} <span style="color:var(--gold);font-weight:700">${t.dashCalEmptyCta||'Ajouter un match →'}</span></div>
             </div>
           </div>
-        </div>
-      `;
+        </div>`;
+      }
       const typeInfo = { match:{emoji:'⚽',color:'#ef4444'}, competition:{emoji:'🏆',color:'#f59e0b'}, entrainement:{emoji:'🏋️',color:'#10b981'}, autre:{emoji:'📌',color:'#6366f1'} };
       return `
         <div style="background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px">
@@ -3754,6 +3781,69 @@ function renderRoutingChips(currentAgentId, agentMsgText) {
   `;
 }
 
+// v63.20 — Onboarding chips : 3 suggestions contextuelles sous le 1er message agent
+// Affichées seulement si l'utilisateur n'a encore posé aucune question à cet agent.
+// Disparaissent au 1er clic (sessionStorage). Contenu par agent.
+const _OB_CHIPS = {
+  physique: [
+    { fr:'Crée-moi un programme d\'entraînement pour cette semaine', de:'Erstelle mir einen Trainingsplan für diese Woche', en:'Create a training program for this week', it:'Crea un programma di allenamento per questa settimana' },
+    { fr:'Comment optimiser ma préparation pour ma prochaine compétition ?', de:'Wie optimiere ich meine Vorbereitung für den nächsten Wettkampf?', en:'How do I optimize my preparation for my next competition?', it:'Come ottimizzare la mia preparazione per la prossima competizione?' },
+    { fr:'Quels sont mes axes de progression prioritaires selon mon profil ?', de:'Was sind meine Prioritäten zur Verbesserung gemäß meinem Profil?', en:'What are my priority areas for improvement based on my profile?', it:'Quali sono le mie priorità di miglioramento in base al mio profilo?' }
+  ],
+  mental: [
+    { fr:'Comment gérer le stress avant une compétition ?', de:'Wie manage ich Stress vor einem Wettkampf?', en:'How do I manage stress before a competition?', it:'Come gestisco lo stress prima di una gara?' },
+    { fr:'Aide-moi à développer ma concentration mentale', de:'Hilf mir, meine mentale Konzentration zu entwickeln', en:'Help me develop my mental focus', it:'Aiutami a sviluppare la mia concentrazione mentale' },
+    { fr:'Comment récupérer psychologiquement après une défaite ?', de:'Wie erholt man sich nach einer Niederlage psychologisch?', en:'How do I recover mentally after a defeat?', it:'Come recuperare psicologicamente dopo una sconfitta?' }
+  ],
+  nutrition: [
+    { fr:'Que manger avant et après l\'entraînement ?', de:'Was soll ich vor und nach dem Training essen?', en:'What should I eat before and after training?', it:'Cosa mangiare prima e dopo l\'allenamento?' },
+    { fr:'Crée-moi un plan nutrition pour la semaine', de:'Erstelle mir einen Ernährungsplan für die Woche', en:'Create a nutrition plan for this week', it:'Crea un piano nutrizionale per questa settimana' },
+    { fr:'Comment optimiser mon alimentation pour la récupération ?', de:'Wie optimiere ich meine Ernährung für die Erholung?', en:'How do I optimize my nutrition for recovery?', it:'Come ottimizzare la mia alimentazione per il recupero?' }
+  ],
+  finance: [
+    { fr:'Comment optimiser mes revenus en tant qu\'athlète ?', de:'Wie optimiere ich meine Einnahmen als Athlet?', en:'How do I optimize my income as an athlete?', it:'Come ottimizzare i miei guadagni come atleta?' },
+    { fr:'Quelles charges puis-je déduire liées à mon sport ?', de:'Welche Sportkosten kann ich abziehen?', en:'What sport-related expenses can I deduct?', it:'Quali spese sportive posso dedurre?' },
+    { fr:'Explique-moi mon statut d\'indépendant sportif en Suisse', de:'Erkläre mir meinen Status als selbständiger Sportler in der Schweiz', en:'Explain my self-employed athlete status in Switzerland', it:'Spiegami il mio status di atleta indipendente in Svizzera' }
+  ],
+  equipe: [
+    { fr:'Comment améliorer ma communication avec mon entraîneur ?', de:'Wie verbessere ich meine Kommunikation mit meinem Trainer?', en:'How do I improve communication with my coach?', it:'Come migliorare la comunicazione con il mio allenatore?' },
+    { fr:'Aide-moi à préparer une négociation de contrat', de:'Hilf mir, eine Vertragsverhandlung vorzubereiten', en:'Help me prepare for a contract negotiation', it:'Aiutami a preparare una trattativa contrattuale' },
+    { fr:'Comment gérer ma relation avec mon club ?', de:'Wie manage ich meine Beziehung zum Verein?', en:'How do I manage my relationship with my club?', it:'Come gestisco il rapporto con il mio club?' }
+  ]
+};
+
+function renderOnboardingChips(agentId, hasUserMessages) {
+  if (hasUserMessages) return '';
+  if (sessionStorage.getItem('sv_obchips_' + agentId)) return '';
+  const chips = _OB_CHIPS[agentId];
+  if (!chips) return '';
+  const lang = currentLang || 'fr';
+  const hint = ({ fr:'Par où commencer ?', de:'Wo anfangen?', en:'Where to start?', it:'Da dove iniziare?' })[lang] || 'Par où commencer ?';
+  return `<div class="routing-chips" style="display:flex;flex-wrap:wrap;align-items:flex-start;gap:6px;margin-top:10px;flex-direction:column">
+    <span style="font-size:11px;color:var(--muted)">💡 ${hint}</span>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">
+      ${chips.map((c, idx) => `<button onclick="_svObChipSend('${agentId}',${idx})"
+        style="display:inline-flex;align-items:center;padding:5px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:14px;font-size:12px;color:var(--text);font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;text-align:left;transition:all 0.15s;max-width:340px;line-height:1.4"
+        onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'"
+        onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">${c[lang] || c.fr}</button>`).join('')}
+    </div>
+  </div>`;
+}
+
+function _svObChipSend(agentId, idx) {
+  sessionStorage.setItem('sv_obchips_' + agentId, '1');
+  // Supprimer le bloc chips visuellement
+  document.querySelectorAll('.routing-chips').forEach(function(el) {
+    if (el.querySelector('[onclick*="_svObChipSend"]')) el.remove();
+  });
+  const chips = _OB_CHIPS[agentId];
+  if (!chips || !chips[idx]) return;
+  const lang = currentLang || 'fr';
+  const text = chips[idx][lang] || chips[idx].fr;
+  const input = document.getElementById('chatInput');
+  if (input) { input.value = text; sendMsg(agentId); }
+}
+
 // v63.19 — Chip calendrier subtil : apparaît une fois par session sur le dernier message
 // agent si le message décrit des séances planifiées et qu'aucun event n'a été ajouté.
 // Agents concernés : physique, nutrition, sommeil, recuperation, mental.
@@ -3824,6 +3914,9 @@ function renderMessages(page, agent) {
     const routingChipsHtml = showRoutingChips ? renderRoutingChips(page, displayText || msgText || '') : '';
     // v63.19 — chip calendrier : même condition que routing chips
     const calChipHtml = showRoutingChips ? renderCalendarChip(page, displayText || msgText || '') : '';
+    // v63.20 — onboarding chips : sous le 1er message agent si aucun message user encore
+    const hasUserMsgs = chats[page].some(function(msg) { return msg.from === 'user'; });
+    const obChipHtml = (i === 0 && m.from === 'agent') ? renderOnboardingChips(page, hasUserMsgs) : '';
 
     return `
     <div class="msg ${m.from}">
@@ -3848,6 +3941,7 @@ function renderMessages(page, agent) {
             <!-- v63.17.2 — bouton audio retiré -->
           ` : ''}
         </div>
+        ${obChipHtml}
         ${routingChipsHtml}
         ${calChipHtml}
       </div>
@@ -5553,6 +5647,11 @@ const EVENT_TYPES = {
   match: { emoji: '⚽', color: '#ef4444', label: 'Match' },
   competition: { emoji: '🏆', color: '#f59e0b', label: 'Compétition' },
   entrainement: { emoji: '🏋️', color: '#10b981', label: 'Entraînement' },
+  nutrition: { emoji: '🥗', color: '#84cc16', label: 'Nutrition' },
+  mental: { emoji: '🧠', color: '#8b5cf6', label: 'Mental' },
+  sommeil: { emoji: '😴', color: '#3b82f6', label: 'Sommeil' },
+  repos: { emoji: '💤', color: '#64748b', label: 'Repos' },
+  blessure: { emoji: '🤕', color: '#f97316', label: 'Blessure' },
   autre: { emoji: '📌', color: '#6366f1', label: 'Autre' }
 };
 
@@ -5565,7 +5664,7 @@ const INTENSITY = {
 // v51 — i18n helpers for EVENT_TYPES / INTENSITY labels (label fields above kept as FR fallback).
 function eventTypeLabel(type) {
   const t = T[currentLang] || T.fr;
-  const key = ({ match: 'eventTypeMatch', competition: 'eventTypeCompetition', entrainement: 'eventTypeTraining', autre: 'eventTypeOther' })[type] || 'eventTypeOther';
+  const key = ({ match: 'eventTypeMatch', competition: 'eventTypeCompetition', entrainement: 'eventTypeTraining', nutrition: 'eventTypeNutrition', mental: 'eventTypeMental', sommeil: 'eventTypeSommeil', repos: 'eventTypeRepos', blessure: 'eventTypeBlessure', autre: 'eventTypeOther' })[type] || 'eventTypeOther';
   return t[key] || EVENT_TYPES[type]?.label || EVENT_TYPES.autre.label;
 }
 function intensityLabel(intens) {
@@ -6832,13 +6931,13 @@ function showRecapModal(eventId, eventTitle, eventType, eventDate, existing) {
   const isMatch = eventType === 'match' || eventType === 'competition';
   // Local i18n map for event type labels (EVENT_TYPES.label refactor is v50+ P1, cf. spec).
   const typeLabelsByLang = {
-    fr: { match:'Match', competition:'Compétition', entrainement:'Entraînement', autre:'Événement' },
-    de: { match:'Match', competition:'Wettkampf', entrainement:'Training', autre:'Ereignis' },
-    en: { match:'Match', competition:'Competition', entrainement:'Training', autre:'Event' },
-    it: { match:'Partita', competition:'Competizione', entrainement:'Allenamento', autre:'Evento' }
+    fr: { match:'Match', competition:'Compétition', entrainement:'Entraînement', nutrition:'Nutrition', mental:'Mental', sommeil:'Sommeil', repos:'Repos', blessure:'Blessure', autre:'Événement' },
+    de: { match:'Match', competition:'Wettkampf', entrainement:'Training', nutrition:'Ernährung', mental:'Mental', sommeil:'Schlaf', repos:'Ruhe', blessure:'Verletzung', autre:'Ereignis' },
+    en: { match:'Match', competition:'Competition', entrainement:'Training', nutrition:'Nutrition', mental:'Mental', sommeil:'Sleep', repos:'Rest', blessure:'Injury', autre:'Event' },
+    it: { match:'Partita', competition:'Competizione', entrainement:'Allenamento', nutrition:'Nutrizione', mental:'Mentale', sommeil:'Sonno', repos:'Riposo', blessure:'Infortunio', autre:'Evento' }
   };
   const typeLabels = typeLabelsByLang[currentLang] || typeLabelsByLang.fr;
-  const typeEmojis = { match:'⚽', competition:'🏆', entrainement:'🏋️', autre:'📌' };
+  const typeEmojis = { match:'⚽', competition:'🏆', entrainement:'🏋️', nutrition:'🥗', mental:'🧠', sommeil:'😴', repos:'💤', blessure:'🤕', autre:'📌' };
   const localeCode = ({fr:'fr-CH',de:'de-CH',en:'en-GB',it:'it-CH'})[currentLang] || 'fr-CH';
   const dateStr = eventDate ? new Date(eventDate).toLocaleDateString(localeCode, { weekday:'long', day:'numeric', month:'long' }) : '';
 

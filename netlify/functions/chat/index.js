@@ -587,7 +587,7 @@ RÈGLE STRICTE : n'inclus le tag QUE si l'athlète mentionne explicitement une d
   replyText = replyText.replace(/\[CAL_EVENT:[^\]]+\]/g, '').replace(/\n{3,}/g, '\n\n').trim();
 
   const calendarCreatedList = [];
-  const validTypes = ['match', 'competition', 'entrainement', 'repos', 'blessure'];
+  const validTypes = ['match', 'competition', 'entrainement', 'repos', 'blessure', 'nutrition', 'mental', 'sommeil'];
 
   for (const match of calEventMatches) {
     const fields = {};
