@@ -499,12 +499,24 @@ Format : 8-15 lignes max, tutoiement, ton chaleureux et professionnel, pas d'emo
   const _excCount = typeof agentExchangeCount === 'number' ? agentExchangeCount : 0;
   if (_excCount >= 1) {
     systemWithLang += `\n\n[CALENDRIER — CAPTURE AUTOMATIQUE]
-Si dans SON MESSAGE l'athlète mentionne explicitement une date + un événement sportif (match, entraînement, compétition, repos, blessure), tu dois :
+Si dans SON MESSAGE l'athlète mentionne explicitement une date + un événement (sportif, nutritionnel, mental, récupération…), tu dois :
 1. Confirmer brièvement dans ta réponse que tu l'as ajouté à son calendrier ("Noté, je l'ajoute à ton calendrier.").
 2. Ajouter à la TOUTE FIN de ta réponse, sur une ligne seule, ce tag :
 [CAL_EVENT:type=entrainement|date=2026-06-15|title=Entraînement|time=10:00]
 
-Types valides : match, competition, entrainement, repos, blessure
+Types valides — utilise TOUJOURS le type adapté à l'événement :
+- match : match officiel, compétition par équipe
+- competition : compétition individuelle, course, tournoi
+- entrainement : séance d'entraînement physique, gym, patinage, terrain
+- repos : jour de repos, récupération passive
+- blessure : événement lié à une blessure ou rééducation
+- nutrition : plan repas, suivi alimentaire, repas spécifique (utilise ce type pour tous les plans nutrition)
+- mental : visualisation, cohérence cardiaque, préparation mentale, méditation
+- sommeil : protocole sommeil, routine du soir
+- autre : réunion, admin, sponsoring, objectif non-sportif
+
+IMPORTANT : n'utilise JAMAIS type=entrainement pour un plan nutrition, une séance mentale ou un protocole sommeil. Le type doit refléter la nature réelle de l'événement.
+
 Date : YYYY-MM-DD obligatoire — si l'athlète dit "samedi" ou "dans 3 jours", calcule depuis la date du jour fournie dans le contexte
 Time : HH:MM — inclus uniquement si mentionné, sinon omets le champ time
 Title : nom de l'événement tel que l'athlète l'a nommé (max 60 chars)
@@ -606,7 +618,15 @@ RÈGLE STRICTE : n'inclus le tag QUE si l'athlète mentionne explicitement une d
     });
     if (descValue) fields.description = descValue;
 
-    const eventType = validTypes.includes(fields.type) ? fields.type : 'entrainement';
+    let eventType = validTypes.includes(fields.type) ? fields.type : 'entrainement';
+    // Filet de sécurité : corriger le type si l'agent a mis 'entrainement' mais le titre révèle la vraie nature
+    if (eventType === 'entrainement') {
+      const titleLower = (fields.title || '').toLowerCase();
+      if (/^(nutrition|repas|d[îi]ner|d[ée]jeuner|petit.d[ée]j|plan alimentaire)/.test(titleLower)) eventType = 'nutrition';
+      else if (/^(mental|visualisation|m[ée]ditation|coh[ée]rence cardiaque|préparation mentale)/.test(titleLower)) eventType = 'mental';
+      else if (/^(sommeil|routine du soir|coucher|sieste)/.test(titleLower)) eventType = 'sommeil';
+      else if (/^(sponsor|partenariat|r[ée]union|admin|objectif|business|contrat|facture)/.test(titleLower)) eventType = 'autre';
+    }
     const eventDate = fields.date || null;
     if (!eventDate || !/^\d{4}-\d{2}-\d{2}$/.test(eventDate)) continue;
 
