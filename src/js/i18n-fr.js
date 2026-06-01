@@ -387,6 +387,11 @@ var T_FR = {
   obAgentDescMental:'ta coach mentale',
   obAgentDescFinance:'ta conseillère finance',
   obAgentDescCareer:'ton agent carrière',
+  obTeaserPhysique:'Essaie : "Construis-moi un plan physique pour la saison prochaine"',
+  obTeaserMental:'Essaie : "Prépare ma routine pré-compétition pour demain"',
+  obTeaserFinance:'Essaie : "Quelle est ma charge fiscale en tant que sportif en Suisse ?"',
+  obTeaserCareer:'Essaie : "Comment progresser vers le niveau supérieur dans mon sport ?"',
+  calPlanDetailed:'📋 PLAN DÉTAILLÉ',
   obAutoMsg:"Salut ! Je débute sur SPORTVISE, je fais du {sport} niveau {level}. Mon objectif : {goal}. Par où commencer ?",
   // PROFILE MODAL
   profileSub:'Ces informations permettent à tes agents IA de personnaliser chaque conseil.',
