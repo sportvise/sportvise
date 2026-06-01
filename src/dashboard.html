@@ -2409,42 +2409,6 @@ function showProfileModal() {
           <div id="clubHint" style="font-size:11px;color:var(--muted);margin-top:4px;display:none"></div>
         </div>
       </div>
-      <script>
-      // Clubs officiels pour l'autocomplete (source: API-Sports, noms exacts)
-      const _SV_CLUBS = {
-        football:   ['FC Thun','FC St-Gallen','FC Basel','BSC Young Boys','FC Zürich','Servette FC','FC Lausanne-Sport','FC Sion','FC Lugano','FC Luzern','Grasshopper Club','FC Winterthur','FC Yverdon','FC Vaduz',
-                     'FC Aarau','FC Schaffhausen','Neuchâtel Xamax','FC Wil','FC Stade Lausanne-Ouchy','AC Bellinzona','FC Rapperswil-Jona'],
-        hockey:     ['SC Bern','ZSC Lions','HC Davos','EV Zug','HC Lugano','Lausanne HC','HC Fribourg-Gottéron','HC Ambri-Piotta','SCL Tigers','EHC Biel-Bienne','HC Ajoie','Rapperswil-Jona Lakers','EHC Kloten','Genève-Servette HC',
-                     'HC La Chaux-de-Fonds','EHC Olten','EHC Visp'],
-        basketball: ['BBC Lausanne','Fribourg Olympic','Lausanne Lakers','Lions de Genève','SAM Massagno','Starwings Basket','Swiss Central Basket','Naters-Baltschieder','Vipers Monthey','Jubilee Basket']
-      };
-      function _svUpdateClubList() {
-        const sport = (document.getElementById('pSport')?.value || '').toLowerCase();
-        const dl = document.getElementById('clubSuggestions');
-        const hint = document.getElementById('clubHint');
-        if (!dl) return;
-        dl.innerHTML = '';
-        const clubs = _SV_CLUBS[sport];
-        if (clubs) {
-          clubs.forEach(c => { const o = document.createElement('option'); o.value = c; dl.appendChild(o); });
-          if (hint) { hint.style.display = 'block'; hint.textContent = (typeof T !== 'undefined' && T[currentLang||'fr'] && T[currentLang||'fr'].clubHint) || '📅 Le calendrier officiel sera importé automatiquement.'; }
-        } else {
-          if (hint) hint.style.display = 'none';
-        }
-      }
-      function _svFilterClubHint() {
-        const sport = (document.getElementById('pSport')?.value || '').toLowerCase();
-        const hint = document.getElementById('clubHint');
-        if (!hint) return;
-        hint.style.display = (_SV_CLUBS[sport]) ? 'block' : 'none';
-      }
-      // Init on open + wire sport change
-      setTimeout(() => {
-        _svUpdateClubList();
-        const sel = document.getElementById('pSport');
-        if (sel) sel.addEventListener('change', _svUpdateClubList);
-      }, 50);
-      </script>
 
       <div class="form-field">
         <label class="form-label">${t.canton}</label>
@@ -2470,6 +2434,12 @@ function showProfileModal() {
   `;
   document.body.appendChild(modal);
   selectedLevel = currentLevelKey; // store the canonical key (was previously the FR label)
+  // Init club autocomplete after DOM insertion
+  setTimeout(() => {
+    _svUpdateClubList();
+    const sel = document.getElementById('pSport');
+    if (sel) sel.addEventListener('change', _svUpdateClubList);
+  }, 50);
 }
 
 // ── v54 — DELETE ACCOUNT MODAL (right to be forgotten) ──────────
@@ -12577,6 +12547,32 @@ function renderConnexions() {
     const _lastSync = localStorage.getItem(_flagKey);
     _renderFedCalStatus(fedSection, t, _sport, _club, null, userProfile?.club || _club);
   }
+}
+
+// ─── v63.27.0 — Autocomplete club dans le profil ─────────────────────────────
+const _SV_CLUBS = {
+  football:   ['FC Thun','FC St-Gallen','FC Basel','BSC Young Boys','FC Zürich','Servette FC','FC Lausanne-Sport','FC Sion','FC Lugano','FC Luzern','Grasshopper Club','FC Winterthur','FC Yverdon','FC Vaduz','FC Aarau','FC Schaffhausen','Neuchâtel Xamax','FC Wil','FC Stade Lausanne-Ouchy','AC Bellinzona','FC Rapperswil-Jona'],
+  hockey:     ['SC Bern','ZSC Lions','HC Davos','EV Zug','HC Lugano','Lausanne HC','HC Fribourg-Gottéron','HC Ambri-Piotta','SCL Tigers','EHC Biel-Bienne','HC Ajoie','Rapperswil-Jona Lakers','EHC Kloten','Genève-Servette HC','HC La Chaux-de-Fonds','EHC Olten','EHC Visp'],
+  basketball: ['BBC Lausanne','Fribourg Olympic','Lausanne Lakers','Lions de Genève','SAM Massagno','Starwings Basket','Swiss Central Basket','Naters-Baltschieder','Vipers Monthey','Jubilee Basket']
+};
+function _svUpdateClubList() {
+  const sport = (document.getElementById('pSport')?.value || '').toLowerCase();
+  const dl = document.getElementById('clubSuggestions');
+  const hint = document.getElementById('clubHint');
+  if (!dl) return;
+  dl.innerHTML = '';
+  const clubs = _SV_CLUBS[sport];
+  if (clubs) {
+    clubs.forEach(c => { const o = document.createElement('option'); o.value = c; dl.appendChild(o); });
+    if (hint) { hint.style.display = 'block'; hint.textContent = (T[currentLang||'fr']?.clubHint) || '📅 Le calendrier officiel sera importé automatiquement.'; }
+  } else {
+    if (hint) hint.style.display = 'none';
+  }
+}
+function _svFilterClubHint() {
+  const sport = (document.getElementById('pSport')?.value || '').toLowerCase();
+  const hint = document.getElementById('clubHint');
+  if (hint) hint.style.display = (_SV_CLUBS[sport]) ? 'block' : 'none';
 }
 
 // ─── Chantier #15 — Import calendrier officiel fédérations (v63.12.4) ────────
