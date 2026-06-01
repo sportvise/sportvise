@@ -395,6 +395,7 @@ var T_IT = {
   profileHeight:'Altezza (cm)',
   profilePositionDetail:'Posizione / Specialità',
   profileClubCurrent:'Club attuale',
+  clubHint:'📅 Il calendario ufficiale verrà importato automaticamente.',
   // PRICING extras
   popularBadge:'POPOLARE',
   // DASHBOARD widgets (home page renderDashboard)

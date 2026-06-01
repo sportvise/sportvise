@@ -400,6 +400,7 @@ var T_FR = {
   profileHeight:'Taille (cm)',
   profilePositionDetail:'Position / Spécialité',
   profileClubCurrent:'Club actuel',
+  clubHint:'📅 Le calendrier officiel sera importé automatiquement.',
   // PRICING extras
   popularBadge:'POPULAIRE',
   // DASHBOARD widgets (home page renderDashboard)
