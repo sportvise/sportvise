@@ -601,12 +601,6 @@ RÈGLE STRICTE : n'inclus le tag QUE si l'athlète mentionne explicitement une d
   const calendarCreatedList = [];
   const validTypes = ['match', 'competition', 'entrainement', 'repos', 'blessure', 'nutrition', 'mental', 'sommeil'];
 
-  // v63.23 — Build all payloads first, then single batch insert.
-  // Avant : 1 await httpRequest() par CAL_EVENT → N inserts séquentiels → 504 timeout
-  // sur les plans multi-jours (plan nutrition 7j = jusqu'à 21 inserts séquentiels).
-  // Fix : accumulation des payloads valides + 1 seul POST avec tableau JSON.
-  const batchPayloads = [];
-
   for (const match of calEventMatches) {
     const fields = {};
     // v63.18 — Extract description first (must be last field; may contain | if user includes pipes)
@@ -643,14 +637,8 @@ RÈGLE STRICTE : n'inclus le tag QUE si l'athlète mentionne explicitement une d
       event_date: eventDate,
       event_time: (fields.time && /^\d{2}:\d{2}$/.test(fields.time)) ? fields.time : null,
       duration_minutes: fields.duration ? Math.min(parseInt(fields.duration) || 90, 480) : 90,
-      notes: fields.description ? fields.description.slice(0, 1000) : null
+      notes: fields.description ? fields.description.slice(0, 1000) : 'Ajouté via SPORTVISE'
     };
-    batchPayloads.push(eventPayload);
-    calendarCreatedList.push({ title: eventPayload.title, date: eventDate, type: eventType });
-  }
-
-  // Batch insert : 1 seul appel HTTP pour tous les événements
-  if (batchPayloads.length > 0) {
     try {
       await httpRequest({
         hostname: supabaseHost(),
@@ -662,11 +650,11 @@ RÈGLE STRICTE : n'inclus le tag QUE si l'athlète mentionne explicitement une d
           'Content-Type': 'application/json',
           Prefer: 'return=minimal'
         },
-        body: JSON.stringify(batchPayloads)
+        body: JSON.stringify(eventPayload)
       });
+      calendarCreatedList.push({ title: eventPayload.title, date: eventDate, type: eventType });
     } catch (e) {
-      console.warn('[CHAT] calendar batch insert failed (non-blocking):', e.message);
-      calendarCreatedList.length = 0; // reset si l'insert a échoué
+      console.warn('[CHAT] calendar insert failed (non-blocking):', eventDate, e.message);
     }
   }
 
