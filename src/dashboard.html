@@ -1006,11 +1006,11 @@ function showLucasWelcome() {
       () => {
         const goalDom = goalDomain(data.goal); // 'physique' | 'mental' | 'financier' | 'carriere'
         const agentReco =
-            goalDom === 'physique'  ? {key:'physique',name:'David', emoji:'🏋️',desc:t.obAgentDescPhysique,teaser:t.obTeaserPhysique}
-          : goalDom === 'mental'    ? {key:'mental',  name:'Emma',  emoji:'🧠',desc:t.obAgentDescMental,  teaser:t.obTeaserMental}
-          : goalDom === 'financier' ? {key:'finance', name:'Sophie',emoji:'💶',desc:t.obAgentDescFinance, teaser:t.obTeaserFinance}
-          : data.goal === 'win-competitions' ? {key:'mental', name:'Emma', emoji:'🧠',desc:t.obAgentDescMental, teaser:t.obTeaserMental}
-          : {key:'equipe',name:'Lucas',emoji:'💼',desc:t.obAgentDescCareer, teaser:t.obTeaserCareer};
+            goalDom === 'physique'  ? {key:'physique',name:'David', emoji:'🏋️',desc:t.obAgentDescPhysique}
+          : goalDom === 'mental'    ? {key:'mental',  name:'Emma',  emoji:'🧠',desc:t.obAgentDescMental}
+          : goalDom === 'financier' ? {key:'finance', name:'Sophie',emoji:'💶',desc:t.obAgentDescFinance}
+          : data.goal === 'win-competitions' ? {key:'mental', name:'Emma', emoji:'🧠',desc:t.obAgentDescMental}
+          : {key:'equipe',name:'Lucas',emoji:'💼',desc:t.obAgentDescCareer};
 
         // v62.13 — détecte si l'agent recommandé est locké pour le plan actuel
         const agentLocked = (typeof isAgentLocked === 'function') ? isAgentLocked(agentReco.key) : false;
@@ -1034,8 +1034,6 @@ function showLucasWelcome() {
                 </div>
               </div>
             </div>
-            <!-- v63.24 — Teaser ligne de valeur avant CTA : exemple concret par domaine agent -->
-            ${agentReco.teaser && !agentLocked ? `<div style="font-size:11px;color:#64748b;font-style:italic;max-width:340px;margin:0 auto 16px;line-height:1.5;padding:0 8px">${agentReco.teaser}</div>` : ''}
             ${agentLocked
               ? `<button onclick="finishOnboarding('abonnement')" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;border:none;padding:14px 36px;border-radius:12px;font-weight:800;font-size:15px;cursor:pointer;font-family:'Inter',sans-serif;margin-bottom:8px;transition:transform 0.2s" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='none'">Découvrir le Plan ${planName} →</button>`
               : `<button onclick="finishOnboarding('${agentReco.key}')" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;border:none;padding:14px 36px;border-radius:12px;font-weight:800;font-size:15px;cursor:pointer;font-family:'Inter',sans-serif;margin-bottom:8px;transition:transform 0.2s" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='none'">${(t.obSummaryCta||'').replace('{name}', agentReco.name)}</button>`
@@ -6068,7 +6066,7 @@ async function showDayDetail(dateStr) {
                   const items = safeN.split(' ; ').map(function(m) { return m.trim(); }).filter(Boolean);
                   const et = EVENT_TYPES[e.event_type] || EVENT_TYPES.autre;
                   return `<div style="margin-top:8px;padding:10px 12px;background:var(--bg);border-radius:8px;border:1px solid ${et.color}25">
-                    <div style="font-size:10px;font-weight:700;color:${et.color};margin-bottom:7px;letter-spacing:0.05em">${tLang.calPlanDetailed || '📋 PLAN DÉTAILLÉ'}</div>
+                    <div style="font-size:10px;font-weight:700;color:${et.color};margin-bottom:7px;letter-spacing:0.05em">📋 PLAN DÉTAILLÉ</div>
                     <div style="font-size:12px;color:var(--text);line-height:1.75">${items.map(function(item) {
                       const colonIdx = item.indexOf(' : ');
                       if (colonIdx > 0) {
@@ -8924,9 +8922,9 @@ async function saveEveningBrief() {
     const now = new Date();
     const dateKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
 
-    // Check existing log — v63.23: .maybeSingle() évite le 406 quand aucun log n'existe encore
+    // Check existing log
     const { data: existing } = await sb.from('daily_log')
-      .select('*').eq('user_id', currentUser.id).eq('log_date', dateKey).maybeSingle();
+      .select('*').eq('user_id', currentUser.id).eq('log_date', dateKey).single();
 
     const logData = existing ? { ...existing } : { user_id: currentUser.id, log_date: dateKey };
     if (_eveningData.mood) logData.mood = _eveningData.mood;
@@ -11510,9 +11508,8 @@ async function renderPrepaMatch() {
 
   // Get today's fitness score
   const todayStr = dateToStr(today);
-  // v63.23: .maybeSingle() évite le 406 quand aucun log n'existe encore pour aujourd'hui
   const { data: todayLog } = await sb.from('daily_log')
-    .select('*').eq('user_id', currentUser.id).eq('log_date', todayStr).maybeSingle();
+    .select('*').eq('user_id', currentUser.id).eq('log_date', todayStr).single();
   const fitnessScore = todayLog ? computeFitnessScore(todayLog) : null;
 
   // Fetch predictive intelligence for prepa match

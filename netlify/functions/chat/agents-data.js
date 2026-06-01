@@ -98,35 +98,21 @@ Swiss Handball League (SHL) : Kadetten Schaffhausen (SH — club référence, Li
 Saison : septembre → mai, playoffs.
 
 ATHLÉTISME (Swiss Athletics — swiss-athletics.ch) :
-Structure : Swiss Athletics est la fédération nationale. ~1'500 clubs affiliés. Championnats suisses élite 2026 : Letzigrund Zurich, 25-26 juillet 2026.
-Meetings Diamond League : Athletissima Lausanne (août — top 3 mondial, lié au Geneva Diamond League) + Weltklasse Zürich (septembre — Finale Diamond League sur 2 jours depuis 2025).
-Athlètes suisses de référence 2025-2026 : Audrey Werro (800m — record suisse 1'56"29, mondiale 2e en 2025) | Simon Ehammer (longueur/décathlon) | Ditaji Kambundji (110m haies, famille Kambundji = Mujinga/Ditaji/Kristina) | Dominic Lobalu (10'000m/demi-fond, naturalisation CH 2023).
-Stades : Pontaise (Lausanne), Letzigrund (Zürich — capacité 25'000).
-Courses populaires suisses : 20km de Lausanne (avril) | Grand-Prix de Berne (mai) | Morat-Fribourg (octobre, 17 km, 20'000+ participants) | Escalade Genève (décembre, course populaire nocturne, spécialité genevoise).
-Centre d'entraînement national : OFSPO Macolin (BE) — centre fédéral sport d'élite.
-Championnats d'Europe 2026 : Paris.
+Meetings Diamond League : Athletissima Lausanne (août, top 3 mondial) + Weltklasse Zürich (septembre — Finale Diamond League sur 2 jours depuis 2025).
+Performances suisses Athletissima 2025 : Audrey Werro (2e 800m, 1'57"34 — record perso), Simon Ehammer (2e longueur), Ditaji Kambundji (3e 110m haies).
+Stades : Pontaise (Lausanne), Letzigrund (Zürich).
+Courses populaires suisses : 20km de Lausanne (avril), Grand-Prix de Berne (mai), Morat-Fribourg (octobre, 17 km, 20'000+ participants), Escalade Genève (décembre).
+Centre d'entraînement : UCI/OFSPO Macolin.
 
 TENNIS (Swiss Tennis — swisstennis.ch) :
-Tournois ATP/WTA suisses : Swiss Indoors Basel (ATP 500, octobre) | Geneva Open (ATP 250, mai, terre battue) | EFG Swiss Open Gstaad (ATP 250, juillet, terre) | Ladies Open Lausanne (WTA 250, juillet).
-Héritage Federer (Bâle, retraite 2022) et Hingis (Thurgovie). Formation : Swiss Tennis National Training Centre (Bienne, OFT).
-Joueurs suisses actifs 2025-2026 : Belinda Bencic (WTA ~11, revenue de maternité 2024) | Viktorija Golubic (WTA ~75) | Susan Bandecchi (WTA ~215, 1er GS RG 2026) | Stan Wawrinka (ATP ~92, fin de carrière proche) | Marc-Andrea Hüsler (ATP ~80).
-Structure interne : Interclub NLB/NLA mars → septembre. Swiss Tennis ~100'000 licenciés.
+Tournois ATP/WTA suisses : Swiss Indoors Basel (ATP 500, octobre) | Geneva Open (ATP 250, mai, terre) | Ladies Open Lausanne (WTA 250, juillet).
+Héritage Federer (Bâle) et Hingis (Thurgovie). Formation : Swiss Tennis National Training Centre (Bienne).
+Interclub : mars → septembre.
 
 CYCLISME (Swiss Cycling — swiss-cycling.ch) :
-Courses World Tour : Tour de Romandie (VD/GE/VS/FR, fin avril-début mai, WorldTour) | Tour de Suisse (juin, prépa Tour de France — 2026 : 17-21 juin, départ Sondrio/Italie, 1ère fois femmes + hommes même venue).
+Courses World Tour : Tour de Romandie (VD/GE/VS/FR, fin avril-début mai) | Tour de Suisse (juin, prépa Tour de France).
 Siège UCI mondial : Centre mondial du cyclisme, Aigle (VD) — vélodrome couvert de référence mondiale.
-Équipe suisse pro : Tudor Pro Cycling (ProTeam, fondé par Fabian Cancellara 2022, siège Sursee LU). Leaders 2026 : Stefan Küng (chrono/classiques, arrivé 2026), Julian Alaphilippe (hilly classics), Marc Hirschi (CH, grimpeur puncheur), Matteo Trentin (classiques cobblées).
-Championnats suisses route : juin. Championnats suisses piste : hiver (vélodrome Grenchen SO).
-Cyclistes suisses actifs : Marc Hirschi | Stefan Küng | Stefan Bissegger | Marlen Reusser (chrono féminin).
-
-NATATION (Swiss Aquatics — swiss-aquatics.ch) :
-Structure : LNA (élite clubs) → LNB → ligues régionales.
-Clubs LNA/LNB 2025-2026 : Genève Natation 1885 (GE) | Lausanne Aquatique (VD) | Zurich Swim Team / Limmat Sharks (ZH) | SC Aarau (AG) | BS Bâle (BS) — clubs principaux, composition LNA variable annuellement.
-Championnats suisses clubs LNA/LNB 2026 : Sursee, 18-19 avril 2026.
-Championnats nationaux 2026 : Championnats été (Lausanne, 9-12 juillet) | Championnats jeunesse (Bâle, 16-19 juillet) | Eaux ouvertes (Zürichsee, 22-23 août) | Championnats courte distance (Lausanne, nov).
-Disciplines : nage libre, dos, brasse, papillon, 4 nages. Open water : lacs suisses.
-Athlètes suisses actifs : Jérémy Desplanches (200m 4 nages — médaillé olympique Tokyo 2021) | Maria Ugolkova (papillon/4 nages) | Lisa Mamie (brasse).
-Formation : Swiss Aquatics Performance Centre. Accès au SEM (service médical) via Swiss Olympic.
+Championnats suisses route : juin.
 
 SPORTS DE GLACE ADDITIONNELS :
 Curling : Swiss Curling (curling.ch) — très ancré en Suisse, nombreux clubs, Championnats du Monde organisés régulièrement à Genève.
@@ -233,56 +219,6 @@ SPORTS D'HIVER (autres) :
 - Biathlon : saison décembre → mars.
 - Patinage artistique : championnats suisses en décembre.
 - Bob / Luge / Skeleton : saison novembre → février. Piste de St-Moritz / Celerina.
-`;
-
-const PERMIS_TRAVAIL_ATHLETES = `
-PERMIS DE TRAVAIL ET STATUT DES ATHLÈTES ÉTRANGERS EN SUISSE
-
-BASE LÉGALE :
-- Loi sur les étrangers et l'intégration (LEI / AIG) — régit l'admission sur le marché du travail.
-- Ordonnance sur l'admission, le séjour et l'exercice d'une activité lucrative (OASA).
-- SEM (Secrétariat d'État aux migrations, sem.admin.ch) = autorité compétente.
-- Athlètes UE/AELE : accord sur la libre circulation des personnes (ALCP) → accès facilité, pas de quotas. Procédure d'annonce simplifiée.
-- Athlètes hors UE/AELE (pays tiers) : soumis aux contingents cantonaux et fédéraux annuels. Procédure plus lourde, délais 4-8 semaines.
-
-TYPES DE PERMIS POUR ATHLÈTES :
-- Permis L (court séjour) : contrats sportifs jusqu'à 12 mois, renouvelable 1× (max 24 mois). Idéal pour essais, saisons courtes. Pas de regroupement familial automatique.
-- Permis B (séjour) : contrat pluriannuel ou position permanente dans un club. Valable 1 an, renouvelable. Permet regroupement familial. Condition : salaire conforme aux normes locales.
-- Permis C (établissement) : après 5 ans (UE/AELE) ou 10 ans (pays tiers) de séjour régulier. Liberté totale de travail.
-- Permis G (frontalier) : athlète résidant dans un pays limitrophe (France, Allemagne, Autriche, Italie) et travaillant en CH. Retour au domicile chaque semaine requis.
-
-SALAIRE MINIMUM LÉGAL POUR SPORTIFS PRO (SEM, 2025) :
-- Super League football + National League hockey : CHF 5'400/mois brut minimum pour un non-UE.
-- Condition "salaires et conditions usuels du lieu" (Ortsüblichkeit) : le SEM vérifie que l'athlète touche le salaire standard de sa ligue. En dessous → refus du permis.
-- Challenge League / Swiss League : même principe, seuil ~CHF 3'500-4'500/mois selon canton.
-
-QUOTAS JOUEURS ÉTRANGERS PAR LIGUE :
-- Super League football (SFL) : pas de limite stricte sur le nombre d'étrangers dans l'effectif. Pas de restrictions UE. Non-UE : soumis aux contingents cantonaux SEM — chaque club négocie ses quotas annuellement avec son canton.
-- National League hockey (SIHF) : 8 étrangers max sur la feuille de match par équipe (règlement SIHF 2025-26). En pratique : 5-6 étrangers en glace simultanément. Aucune distinction UE/non-UE dans le règlement SIHF — la distinction opère au niveau permis SEM.
-- Swiss League hockey : 4 étrangers max sur feuille de match.
-- Swiss Super League basket : 5 étrangers sur feuille + 1 joueur formé localement (règlement SBL).
-- NLA volleyball : règlement Swiss Volley (vérifier sur volleyball.ch, évolue chaque saison).
-
-PROCÉDURE D'EMBAUCHE (athlète non-UE) :
-1. Club dépose demande d'autorisation auprès du canton (Service de la main-d'œuvre ou équivalent).
-2. Canton transmet au SEM avec preuve de salaire conforme + contrat de travail.
-3. SEM statue (délai : 4-8 semaines selon complexité). Délai peut être raccourci si le club fournit dossier complet d'emblée.
-4. Permis L ou B délivré. Athlète peut entrer en CH et commencer à jouer.
-5. Pour non-UE : contingent cantonale consommé. Chaque canton a un quota annuel (renouvelé en janvier).
-IMPORTANT : L'athlète ne peut pas commencer à jouer avant réception du permis. Infraction = amende club + risque d'invalidation des résultats.
-
-NATURALISATIONS SPORTIVES :
-- Naturalisation ordinaire : 10 ans de séjour en CH (années 8-18 ans comptent double). Nécessite permis C, langue nationale B1 oral / A2 écrit, intégration, indépendance économique.
-- Procédure accélérée pour athlètes d'élite : même conditions de fond, mais accélération administrative possible si opportunité compétitive immédiate (ex : JO dans 6 mois). Décision politique cantonale.
-- Coûts : CHF 500-3'000 selon canton + commune.
-- Impact sportif : athlète naturalisé peut représenter la Suisse après délai fédération (FIFA : 3 ans sans sélection nationale précédente, ou 5 ans si déjà sélectionné chez autre nation).
-- Cas pratiques récents : Granit Xhaka (naturalisé, FIFA exception), Renato Steffen, Cedric Itten.
-
-AGENTS DE JOUEURS EN SUISSE :
-- Agents FIFA agréés (licence FIFA, vérifiable sur fifa.com/agents). Obligation depuis 2023.
-- Contrat d'agence : limité à 2 ans en Suisse (CO art. 418a ss). Commission max : 3 % du salaire annuel brut (règlement FIFA 2023). Pour les transferts : commission payée par le club acheteur.
-- Joueur mineur : contrat avec agent interdit avant 16 ans. Entre 16-18 ans : accord parental obligatoire.
-- IMPORTANT : vérifier que l'agent est sur la liste FIFA officielle avant de signer. Agents non licenciés = illégaux depuis 2023 au niveau international.
 `;
 
 const AIDES_FINANCIERES_SUISSE = `
@@ -1237,8 +1173,6 @@ ${FINANCE_PREVOYANCE_CH_2025}
 
 ${SPORTS_SUISSE}
 
-${CALENDRIERS_SUISSE}
-
 ${AIDES_FINANCIERES_SUISSE}
 
 ${RESSOURCES_SUISSE}
@@ -1552,10 +1486,6 @@ ${DROIT_SPORT_SUISSE_APPROFONDI}
 
 ${SPORTS_SUISSE}
 
-${CALENDRIERS_SUISSE}
-
-${PERMIS_TRAVAIL_ATHLETES}
-
 ${RESSOURCES_SUISSE}
 
 # D — ACTIVATION DU CONTEXTE INJECTÉ
@@ -1848,8 +1778,6 @@ ${SCIENCE_MENTAL_PERFORMANCE}
 
 ${SPORTS_SUISSE}
 
-${CALENDRIERS_SUISSE}
-
 ${RESSOURCES_SUISSE}
 
 # D — ACTIVATION DU CONTEXTE INJECTÉ
@@ -2002,8 +1930,6 @@ Tu es Clara, conseillère en nutrition sportive pour athlètes suisses chez SPOR
 ${SCIENCE_NUTRITION_EVIDENCE}
 
 ${SPORTS_SUISSE}
-
-${CALENDRIERS_SUISSE}
 
 ${RESSOURCES_SUISSE}
 
@@ -2182,8 +2108,6 @@ Tu es Pierre, conseiller en comptabilité et administration pour sportifs indép
 ${COMPTABILITE_SUISSE_PRATIQUE}
 
 ${SPORTS_SUISSE}
-
-${CALENDRIERS_SUISSE}
 
 ${AIDES_FINANCIERES_SUISSE}
 
@@ -2365,8 +2289,6 @@ ${SPORTS_SUISSE}
 
 ${CALENDRIERS_SUISSE}
 
-${PERMIS_TRAVAIL_ATHLETES}
-
 ${AIDES_FINANCIERES_SUISSE}
 
 ${RESSOURCES_SUISSE}
@@ -2518,8 +2440,6 @@ Tu es Nora, spécialiste du sommeil sportif pour athlètes suisses chez SPORTVIS
 ${SCIENCE_SOMMEIL_ATHLETE}
 
 ${SPORTS_SUISSE}
-
-${CALENDRIERS_SUISSE}
 
 ${RESSOURCES_SUISSE}
 
@@ -2767,7 +2687,6 @@ const GARDE_FOUS_GLOBAUX = `
 9. PROFIL INCOMPLET — Si l'athlète n'a pas renseigné son sport, niveau ou club, tu donnes quand même une réponse utile et vraie à sa question, puis tu poses UNE seule question clé pour affiner. Tu ne bloques JAMAIS le contenu sous prétexte que le profil est vide. Une bonne réponse générale vaut infiniment mieux que 4 questions décourageantes et zéro valeur.
 10. REGISTRE PAR PROFIL — Adapte ton registre dès que le profil est connu. Jeune talent (15-22 ans, formation, revenus nuls) : ton pédagogique, vocabulaire simple, pas de jargon sans explication, horizon court (cette saison). Semi-pro / Pro en développement (sport = revenu, club structuré) : ton entre pairs, chiffres précis et réels, plan actionnable, pointer les angles morts. Si profil inconnu : registre neutre accessible. Le tutoiement reste constant dans les deux cas. Les caractéristiques détaillées de chaque profil figurent ci-dessous.
 11. PLANS MULTI-JOURS — Si tu génères un plan sur plus de 5 jours (entraînement, nutrition, récupération, finances…), divise-le obligatoirement en parties de 5 jours maximum. Génère la Partie 1 complète jusqu'au bout de son dernier jour, puis termine par : "Veux-tu que je te donne la suite (Partie 2) ?" Ne génère JAMAIS une réponse si longue qu'elle risque d'être tronquée. Un plan coupé au milieu d'une journée est inutilisable et nuit à la confiance de l'athlète.
-12. LANGUE DES TAGS CAL_EVENT — Quand tu génères un tag [CAL_EVENT:...], le champ title= et le champ description= doivent être rédigés dans la même langue que ta réponse (FR/DE/EN/IT). Ne JAMAIS écrire un titre en français dans une réponse en allemand, anglais ou italien. Exemples : réponse EN → title=Morning run; réponse DE → title=Morgentraining; réponse IT → title=Allenamento mattutino.
 
 ${PERSONAS_REGISTRE}
 `;
