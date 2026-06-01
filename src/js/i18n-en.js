@@ -382,6 +382,11 @@ var T_EN = {
   obAgentDescMental:'your mental coach',
   obAgentDescFinance:'your finance advisor',
   obAgentDescCareer:'your career agent',
+  obTeaserPhysique:'Try: "Build me a physical training plan for next season"',
+  obTeaserMental:'Try: "Prepare my pre-competition routine for tomorrow"',
+  obTeaserFinance:'Try: "What are my tax obligations as an athlete in Switzerland?"',
+  obTeaserCareer:'Try: "How do I move up to the next level in my sport?"',
+  calPlanDetailed:'📋 DETAILED PLAN',
   obAutoMsg:"Hi! I'm new to SPORTVISE, I do {sport} at {level} level. My goal: {goal}. Where should I start?",
   // PROFILE MODAL
   profileSub:'This info helps your AI agents personalise every piece of advice.',
