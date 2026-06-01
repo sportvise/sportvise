@@ -3,6 +3,12 @@
   publish = "dist"
   functions = "netlify/functions"
 
+[functions]
+  # v63.23 — Timeout étendu à 26s (max Netlify).
+  # Cause 504 : appel Claude (~5-8s) + N inserts Supabase séquentiels (1 await par CAL_EVENT)
+  # dépassaient le défaut 10s. Plan nutrition 7 jours = jusqu'à 21 inserts séquentiels.
+  timeout = 26
+
 # v63.3.7 — Pin Node 22 LTS pour fix Apple Web Push BadJwtToken.
 # Diagnostic 09/05/2026 : sandbox Node v22.22.0 / OpenSSL 3.x = Apple accepte JWT (status 201
 # Created confirmé via reproduction directe avec mêmes keys / subject / endpoint / payload
