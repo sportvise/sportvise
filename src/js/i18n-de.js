@@ -382,6 +382,11 @@ var T_DE = {
   obAgentDescMental:'deine Mental-Coach',
   obAgentDescFinance:'deine Finanzberaterin',
   obAgentDescCareer:'dein Karriere-Agent',
+  obTeaserPhysique:'Versuch: "Erstell mir einen Trainingsplan für die nächste Saison"',
+  obTeaserMental:'Versuch: "Bereite meine Wettkampfroutine für morgen vor"',
+  obTeaserFinance:'Versuch: "Wie wird mein Sportlereinkommen in der Schweiz besteuert?"',
+  obTeaserCareer:'Versuch: "Wie schaffe ich den Sprung in die nächsthöhere Liga?"',
+  calPlanDetailed:'📋 DETAILLIERTER PLAN',
   obAutoMsg:'Hallo! Ich bin neu auf SPORTVISE, ich mache {sport} auf Niveau {level}. Mein Ziel: {goal}. Wo soll ich anfangen?',
   // PROFILE MODAL
   profileSub:'Diese Angaben helfen unseren KI-Agenten, jeden Ratschlag zu personalisieren.',
