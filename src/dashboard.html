@@ -1703,7 +1703,7 @@ async function init() {
     const installLink = document.getElementById('installAppNavLink');
     if (installLink && isInstalled) installLink.style.display = 'none';
   } catch(e) {}
-  setTimeout(() => { try { showMorningBrief(); } catch(e) { console.warn('showMorningBrief error:', e); } }, 2500);
+  // v63.29.0 — Morning Brief modal désactivé au lancement (trop agressif). La check-in card inline remplace.
   setTimeout(() => { try { showEveningBrief(); } catch(e) { console.warn('showEveningBrief error:', e); } }, 3000);
   setTimeout(() => { try { scheduleProactiveNotifications(); } catch(e) { console.warn('scheduleProactiveNotifications error:', e); } }, 3000);
   setTimeout(() => { try { checkAppVersion(); } catch(e) { console.warn('checkAppVersion error:', e); } }, 5000);
@@ -2932,90 +2932,11 @@ async function renderDashboard() {
         <button onclick="showProfileModal()" style="padding:8px 14px;border-radius:8px;border:1px solid #f59e0b40;background:transparent;color:var(--gold);font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;transition:all 0.2s" onmouseover="this.style.background='#f59e0b15'" onmouseout="this.style.background='transparent'">${t.dashProfileMoreCta||'📋 Profil détaillé →'}</button>
       </div>
     </div>
-    ` : `
-    <div class="welcome-banner" style="background:linear-gradient(135deg,#10b98110,#05966910);border-color:#10b98130">
-      <div style="flex:1">
-        <div style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:4px">${t.dashWelcomeFull||'🏆 Profil complet !'}</div>
-        <div style="font-size:12px;color:var(--muted)">${(t.dashWelcomeFullSub||'Tes agents ont toutes les infos pour te donner les meilleurs conseils. Bonne session, {name} !').replace('{name}', name)}</div>
-        ${(() => {
-          // v63.5.2 — Si le user a fait sport+level mais qu'il manque encore des champs détaillés,
-          // mini CTA pour pousser à compléter le profil détaillé (position, club, weight, height, canton…)
-          const detailedFields = ['position','club','weight','height','canton','birth_date'];
-          const missing = detailedFields.filter(f => !userProfile?.[f]);
-          if (missing.length >= 3) {
-            return `<button onclick="showProfileModal()" style="margin-top:10px;padding:7px 14px;border-radius:8px;border:1px solid var(--gold)40;background:transparent;color:var(--gold);font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s" onmouseover="this.style.background='#f59e0b15'" onmouseout="this.style.background='transparent'">${t.dashProfileMoreCta||'📋 Profil détaillé'} <span style="opacity:0.7;font-weight:400">· ${missing.length} infos manquantes</span></button>`;
-          }
-          return '';
-        })()}
-      </div>
-      <div style="font-size:32px;flex-shrink:0">🚀</div>
-    </div>
-    `}
+    ` : ''/* Banner "Profil complet 🚀" retiré v63.29.0 — padding visuel sans valeur */}
 
-    <!-- KF#3 — VUE AVANT/APRÈS WIDGET (v63.4.0-draft) -->
-    <!-- Container vide rempli en async par renderTransformationView() défini dans
-         src/js/transformation-view.js. Empty state si <21 daily_log, sinon 4 KPIs
-         comparés baseline vs récent + narratif David (phase 2 à venir). -->
-    ${!isFreshAccount ? '<div id="transformationView" style="margin-bottom:16px"></div>' : ''}
+    <!-- transformationView désactivé v63.29.0 — à réactiver quand users atteignent 21j de données -->
 
-    <!-- STREAK & BADGES WIDGET — v63.8.1 : masqué tant que le compte est vide (affichage progressif) -->
-    ${!isFreshAccount ? await (async () => {
-      const { data: allLogs } = await sb.from('daily_log')
-        .select('log_date')
-        .eq('user_id', currentUser.id)
-        .order('log_date', { ascending: false })
-        .limit(365);
-
-      let streak = 0;
-      if (allLogs && allLogs.length > 0) {
-        // Dédoublonnage défensif (au cas où plusieurs lignes pour le même jour)
-        const dates = new Set(allLogs.map(l => l.log_date));
-        const today = startOfLocalDay();
-        const yest = new Date(today.getTime() - 86400000);
-        // Démarre depuis aujourd'hui (si logué) ou hier (utile en début de matinée
-        // avant que l'athlète ait loggué). Sinon → 0.
-        let checkDay = dates.has(dateToStr(today)) ? new Date(today)
-                     : dates.has(dateToStr(yest))  ? new Date(yest)
-                     : null;
-        if (checkDay) {
-          while (dates.has(dateToStr(checkDay))) {
-            streak++;
-            checkDay = new Date(checkDay.getTime() - 86400000);
-          }
-        }
-      }
-
-      // Badges system (labels localized via t.streakBadge*)
-      const badges = [];
-      if (streak >= 3) badges.push({emoji:'🔥',label:t.streakBadge3d||'3 jours',desc:'Streak 3j'});
-      if (streak >= 7) badges.push({emoji:'⭐',label:t.streakBadge1w||'1 semaine',desc:'Streak 7j'});
-      if (streak >= 14) badges.push({emoji:'💎',label:t.streakBadge2w||'2 semaines',desc:'Streak 14j'});
-      if (streak >= 30) badges.push({emoji:'🏆',label:t.streakBadge1m||'1 mois',desc:'Streak 30j'});
-      if (totalMsgs >= 10) badges.push({emoji:'💬',label:t.streakBadgeChat||'Bavard',desc:'10+ messages'});
-      if (totalMsgs >= 50) badges.push({emoji:'🗣️',label:t.streakBadgePro||'Pro du chat',desc:'50+ messages'});
-      if (agentsUsed >= 5) badges.push({emoji:'🌐',label:t.streakBadgeExplorer||'Explorateur',desc:'5+ agents'});
-      if (agentsUsed >= 11) badges.push({emoji:'👑',label:t.streakBadgeComplete||'Complet',desc:'11 agents'});
-
-      const streakColor = streak >= 14 ? '#f59e0b' : streak >= 7 ? '#10b981' : streak >= 3 ? '#06b6d4' : 'var(--muted)';
-      const nextBadge = streak < 3 ? {target:3,label:'🔥 '+(t.streakBadge3d||'3 jours')} : streak < 7 ? {target:7,label:'⭐ '+(t.streakBadge1w||'1 semaine')} : streak < 14 ? {target:14,label:'💎 '+(t.streakBadge2w||'2 semaines')} : streak < 30 ? {target:30,label:'🏆 '+(t.streakBadge1m||'1 mois')} : null;
-
-      return `<div style="background:linear-gradient(135deg,var(--bg3),${streakColor}08);border:1px solid ${streak > 0 ? streakColor+'40' : 'var(--border)'};border-radius:14px;padding:16px;margin-bottom:16px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:${badges.length?'12':'0'}px">
-          <div style="display:flex;align-items:center;gap:12px">
-            <div style="font-size:28px">${streak >= 7 ? '🔥' : streak >= 3 ? '✨' : '📓'}</div>
-            <div>
-              <div style="font-size:14px;font-weight:800;color:var(--text)">${t.dashStreakLabel||'Streak'} : ${streak} ${streak===1?(t.dashStreakDay||'jour'):(t.dashStreakDays||'jours')}</div>
-              <div style="font-size:11px;color:var(--muted)">${streak === 0 ? (t.dashStreakStart||'Remplis ton journal pour démarrer !') : nextBadge ? (t.dashStreakNextBadge||'Prochain badge :')+' '+nextBadge.label+' ('+(t.dashStreakStill||'encore')+' '+(nextBadge.target-streak)+' '+(nextBadge.target-streak>1?(t.dashStreakDays||'jours'):(t.dashStreakDay||'jour'))+')' : (t.dashStreakChampion||'Tu es un champion de régularité ! 🏆')}</div>
-            </div>
-          </div>
-          <div style="text-align:center">
-            <div style="font-size:24px;font-weight:900;color:${streakColor}">${streak}</div>
-            <div style="font-size:9px;color:var(--muted)">${t.dashStreakDays||'jours'}</div>
-          </div>
-        </div>
-        ${badges.length > 0 ? `<div style="display:flex;gap:6px;flex-wrap:wrap">${badges.map(b => `<div title="${b.desc}" style="padding:4px 10px;border-radius:20px;background:${streakColor}15;border:1px solid ${streakColor}30;font-size:11px;display:flex;align-items:center;gap:4px;color:var(--text);font-weight:600"><span>${b.emoji}</span>${b.label}</div>`).join('')}</div>` : ''}
-      </div>`;
-    })() : ''}
+    <!-- Streak & Badges désactivé v63.29.0 — Duolingo-like, pas au positionnement SPORTVISE -->
 
     <!-- Morning Brief remplace les agents proactifs (modal au lancement) -->
 
@@ -3046,19 +2967,10 @@ async function renderDashboard() {
       '</div>';
     })()}
 
-    <!-- SPORTVISE SCORE WIDGET — v63.17 : citation retirée, empty state amélioré -->
+    <!-- SPORTVISE SCORE WIDGET — masqué si pas de données (v63.29.0) -->
     ${await (async () => {
       const svScore = await computeSportViseScore();
-      if (!svScore) {
-        return `<div style="background:linear-gradient(135deg,#f59e0b08,#fbbf2408);border:1px solid #f59e0b25;border-radius:14px;padding:18px;margin-bottom:16px;display:flex;align-items:center;gap:14px;cursor:pointer" onclick="showPage('journal',document.querySelector('[onclick*=journal]'))">
-          <div style="font-size:28px;flex-shrink:0">📓</div>
-          <div style="flex:1">
-            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px">${t.dashScoreTitle||'Ton Score SPORTVISE'}</div>
-            <div style="font-size:11px;color:var(--muted);line-height:1.5">${t.dashScoreSub||'Remplis 3 jours de journal pour voir ton score de forme, récupération et charge.'}</div>
-          </div>
-          <div style="color:var(--gold);font-size:12px;font-weight:700;flex-shrink:0">${t.dashSeeArrow||'Voir →'}</div>
-        </div>`;
-      }
+      if (!svScore) return ''; // v63.29.0 — plus d'empty state, masqué jusqu'à 3j de données
       return renderSportViseScore(svScore);
     })()}
 
@@ -3257,29 +3169,7 @@ async function renderDashboard() {
     })();
   }
 
-  // v62.28 — Weekly insight display (Idée 3 STRATEGIE)
-  // Lazy-load au 1er render dashboard de la semaine courante. Cache hit DB →
-  // affiche directement. Sinon → trigger generation Netlify (fire-and-forget).
-  // Injection en 2ème position si welcome card présente, sinon en 1ère.
-  // Setimeout 200ms pour séquencer après welcome card, AVANT check-in card.
-  // v63.8.1 — pas d'analyse hebdo pour un compte frais (affichage progressif).
-  if (isOnboardDone() && !isFreshAccount) {
-    setTimeout(async () => {
-      try {
-        const wi = await loadWeeklyInsightForDisplay();
-        if (wi.insight) {
-          injectWeeklyInsightCard(wi.insight);
-        }
-        if (wi.shouldRegenerate) {
-          // Best-effort generation (3-6s typique). Si succès, injectWeeklyInsightCard
-          // est appelée automatiquement en fin de generateWeeklyInsightAsync.
-          generateWeeklyInsightAsync(currentLang).catch(e =>
-            console.warn('[WEEKLY-INSIGHT] regen trigger error:', e)
-          );
-        }
-      } catch(e) { console.warn('[WEEKLY-INSIGHT] dashboard hook error:', e); }
-    }, 200);
-  }
+  // v63.28.0 — Weekly insight card désactivée (bruit dashboard, message "pas assez de signal" démotivant)
 
   // v62.27 — Check-in 30s display (Quick Win #3)
   // Affiche la carte check-in si l'user n'a pas encore de daily_log aujourd'hui
