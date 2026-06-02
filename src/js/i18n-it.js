@@ -395,7 +395,7 @@ var T_IT = {
   profileHeight:'Altezza (cm)',
   profilePositionDetail:'Posizione / Specialità',
   profileClubCurrent:'Club attuale',
-  clubHint:'📅 Il calendario ufficiale verrà importato automaticamente.',
+  clubHint:'📅 Se il tuo club è coperto, importiamo automaticamente le sue prossime partite.',
   // PRICING extras
   popularBadge:'POPOLARE',
   // DASHBOARD widgets (home page renderDashboard)
