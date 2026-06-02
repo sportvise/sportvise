@@ -395,7 +395,7 @@ var T_DE = {
   profileHeight:'Größe (cm)',
   profilePositionDetail:'Position / Spezialität',
   profileClubCurrent:'Aktueller Verein',
-  clubHint:'📅 Der offizielle Spielplan wird automatisch importiert.',
+  clubHint:'📅 Wenn dein Verein erfasst ist, importieren wir seine nächsten Spiele automatisch.',
   // PRICING extras
   popularBadge:'BELIEBT',
   // DASHBOARD widgets (home page renderDashboard)

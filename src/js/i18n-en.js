@@ -395,7 +395,7 @@ var T_EN = {
   profileHeight:'Height (cm)',
   profilePositionDetail:'Position / Speciality',
   profileClubCurrent:'Current club',
-  clubHint:'📅 The official match calendar will be imported automatically.',
+  clubHint:'📅 If your club is covered, we import its upcoming matches automatically.',
   // PRICING extras
   popularBadge:'POPULAR',
   // DASHBOARD widgets (home page renderDashboard)

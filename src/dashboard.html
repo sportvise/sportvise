@@ -142,6 +142,24 @@
     [data-theme="light"] .modal-box { background: #ffffff !important; border-color: #e2e8f0 !important; }
     [data-theme="light"] .modal-title { color: #0f172a !important; }
     [data-theme="light"] .modal-sub { color: #64748b !important; }
+    /* Onboarding overlay — unify with light theme (scoped, beats inline non-important styles) */
+    [data-theme="light"] #lucasWelcomeOverlay { background: rgba(15,23,42,0.45) !important; }
+    [data-theme="light"] #lucasWelcomeOverlay > div { background: #ffffff !important; border-color: #e2e8f0 !important; box-shadow: 0 20px 60px rgba(15,23,42,0.18) !important; }
+    [data-theme="light"] #lucasWelcomeOverlay [style*="f1f5f9"] { color: #0f172a !important; }
+    [data-theme="light"] #lucasWelcomeOverlay [style*="e2e8f0"] { color: #1e293b !important; }
+    [data-theme="light"] #lucasWelcomeOverlay [style*="94a3b8"],
+    [data-theme="light"] #lucasWelcomeOverlay [style*="64748b"] { color: #64748b !important; }
+    [data-theme="light"] #lucasWelcomeOverlay .ob-sport-btn,
+    [data-theme="light"] #lucasWelcomeOverlay .ob-level-btn,
+    [data-theme="light"] #lucasWelcomeOverlay .ob-goal-btn,
+    [data-theme="light"] #lucasWelcomeOverlay #obCustomSport {
+      background: #f8fafc !important; border-color: #e2e8f0 !important; color: #0f172a !important;
+    }
+    [data-theme="light"] #lucasWelcomeOverlay .ob-sport-btn.selected,
+    [data-theme="light"] #lucasWelcomeOverlay .ob-level-btn.selected,
+    [data-theme="light"] #lucasWelcomeOverlay .ob-goal-btn.selected {
+      background: #f59e0b18 !important; border-color: #f59e0b !important; color: #b45309 !important;
+    }
     /* Sport buttons — base styles (dark theme) */
     .sport-btn { background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 10px; cursor: pointer; font-family: 'Inter', sans-serif; font-weight: 600; transition: all 0.15s ease; }
     .sport-btn:active { transform: scale(0.95); }
@@ -2362,7 +2380,12 @@ function showProfileModal() {
 
       <div class="form-field">
         <label class="form-label">${t.profileMainSport}</label>
-        <select class="form-select" id="pSport">
+        ${userProfile?.sport ? `
+        <div id="pSportLocked" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg)">
+          <span style="font-weight:600">${(sports.find(s=>s.key===currentSportKey)?.label)||currentSportKey}</span>
+          <a href="#" onclick="event.preventDefault();document.getElementById('pSportLocked').style.display='none';const s=document.getElementById('pSport');s.style.display='';s.focus();" style="font-size:12px;color:#f59e0b;text-decoration:none">${t.editProfile||'✏️ Modifier'}</a>
+        </div>` : ''}
+        <select class="form-select" id="pSport" ${userProfile?.sport ? 'style="display:none"' : ''}>
           ${sports.map(s=>`<option value="${s.key}" ${currentSportKey===s.key?'selected':''}>${s.label}</option>`).join('')}
         </select>
       </div>
@@ -12440,10 +12463,30 @@ function renderConnexions() {
 }
 
 // ─── v63.27.0 — Autocomplete club dans le profil ─────────────────────────────
+// Listes curées par division (clubs avec calendrier importable via API-Sports).
+// Ordre : 1re division d'abord, division 2 ensuite (commentaires de repère).
 const _SV_CLUBS = {
-  football:   ['FC Thun','FC St-Gallen','FC Basel','BSC Young Boys','FC Zürich','Servette FC','FC Lausanne-Sport','FC Sion','FC Lugano','FC Luzern','Grasshopper Club','FC Winterthur','FC Yverdon','FC Vaduz','FC Aarau','FC Schaffhausen','Neuchâtel Xamax','FC Wil','FC Stade Lausanne-Ouchy','AC Bellinzona','FC Rapperswil-Jona'],
-  hockey:     ['SC Bern','ZSC Lions','HC Davos','EV Zug','HC Lugano','Lausanne HC','HC Fribourg-Gottéron','HC Ambri-Piotta','SCL Tigers','EHC Biel-Bienne','HC Ajoie','Rapperswil-Jona Lakers','EHC Kloten','Genève-Servette HC','HC La Chaux-de-Fonds','EHC Olten','EHC Visp'],
-  basketball: ['BBC Lausanne','Fribourg Olympic','Lausanne Lakers','Lions de Genève','SAM Massagno','Starwings Basket','Swiss Central Basket','Naters-Baltschieder','Vipers Monthey','Jubilee Basket']
+  football: [
+    // Super League
+    'BSC Young Boys','FC Basel','Servette FC','FC Lugano','FC Zürich','FC Lausanne-Sport',
+    'FC St-Gallen','FC Luzern','FC Sion','FC Winterthur','FC Thun','Grasshopper Club',
+    // Challenge League
+    'FC Aarau','Neuchâtel Xamax','FC Vaduz','FC Wil','AC Bellinzona','FC Stade Lausanne-Ouchy',
+    'FC Schaffhausen','Étoile Carouge','SC Brühl','FC Rapperswil-Jona','Yverdon Sport'
+  ],
+  hockey: [
+    // National League
+    'SC Bern','ZSC Lions','HC Davos','EV Zug','HC Lugano','Lausanne HC','HC Fribourg-Gottéron',
+    'HC Ambri-Piotta','SCL Tigers','EHC Biel-Bienne','HC Ajoie','Rapperswil-Jona Lakers',
+    'EHC Kloten','Genève-Servette HC',
+    // Swiss League
+    'HC La Chaux-de-Fonds','EHC Olten','EHC Visp','HC Sierre','GCK Lions','EHC Basel'
+  ],
+  basketball: [
+    // SB League
+    'Fribourg Olympic','BBC Lausanne','Lions de Genève','SAM Massagno','Starwings Basket',
+    'Swiss Central Basket','BBC Monthey-Chablais','Union Neuchâtel','Spinelli Massagno','Pully Lausanne Foxes'
+  ]
 };
 function _svUpdateClubList() {
   const sport = (document.getElementById('pSport')?.value || '').toLowerCase();
@@ -12454,7 +12497,7 @@ function _svUpdateClubList() {
   const clubs = _SV_CLUBS[sport];
   if (clubs) {
     clubs.forEach(c => { const o = document.createElement('option'); o.value = c; dl.appendChild(o); });
-    if (hint) { hint.style.display = 'block'; hint.textContent = (T[currentLang||'fr']?.clubHint) || '📅 Le calendrier officiel sera importé automatiquement.'; }
+    if (hint) { hint.style.display = 'block'; hint.textContent = (T[currentLang||'fr']?.clubHint) || '📅 Si ton club est couvert, on importe ses prochains matchs automatiquement.'; }
   } else {
     if (hint) hint.style.display = 'none';
   }
