@@ -531,6 +531,7 @@
     @keyframes micPulse { 0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.3)} 50%{box-shadow:0 0 0 8px rgba(239,68,68,0)} }
     @keyframes fadeIn { from{opacity:0} to{opacity:1} }
     @keyframes slideUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes obShimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
     /* v63.9.x — Transition de page : fade-in léger pour éviter le flash brutal */
     @keyframes pageEnter { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
     .page-enter { animation: pageEnter 0.18s ease-out forwards; }
@@ -941,6 +942,8 @@ function showLucasWelcome() {
   let advancing = false; // v55 — debounce pour éviter le double-clic qui empile 2 setTimeout(step++) → crash steps[5]
   let finishing = false; // v62.13 — debounce finishOnboarding (anti double-clic 'Parler à Sophie' avec await DB lent)
   const data = { sport: '', level: '', goal: '' };
+  // v63.30 — moment aha : agent recommandé calculé en step 4, consommé par render() pour lancer l'analyse live.
+  let lastReco = null, lastLocked = false, ahaTriggered = false;
 
   // v42 — Sources of truth are SPORTS_CATALOG / LEVELS_CATALOG / GOALS_CATALOG defined globally.
   // We keep arrays of items here for the buttons, with {key, label, icon} pre-resolved for the current language.
@@ -1035,30 +1038,62 @@ function showLucasWelcome() {
         const reqPlan = agentLocked && (typeof getRequiredPlan === 'function') ? getRequiredPlan(agentReco.key) : null;
         const planName = reqPlan === 'plus' ? 'Plus' : 'Pro';
 
-        return `
-          <div style="text-align:center;padding:20px">
-            <div style="font-size:48px;margin-bottom:12px">🎉</div>
-            <div style="font-size:22px;font-weight:900;color:#f1f5f9;margin-bottom:8px">${t.obSummaryTitle}</div>
-            <div style="font-size:14px;color:#94a3b8;margin-bottom:20px;line-height:1.6">
-              <span style="color:#f59e0b;font-weight:700">${sportLabel(data.sport)}</span> · ${levelLabel(data.level)} · ${goalLabel(data.goal)}
-            </div>
-            <div style="background:linear-gradient(135deg,#f59e0b12,#06b6d412);border:1px solid #f59e0b30;border-radius:14px;padding:20px;max-width:360px;margin:0 auto 24px;text-align:left">
-              <div style="font-size:12px;color:#64748b;margin-bottom:8px;text-transform:uppercase;font-weight:700;letter-spacing:0.5px">${t.obSummaryRecoLabel}</div>
-              <div style="display:flex;align-items:center;gap:12px">
-                <div style="font-size:32px">${agentReco.emoji}</div>
-                <div style="flex:1">
-                  <div style="font-size:16px;font-weight:800;color:#f1f5f9;display:flex;align-items:center;gap:6px">${agentReco.name}${agentLocked ? ' <span style="font-size:11px;color:#f59e0b;font-weight:700;background:#f59e0b18;padding:2px 7px;border-radius:6px;letter-spacing:0.3px">🔒 PLAN ' + planName.toUpperCase() + '</span>' : ''}</div>
-                  <div style="font-size:12px;color:#94a3b8">${agentReco.desc}</div>
+        // v63.30 — exposé à render() pour déclencher l'analyse live (moment aha) une fois le DOM injecté.
+        lastReco = agentReco; lastLocked = agentLocked;
+
+        // Agent locké → on garde l'écran de récap + upsell plan (pas d'aha pour un agent inaccessible).
+        if (agentLocked) {
+          return `
+            <div style="text-align:center;padding:20px">
+              <div style="font-size:48px;margin-bottom:12px">🎉</div>
+              <div style="font-size:22px;font-weight:900;color:#f1f5f9;margin-bottom:8px">${t.obSummaryTitle}</div>
+              <div style="font-size:14px;color:#94a3b8;margin-bottom:20px;line-height:1.6">
+                <span style="color:#f59e0b;font-weight:700">${sportLabel(data.sport)}</span> · ${levelLabel(data.level)} · ${goalLabel(data.goal)}
+              </div>
+              <div style="background:linear-gradient(135deg,#f59e0b12,#06b6d412);border:1px solid #f59e0b30;border-radius:14px;padding:20px;max-width:360px;margin:0 auto 24px;text-align:left">
+                <div style="font-size:12px;color:#64748b;margin-bottom:8px;text-transform:uppercase;font-weight:700;letter-spacing:0.5px">${t.obSummaryRecoLabel}</div>
+                <div style="display:flex;align-items:center;gap:12px">
+                  <div style="font-size:32px">${agentReco.emoji}</div>
+                  <div style="flex:1">
+                    <div style="font-size:16px;font-weight:800;color:#f1f5f9;display:flex;align-items:center;gap:6px">${agentReco.name} <span style="font-size:11px;color:#f59e0b;font-weight:700;background:#f59e0b18;padding:2px 7px;border-radius:6px;letter-spacing:0.3px">🔒 PLAN ${planName.toUpperCase()}</span></div>
+                    <div style="font-size:12px;color:#94a3b8">${agentReco.desc}</div>
+                  </div>
                 </div>
               </div>
+              <button onclick="finishOnboarding('abonnement')" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;border:none;padding:14px 36px;border-radius:12px;font-weight:800;font-size:15px;cursor:pointer;font-family:'Inter',sans-serif;margin-bottom:8px;transition:transform 0.2s" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='none'">Découvrir le Plan ${planName} →</button>
+              <div><button onclick="finishOnboarding('dashboard')" style="background:none;border:none;color:#64748b;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;margin-top:6px">${t.obSummaryExplore}</button></div>
             </div>
-            <!-- v63.24 — Teaser ligne de valeur avant CTA : exemple concret par domaine agent -->
-            ${agentReco.teaser && !agentLocked ? `<div style="font-size:11px;color:#64748b;font-style:italic;max-width:340px;margin:0 auto 16px;line-height:1.5;padding:0 8px">${agentReco.teaser}</div>` : ''}
-            ${agentLocked
-              ? `<button onclick="finishOnboarding('abonnement')" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;border:none;padding:14px 36px;border-radius:12px;font-weight:800;font-size:15px;cursor:pointer;font-family:'Inter',sans-serif;margin-bottom:8px;transition:transform 0.2s" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='none'">Découvrir le Plan ${planName} →</button>`
-              : `<button onclick="finishOnboarding('${agentReco.key}')" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;border:none;padding:14px 36px;border-radius:12px;font-weight:800;font-size:15px;cursor:pointer;font-family:'Inter',sans-serif;margin-bottom:8px;transition:transform 0.2s" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='none'">${(t.obSummaryCta||'').replace('{name}', agentReco.name)}</button>`
-            }
-            <div><button onclick="finishOnboarding('dashboard')" style="background:none;border:none;color:#64748b;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;margin-top:6px">${t.obSummaryExplore}</button></div>
+          `;
+        }
+
+        // Agent accessible → MOMENT AHA : analyse live de l'agent recommandé AVANT le 1er chat.
+        return `
+          <div style="text-align:center;padding:20px">
+            <div style="font-size:13px;color:#f59e0b;font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">${t.obSummaryTitle}</div>
+            <div style="font-size:14px;color:#94a3b8;margin-bottom:18px;line-height:1.6">
+              <span style="color:#f59e0b;font-weight:700">${sportLabel(data.sport)}</span> · ${levelLabel(data.level)} · ${goalLabel(data.goal)}
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:14px">
+              <div style="font-size:30px">${agentReco.emoji}</div>
+              <div style="text-align:left">
+                <div style="font-size:15px;font-weight:800;color:#f1f5f9">${agentReco.name}</div>
+                <div style="font-size:11px;color:#94a3b8">${agentReco.desc}</div>
+              </div>
+            </div>
+            <div id="obAhaBox" style="background:linear-gradient(135deg,#0d1127,#0b1020);border:1px solid #1e2d47;border-radius:14px;padding:18px;max-width:400px;margin:0 auto 18px;text-align:left;min-height:96px">
+              <div style="font-size:11px;color:#f59e0b;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px">✨ ${(t.obAhaLabel||'Première analyse de {name}').replace('{name}', agentReco.name)}</div>
+              <div id="obAhaShimmer">
+                <div style="height:11px;border-radius:6px;background:linear-gradient(90deg,#1e2d47,#33476b,#1e2d47);background-size:200% 100%;animation:obShimmer 1.3s linear infinite;margin-bottom:9px"></div>
+                <div style="height:11px;border-radius:6px;width:92%;background:linear-gradient(90deg,#1e2d47,#33476b,#1e2d47);background-size:200% 100%;animation:obShimmer 1.3s linear infinite;margin-bottom:9px"></div>
+                <div style="height:11px;border-radius:6px;width:78%;background:linear-gradient(90deg,#1e2d47,#33476b,#1e2d47);background-size:200% 100%;animation:obShimmer 1.3s linear infinite;margin-bottom:12px"></div>
+                <div style="font-size:12px;color:#64748b">${t.obAhaLoading||'Ton agent prépare ta première analyse…'}</div>
+              </div>
+            </div>
+            <div id="obAhaCta" style="opacity:0;max-height:0;overflow:hidden;transition:opacity 0.45s ease,max-height 0.45s ease">
+              ${agentReco.teaser ? `<div style="font-size:11px;color:#64748b;font-style:italic;max-width:340px;margin:0 auto 14px;line-height:1.5;padding:0 8px">${agentReco.teaser}</div>` : ''}
+              <button onclick="finishOnboarding('${agentReco.key}')" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;border:none;padding:14px 36px;border-radius:12px;font-weight:800;font-size:15px;cursor:pointer;font-family:'Inter',sans-serif;margin-bottom:8px;transition:transform 0.2s" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='none'">${(t.obSummaryCta||'').replace('{name}', agentReco.name)}</button>
+              <div><button onclick="finishOnboarding('dashboard')" style="background:none;border:none;color:#64748b;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;margin-top:6px">${t.obSummaryExplore}</button></div>
+            </div>
           </div>
         `;
       }
@@ -1082,7 +1117,78 @@ function showLucasWelcome() {
       ${step > 0 && step < 4 ? `<div style="padding:16px 20px 0;display:flex;gap:6px">${[1,2,3].map(i => `<div style="flex:1;height:4px;border-radius:2px;background:${i <= step ? 'linear-gradient(90deg,#f59e0b,#d97706)' : '#1e2d47'};transition:background 0.3s"></div>`).join('')}</div>` : ''}
       ${renderStep()}
     </div>`;
+    // v63.30 — moment aha : une fois le DOM de l'étape 4 injecté, on lance l'analyse live
+    // de l'agent recommandé (agent accessible uniquement). Un seul déclenchement.
+    if (step === 4 && lastReco && !lastLocked && !ahaTriggered) {
+      ahaTriggered = true;
+      runOnboardingAha(lastReco, { ...data });
+    }
   }
+
+  // v63.30 — Appel live de la fonction Netlify `chat` (bypassSession1) pour produire la
+  // toute première analyse de l'agent recommandé, affichée dans la carte aha avant le 1er chat.
+  // Pas de fixture import en v1 : le backend ancre sur les constantes suisses réelles (anti-fiction).
+  async function runOnboardingAha(reco, snapshot) {
+    const t = T[currentLang] || T.fr;
+    const boxFill = (html) => {
+      const box = document.getElementById('obAhaBox');
+      const cta = document.getElementById('obAhaCta');
+      if (box) {
+        const sh = document.getElementById('obAhaShimmer');
+        if (sh) sh.remove();
+        box.insertAdjacentHTML('beforeend', html);
+      }
+      if (cta) { cta.style.maxHeight = '260px'; cta.style.opacity = '1'; }
+    };
+    try {
+      // Profil minimal construit depuis l'onboarding (sport/niveau/objectif + club si Tier 1).
+      const profileContext = [
+        snapshot.sport ? `Sport: ${sportLabel(snapshot.sport, 'fr')}` : '',
+        snapshot.level ? `Niveau: ${levelLabel(snapshot.level, 'fr')}` : '',
+        snapshot.goal ? `Objectif principal: ${goalLabel(snapshot.goal, 'fr')}` : '',
+        snapshot.club ? `Club: ${snapshot.club}` : ''
+      ].filter(Boolean).join(', ');
+
+      const message = `Première analyse d'onboarding. Voici mon profil : ${profileContext || 'profil en cours'}. Donne-moi ta première analyse personnalisée.`;
+
+      const requestBody = {
+        agentId: reco.key,
+        message,
+        history: [],
+        lang: currentLang,
+        profile: profileContext,
+        userEmail: currentUser?.email || null,
+        calendarEmpty: true,
+        agentExchangeCount: 0,
+        bypassSession1: true
+      };
+
+      const fetchHeaders = { 'Content-Type': 'application/json' };
+      try {
+        const { data: { session } } = await sb.auth.getSession();
+        if (session?.access_token) fetchHeaders['Authorization'] = `Bearer ${session.access_token}`;
+      } catch(_) {}
+
+      const res = await fetch('/.netlify/functions/chat', {
+        method: 'POST', headers: fetchHeaders, body: JSON.stringify(requestBody)
+      });
+      if (!res.ok) throw new Error('aha api ' + res.status);
+      const json = await res.json();
+      const reply = (json.reply || '').trim();
+      if (!reply) throw new Error('aha empty');
+
+      // Rendu texte simple (paragraphes), échappé pour éviter toute injection.
+      const esc = (s) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const htmlReply = esc(reply).split(/\n{2,}/).map(p =>
+        `<p style="margin:0 0 10px;font-size:13.5px;line-height:1.6;color:#e2e8f0">${p.replace(/\n/g,'<br/>')}</p>`
+      ).join('');
+      boxFill(htmlReply);
+    } catch (err) {
+      console.error('[onboarding aha]', err?.message || err);
+      boxFill(`<p style="margin:0;font-size:13px;line-height:1.6;color:#94a3b8">${t.obAhaError||'Connexion impossible pour le moment — tu pourras lancer ta première analyse directement dans le chat.'}</p>`);
+    }
+  }
+  window.runOnboardingAha = runOnboardingAha;
 
   window.nextOnboardStep = function() {
     if (advancing) return; // v55 — debounce double-clic
@@ -1730,7 +1836,8 @@ async function init() {
     console.error('Init error:', err);
     // Show minimal dashboard even on error
     var mc = document.getElementById('mainContent');
-    if (mc) mc.innerHTML = '<div style="text-align:center;padding:60px 20px"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:8px">Erreur de chargement</div><div style="font-size:13px;color:var(--muted);margin-bottom:16px">Vérifie ta connexion internet et recharge la page.</div><button onclick="location.reload()" style="padding:10px 24px;border-radius:8px;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">Recharger</button></div>';
+    var _et = (T && (T[currentLang] || T.fr)) || {};
+    if (mc) mc.innerHTML = '<div style="text-align:center;padding:60px 20px"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:8px">' + (_et.errLoadTitle || 'Erreur de chargement') + '</div><div style="font-size:13px;color:var(--muted);margin-bottom:16px">' + (_et.errLoadSub || 'Vérifie ta connexion internet et recharge la page.') + '</div><button onclick="location.reload()" style="padding:10px 24px;border-radius:8px;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">' + (_et.errReload || 'Recharger') + '</button></div>';
   }
 }
 
@@ -2174,7 +2281,7 @@ function toggleVoiceInput(page) {
     if (event.error === 'not-allowed') {
       showToast('⚠️ Accès au micro refusé. Autorise le micro dans les paramètres de ton navigateur.');
     } else if (event.error === 'no-speech') {
-      showToast('🎙️ Aucune voix détectée. Réessaie.');
+      showToast(((T[currentLang]||T.fr).voiceNoSpeech) || '🎙️ Aucune voix détectée. Réessaie.');
     }
     stopVoiceInput();
   };
@@ -2789,7 +2896,8 @@ async function showPage(page, el) {
   } catch(err) {
     console.error('showPage error:', err);
     var mc = document.getElementById('mainContent');
-    if (mc) { mc.innerHTML = '<div style="text-align:center;padding:40px 20px"><div style="font-size:28px;margin-bottom:8px">⚠️</div><div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:8px">Erreur d\'affichage</div><div style="font-size:12px;color:var(--muted);margin-bottom:12px">Cette page n\'a pas pu se charger.</div><button onclick="showPage(\'dashboard\',document.querySelector(\'.nav-item\'))" style="padding:8px 16px;border-radius:8px;border:none;background:var(--gold);color:#07091a;font-weight:700;font-size:12px;cursor:pointer;font-family:Inter,sans-serif">Retour au dashboard</button></div>'; mc.style.opacity = '1'; }
+    var _et = (T && (T[currentLang] || T.fr)) || {};
+    if (mc) { mc.innerHTML = '<div style="text-align:center;padding:40px 20px"><div style="font-size:28px;margin-bottom:8px">⚠️</div><div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:8px">' + (_et.errPageTitle || 'Erreur d\'affichage') + '</div><div style="font-size:12px;color:var(--muted);margin-bottom:12px">' + (_et.errPageSub || 'Cette page n\'a pas pu se charger.') + '</div><button onclick="showPage(\'dashboard\',document.querySelector(\'.nav-item\'))" style="padding:8px 16px;border-radius:8px;border:none;background:var(--gold);color:#07091a;font-weight:700;font-size:12px;cursor:pointer;font-family:Inter,sans-serif">' + (_et.backDashboard || 'Retour au dashboard') + '</button></div>'; mc.style.opacity = '1'; }
   }
 }
 
@@ -3088,7 +3196,7 @@ async function renderDashboard() {
             const ti = typeInfo[e.event_type] || typeInfo.autre;
             const d = new Date(e.event_date);
             const diff = Math.round((d - today) / 86400000);
-            const when = diff === 0 ? t.today : diff === 1 ? t.tomorrow : d.toLocaleDateString('fr-CH', {weekday:'short',day:'numeric'});
+            const when = diff === 0 ? t.today : diff === 1 ? t.tomorrow : d.toLocaleDateString(({fr:'fr-CH',de:'de-CH',en:'en-GB',it:'it-CH'}[currentLang]||'fr-CH'), {weekday:'short',day:'numeric'});
             return `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;${e !== upcomingEvts[upcomingEvts.length-1] ? 'border-bottom:1px solid var(--border)10;margin-bottom:4px' : ''}">
               <div style="width:28px;height:28px;border-radius:7px;background:${ti.color}20;display:flex;align-items:center;justify-content:center;font-size:13px">${ti.emoji}</div>
               <div style="flex:1"><div style="font-size:12px;font-weight:600;color:var(--text)">${e.title}</div><div style="font-size:10px;color:var(--muted)">${e.event_time ? e.event_time.slice(0,5) + ' · ' : ''}${e.location || ''}</div></div>
@@ -7311,6 +7419,10 @@ function renderWelcomeCardHTML(card, t) {
 
 function injectWelcomeCard(card) {
   const t = T[currentLang] || T.fr;
+  // v63.30.0 — Garde-fou page : ces cartes n'appartiennent qu'au dashboard.
+  // Sans ce garde, une régénération async (ex : changement de langue, 3-6s de
+  // latence) s'injecte dans la page courante si l'user a navigué entre-temps.
+  if (typeof currentPage !== 'undefined' && currentPage !== 'dashboard') return;
   const wrapper = document.querySelector('#mainContent > div') || document.getElementById('mainContent');
   if (!wrapper) return;
   // v63.5.13 — Filet de sécurité dismissal : si l'user a fermé la carte, ne la
@@ -7783,6 +7895,8 @@ function renderWeeklyInsightCardHTML(insight, t) {
 
 function injectWeeklyInsightCard(insight) {
   const t = T[currentLang] || T.fr;
+  // v63.30.0 — Garde-fou page : carte réservée au dashboard (anti-bruit).
+  if (typeof currentPage !== 'undefined' && currentPage !== 'dashboard') return;
   const wrapper = document.querySelector('#mainContent > div') || document.getElementById('mainContent');
   if (!wrapper) return;
   if (document.getElementById('weeklyInsightCard')) return; // double-inject guard
@@ -11397,6 +11511,7 @@ function shareToWhatsApp() {
 
 // ── PRÉPA MATCH (J-3 à Jour J) ──────────────────────
 async function renderPrepaMatch() {
+  const t = T[currentLang] || T.fr;
   const today = new Date();
   today.setHours(0,0,0,0);
   const in7days = new Date(today.getTime() + 7 * 86400000);
@@ -11431,9 +11546,9 @@ async function renderPrepaMatch() {
   if (!allFuture || allFuture.length === 0) {
     document.getElementById('mainContent').innerHTML = '<div style="max-width:700px;margin:0 auto;text-align:center;padding:60px 20px">' +
       '<div style="font-size:56px;margin-bottom:16px">⚡</div>' +
-      '<h2 style="font-size:22px;font-weight:800;color:var(--text);margin-bottom:8px">Aucun match prévu</h2>' +
-      '<p style="color:var(--muted);margin-bottom:24px;font-size:14px">Ajoute un match ou une compétition dans ton calendrier pour activer le mode Prépa Compétition.</p>' +
-      '<button onclick="showPage(\'calendrier\',null)" class="btn btn-gold" style="font-family:Inter,sans-serif">📅 Aller au calendrier</button>' +
+      '<h2 style="font-size:22px;font-weight:800;color:var(--text);margin-bottom:8px">' + t.pmEmptyTitle + '</h2>' +
+      '<p style="color:var(--muted);margin-bottom:24px;font-size:14px">' + t.pmEmptySub + '</p>' +
+      '<button onclick="showPage(\'calendrier\',null)" class="btn btn-gold" style="font-family:Inter,sans-serif">' + t.pmEmptyBtn + '</button>' +
     '</div>';
     return;
   }
@@ -11442,43 +11557,143 @@ async function renderPrepaMatch() {
   var targetEvent = events && events.length > 0 ? events[0] : allFuture[0];
   var evtDate = parseEventDate(targetEvent.event_date);
   var daysUntil = Math.round((evtDate - today) / 86400000);
-  var countdown = daysUntil < 0 ? 'PASSÉ' : daysUntil === 0 ? 'JOUR J' : 'J-' + daysUntil;
+  var countdown = daysUntil < 0 ? t.pmCountdownPast : daysUntil === 0 ? t.pmCountdownDay : 'J-' + daysUntil;
   var countdownColor = daysUntil <= 0 ? '#ef4444' : daysUntil <= 1 ? '#f59e0b' : daysUntil <= 3 ? '#06b6d4' : '#10b981';
 
   // Generate agent-specific prep plans based on countdown
   function getAgentPlan(agentKey, d) {
-    var plans = {
-      physique: {
-        0: {icon:'💪', title:'Activation légère', desc:'Échauffement dynamique 15min. Pas de charge lourde. Activations musculaires ciblées.'},
-        1: {icon:'🧊', title:'Récupération active', desc:'Session légère, étirements, bain froid si possible. Mobilité articulaire.'},
-        2: {icon:'⚡', title:'Affûtage', desc:'Session technique courte à haute intensité. Sprints courts, réactivité.'},
-        3: {icon:'🏋️', title:'Dernière session complète', desc:'Dernière séance de qualité, charge modérée. Force explosive + coordination.'}
+    // v63.30.0 — Plans traduits FR/DE/EN/IT (i18n obligatoire)
+    var allPlans = {
+      fr: {
+        physique: {
+          0: {icon:'💪', title:'Activation légère', desc:'Échauffement dynamique 15min. Pas de charge lourde. Activations musculaires ciblées.'},
+          1: {icon:'🧊', title:'Récupération active', desc:'Session légère, étirements, bain froid si possible. Mobilité articulaire.'},
+          2: {icon:'⚡', title:'Affûtage', desc:'Session technique courte à haute intensité. Sprints courts, réactivité.'},
+          3: {icon:'🏋️', title:'Dernière session complète', desc:'Dernière séance de qualité, charge modérée. Force explosive + coordination.'}
+        },
+        mental: {
+          0: {icon:'🧠', title:'Focus match', desc:'Visualisation 10min du match. Routine pré-compétition. Respiration 4-7-8.'},
+          1: {icon:'🎯', title:'Visualisation tactique', desc:'Visualise les scénarios clés. Prépare tes réponses aux situations de stress.'},
+          2: {icon:'💭', title:'Objectifs de match', desc:'Définis 3 objectifs personnels clairs. Travaille ta concentration.'},
+          3: {icon:'📝', title:'Analyse mentale', desc:'Revois tes dernières performances. Identifie tes forces et points de vigilance.'}
+        },
+        nutrition: {
+          0: {icon:'🍝', title:'Repas pré-match', desc:'Repas riche en glucides 3h avant. Hydratation optimale. Pas de nouveautés.'},
+          1: {icon:'💧', title:'Surhydratation + Glucides', desc:'Augmenter les glucides complexes. 2-3L eau. Éviter l\'alcool et les graisses.'},
+          2: {icon:'🥗', title:'Alimentation équilibrée', desc:'Repas complets, protéines + glucides. Collations régulières. Pas de fibres excessives.'},
+          3: {icon:'🔋', title:'Début du chargement', desc:'Début de la surcharge glucidique progressive. Pâtes, riz, patates douces.'}
+        },
+        sommeil: {
+          0: {icon:'😴', title:'Sieste optionnelle', desc:'Si match le soir : sieste 20min max à 14h. Coucher tôt la veille. Pas d\'écrans.'},
+          1: {icon:'🌙', title:'Nuit cruciale', desc:'Au lit avant 22h. Chambre fraîche (18°C). Magnésium. Routine de relaxation.'},
+          2: {icon:'🛏️', title:'Régulariser le sommeil', desc:'Coucher et lever à heures fixes. 8h minimum. Éviter la caféine après 14h.'},
+          3: {icon:'⏰', title:'Préparer le rythme', desc:'Commencer à ajuster l\'heure de coucher. Réduire les stimulants le soir.'}
+        },
+        recuperation: {
+          0: {icon:'♻️', title:'Récupération express', desc:'Foam rolling zones sollicitées. Étirements doux 10min. Pas d\'étirements intenses.'},
+          1: {icon:'🧊', title:'Protocole récupération', desc:'Bain froid 10min ou douche contrastée. Foam rolling 15min. Compression si disponible.'},
+          2: {icon:'💆', title:'Régénération ciblée', desc:'Auto-massage zones fragiles. Mobilité articulaire. Marche active 20min.'},
+          3: {icon:'📋', title:'Bilan récupération', desc:'Évalue tes zones de tension. Planifie repos actif. Prépare ton matériel de récupération.'}
+        }
       },
-      mental: {
-        0: {icon:'🧠', title:'Focus match', desc:'Visualisation 10min du match. Routine pré-compétition. Respiration 4-7-8.'},
-        1: {icon:'🎯', title:'Visualisation tactique', desc:'Visualise les scénarios clés. Prépare tes réponses aux situations de stress.'},
-        2: {icon:'💭', title:'Objectifs de match', desc:'Définis 3 objectifs personnels clairs. Travaille ta concentration.'},
-        3: {icon:'📝', title:'Analyse mentale', desc:'Revois tes dernières performances. Identifie tes forces et points de vigilance.'}
+      de: {
+        physique: {
+          0: {icon:'💪', title:'Leichte Aktivierung', desc:'Dynamisches Aufwärmen 15min. Keine schweren Lasten. Gezielte Muskelaktivierung.'},
+          1: {icon:'🧊', title:'Aktive Erholung', desc:'Leichte Einheit, Dehnen, Eisbad wenn möglich. Gelenkmobilität.'},
+          2: {icon:'⚡', title:'Tapering', desc:'Kurze, hochintensive technische Einheit. Kurze Sprints, Reaktivität.'},
+          3: {icon:'🏋️', title:'Letzte komplette Einheit', desc:'Letzte Qualitätseinheit, moderate Last. Explosivkraft + Koordination.'}
+        },
+        mental: {
+          0: {icon:'🧠', title:'Spielfokus', desc:'10min Spielvisualisierung. Wettkampfroutine. 4-7-8-Atmung.'},
+          1: {icon:'🎯', title:'Taktische Visualisierung', desc:'Visualisiere die Schlüsselszenarien. Bereite deine Reaktionen auf Stresssituationen vor.'},
+          2: {icon:'💭', title:'Spielziele', desc:'Definiere 3 klare persönliche Ziele. Arbeite an deiner Konzentration.'},
+          3: {icon:'📝', title:'Mentale Analyse', desc:'Sieh dir deine letzten Leistungen an. Erkenne deine Stärken und Schwachpunkte.'}
+        },
+        nutrition: {
+          0: {icon:'🍝', title:'Pre-Match-Mahlzeit', desc:'Kohlenhydratreiche Mahlzeit 3h vorher. Optimale Hydratation. Keine Experimente.'},
+          1: {icon:'💧', title:'Überhydration + Kohlenhydrate', desc:'Komplexe Kohlenhydrate erhöhen. 2-3L Wasser. Alkohol und Fette meiden.'},
+          2: {icon:'🥗', title:'Ausgewogene Ernährung', desc:'Vollwertige Mahlzeiten, Proteine + Kohlenhydrate. Regelmässige Snacks. Keine übermässigen Ballaststoffe.'},
+          3: {icon:'🔋', title:'Beginn der Aufladung', desc:'Beginn der schrittweisen Kohlenhydratladung. Pasta, Reis, Süsskartoffeln.'}
+        },
+        sommeil: {
+          0: {icon:'😴', title:'Optionales Nickerchen', desc:'Bei Abendspiel: max. 20min Nickerchen um 14h. Am Vorabend früh schlafen. Keine Bildschirme.'},
+          1: {icon:'🌙', title:'Entscheidende Nacht', desc:'Vor 22h im Bett. Kühles Zimmer (18°C). Magnesium. Entspannungsroutine.'},
+          2: {icon:'🛏️', title:'Schlaf regulieren', desc:'Feste Schlaf- und Aufstehzeiten. Mindestens 8h. Kein Koffein nach 14h.'},
+          3: {icon:'⏰', title:'Rhythmus vorbereiten', desc:'Beginne die Schlafenszeit anzupassen. Stimulanzien am Abend reduzieren.'}
+        },
+        recuperation: {
+          0: {icon:'♻️', title:'Express-Erholung', desc:'Foam Rolling der beanspruchten Zonen. Sanftes Dehnen 10min. Keine intensiven Dehnungen.'},
+          1: {icon:'🧊', title:'Erholungsprotokoll', desc:'Eisbad 10min oder Wechseldusche. Foam Rolling 15min. Kompression falls verfügbar.'},
+          2: {icon:'💆', title:'Gezielte Regeneration', desc:'Selbstmassage empfindlicher Zonen. Gelenkmobilität. Aktives Gehen 20min.'},
+          3: {icon:'📋', title:'Erholungsbilanz', desc:'Bewerte deine Spannungszonen. Plane aktive Erholung. Bereite dein Erholungsmaterial vor.'}
+        }
       },
-      nutrition: {
-        0: {icon:'🍝', title:'Repas pré-match', desc:'Repas riche en glucides 3h avant. Hydratation optimale. Pas de nouveautés.'},
-        1: {icon:'💧', title:'Surhydratation + Glucides', desc:'Augmenter les glucides complexes. 2-3L eau. Éviter l\'alcool et les graisses.'},
-        2: {icon:'🥗', title:'Alimentation équilibrée', desc:'Repas complets, protéines + glucides. Collations régulières. Pas de fibres excessives.'},
-        3: {icon:'🔋', title:'Début du chargement', desc:'Début de la surcharge glucidique progressive. Pâtes, riz, patates douces.'}
+      en: {
+        physique: {
+          0: {icon:'💪', title:'Light activation', desc:'Dynamic warm-up 15min. No heavy loads. Targeted muscle activation.'},
+          1: {icon:'🧊', title:'Active recovery', desc:'Light session, stretching, cold bath if possible. Joint mobility.'},
+          2: {icon:'⚡', title:'Tapering', desc:'Short high-intensity technical session. Short sprints, reactivity.'},
+          3: {icon:'🏋️', title:'Last full session', desc:'Final quality session, moderate load. Explosive strength + coordination.'}
+        },
+        mental: {
+          0: {icon:'🧠', title:'Match focus', desc:'10min match visualization. Pre-competition routine. 4-7-8 breathing.'},
+          1: {icon:'🎯', title:'Tactical visualization', desc:'Visualize the key scenarios. Prepare your responses to stress situations.'},
+          2: {icon:'💭', title:'Match goals', desc:'Set 3 clear personal goals. Work on your focus.'},
+          3: {icon:'📝', title:'Mental analysis', desc:'Review your recent performances. Identify your strengths and watch points.'}
+        },
+        nutrition: {
+          0: {icon:'🍝', title:'Pre-match meal', desc:'Carb-rich meal 3h before. Optimal hydration. No new foods.'},
+          1: {icon:'💧', title:'Hyperhydration + Carbs', desc:'Increase complex carbs. 2-3L water. Avoid alcohol and fats.'},
+          2: {icon:'🥗', title:'Balanced diet', desc:'Complete meals, protein + carbs. Regular snacks. No excessive fiber.'},
+          3: {icon:'🔋', title:'Start loading', desc:'Begin gradual carb loading. Pasta, rice, sweet potatoes.'}
+        },
+        sommeil: {
+          0: {icon:'😴', title:'Optional nap', desc:'If evening match: 20min nap max at 2pm. Sleep early the night before. No screens.'},
+          1: {icon:'🌙', title:'Crucial night', desc:'In bed before 10pm. Cool room (18°C). Magnesium. Relaxation routine.'},
+          2: {icon:'🛏️', title:'Regulate sleep', desc:'Fixed bed and wake times. 8h minimum. Avoid caffeine after 2pm.'},
+          3: {icon:'⏰', title:'Prepare the rhythm', desc:'Start adjusting bedtime. Reduce stimulants in the evening.'}
+        },
+        recuperation: {
+          0: {icon:'♻️', title:'Express recovery', desc:'Foam roll worked zones. Gentle stretching 10min. No intense stretching.'},
+          1: {icon:'🧊', title:'Recovery protocol', desc:'Cold bath 10min or contrast shower. Foam rolling 15min. Compression if available.'},
+          2: {icon:'💆', title:'Targeted regeneration', desc:'Self-massage fragile zones. Joint mobility. Active walk 20min.'},
+          3: {icon:'📋', title:'Recovery review', desc:'Assess your tension zones. Plan active rest. Prepare your recovery gear.'}
+        }
       },
-      sommeil: {
-        0: {icon:'😴', title:'Sieste optionnelle', desc:'Si match le soir : sieste 20min max à 14h. Coucher tôt la veille. Pas d\'écrans.'},
-        1: {icon:'🌙', title:'Nuit cruciale', desc:'Au lit avant 22h. Chambre fraîche (18°C). Magnésium. Routine de relaxation.'},
-        2: {icon:'🛏️', title:'Régulariser le sommeil', desc:'Coucher et lever à heures fixes. 8h minimum. Éviter la caféine après 14h.'},
-        3: {icon:'⏰', title:'Préparer le rythme', desc:'Commencer à ajuster l\'heure de coucher. Réduire les stimulants le soir.'}
-      },
-      recuperation: {
-        0: {icon:'♻️', title:'Récupération express', desc:'Foam rolling zones sollicitées. Étirements doux 10min. Pas d\'étirements intenses.'},
-        1: {icon:'🧊', title:'Protocole récupération', desc:'Bain froid 10min ou douche contrastée. Foam rolling 15min. Compression si disponible.'},
-        2: {icon:'💆', title:'Régénération ciblée', desc:'Auto-massage zones fragiles. Mobilité articulaire. Marche active 20min.'},
-        3: {icon:'📋', title:'Bilan récupération', desc:'Évalue tes zones de tension. Planifie repos actif. Prépare ton matériel de récupération.'}
+      it: {
+        physique: {
+          0: {icon:'💪', title:'Attivazione leggera', desc:'Riscaldamento dinamico 15min. Nessun carico pesante. Attivazione muscolare mirata.'},
+          1: {icon:'🧊', title:'Recupero attivo', desc:'Sessione leggera, stretching, bagno freddo se possibile. Mobilità articolare.'},
+          2: {icon:'⚡', title:'Affinamento', desc:'Sessione tecnica breve ad alta intensità. Scatti brevi, reattività.'},
+          3: {icon:'🏋️', title:'Ultima sessione completa', desc:'Ultima sessione di qualità, carico moderato. Forza esplosiva + coordinazione.'}
+        },
+        mental: {
+          0: {icon:'🧠', title:'Focus partita', desc:'Visualizzazione 10min della partita. Routine pre-gara. Respirazione 4-7-8.'},
+          1: {icon:'🎯', title:'Visualizzazione tattica', desc:'Visualizza gli scenari chiave. Prepara le tue risposte alle situazioni di stress.'},
+          2: {icon:'💭', title:'Obiettivi di partita', desc:'Definisci 3 obiettivi personali chiari. Lavora sulla concentrazione.'},
+          3: {icon:'📝', title:'Analisi mentale', desc:'Rivedi le tue ultime prestazioni. Identifica i tuoi punti di forza e di attenzione.'}
+        },
+        nutrition: {
+          0: {icon:'🍝', title:'Pasto pre-partita', desc:'Pasto ricco di carboidrati 3h prima. Idratazione ottimale. Niente novità.'},
+          1: {icon:'💧', title:'Iperidratazione + Carboidrati', desc:'Aumentare i carboidrati complessi. 2-3L acqua. Evitare alcol e grassi.'},
+          2: {icon:'🥗', title:'Alimentazione equilibrata', desc:'Pasti completi, proteine + carboidrati. Spuntini regolari. Niente fibre eccessive.'},
+          3: {icon:'🔋', title:'Inizio del carico', desc:'Inizio del carico graduale di carboidrati. Pasta, riso, patate dolci.'}
+        },
+        sommeil: {
+          0: {icon:'😴', title:'Pisolino facoltativo', desc:'Se partita serale: pisolino max 20min alle 14h. Andare a letto presto la sera prima. Niente schermi.'},
+          1: {icon:'🌙', title:'Notte cruciale', desc:'A letto prima delle 22h. Camera fresca (18°C). Magnesio. Routine di rilassamento.'},
+          2: {icon:'🛏️', title:'Regolarizzare il sonno', desc:'Orari fissi di sonno e risveglio. Minimo 8h. Evitare la caffeina dopo le 14h.'},
+          3: {icon:'⏰', title:'Preparare il ritmo', desc:'Iniziare ad aggiustare l\'ora di andare a letto. Ridurre gli stimolanti la sera.'}
+        },
+        recuperation: {
+          0: {icon:'♻️', title:'Recupero express', desc:'Foam rolling delle zone sollecitate. Stretching dolce 10min. Niente stretching intenso.'},
+          1: {icon:'🧊', title:'Protocollo di recupero', desc:'Bagno freddo 10min o doccia contrastata. Foam rolling 15min. Compressione se disponibile.'},
+          2: {icon:'💆', title:'Rigenerazione mirata', desc:'Auto-massaggio zone fragili. Mobilità articolare. Camminata attiva 20min.'},
+          3: {icon:'📋', title:'Bilancio recupero', desc:'Valuta le tue zone di tensione. Pianifica riposo attivo. Prepara il tuo materiale di recupero.'}
+        }
       }
     };
+    var plans = allPlans[currentLang] || allPlans.fr;
     var agentPlan = plans[agentKey];
     if (!agentPlan) return null;
     var dayKey = Math.min(d, 3);
@@ -11499,8 +11714,8 @@ async function renderPrepaMatch() {
   html += '<div style="background:linear-gradient(135deg,' + countdownColor + '15,' + countdownColor + '05);border:1px solid ' + countdownColor + '40;border-radius:16px;padding:24px;margin-bottom:20px;text-align:center">';
   html += '<div style="font-size:48px;font-weight:900;color:' + countdownColor + ';letter-spacing:-2px">' + countdown + '</div>';
   html += '<div style="font-size:18px;font-weight:700;color:var(--text);margin:8px 0 4px">' + targetEvent.title + '</div>';
-  html += '<div style="font-size:13px;color:var(--muted)">' + new Date(targetEvent.event_date).toLocaleDateString('fr-CH', {weekday:'long', day:'numeric', month:'long'});
-  if (targetEvent.event_time) html += ' à ' + targetEvent.event_time;
+  html += '<div style="font-size:13px;color:var(--muted)">' + new Date(targetEvent.event_date).toLocaleDateString(({fr:'fr-CH',de:'de-CH',en:'en-GB',it:'it-CH'}[currentLang]||'fr-CH'), {weekday:'long', day:'numeric', month:'long'});
+  if (targetEvent.event_time) html += ' ' + t.pmAt + ' ' + targetEvent.event_time;
   if (targetEvent.location) html += ' · 📍 ' + targetEvent.location;
   html += '</div>';
 
@@ -11508,7 +11723,7 @@ async function renderPrepaMatch() {
   if (fitnessScore !== null) {
     var fsColor = fitnessScore >= 81 ? '#f59e0b' : fitnessScore >= 61 ? '#10b981' : fitnessScore >= 31 ? '#f97316' : '#ef4444';
     html += '<div style="margin-top:16px;display:flex;align-items:center;justify-content:center;gap:12px">';
-    html += '<div style="font-size:12px;color:var(--muted)">Score de forme actuel :</div>';
+    html += '<div style="font-size:12px;color:var(--muted)">' + t.pmFitnessScore + '</div>';
     html += '<div style="background:' + fsColor + '20;color:' + fsColor + ';padding:6px 16px;border-radius:20px;font-weight:800;font-size:16px">' + fitnessScore + '/100</div>';
     html += '</div>';
   }
@@ -11517,7 +11732,7 @@ async function renderPrepaMatch() {
   // Predictive intelligence banner in prepa match
   if (predictions && predictions.alerts.length > 0) {
     html += '<div style="margin-bottom:16px">';
-    html += '<div style="font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">🔮 Intelligence prédictive</div>';
+    html += '<div style="font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">' + t.pmPredictive + '</div>';
     predictions.alerts.forEach(function(a) {
       var color = a.level === 'positive' ? '#10b981' : a.type === 'injury' ? '#ef4444' : '#f59e0b';
       var icon = a.level === 'positive' ? '🚀' : a.type === 'injury' ? '🩹' : '🧠';
@@ -11528,7 +11743,7 @@ async function renderPrepaMatch() {
     });
     // Readiness gauge
     html += '<div style="display:flex;align-items:center;gap:10px;margin-top:8px;padding:8px 12px;background:var(--bg);border-radius:8px">';
-    html += '<span style="font-size:11px;color:var(--muted);font-weight:600">Forme globale</span>';
+    html += '<span style="font-size:11px;color:var(--muted);font-weight:600">' + t.pmGlobalForm + '</span>';
     html += '<div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="height:100%;width:' + predictions.peakForm + '%;background:linear-gradient(90deg,' + (predictions.peakForm >= 70 ? '#10b981' : predictions.peakForm >= 40 ? '#f59e0b' : '#ef4444') + ',' + (predictions.peakForm >= 70 ? '#059669' : predictions.peakForm >= 40 ? '#d97706' : '#dc2626') + ');border-radius:3px"></div></div>';
     html += '<span style="font-size:12px;font-weight:800;color:' + (predictions.peakForm >= 70 ? '#10b981' : predictions.peakForm >= 40 ? '#f59e0b' : '#ef4444') + '">' + predictions.peakForm + '%</span>';
     html += '</div>';
@@ -11537,7 +11752,7 @@ async function renderPrepaMatch() {
 
   // Timeline of prep plan
   html += '<div style="margin-bottom:20px">';
-  html += '<h3 style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:16px">📋 Plan de préparation par agent</h3>';
+  html += '<h3 style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:16px">' + t.pmPlanTitle + '</h3>';
 
   prepAgents.forEach(function(ag) {
     var plan = getAgentPlan(ag.key, daysUntil);
@@ -11551,26 +11766,26 @@ async function renderPrepaMatch() {
     html += '</div>';
     html += '<div style="font-size:12px;color:var(--muted);line-height:1.6">' + plan.desc + '</div>';
     html += '</div>';
-    html += '<button onclick="showPage(\'' + ag.key + '\',null)" style="flex-shrink:0;background:' + ag.color + '15;color:' + ag.color + ';border:1px solid ' + ag.color + '30;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif">Parler à ' + ag.name + '</button>';
+    html += '<button onclick="showPage(\'' + ag.key + '\',null)" style="flex-shrink:0;background:' + ag.color + '15;color:' + ag.color + ';border:1px solid ' + ag.color + '30;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif">' + t.pmTalkTo + ' ' + ag.name + '</button>';
     html += '</div>';
   });
   html += '</div>';
 
   // Quick actions
   html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">';
-  html += '<button onclick="startPrepaChat()" style="background:linear-gradient(135deg,var(--gold),#d97706);color:#07091a;border:none;padding:14px;border-radius:12px;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">🤖 Brief complet par Lucas</button>';
-  html += '<button onclick="showPage(\'journal\',null)" style="background:var(--bg3);color:var(--text);border:1px solid var(--border);padding:14px;border-radius:12px;font-weight:600;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">📓 Remplir mon journal</button>';
+  html += '<button onclick="startPrepaChat()" style="background:linear-gradient(135deg,var(--gold),#d97706);color:#07091a;border:none;padding:14px;border-radius:12px;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">' + t.pmBriefBtn + '</button>';
+  html += '<button onclick="showPage(\'journal\',null)" style="background:var(--bg3);color:var(--text);border:1px solid var(--border);padding:14px;border-radius:12px;font-weight:600;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">' + t.pmJournalBtn + '</button>';
   html += '</div>';
 
   // Other upcoming matches
   if (allFuture && allFuture.length > 1) {
     html += '<div style="margin-top:12px">';
-    html += '<h3 style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px">Prochains matchs</h3>';
+    html += '<h3 style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px">' + t.pmUpcoming + '</h3>';
     allFuture.slice(1, 5).forEach(function(ev) {
       var evD = new Date(ev.event_date);
       var dU = Math.round((evD - today) / 86400000);
       html += '<div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between">';
-      html += '<div><span style="font-weight:600;font-size:13px;color:var(--text)">' + ev.title + '</span> <span style="font-size:11px;color:var(--muted)">· ' + evD.toLocaleDateString('fr-CH', {day:'numeric', month:'short'}) + '</span></div>';
+      html += '<div><span style="font-weight:600;font-size:13px;color:var(--text)">' + ev.title + '</span> <span style="font-size:11px;color:var(--muted)">· ' + evD.toLocaleDateString(({fr:'fr-CH',de:'de-CH',en:'en-GB',it:'it-CH'}[currentLang]||'fr-CH'), {day:'numeric', month:'short'}) + '</span></div>';
       html += '<span style="font-size:12px;font-weight:700;color:var(--muted)">J-' + dU + '</span>';
       html += '</div>';
     });
@@ -11815,7 +12030,8 @@ async function generateWeeklyAIReport() {
     const reportHTML = aiText.replace(/\*\*(.*?)\*\*/g, '<strong style="color:#f59e0b">$1</strong>')
       .replace(/\n/g, '<br/>');
 
-    const weekLabel = weekAgo.toLocaleDateString('fr-CH',{day:'numeric',month:'short'}) + ' - ' + new Date(today.getTime()-86400000).toLocaleDateString('fr-CH',{day:'numeric',month:'short',year:'numeric'});
+    const _wkLoc = ({fr:'fr-CH',de:'de-CH',en:'en-GB',it:'it-CH'}[currentLang]||'fr-CH');
+    const weekLabel = weekAgo.toLocaleDateString(_wkLoc,{day:'numeric',month:'short'}) + ' - ' + new Date(today.getTime()-86400000).toLocaleDateString(_wkLoc,{day:'numeric',month:'short',year:'numeric'});
 
     modal.innerHTML = `<div style="background:linear-gradient(135deg,#0d1127,#111827);border:1px solid #1e2d47;border-radius:16px;max-width:520px;width:100%;max-height:85vh;overflow-y:auto;padding:24px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
