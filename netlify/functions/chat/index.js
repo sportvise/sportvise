@@ -300,7 +300,7 @@ exports.handler = async (event) => {
   } catch (_) {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'invalid_body' }) };
   }
-  const { agentId, message, history, lang, profile, otherAgents, calendar, style, goals, dailyLog, smartContext, image, imageType, userEmail, calendarEmpty, agentExchangeCount } = parsed;
+  const { agentId, message, history, lang, profile, otherAgents, calendar, style, goals, dailyLog, smartContext, image, imageType, userEmail, calendarEmpty, agentExchangeCount, bypassSession1 } = parsed;
 
   if (!agentId || !message) {
     await logUsage({ userId: user.id, agentId, success: false, errorCode: 'invalid_payload' });
@@ -466,7 +466,25 @@ ${smartContext}`;
   // test amis 17/05/2026 sur Lucas en particulier — 1ère réponse incohérente
   // ou hors contexte car le modèle tente d'être utile à tout prix).
   const isFirstMessageWithAgent = !history || history.length === 0;
-  if (isFirstMessageWithAgent) {
+  if (bypassSession1) {
+    // v63.30 — Moment aha onboarding : analyse directe AVANT le 1er vrai chat.
+    // Pas de présentation, pas de question — une preuve de valeur immédiate
+    // ancrée sur du spécifique suisse RÉEL. Anti-fiction strict.
+    systemWithLang += `\n\n[AHA — PREMIÈRE ANALYSE D'ONBOARDING]
+Cet athlète vient de terminer son onboarding. Tu produis ta TOUTE PREMIÈRE analyse, affichée AVANT le premier chat. Objectif : prouver immédiatement ta valeur et ta connaissance du contexte sportif suisse.
+
+STRUCTURE (4-6 phrases, pas plus) :
+1. Une observation concrète sur SON profil (sport + niveau + objectif), pas générique.
+2. UN fait spécifique suisse RÉEL et pertinent (seuil Swiss Olympic Card, logique Aide Sportive Suisse, médecine du sport, structure fédérale, fixture importée si dispo dans le contexte). Du vrai, du vérifiable.
+3. UNE première action immédiate et actionnable que tu lui recommandes.
+
+INTERDIT ABSOLU :
+- Te présenter ("Salut, je suis…"), souhaiter la bienvenue, ou poser une question.
+- Inventer une date, une compétition, un match, un chiffre non vérifié (doctrine anti-fiction). Si tu n'as pas la donnée, ancre sur une constante suisse vraie, jamais sur une prédiction.
+- Rester vague ("je peux t'aider à progresser…") — la force vient de la spécificité réelle.
+
+Ton : direct, expert, chaleureux, tutoiement, pas d'emoji décoratif. C'est une démonstration de compétence, pas une conversation.`;
+  } else if (isFirstMessageWithAgent) {
     systemWithLang += `\n\n[SESSION 1 — DÉBUT DE RELATION AVEC L'ATHLÈTE — v63.11.3]
 C'est ta première interaction avec cet athlète sur ton domaine d'expertise.
 
@@ -599,7 +617,7 @@ RÈGLE STRICTE : n'inclus le tag QUE si l'athlète mentionne explicitement une d
   replyText = replyText.replace(/\[CAL_EVENT:[^\]]+\]/g, '').replace(/\n{3,}/g, '\n\n').trim();
 
   const calendarCreatedList = [];
-  const validTypes = ['match', 'competition', 'entrainement', 'repos', 'blessure', 'nutrition', 'mental', 'sommeil'];
+  const validTypes = ['match', 'competition', 'entrainement', 'repos', 'blessure', 'nutrition', 'mental', 'sommeil', 'autre'];
 
   // v63.23 — Build all payloads first, then single batch insert.
   // Avant : 1 await httpRequest() par CAL_EVENT → N inserts séquentiels → 504 timeout
