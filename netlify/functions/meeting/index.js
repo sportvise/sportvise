@@ -389,6 +389,114 @@ async function callOneAgent({ agentId, question, history, otherAgentNames, lang,
 }
 
 // ─────────────────────────────────────────────────────────────
+// Synthesis : 4e appel Sonnet (facilitateur) après Promise.all.
+// Génère 3 bullets "Décision de l'équipe" depuis les réponses agents.
+// Modèle : Sonnet (même que les agents) — max 200 tokens (très court).
+// ─────────────────────────────────────────────────────────────
+function buildSynthesisSystem(lang) {
+  const langInstructions = {
+    fr: 'Réponds en français.',
+    de: 'Antworte auf Deutsch (Standarddeutsch).',
+    en: 'Respond in English.',
+    it: 'Rispondi in italiano.'
+  };
+  return `Tu es le facilitateur de la réunion d'équipe SPORTVISE.
+Ton rôle : synthétiser les conseils des experts en 3 points d'action concrets pour l'athlète.
+
+RÈGLES STRICTES :
+- Exactement 3 bullets, chacun ≤ 18 mots.
+- Commence chaque bullet par un verbe à l'impératif (tutoie l'athlète).
+- Ne cite pas les experts par nom.
+- Aucune intro, aucune conclusion, aucun titre — seulement les 3 bullets.
+- Chaque bullet = une action concrète et immédiatement actionnable.
+- Format exact : "• [action]" × 3 lignes, rien d'autre.
+
+${langInstructions[lang] || langInstructions.fr}`;
+}
+
+async function callSynthesis({ question, responses, lang, modelConfig, apiKey }) {
+  const successes = responses.filter(r => !r.error && r.reply);
+  if (successes.length < 2) return null;
+
+  const responsesText = successes.map(r =>
+    `${r.agent_name} (${r.agent_title || 'expert'}) :\n${String(r.reply).slice(0, 600)}`
+  ).join('\n\n');
+
+  const userContent = `Question de l'athlète : "${String(question).slice(0, 500)}"\n\nRéponses des experts :\n${responsesText}`;
+
+  const startTs = Date.now();
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({
+        model: modelConfig.id,
+        max_tokens: 200,
+        temperature: 0.2,
+        system: buildSynthesisSystem(lang),
+        messages: [{ role: 'user', content: userContent }]
+      })
+    });
+    if (!response.ok) {
+      console.warn('[MEETING] synthesis non-ok status:', response.status);
+      return null;
+    }
+    const data = await response.json();
+    const text = data.content?.[0]?.text || null;
+    if (!text) return null;
+    console.log(`[MEETING] synthesis done latency=${Date.now() - startTs}ms input=${data.usage?.input_tokens} output=${data.usage?.output_tokens}`);
+    return { text, inputTokens: data.usage?.input_tokens ?? null, outputTokens: data.usage?.output_tokens ?? null };
+  } catch (e) {
+    console.warn('[MEETING] callSynthesis error (non-blocking):', e.message);
+    return null;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Persistance : save/update le thread dans meeting_threads Supabase.
+// Si threadId fourni → upsert (update du thread existant).
+// Sinon → insert et retourner l'id généré.
+// Non-bloquant : les erreurs DB n'empêchent pas la réponse à l'user.
+// ─────────────────────────────────────────────────────────────
+async function saveMeetingThread({ userId, threadId, agentIds, turns, synthesis, calendarEventId }) {
+  if (!userId) return threadId || null;
+  try {
+    const payload = {
+      user_id: userId,
+      agent_ids: agentIds,
+      turns: turns,
+      synthesis: synthesis || null,
+      calendar_event_id: calendarEventId || null,
+      updated_at: new Date().toISOString()
+    };
+    if (threadId) payload.id = threadId;
+
+    const res = await httpRequest({
+      hostname: supabaseHost(),
+      path: '/rest/v1/meeting_threads',
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_SERVICE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+        'Content-Type': 'application/json',
+        Prefer: 'resolution=merge-duplicates,return=representation'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.status === 201 || res.status === 200) {
+      const saved = Array.isArray(res.data) ? res.data[0] : res.data;
+      return saved?.id || threadId;
+    }
+    console.warn('[MEETING] saveMeetingThread unexpected status:', res.status);
+    return threadId || null;
+  } catch (e) {
+    console.warn('[MEETING] saveMeetingThread error (non-blocking):', e.message);
+    return threadId || null;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
 // Main handler
 // ─────────────────────────────────────────────────────────────
 exports.handler = async (event) => {
@@ -424,7 +532,8 @@ exports.handler = async (event) => {
   } catch (_) {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'invalid_body' }) };
   }
-  const { question, agentIds, history, lang, profile, calendar, dailyLog, userEmail } = parsed;
+  const { question, agentIds, history, lang, profile, calendar, dailyLog, userEmail,
+          threadId, calendarEventId } = parsed;
 
   // Validation payload
   if (!question || typeof question !== 'string') {
@@ -597,7 +706,27 @@ exports.handler = async (event) => {
   const totalInputTokens = successes.reduce((s, r) => s + (r.inputTokens || 0), 0);
   const totalOutputTokens = successes.reduce((s, r) => s + (r.outputTokens || 0), 0);
 
-  console.log(`[MEETING] model=${modelKey} agents=${uniqueAgentIds.join(',')} turn=${turnNum}/${MAX_TURNS_PER_MEETING} email=${effectiveEmail || 'anon'} input=${totalInputTokens} output=${totalOutputTokens} latency=${totalLatencyMs}ms plan=${plan} month=${monthCount + (isFollowup ? 0 : 1)}/${quota.perMonth} successes=${successes.length}/${uniqueAgentIds.length}`);
+  // ─── Synthèse (4e call Sonnet — facilitateur) ───
+  // Non-bloquant : si ça fail, on renvoie quand même les réponses agents.
+  let synthesisResult = null;
+  if (successes.length >= 2) {
+    synthesisResult = await callSynthesis({
+      question, responses: results, lang, modelConfig, apiKey
+    });
+  }
+
+  // ─── Persistance thread ───
+  const updatedTurns = [...safeHistory, { question, responses: results }];
+  const savedThreadId = await saveMeetingThread({
+    userId: user.id,
+    threadId: threadId || null,
+    agentIds: uniqueAgentIds,
+    turns: updatedTurns,
+    synthesis: synthesisResult?.text || null,
+    calendarEventId: calendarEventId || null
+  });
+
+  console.log(`[MEETING] model=${modelKey} agents=${uniqueAgentIds.join(',')} turn=${turnNum}/${MAX_TURNS_PER_MEETING} email=${effectiveEmail || 'anon'} input=${totalInputTokens} output=${totalOutputTokens} latency=${totalLatencyMs}ms plan=${plan} month=${monthCount + (isFollowup ? 0 : 1)}/${quota.perMonth} successes=${successes.length}/${uniqueAgentIds.length} synthesis=${synthesisResult ? 'ok' : 'skip'} threadId=${savedThreadId || 'none'}`);
 
   // v63.1.0 — Log avec suffixe ":turn{N}" sur agent_id pour les follow-ups.
   // countMeetingsThisMonth les exclut via filter agent_id=not.like.%:turn%.
@@ -618,19 +747,22 @@ exports.handler = async (event) => {
     headers,
     body: JSON.stringify({
       responses: results,    // contient successes + failures (frontend gère affichage)
+      synthesis: synthesisResult?.text || null,   // v63.31 — bloc "Décision de l'équipe"
+      threadId: savedThreadId || null,             // v63.31 — persistance thread
       meta: {
         plan,
         monthUsed: isFollowup ? monthCount : monthCount + 1,
         monthLimit: quota.perMonth,
-        turn: turnNum,                          // v63.1.0
-        maxTurns: MAX_TURNS_PER_MEETING,        // v63.1.0
-        isFollowup,                             // v63.1.0
+        turn: turnNum,
+        maxTurns: MAX_TURNS_PER_MEETING,
+        isFollowup,
         model: modelKey,
         totalLatencyMs,
         totalInputTokens,
         totalOutputTokens,
         successCount: successes.length,
-        failureCount: failures.length
+        failureCount: failures.length,
+        hasSynthesis: !!synthesisResult
       }
     })
   };
