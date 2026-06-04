@@ -544,9 +544,9 @@ exports.handler = async (event) => {
     await logUsage({ userId: user.id, agentIds, success: false, errorCode: 'question_too_long' });
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Question too long (max 2000 chars)' }) };
   }
-  if (!Array.isArray(agentIds) || agentIds.length < 2 || agentIds.length > 3) {
+  if (!Array.isArray(agentIds) || agentIds.length < 2 || agentIds.length > 4) {
     await logUsage({ userId: user.id, agentIds, success: false, errorCode: 'invalid_agent_count' });
-    return { statusCode: 400, headers, body: JSON.stringify({ error: 'agentIds must be array of 2 or 3' }) };
+    return { statusCode: 400, headers, body: JSON.stringify({ error: 'agentIds must be array of 2 to 4' }) };
   }
   // v63.1.0 — Validation threading : history optionnel, max MAX_TURNS_PER_MEETING tours
   const safeHistory = Array.isArray(history) ? history : [];
