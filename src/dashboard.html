@@ -412,8 +412,11 @@
     .online-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
     /* PROFILE & MODAL */
-    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); z-index:1000; display:flex; align-items:center; justify-content:center; padding:20px; }
+    .modal-overlay, .sv-modal { position:fixed; inset:0; background:rgba(0,0,0,0.72); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); z-index:10000; display:flex; align-items:center; justify-content:center; padding:20px; animation:svModalIn .15s ease; }
+    @keyframes svModalIn { from{opacity:0} to{opacity:1} }
     .modal-box { background:var(--bg3); border:1px solid var(--border); border-radius:20px; padding:36px; width:100%; max-width:520px; max-height:90vh; overflow-y:auto; }
+    .sv-modal-box { background:var(--card,#0f172a); border:1px solid var(--border,#1e293b); border-radius:16px; padding:24px; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.5); animation:svBoxIn .18s ease; }
+    @keyframes svBoxIn { from{opacity:0;transform:translateY(8px) scale(.98)} to{opacity:1;transform:none} }
     .modal-title { font-size:22px; font-weight:800; margin-bottom:6px; }
     .modal-sub { font-size:13px; color:var(--muted); margin-bottom:28px; }
     .form-field { margin-bottom:18px; }
@@ -655,8 +658,10 @@
       🏠 <span>Dashboard</span>
     </button>
     <button class="nav-item" onclick="showPage('calendrier',this)">📅 <span data-nav="calendrier">Calendrier</span></button>
-    <button class="nav-item" id="navItemTeamMeeting" style="border-left:3px solid #f59e0b;background:linear-gradient(90deg,rgba(245,158,11,0.08),transparent)" onclick="openTeamMeeting()">
+    <button class="nav-item" id="navItemTeamMeeting" style="border-left:3px solid #f59e0b;background:linear-gradient(90deg,rgba(245,158,11,0.08),transparent)" onclick="showPage('reunion',this)">
       🤝 <span id="navItemTeamMeetingLabel">Réunion d'équipe</span>
+      <!-- v63.31 — badge trigger calendrier -->
+      <span id="reunionSidebarBadge" style="display:none;background:#f59e0b;color:#07091a;font-size:8px;font-weight:800;border-radius:6px;padding:2px 5px;margin-left:4px;line-height:1.2">PRÊTE</span>
     </button>
 
     <!-- ─── PERFORMANCE ─── -->
@@ -936,7 +941,7 @@ function showLucasWelcome() {
 
   const overlay = document.createElement('div');
   overlay.id = 'lucasWelcomeOverlay';
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;animation:fadeIn 0.4s ease';
+  overlay.className = 'sv-modal';
 
   let step = 0;
   let advancing = false; // v55 — debounce pour éviter le double-clic qui empile 2 setTimeout(step++) → crash steps[5]
@@ -1828,7 +1833,8 @@ async function init() {
     if (installLink && isInstalled) installLink.style.display = 'none';
   } catch(e) {}
   // v63.29.0 — Morning Brief modal désactivé au lancement (trop agressif). La check-in card inline remplace.
-  setTimeout(() => { try { showEveningBrief(); } catch(e) { console.warn('showEveningBrief error:', e); } }, 3000);
+  // v63.30 — Brief du soir : plus d'auto-pop de modal non plus. Surfacé en card inline (injectBriefCard).
+  setTimeout(() => { try { injectBriefCard(); } catch(e) { console.warn('injectBriefCard error:', e); } }, 1500);
   setTimeout(() => { try { scheduleProactiveNotifications(); } catch(e) { console.warn('scheduleProactiveNotifications error:', e); } }, 3000);
   setTimeout(() => { try { checkAppVersion(); } catch(e) { console.warn('checkAppVersion error:', e); } }, 5000);
 
@@ -2355,6 +2361,30 @@ function showToast(msg, duration = 3000) {
   }, duration);
 }
 
+// ── MODAL UNIFIÉE ───────────────────────────────────
+// Source de vérité unique pour toute nouvelle modal. Ne plus jamais recopier
+// d'overlay inline : passer par openModal() garantit centrage, fade-in,
+// z-index et fermeture (Escape + clic-dehors) cohérents partout.
+function openModal({ id, html, maxWidth = 520, onClose } = {}) {
+  if (id && document.getElementById(id)) return null; // anti double-open
+  const overlay = document.createElement('div');
+  if (id) overlay.id = id;
+  overlay.className = 'sv-modal';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.innerHTML = '<div class="sv-modal-box" style="max-width:' + maxWidth + 'px">' + html + '</div>';
+  const close = () => {
+    document.removeEventListener('keydown', esc);
+    overlay.remove();
+    if (typeof onClose === 'function') onClose();
+  };
+  const esc = (e) => { if (e.key === 'Escape') close(); };
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+  document.addEventListener('keydown', esc);
+  document.body.appendChild(overlay);
+  return { overlay, close };
+}
+
 function incrementNotification(page) {
   if (!notifications[page]) notifications[page] = 0;
   notifications[page]++;
@@ -2864,6 +2894,11 @@ async function showPage(page, el) {
     document.getElementById('pageTitle').textContent = '🏪 Marketplace';
     document.getElementById('pageSubtitle').textContent = (T[currentLang]?.pageMarketSubtitle) || "Programmes d'entraînement et guides créés par tes agents";
     renderMarketplace();
+  } else if (page === 'reunion') {
+    // v63.31 — Page dédiée Réunion d'équipe (remplace la modale)
+    document.getElementById('pageTitle').textContent = '🤝 ' + ((T[currentLang]?.teamMeetingTitle) || 'Réunion d\'équipe');
+    document.getElementById('pageSubtitle').textContent = (T[currentLang]?.teamMeetingSubtitle) || 'Pose une question à 2-4 agents experts. Ils répondent ensemble et vous donnent une décision commune.';
+    renderReunion();
   } else if (agent) {
     const _tt = T[currentLang] || T.fr;
     const _localTitle = (_tt.agentTitles && _tt.agentTitles[page]) || agent.title;
@@ -2877,14 +2912,7 @@ async function showPage(page, el) {
     }
   }
 
-  // v63.5.9 — Hide team meeting FAB on chat agent pages (bug rapporté self-test
-  // mobile 13/05) : le FAB position:fixed bottom-right chevauche le bouton
-  // 'Envoyer' du chat input. La réunion d'équipe reste accessible via la sidebar
-  // ('Réunion d'équipe' nav item). FAB visible sur dashboard + autres pages.
-  try {
-    const fab = document.getElementById('teamMeetingFab');
-    if (fab) fab.style.display = agent ? 'none' : 'flex';
-  } catch(_) {}
+  // v63.31 — FAB retiré (modale → page /reunion). Badge sidebar géré par checkMeetingTrigger().
 
   // v63.13.0 — Fade-in pour les pages synchrones (agents chat, profil, favoris, etc.)
   // Les pages async (renderDashboard, renderCalendar, renderProgression) appellent
@@ -2899,6 +2927,89 @@ async function showPage(page, el) {
     var _et = (T && (T[currentLang] || T.fr)) || {};
     if (mc) { mc.innerHTML = '<div style="text-align:center;padding:40px 20px"><div style="font-size:28px;margin-bottom:8px">⚠️</div><div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:8px">' + (_et.errPageTitle || 'Erreur d\'affichage') + '</div><div style="font-size:12px;color:var(--muted);margin-bottom:12px">' + (_et.errPageSub || 'Cette page n\'a pas pu se charger.') + '</div><button onclick="showPage(\'dashboard\',document.querySelector(\'.nav-item\'))" style="padding:8px 16px;border-radius:8px;border:none;background:var(--gold);color:#07091a;font-weight:700;font-size:12px;cursor:pointer;font-family:Inter,sans-serif">' + (_et.backDashboard || 'Retour au dashboard') + '</button></div>'; mc.style.opacity = '1'; }
   }
+}
+
+// ── RÉUNION D'ÉQUIPE PAGE (v63.31) ─────────────────
+function renderReunion() {
+  const mc = document.getElementById('mainContent');
+  if (!mc) return;
+  const t = (typeof T !== 'undefined' && T[currentLang]) || {};
+
+  mc.innerHTML = `
+    <div style="max-width:640px;margin:0 auto;padding:0 0 40px;font-family:Inter,sans-serif">
+
+      <!-- Tabs -->
+      <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:16px">
+        <button id="tmTabNew" onclick="tmSwitchTab('new')" type="button"
+          style="padding:10px 18px;background:none;border:none;border-bottom:2px solid #f59e0b;color:#f59e0b;font-size:13px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">
+          ${t.teamMeetingTabNew || 'Nouvelle réunion'}
+        </button>
+        <button id="tmTabHistory" onclick="tmSwitchTab('history')" type="button"
+          style="padding:10px 18px;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif">
+          ${t.teamMeetingTabHistory || 'Historique'}
+        </button>
+      </div>
+
+      <!-- ZONE NOUVELLE RÉUNION -->
+      <div id="tmZoneNew">
+
+        <!-- Context header (event calendrier pré-injecté) -->
+        <div id="tmContextHeader" style="display:none"></div>
+
+        <!-- Header tour counter -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="font-size:11px;color:var(--muted);font-weight:600" id="teamMeetingHeaderTurn" style="display:none"></div>
+          <button id="teamMeetingNewBtn" type="button" onclick="newTeamMeetingThread()"
+            style="display:none;padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-weight:600;font-size:12px;cursor:pointer;font-family:inherit">
+            ↻ ${t.teamMeetingNewMeeting || 'Nouvelle réunion'}
+          </button>
+        </div>
+
+        <!-- Thread scrollable -->
+        <div id="teamMeetingResults"
+          style="min-height:180px;margin-bottom:16px"></div>
+
+        <!-- Composer -->
+        <div style="border:1px solid var(--border);border-radius:14px;padding:14px 16px;background:var(--bg2)">
+
+          <!-- Agents picker (2-4 agents) -->
+          <div id="teamMeetingAgentsBlock" style="margin-bottom:10px">
+            <div style="font-size:10px;color:var(--muted);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px" id="teamMeetingAgentsLabel">
+              ${t.teamMeetingAgentsLabel || 'Agents (2-4)'}
+            </div>
+            <div id="teamMeetingAgents" style="display:flex;flex-wrap:wrap;gap:0"></div>
+            <div id="teamMeetingCounter" style="font-size:11px;color:var(--muted);margin-top:4px">3/4 agents sélectionnés</div>
+          </div>
+
+          <!-- Question -->
+          <textarea id="teamMeetingQuestion" rows="3"
+            placeholder="${escapeHtml(t.teamMeetingPlaceholder || 'Ex: Je me sens fatigué avant un match dans 3 jours, que faire ?')}"
+            style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;resize:none;margin-bottom:10px;box-sizing:border-box"></textarea>
+
+          <!-- Submit -->
+          <button id="teamMeetingSubmit" type="button" onclick="submitTeamMeeting()"
+            style="width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit">
+            ${escapeHtml(t.teamMeetingSubmit || 'Lancer la réunion')}
+          </button>
+        </div>
+      </div>
+
+      <!-- ZONE HISTORIQUE -->
+      <div id="tmZoneHistory" style="display:none">
+        <div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">Chargement…</div>
+      </div>
+
+    </div>
+  `;
+
+  // Initialiser la page côté JS (team-meeting.js)
+  requestAnimationFrame(() => {
+    if (typeof _initReunionPage === 'function') _initReunionPage();
+    if (!window._svPageAsync) {
+      const _mc = document.getElementById('mainContent');
+      if (_mc) _mc.style.opacity = '1';
+    }
+  });
 }
 
 // ── DASHBOARD ───────────────────────────────────────
@@ -3072,6 +3183,48 @@ async function renderDashboard() {
     <!-- Morning Brief remplace les agents proactifs (modal au lancement) -->
 
     <!-- RÉCAP HEBDO — désactivé v63.26.0 (traduction bug + encombrement + flash) -->
+
+    <!-- v63.31 — MEETING TRIGGER CARD (si compétition/match dans 2-7 jours) -->
+    ${await (async () => {
+      const now = new Date();
+      const minD = new Date(now.getTime() + 2 * 86400000).toISOString().slice(0, 10);
+      const maxD = new Date(now.getTime() + 7 * 86400000).toISOString().slice(0, 10);
+      const { data: triggerEvts } = await sb.from('calendar_events')
+        .select('id, title, event_type, event_date, event_time')
+        .eq('user_id', currentUser.id)
+        .in('event_type', ['competition', 'match'])
+        .gte('event_date', minD)
+        .lte('event_date', maxD)
+        .order('event_date', { ascending: true })
+        .limit(1);
+      if (!triggerEvts || triggerEvts.length === 0) return '';
+      const te = triggerEvts[0];
+      // Vérifier dismiss localStorage
+      const dismissKey = 'sv_mtrigger_dismissed_' + te.id;
+      // Note: localStorage n'est pas disponible côté template literal mais on pose un
+      // div statique — le JS checkMeetingTrigger() se charge de la vérif + dismiss.
+      // On store l'event data dans des attributs data-* pour que le JS puisse les lire.
+      const daysUntil = Math.round((new Date(te.event_date + 'T12:00:00') - now) / (24 * 3600 * 1000));
+      const daysLabel = daysUntil <= 1 ? (t.tomorrow || 'demain') : (t.inDays || 'dans {n} jours').replace('{n}', daysUntil);
+      const dateLocale = {fr:'fr-CH',de:'de-CH',en:'en-GB',it:'it-CH'}[currentLang] || 'fr-CH';
+      const dateFormatted = new Date(te.event_date + 'T12:00:00').toLocaleDateString(dateLocale, { weekday: 'long', day: 'numeric', month: 'long' });
+      const suggested = JSON.stringify(['physique', 'mental', 'nutrition']);
+      return `<div id="meetingTriggerCard"
+        data-event-id="${escapeHtml(te.id)}"
+        data-event-title="${escapeHtml(te.title)}"
+        data-event-date="${escapeHtml(te.event_date)}"
+        data-event-time="${escapeHtml(te.event_time || '')}"
+        data-suggested-agents="${escapeHtml(suggested)}"
+        style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:linear-gradient(135deg,rgba(245,158,11,0.1),rgba(217,119,6,0.06));border:1px solid rgba(245,158,11,0.5);border-radius:12px;margin-bottom:16px">
+        <span style="font-size:24px;flex-shrink:0">⚡</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:700;color:#f59e0b;margin-bottom:3px">${escapeHtml(te.title)} — ${escapeHtml(daysLabel)}</div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:10px">${escapeHtml(dateFormatted)}${te.event_time ? ' · ' + te.event_time : ''} · ${t.teamMeetingTriggerLabel || 'Ton équipe est prête'}</div>
+          <button onclick="openTeamMeetingWithEvent('${escapeHtml(te.id)}','${escapeHtml(te.title).replace(/'/g, "\\'")}','${escapeHtml(te.event_date)}',['physique','mental','nutrition'])" style="padding:8px 14px;border-radius:8px;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-weight:700;font-size:12px;cursor:pointer;font-family:Inter,sans-serif">${t.teamMeetingTriggerCta || 'Démarrer la réunion →'}</button>
+        </div>
+        <button onclick="_dismissMeetingTrigger('${escapeHtml(te.id)}');document.getElementById('meetingTriggerCard').style.display='none';" style="background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;flex-shrink:0;padding:0;line-height:1" title="Ne plus afficher">✕</button>
+      </div>`;
+    })()}
 
     <!-- PRÉPA MATCH WIDGET (si match dans 3 jours) -->
     ${await (async () => {
@@ -3629,7 +3782,7 @@ function openAthleteContextModal(page) {
 
   const overlay = document.createElement('div');
   overlay.id = 'athleteContextModal';
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:flex-end;justify-content:center;padding:16px;animation:fadeIn 0.2s ease';
+  overlay.className = 'sv-modal';
   overlay.innerHTML = `
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px 16px 12px 12px;padding:20px;width:100%;max-width:600px;box-shadow:0 -8px 32px rgba(0,0,0,0.4)">
       <div style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:4px">${t.memoryModalTitle || 'Ajoute ton contexte'}</div>
@@ -6858,7 +7011,7 @@ function deleteEventSmart(id, groupId, eventDate) {
 
   const dialog = document.createElement('div');
   dialog.id = 'seriesDeleteDialog';
-  dialog.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);z-index:10001;display:flex;align-items:center;justify-content:center;padding:20px';
+  dialog.className = 'sv-modal';
   dialog.innerHTML = `
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;max-width:380px;width:100%;box-shadow:0 24px 80px rgba(0,0,0,0.5)">
       <div style="font-size:32px;text-align:center;margin-bottom:8px">🔁</div>
@@ -6927,7 +7080,7 @@ function editEventSmart(id, groupId, fromDate, title, type, time, location, inte
 
   const dialog = document.createElement('div');
   dialog.id = 'seriesEditDialog';
-  dialog.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);z-index:10001;display:flex;align-items:center;justify-content:center;padding:20px';
+  dialog.className = 'sv-modal';
   dialog.innerHTML = `
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;max-width:380px;width:100%;box-shadow:0 24px 80px rgba(0,0,0,0.5)">
       <div style="font-size:32px;text-align:center;margin-bottom:8px">🔁</div>
@@ -7232,9 +7385,8 @@ async function saveRecap(eventId) {
     try { await checkPendingRecaps(); } catch(e) { console.warn('saveRecap chain error:', e); }
     if (!document.getElementById('eventModal')) {
       try {
-        const hour = new Date().getHours();
-        if (hour < 18) showMorningBrief();
-        else showEveningBrief();
+        // v63.30 — plus d'auto-pop de brief après un récap. Surfacé en card inline non-bloquante.
+        injectBriefCard();
       } catch(_) {}
     }
   }, 600);
@@ -7287,9 +7439,8 @@ function skipRecap(eventId) {
     try { await checkPendingRecaps(); } catch(e) { console.warn('skipRecap chain error:', e); }
     if (!document.getElementById('eventModal')) {
       try {
-        const hour = new Date().getHours();
-        if (hour < 18) showMorningBrief();
-        else showEveningBrief();
+        // v63.30 — plus d'auto-pop de brief après un récap. Surfacé en card inline non-bloquante.
+        injectBriefCard();
       } catch(_) {}
     }
   }, 350);
@@ -7530,6 +7681,63 @@ async function loadCheckinStateForToday() {
   }
 }
 
+// v63.30 — Brief du soir surfacé en CARD INLINE (plus d'auto-pop de modal).
+// Doctrine anti-bruit : nudge inline non-bloquant. La modal ne s'ouvre que sur clic.
+// Conditions : après 18h, onboarding fait, pas déjà dismiss aujourd'hui.
+function injectBriefCard() {
+  try {
+    const hour = new Date().getHours();
+    if (hour < 18) return;                 // card du soir uniquement (le matin = check-in card)
+    if (!isOnboardDone()) return;
+    if (document.getElementById('briefCard')) return;      // double-inject guard
+    if (document.getElementById('eveningBrief')) return;    // modal déjà ouverte
+    const now = new Date();
+    const dayKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    if (localStorage.getItem(`sv_briefcard_dismissed_${dayKey}`)) return;
+
+    const L = {
+      fr: { title:'Brief du soir', sub:'Ton point de la journée et le cap pour demain.', cta:'Voir mon brief', later:'Plus tard' },
+      de: { title:'Abend-Briefing', sub:'Dein Tagesrückblick und der Plan für morgen.', cta:'Briefing ansehen', later:'Später' },
+      en: { title:'Evening brief', sub:'Your day recap and the focus for tomorrow.', cta:'See my brief', later:'Later' },
+      it: { title:'Brief della sera', sub:'Il riepilogo della giornata e la rotta per domani.', cta:'Vedi il mio brief', later:'Più tardi' }
+    };
+    const c = L[currentLang] || L.fr;
+    const wrapper = document.querySelector('#mainContent > div') || document.getElementById('mainContent');
+    if (!wrapper) return;
+
+    const html = `
+      <div id="briefCard" style="background:linear-gradient(135deg,#6366f115,#4338ca15);border:1px solid #6366f150;border-radius:14px;padding:18px;margin-bottom:16px;position:relative;opacity:0;transform:translateY(-8px);transition:opacity 0.4s ease, transform 0.4s ease">
+        <div style="font-size:11px;font-weight:800;color:#818cf8;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px">🌙 ${escapeHtml(c.title)}</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.5;margin-bottom:14px">${escapeHtml(c.sub)}</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button onclick="showEveningBrief()" style="flex:1;min-width:160px;padding:12px 14px;border-radius:10px;border:1px solid #6366f140;background:#6366f1;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif" onmouseover="this.style.background='#4f46e5'" onmouseout="this.style.background='#6366f1'">${escapeHtml(c.cta)} →</button>
+          <button onclick="dismissBriefCardToday()" style="padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:none;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">${escapeHtml(c.later)}</button>
+        </div>
+      </div>
+    `;
+    const checkinEl = document.getElementById('checkinCard');
+    const insightEl = document.getElementById('weeklyInsightCard');
+    const welcomeEl = document.getElementById('welcomeCard');
+    if (checkinEl) checkinEl.insertAdjacentHTML('afterend', html);
+    else if (insightEl) insightEl.insertAdjacentHTML('afterend', html);
+    else if (welcomeEl) welcomeEl.insertAdjacentHTML('afterend', html);
+    else wrapper.insertAdjacentHTML('afterbegin', html);
+
+    requestAnimationFrame(() => {
+      const el = document.getElementById('briefCard');
+      if (el) { el.style.opacity = '1'; el.style.transform = 'translateY(0)'; }
+    });
+  } catch (e) { console.warn('injectBriefCard error:', e); }
+}
+
+function dismissBriefCardToday() {
+  const now = new Date();
+  const dayKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  try { localStorage.setItem(`sv_briefcard_dismissed_${dayKey}`, '1'); } catch(_) {}
+  const el = document.getElementById('briefCard');
+  if (el) { el.style.opacity = '0'; el.style.transform = 'translateY(-8px)'; setTimeout(() => el.remove(), 350); }
+}
+
 // Injecte la carte cyan en haut de #mainContent (après welcome card si présente)
 function injectCheckinCard() {
   const t = T[currentLang] || T.fr;
@@ -7599,7 +7807,8 @@ function openCheckinModal() {
   // v62.29 fix : overlay plus opaque (0.85 vs 0.65) + backdrop blur 6px pour
   // bien isoler la modal. Le panel intérieur a un background hardcodé opaque
   // (var(--card) en dark theme paraissait quasi-transparent par-dessus l'overlay).
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;font-family:Inter,sans-serif';
+  overlay.className = 'sv-modal';
+  overlay.style.fontFamily = 'Inter,sans-serif';
   overlay.innerHTML = `
     <div style="background:var(--card,#0f172a);border:1px solid var(--border,#1e293b);border-radius:16px;padding:24px;max-width:420px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.5)" role="dialog" aria-modal="true" aria-labelledby="checkinModalTitle">
       <div id="checkinModalTitle" style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:6px">${escapeHtml(t.checkinModalTitle || 'Comment vas-tu aujourd\'hui ?')}</div>
@@ -8680,7 +8889,7 @@ async function showMorningBrief(forceShow = false) {
 
     const overlay = document.createElement('div');
     overlay.id = 'morningBriefOverlay';
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;transition:opacity 0.3s ease';
+    overlay.className = 'sv-modal';
 
     overlay.innerHTML = `
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:20px;max-width:420px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,0.5);padding:28px 24px">
@@ -9365,7 +9574,7 @@ let autoReadEnabled = false;
 
 function showDisclaimer() {
   const modal = document.createElement('div');
-  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.className = 'sv-modal';
   modal.onclick = (e) => { if(e.target === modal) modal.remove(); };
   modal.innerHTML = `
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;max-width:500px;width:100%;padding:28px;color:var(--text);max-height:80vh;overflow-y:auto">
@@ -11975,7 +12184,7 @@ async function generateWeeklyAIReport() {
   // Show loading modal
   const modal = document.createElement('div');
   modal.id = 'aiReportModal';
-  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;animation:fadeIn 0.3s';
+  modal.className = 'sv-modal';
   modal.innerHTML = `<div style="background:linear-gradient(135deg,#0d1127,#111827);border:1px solid #1e2d47;border-radius:16px;max-width:500px;width:100%;max-height:85vh;overflow-y:auto;padding:24px">
     <div style="text-align:center;padding:40px 0">
       <div style="font-size:36px;margin-bottom:12px;animation:bounce 1s infinite">🤖</div>
@@ -13897,80 +14106,24 @@ function showShortcutsHelp() {
   }
 </script>
 
-<!-- ═══ MULTI-AGENT MEETING (v63.0.0 — Idée 7 STRATEGIE / killer feature ProductHunt) ═══ -->
-<!-- FAB : bouton flottant déclencheur, visible sur toutes les pages du dashboard -->
-<button id="teamMeetingFab" type="button"
-        onclick="openTeamMeeting()"
-        title="Réunion d'équipe"
-        aria-label="Réunion d'équipe"
-        style="position:fixed;bottom:20px;right:20px;width:56px;height:56px;border-radius:50%;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-size:24px;cursor:pointer;box-shadow:0 6px 20px rgba(245,158,11,0.35);z-index:9998;font-family:Inter,sans-serif;display:flex;align-items:center;justify-content:center;transition:transform 0.15s ease">🤝</button>
-
-<!-- Modal team meeting (v63.1.1 : composer en bas, thread scrollable au-dessus) -->
-<div id="teamMeetingModal" class="modal-overlay" style="display:none">
-  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;max-width:560px;width:100%;height:90vh;max-height:90vh;display:flex;flex-direction:column;font-family:Inter,sans-serif;overflow:hidden">
-
-    <!-- Header (fixe en haut) -->
-    <div style="padding:20px 24px 12px;border-bottom:1px solid var(--border);flex-shrink:0">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-        <div style="display:flex;align-items:center;gap:10px">
-          <span style="font-size:22px">🤝</span>
-          <span id="teamMeetingTitle" style="font-size:16px;font-weight:800;color:var(--text)">Réunion d'équipe</span>
-          <span id="teamMeetingHeaderTurn" style="font-size:11px;color:var(--muted);font-weight:600;display:none">Tour 1/5</span>
-        </div>
-        <button onclick="closeTeamMeeting()" type="button" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:4px 8px">✕</button>
-      </div>
-      <div id="teamMeetingSubtitle" style="font-size:12px;color:var(--muted);line-height:1.4">Pose une question à 2 ou 3 agents experts. Ils répondent ensemble depuis leur domaine.</div>
-    </div>
-
-    <!-- Thread (flex:1, scrollable, auto-scroll en bas après chaque réponse) -->
-    <div id="teamMeetingResults" style="flex:1;overflow-y:auto;padding:16px 24px;min-height:120px"></div>
-
-    <!-- Composer (fixe en bas) -->
-    <div id="teamMeetingComposer" style="padding:12px 24px 16px;border-top:1px solid var(--border);background:var(--bg2);flex-shrink:0">
-      <!-- Agents picker (visible avant 1er tour, masqué après pour gagner de la place) -->
-      <div id="teamMeetingAgentsBlock">
-        <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px" id="teamMeetingAgentsLabel">Agents (2-3)</div>
-        <div id="teamMeetingAgents" style="margin-bottom:4px;display:flex;flex-wrap:wrap"></div>
-        <div id="teamMeetingCounter" style="font-size:11px;color:var(--muted);margin-bottom:8px">3/3 agents sélectionnés</div>
-      </div>
-      <textarea id="teamMeetingQuestion" rows="2"
-                placeholder="Ex: Je me sens fatigué avant un match dans 3 jours, que faire ?"
-                style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;resize:none;margin-bottom:8px"></textarea>
-      <div style="display:flex;gap:8px;align-items:center">
-        <button id="teamMeetingNewBtn" type="button" onclick="newTeamMeetingThread()"
-                style="display:none;padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--muted);font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;flex-shrink:0">↻</button>
-        <button id="teamMeetingSubmit" type="button" onclick="submitTeamMeeting()"
-                style="flex:1;padding:10px;border-radius:10px;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit">Lancer la réunion</button>
-      </div>
-    </div>
-  </div>
-</div>
+<!-- ═══ MULTI-AGENT MEETING v63.31 ═══ -->
+<!-- Modale supprimée — remplacée par la page /reunion (renderReunion + showPage).
+     La réunion d'équipe est accessible via :
+     1. Sidebar nav "Réunion d'équipe" → showPage('reunion')
+     2. Card trigger calendrier sur le dashboard → openTeamMeetingWithEvent(...)
+     Les IDs teamMeetingResults/teamMeetingQuestion/etc. sont désormais dans renderReunion().
+     Le code JS est dans src/js/team-meeting.js. -->
 <script>
-  // i18n header au moment où la modal est ouverte (sync avec currentLang/T)
-  // Le wiring est fait par openTeamMeeting() dans src/js/team-meeting.js.
-  function _syncTeamMeetingI18nLabels() {
+  // Sidebar nav label i18n (label statique, hors contexte page)
+  function _syncTeamMeetingNavLabel() {
     if (typeof T === 'undefined' || typeof currentLang === 'undefined') return;
     var t = T[currentLang] || T.fr || {};
-    var fab = document.getElementById('teamMeetingFab');
-    if (fab && t.teamMeetingFabTitle) fab.title = t.teamMeetingFabTitle;
     var navLbl = document.getElementById('navItemTeamMeetingLabel');
     if (navLbl && t.teamMeetingNavItem) navLbl.textContent = t.teamMeetingNavItem;
-    var title = document.getElementById('teamMeetingTitle');
-    if (title && t.teamMeetingTitle) title.textContent = t.teamMeetingTitle;
-    var subtitle = document.getElementById('teamMeetingSubtitle');
-    if (subtitle && t.teamMeetingSubtitle) subtitle.textContent = t.teamMeetingSubtitle;
-    var qta = document.getElementById('teamMeetingQuestion');
-    if (qta && t.teamMeetingPlaceholder) qta.placeholder = t.teamMeetingPlaceholder;
-    var lbl = document.getElementById('teamMeetingAgentsLabel');
-    if (lbl && t.teamMeetingAgentsLabel) lbl.textContent = t.teamMeetingAgentsLabel;
-    var btn = document.getElementById('teamMeetingSubmit');
-    if (btn && t.teamMeetingSubmit) btn.textContent = t.teamMeetingSubmit;
   }
-  // Run au load
-  _syncTeamMeetingI18nLabels();
-  // Re-run au lang switch
+  _syncTeamMeetingNavLabel();
   if (typeof window !== 'undefined') {
-    window.addEventListener('sv-lang-changed', _syncTeamMeetingI18nLabels);
+    window.addEventListener('sv-lang-changed', _syncTeamMeetingNavLabel);
   }
 </script>
 </body>
