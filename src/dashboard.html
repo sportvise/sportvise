@@ -624,6 +624,8 @@
       .attach-btn { padding: 0 8px; font-size: 14px; flex-shrink: 0; min-width: 36px; min-height: 44px; }
       .chat-messages { margin-bottom: 0; }
       .msg-bubble { max-width: 85%; font-size: 13px; padding: 10px 13px; }
+      /* Modal padding réduit sur mobile — 36px → 20px, +55px de largeur utile */
+      .modal-box { padding: 20px 18px; border-radius: 14px; }
     }
   </style>
   <link rel="manifest" href="/manifest.json" />
@@ -2361,6 +2363,63 @@ function showToast(msg, duration = 3000) {
   }, duration);
 }
 
+// v63.32 — Toast enrichi pour les événements créés via chat (CAL_EVENT)
+// Remplace le showToast() simple : affiche titres + dates + lien "Voir le calendrier"
+function _showCalEventToast(created) {
+  if (!created || !created.length) return;
+  const n = created.length;
+  const t = T[currentLang] || T.fr;
+  const lang = currentLang || 'fr';
+
+  function fmtDate(dateStr) {
+    try {
+      const d = new Date(dateStr + 'T12:00:00');
+      const locale = lang === 'de' ? 'de-CH' : lang === 'it' ? 'it-CH' : lang === 'en' ? 'en-CH' : 'fr-CH';
+      return d.toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'numeric' });
+    } catch (_) { return dateStr; }
+  }
+  function tr(s, max) { return s && s.length > max ? s.slice(0, max) + '…' : (s || ''); }
+
+  let container = document.getElementById('toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toast-container';
+    container.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:99999;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none';
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement('div');
+  toast.style.cssText = 'background:var(--card,#1a1a2e);color:var(--text,#fff);border:1px solid rgba(245,158,11,0.35);padding:14px 16px;border-radius:14px;font-size:13px;font-weight:600;font-family:Inter,sans-serif;box-shadow:0 4px 24px rgba(0,0,0,0.4);opacity:0;transform:translateY(10px);transition:all 0.3s ease;pointer-events:auto;width:min(340px,88vw);text-align:left';
+
+  let html = '';
+  if (n === 1) {
+    html = `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <span>📅 <strong>${escapeHtml(tr(created[0].title, 28))}</strong> <span style="color:var(--muted);font-weight:400">· ${fmtDate(created[0].date)}</span></span>
+      <button onclick="showPage('calendrier')" style="background:none;border:none;color:#f59e0b;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;padding:2px 0;white-space:nowrap;flex-shrink:0">${t.calSeeCalendar || 'Voir →'}</button>
+    </div>`;
+  } else {
+    const shown = created.slice(0, 3);
+    const rest = n - shown.length;
+    html = `<div>
+      <div style="margin-bottom:8px">📅 <strong>${n} ${t.calEventsAdded || 'séances ajoutées au calendrier'}</strong></div>
+      <div style="display:flex;flex-direction:column;gap:3px;margin-bottom:10px">
+        ${shown.map(e => `<span style="font-size:12px;font-weight:400">· ${escapeHtml(tr(e.title, 26))} <span style="color:var(--muted)">${fmtDate(e.date)}</span></span>`).join('')}
+        ${rest > 0 ? `<span style="font-size:11px;color:var(--muted)">+ ${rest} ${t.calEventsMore || 'autres'}</span>` : ''}
+      </div>
+      <button onclick="showPage('calendrier')" style="width:100%;padding:8px;background:linear-gradient(135deg,#f59e0b,#d97706);border:none;border-radius:8px;color:#07091a;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">${t.calSeeCalendarFull || 'Voir le calendrier →'}</button>
+    </div>`;
+  }
+
+  toast.innerHTML = html;
+  container.appendChild(toast);
+  const duration = n > 1 ? 8000 : 5000;
+  requestAnimationFrame(() => { toast.style.opacity = '1'; toast.style.transform = 'translateY(0)'; });
+  setTimeout(() => {
+    toast.style.opacity = '0'; toast.style.transform = 'translateY(10px)';
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
+}
+
 // ── MODAL UNIFIÉE ───────────────────────────────────
 // Source de vérité unique pour toute nouvelle modal. Ne plus jamais recopier
 // d'overlay inline : passer par openModal() garantit centrage, fade-in,
@@ -3226,6 +3285,9 @@ async function renderDashboard() {
       </div>`;
     })()}
 
+    <!-- LUCAS PERIODIC REVIEW CARD (v63.32) — rendu par checkLucasPeriodicReview() -->
+    <div id="lucasReviewCard" style="display:none"></div>
+
     <!-- PRÉPA MATCH WIDGET (si match dans 3 jours) -->
     ${await (async () => {
       const todayD = startOfLocalDay();
@@ -3480,6 +3542,14 @@ async function renderDashboard() {
         renderTransformationView();
       } catch(e) { console.warn('[KF3-TRANSFORMATION] dashboard hook error:', e); }
     }, 100);
+  }
+  // v63.32 — Revue périodique Lucas : afficher la card une fois par mois si non dismissée
+  if (isOnboardDone() && !isFreshAccount && typeof checkLucasPeriodicReview === 'function') {
+    setTimeout(() => {
+      try {
+        checkLucasPeriodicReview();
+      } catch(e) { console.warn('[LUCAS-REVIEW] dashboard hook error:', e); }
+    }, 400);
   }
   // v63.13.0 — fade-in après le rendu synchrone du dashboard
   _svFadeIn();
@@ -3961,7 +4031,7 @@ function renderRoutingChips(currentAgentId, agentMsgText) {
 // Disparaissent au 1er clic (sessionStorage). Contenu par agent.
 const _OB_CHIPS = {
   physique: [
-    { fr:'Crée-moi un programme d\'entraînement pour cette semaine', de:'Erstelle mir einen Trainingsplan für diese Woche', en:'Create a training program for this week', it:'Crea un programma di allenamento per questa settimana' },
+    { fr:'Génère-moi un programme d\'entraînement 4 semaines → il sera ajouté à mon calendrier', de:'Erstelle mir einen 4-Wochen-Trainingsplan → wird automatisch in meinen Kalender eingefügt', en:'Generate a 4-week training program → it will be added to my calendar', it:'Genera un programma di allenamento 4 settimane → verrà aggiunto al mio calendario' },
     { fr:'Comment optimiser ma préparation pour ma prochaine compétition ?', de:'Wie optimiere ich meine Vorbereitung für den nächsten Wettkampf?', en:'How do I optimize my preparation for my next competition?', it:'Come ottimizzare la mia preparazione per la prossima competizione?' },
     { fr:'Quels sont mes axes de progression prioritaires selon mon profil ?', de:'Was sind meine Prioritäten zur Verbesserung gemäß meinem Profil?', en:'What are my priority areas for improvement based on my profile?', it:'Quali sono le mie priorità di miglioramento in base al mio profilo?' }
   ],
@@ -3972,7 +4042,7 @@ const _OB_CHIPS = {
   ],
   nutrition: [
     { fr:'Que manger avant et après l\'entraînement ?', de:'Was soll ich vor und nach dem Training essen?', en:'What should I eat before and after training?', it:'Cosa mangiare prima e dopo l\'allenamento?' },
-    { fr:'Crée-moi un plan nutrition pour la semaine', de:'Erstelle mir einen Ernährungsplan für die Woche', en:'Create a nutrition plan for this week', it:'Crea un piano nutrizionale per questa settimana' },
+    { fr:'Crée-moi un plan nutrition 7 jours → il sera ajouté à mon calendrier', de:'Erstelle mir einen 7-Tage-Ernährungsplan → wird automatisch in meinen Kalender eingefügt', en:'Create a 7-day nutrition plan → it will be added to my calendar', it:'Crea un piano nutrizionale 7 giorni → verrà aggiunto al mio calendario' },
     { fr:'Comment optimiser mon alimentation pour la récupération ?', de:'Wie optimiere ich meine Ernährung für die Erholung?', en:'How do I optimize my nutrition for recovery?', it:'Come ottimizzare la mia alimentazione per il recupero?' }
   ],
   finance: [
@@ -5435,16 +5505,11 @@ Sky Swiss League (ex Swiss League) : partenariat média avec Sky Switzerland dep
     if (!res.ok) throw new Error('API error');
     const data = await res.json();
     reply = data.reply;
-    // Chantier #5 + v63.12.5 — Calendrier créé via chat → toast + refresh
+    // Chantier #5 + v63.12.5 — Calendrier créé via chat → toast enrichi + refresh
     // calendarCreated peut être null | { title, date, type } | [{ ... }, ...]
     if (data.calendarCreated) {
-      const tt = T[currentLang] || T.fr;
       const created = Array.isArray(data.calendarCreated) ? data.calendarCreated : [data.calendarCreated];
-      const n = created.length;
-      const toastMsg = n > 1
-        ? `📅 ${n} événements ajoutés à ton calendrier`
-        : `📅 ${created[0].title || 'Événement'} ajouté à ton calendrier`;
-      showToast(toastMsg, n > 1 ? 5000 : 3000);
+      _showCalEventToast(created);
       // Refresh calendar data for next message context (non-blocking)
       getCalendarContext().then(ctx => { calendarContext = ctx; }).catch(() => {});
     }
@@ -6336,6 +6401,9 @@ function showAddEvent(dateStr) {
     selectedSessionType = null;
   }
 
+  // Auto-expand "Plus d'options" si on duplique un event avec lieu ou notes
+  const autoExpand = !!(pf && ((pf.location && pf.location.trim()) || (pf.notes && pf.notes.trim())));
+
   const modal = document.createElement('div');
   modal.className = 'modal-overlay';
   modal.id = 'eventModal';
@@ -6345,6 +6413,7 @@ function showAddEvent(dateStr) {
       <div class="modal-title">${t.eventModalAddTitle}</div>
       <div class="modal-sub">${t.eventModalAddSub}</div>
 
+      <!-- 1. Type d'événement -->
       <div class="form-field">
         <label class="form-label">${t.eventType}</label>
         <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
@@ -6352,10 +6421,10 @@ function showAddEvent(dateStr) {
         </div>
       </div>
 
-      <!-- Session type — visible only for entrainement -->
+      <!-- 2. Type de séance (entrainement uniquement) — pills lisibles, flex-wrap -->
       <div id="sessionTypeSection" class="form-field" style="display:${(pf?pf.event_type:'match')==='entrainement'?'block':'none'}">
         <label class="form-label">${t.sessionTypeLabel||'Type de séance'}</label>
-        <div class="session-type-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+        <div class="session-type-grid" style="display:flex;flex-wrap:wrap;gap:6px">
           ${[
             ['collectif','🤝','sessionTypeCollectif'],
             ['discipline','🏅','sessionTypeDiscipline'],
@@ -6364,15 +6433,17 @@ function showAddEvent(dateStr) {
             ['vitesse','⚡','sessionTypeVitesse'],
             ['technique','🎯','sessionTypeTechnique'],
             ['mobilite','🧘','sessionTypeMobilite']
-          ].map(([key,emoji,tKey]) => `<button class="sport-btn${(pf&&pf.session_type===key)?' selected':''}" onclick="selectSessionType(this,'${key}')" style="padding:8px 4px;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:2px">${emoji}<span style="font-size:10px">${t[tKey]||key}</span></button>`).join('')}
+          ].map(([key,emoji,tKey]) => `<button class="sport-btn${(pf&&pf.session_type===key)?' selected':''}" onclick="selectSessionType(this,'${key}')" style="padding:8px 11px;font-size:12px;display:flex;align-items:center;gap:5px;flex:0 0 auto">${emoji} <span>${t[tKey]||key}</span></button>`).join('')}
         </div>
       </div>
 
+      <!-- 3. Titre -->
       <div class="form-field">
         <label class="form-label">${t.eventTitle}</label>
         <input type="text" class="form-input" id="evTitle" value="${pf ? pf.title.replace(/"/g,'&quot;') : ''}" placeholder="${t.eventTitlePlaceholder}" />
       </div>
 
+      <!-- 4. Date / Heure / Durée -->
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
         <div class="form-field">
           <label class="form-label">${t.eventDate}</label>
@@ -6390,37 +6461,7 @@ function showAddEvent(dateStr) {
         </div>
       </div>
 
-      <div class="form-field">
-        <label class="form-label">${t.eventLocation}</label>
-        <input type="text" class="form-input" id="evLocation" value="${pf ? pf.location.replace(/"/g,'&quot;') : ''}" placeholder="${t.eventLocationPlaceholder}" />
-      </div>
-
-      <!-- v62 RÉCURRENCE — section "Répéter ?" -->
-      <div class="form-field">
-        <label class="form-label">${t.recurrenceLabel || 'Répéter ?'}</label>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
-          <button class="sport-btn selected" onclick="selectRecurrence(this,'once')" style="padding:10px 4px;font-size:11px">${t.recurrenceOnce || 'Une fois'}</button>
-          <button class="sport-btn" onclick="selectRecurrence(this,'weekly')" style="padding:10px 4px;font-size:11px">🔁 ${t.recurrenceWeekly || 'Hebdo'}</button>
-          <button class="sport-btn" onclick="selectRecurrence(this,'biweekly')" style="padding:10px 4px;font-size:11px">🔁 ${t.recurrenceBiweekly || '2 sem.'}</button>
-        </div>
-      </div>
-
-      <div id="recurrenceConfig" style="display:none">
-        <div class="form-field" id="recurrenceDaysField">
-          <label class="form-label">${t.recurrenceDays || 'Jours de la semaine'}</label>
-          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
-            ${[1,2,3,4,5,6,0].map(d => {
-              const labels = (t.dayLetters || ['D','L','M','M','J','V','S']);
-              return `<button class="sport-btn" onclick="toggleRecurrenceDay(this,${d})" style="padding:8px 0;font-size:12px;font-weight:700">${labels[d]}</button>`;
-            }).join('')}
-          </div>
-        </div>
-        <div class="form-field">
-          <label class="form-label">${t.recurrenceUntil || 'Jusqu\'au'}</label>
-          <input type="date" class="form-input" id="evUntil" value="${(() => { const d = new Date(dateStr + 'T00:00:00'); d.setMonth(d.getMonth() + 3); return dateToStr(d); })()}" />
-        </div>
-      </div>
-
+      <!-- 5. Intensité (remontée ici, visible par défaut) -->
       <div class="form-field">
         <label class="form-label">${t.plannedIntensity}</label>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
@@ -6428,11 +6469,52 @@ function showAddEvent(dateStr) {
         </div>
       </div>
 
-      <div class="form-field">
-        <label class="form-label">${t.eventNotes}</label>
-        <input type="text" class="form-input" id="evNotes" value="${pf ? pf.notes.replace(/"/g,'&quot;') : ''}" placeholder="${t.eventNotesPlaceholder}" />
+      <!-- 6. Toggle "Plus d'options" -->
+      <button id="calExpandBtn" onclick="_toggleCalMore()"
+        style="width:100%;padding:9px 0;min-height:44px;background:none;border:none;border-top:1px solid var(--border);border-bottom:1px solid var(--border);color:var(--muted);font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;margin:8px 0 2px;transition:color 0.15s;text-align:center"
+        onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">
+        ${autoExpand ? '⊖ ' + (t.calFewerOptions || 'Moins d\'options') : '⊕ ' + (t.calMoreOptions || 'Plus d\'options')}
+      </button>
+
+      <!-- 7. Section repliable : lieu / récurrence / notes -->
+      <div id="calMoreSection" style="display:${autoExpand ? 'block' : 'none'}">
+        <div class="form-field">
+          <label class="form-label">${t.eventLocation}</label>
+          <input type="text" class="form-input" id="evLocation" value="${pf ? (pf.location||'').replace(/"/g,'&quot;') : ''}" placeholder="${t.eventLocationPlaceholder}" />
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">${t.recurrenceLabel || 'Répéter ?'}</label>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+            <button class="sport-btn selected" onclick="selectRecurrence(this,'once')" style="padding:10px 4px;font-size:11px">${t.recurrenceOnce || 'Une fois'}</button>
+            <button class="sport-btn" onclick="selectRecurrence(this,'weekly')" style="padding:10px 4px;font-size:11px">🔁 ${t.recurrenceWeekly || 'Hebdo'}</button>
+            <button class="sport-btn" onclick="selectRecurrence(this,'biweekly')" style="padding:10px 4px;font-size:11px">🔁 ${t.recurrenceBiweekly || '2 sem.'}</button>
+          </div>
+        </div>
+
+        <div id="recurrenceConfig" style="display:none">
+          <div class="form-field" id="recurrenceDaysField">
+            <label class="form-label">${t.recurrenceDays || 'Jours de la semaine'}</label>
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
+              ${[1,2,3,4,5,6,0].map(d => {
+                const labels = (t.dayLetters || ['D','L','M','M','J','V','S']);
+                return `<button class="sport-btn" onclick="toggleRecurrenceDay(this,${d})" style="padding:8px 0;font-size:12px;font-weight:700">${labels[d]}</button>`;
+              }).join('')}
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="form-label">${t.recurrenceUntil || 'Jusqu\'au'}</label>
+            <input type="date" class="form-input" id="evUntil" value="${(() => { const d = new Date(dateStr + 'T00:00:00'); d.setMonth(d.getMonth() + 3); return dateToStr(d); })()}" />
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">${t.eventNotes}</label>
+          <input type="text" class="form-input" id="evNotes" value="${pf ? (pf.notes||'').replace(/"/g,'&quot;') : ''}" placeholder="${t.eventNotesPlaceholder}" />
+        </div>
       </div>
 
+      <!-- 8. Boutons -->
       <div style="display:flex;gap:8px;margin-top:12px">
         <button onclick="document.getElementById('eventModal')?.remove()"
           style="flex:1;padding:13px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">
@@ -6450,6 +6532,19 @@ function showAddEvent(dateStr) {
   selectedRecurrenceDays = [];
   document.body.appendChild(modal);
   modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+}
+
+// v63.32 — Toggle "Plus d'options" dans le formulaire d'ajout d'événement
+function _toggleCalMore() {
+  const section = document.getElementById('calMoreSection');
+  const btn = document.getElementById('calExpandBtn');
+  if (!section || !btn) return;
+  const t = T[currentLang] || T.fr;
+  const isHidden = section.style.display === 'none';
+  section.style.display = isHidden ? 'block' : 'none';
+  btn.textContent = isHidden
+    ? '⊖ ' + (t.calFewerOptions || 'Moins d\'options')
+    : '⊕ ' + (t.calMoreOptions || 'Plus d\'options');
 }
 
 // ─── Chantier #13 — Import iCal / .ics (v63.12.2) ───────────────────────────
@@ -7312,34 +7407,6 @@ function showRecapModal(eventId, eventTitle, eventType, eventDate, existing) {
       </div>
 
       <div class="form-field">
-        <label class="form-label">${t.recapSleepLabel}</label>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
-          <button class="sport-btn${sel(recapSleep,'mauvais')}" onclick="selectRecapField(this,'recapSleep','mauvais')" style="padding:8px 4px;font-size:11px">${t.recapSleepBad}</button>
-          <button class="sport-btn${sel(recapSleep,'moyen')}" onclick="selectRecapField(this,'recapSleep','moyen')" style="padding:8px 4px;font-size:11px">${t.recapSleepMid}</button>
-          <button class="sport-btn${sel(recapSleep,'bon')}" onclick="selectRecapField(this,'recapSleep','bon')" style="padding:8px 4px;font-size:11px">${t.recapSleepGood}</button>
-          <button class="sport-btn${sel(recapSleep,'excellent')}" onclick="selectRecapField(this,'recapSleep','excellent')" style="padding:8px 4px;font-size:11px">${t.recapSleepExcellent}</button>
-        </div>
-      </div>
-
-      <div class="form-field">
-        <label class="form-label">${t.recapNutriLabel}</label>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
-          <button class="sport-btn${sel(recapNutrition,'pas_top')}" onclick="selectRecapField(this,'recapNutrition','pas_top')" style="padding:8px 4px;font-size:11px">${t.recapNutriBad}</button>
-          <button class="sport-btn${sel(recapNutrition,'normal')}" onclick="selectRecapField(this,'recapNutrition','normal')" style="padding:8px 4px;font-size:11px">${t.recapNutriNormal}</button>
-          <button class="sport-btn${sel(recapNutrition,'bien')}" onclick="selectRecapField(this,'recapNutrition','bien')" style="padding:8px 4px;font-size:11px">${t.recapNutriGood}</button>
-        </div>
-      </div>
-
-      <div class="form-field">
-        <label class="form-label">${t.recapInjuryLabel}</label>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
-          <button class="sport-btn${sel(recapInjury,'serieuse')}" onclick="selectRecapField(this,'recapInjury','serieuse')" style="padding:8px 4px;font-size:11px">${t.recapInjurySerious}</button>
-          <button class="sport-btn${sel(recapInjury,'legere')}" onclick="selectRecapField(this,'recapInjury','legere')" style="padding:8px 4px;font-size:11px">${t.recapInjuryLight}</button>
-          <button class="sport-btn${sel(recapInjury,'aucune')}" onclick="selectRecapField(this,'recapInjury','aucune')" style="padding:8px 4px;font-size:11px">${t.recapInjuryNone}</button>
-        </div>
-      </div>
-
-      <div class="form-field">
         <label class="form-label">${t.recapStrengthsLabel}</label>
         <input type="text" class="form-input" id="recapStrengths" value="${initStrengths.replace(/"/g,'&quot;')}" placeholder="${t.recapStrengthsPlaceholder}" />
       </div>
@@ -7347,11 +7414,6 @@ function showRecapModal(eventId, eventTitle, eventType, eventDate, existing) {
       <div class="form-field">
         <label class="form-label">${t.recapWeaknessesLabel}</label>
         <input type="text" class="form-input" id="recapWeaknesses" value="${initWeaknesses.replace(/"/g,'&quot;')}" placeholder="${t.recapWeaknessesPlaceholder}" />
-      </div>
-
-      <div class="form-field">
-        <label class="form-label">${t.recapNotesLabel}</label>
-        <input type="text" class="form-input" id="recapNotes" value="${initNotes.replace(/"/g,'&quot;')}" placeholder="${t.recapNotesPlaceholder}" />
       </div>
 
       ${_pendingRecapsCount > 1 ? `<div style="text-align:center;font-size:11px;color:var(--muted);margin-bottom:8px;font-weight:600">${(t.recapPendingCount || '{n} récap(s) en attente').replace('{n}', _pendingRecapsCount)}</div>` : ''}
@@ -7453,12 +7515,8 @@ async function saveRecap(eventId) {
     performance_note: recapPerformance,
     physical_state: recapPhysical,
     mood: recapMood,
-    sleep_quality: recapSleep,
-    pre_nutrition: recapNutrition,
-    injury: recapInjury,
     strengths,
     weaknesses,
-    recap_notes: notes,
     recap_done: true
   };
   if (recapRpe !== null) payload.rpe = recapRpe;
@@ -7469,9 +7527,7 @@ async function saveRecap(eventId) {
   console.log(`[RECAP] saved id=${eventId} rpe=${recapRpe ?? 'null'} perf=${recapPerformance} lang=${currentLang}`);
   showToast(t.recapToastSaved || '✅ Récap enregistré ! Vos agents en tiendront compte.');
   // Reset for next recap
-  recapPerformance = 7; recapPhysical = 'normal'; recapMood = 'bien';
-  recapSleep = 'bon'; recapNutrition = 'normal'; recapInjury = 'aucune';
-  recapRpe = null;
+  recapPerformance = 7; recapPhysical = 'normal'; recapMood = 'bien'; recapRpe = null;
   renderCalendar();
   // Chain to next pending recap if any (the saved one is now recap_done=true so it won't reappear)
   // v60.5: après la chaîne récap, déclencher showEveningBrief si plus aucun modal ouvert.
@@ -7528,20 +7584,18 @@ async function checkPendingRecaps() {
   } catch(err) { console.warn('Recap check error:', err); }
 }
 
-// Called from the "Passer" button — skip this one for the session, then try the next.
+// Called from the "Passer" button — permanently dismiss this recap (recap_done=true, no data).
+// v63.31.4 fix: was session-only (in-memory Set) → reappeared on every reload.
+// Now writes recap_done=true so it never resurfaces. Fire-and-forget, non-blocking.
 function skipRecap(eventId) {
   _skippedRecapIds.add(eventId);
   document.getElementById('eventModal')?.remove();
-  // Chain to the next pending recap (if any) after a short delay so the modal animation finishes.
-  // v60.5: après la chaîne, déclencher showEveningBrief si plus aucun modal ouvert.
-  // v62.13: aussi showMorningBrief si avant 18h (cf. saveRecap pour le scénario complet).
+  // Permanently dismiss: set recap_done=true with no data, fire-and-forget
+  sb.from('calendar_events').update({ recap_done: true }).eq('id', eventId).then(() => {}).catch(() => {});
   setTimeout(async () => {
     try { await checkPendingRecaps(); } catch(e) { console.warn('skipRecap chain error:', e); }
     if (!document.getElementById('eventModal')) {
-      try {
-        // v63.30 — plus d'auto-pop de brief après un récap. Surfacé en card inline non-bloquante.
-        injectBriefCard();
-      } catch(_) {}
+      try { injectBriefCard(); } catch(_) {}
     }
   }, 350);
 }
