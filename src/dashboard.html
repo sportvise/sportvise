@@ -6241,7 +6241,7 @@ async function showDayDetail(dateStr) {
                 </div>
                 <div style="display:flex;gap:4px">
                   ${e.is_suggested ? `<button onclick="confirmSuggestedEvent('${e.id}')" title="${tLang.suggConfirmTooltip||'Confirmer cet événement'}" style="background:none;border:none;color:#3b82f6;font-size:16px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s" onmouseover="this.style.background='#3b82f620';this.style.color='#3b82f6'" onmouseout="this.style.background='none';this.style.color='#3b82f6'">✓</button>` : ''}
-                  <button onclick="${e.recurrence_group_id ? `editEventSmart('${e.id}','${e.recurrence_group_id}','${dateStr}','${e.title.replace(/'/g,"\\'")}','${e.event_type}','${e.event_time||''}','${(e.location||'').replace(/'/g,"\\'")}','${e.intensity||'moyenne'}','${(e.notes||'').replace(/'/g,"\\'")}')` : `editEvent('${e.id}','${e.title.replace(/'/g,"\\'")}','${e.event_type}','${dateStr}','${e.event_time||''}','${(e.location||'').replace(/'/g,"\\'")}','${e.intensity||'moyenne'}','${(e.notes||'').replace(/'/g,"\\'")}')`}" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s" onmouseover="this.style.background='#f59e0b20';this.style.color='#f59e0b'" onmouseout="this.style.background='none';this.style.color='var(--muted)'">✏️</button>
+                  <button onclick="${e.recurrence_group_id ? `editEventSmart('${e.id}','${e.recurrence_group_id}','${dateStr}','${e.title.replace(/'/g,"\\'")}','${e.event_type}','${e.event_time||''}','${(e.location||'').replace(/'/g,"\\'")}','${e.intensity||'moyenne'}','${(e.notes||'').replace(/'/g,"\\'")}')` : `editEvent('${e.id}','${e.title.replace(/'/g,"\\'")}','${e.event_type}','${dateStr}','${e.event_time||''}','${(e.location||'').replace(/'/g,"\\'")}','${e.intensity||'moyenne'}','${(e.notes||'').replace(/'/g,"\\'")}','${(e.session_type||'')}')`}" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s" onmouseover="this.style.background='#f59e0b20';this.style.color='#f59e0b'" onmouseout="this.style.background='none';this.style.color='var(--muted)'">✏️</button>
                   <button onclick="duplicateEvent('${e.id}')" title="${tLang.eventDuplicate || 'Dupliquer'}" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s" onmouseover="this.style.background='#06b6d420';this.style.color='#06b6d4'" onmouseout="this.style.background='none';this.style.color='var(--muted)'">📋</button>
                   <button onclick="toggleEventStatus('${e.id}')" title="${e.event_status === 'cancelled' ? (tLang.eventStatusReactivate || 'Réactiver') : (tLang.eventStatusCancel || 'Annuler')}" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s" onmouseover="this.style.background='#64748b20';this.style.color='#94a3b8'" onmouseout="this.style.background='none';this.style.color='var(--muted)'">${e.event_status === 'cancelled' ? '↩️' : 'Ø'}</button>
                   <button onclick="${e.recurrence_group_id ? `deleteEventSmart('${e.id}','${e.recurrence_group_id}','${dateStr}')` : `deleteEvent('${e.id}')`}" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s" onmouseover="this.style.background='#ef444420';this.style.color='#ef4444'" onmouseout="this.style.background='none';this.style.color='var(--muted)'">🗑</button>
@@ -6271,6 +6271,14 @@ async function showDayDetail(dateStr) {
                 }
                 return `<div style="display:flex;align-items:flex-start;gap:6px;font-size:12px;color:var(--muted);margin-bottom:4px">📝 <span>${safeN}</span></div>`;
               })()}
+              ${e.event_type === 'entrainement' && e.session_type ? `
+                <div style="margin-top:6px">
+                  <span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;background:${t.color}15;color:${t.color}">
+                    ${{collectif:'🤝',discipline:'🏅',force:'💪',cardio:'🫀',vitesse:'⚡',technique:'🎯',mobilite:'🧘'}[e.session_type]||'🏋️'}
+                    ${(() => { const k = {collectif:'sessionTypeCollectif',discipline:'sessionTypeDiscipline',force:'sessionTypeForce',cardio:'sessionTypeCardio',vitesse:'sessionTypeVitesse',technique:'sessionTypeTechnique',mobilite:'sessionTypeMobilite'}[e.session_type]; return tLang[k]||e.session_type; })()}
+                  </span>
+                </div>
+              ` : ''}
               ${e.recap_done ? `
                 <div style="margin-top:8px;padding:8px 10px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
                   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
@@ -6278,9 +6286,33 @@ async function showDayDetail(dateStr) {
                     <button onclick="editRecap('${e.id}')" style="background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;padding:2px 6px;border-radius:4px;font-family:'Inter',sans-serif" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'">${tLang.recapEdit || '✏️ Modifier'}</button>
                   </div>
                   ${e.result ? `<div style="font-size:11px;color:var(--text);margin-bottom:2px">🏅 ${e.result}</div>` : ''}
-                  <div style="font-size:11px;color:var(--muted)">${tLang.recapMiniPerf || 'Performance'}: ${'⭐'.repeat(Math.min(e.performance_note||0, 5))}${e.performance_note > 5 ? '⭐'.repeat(e.performance_note-5) : ''} (${e.performance_note}/10)${e.rpe ? ' · RPE ' + e.rpe + '/10' : ''} · ${e.physical_state === 'top' ? (tLang.recapPhysTop || '💪 Top') : e.physical_state === 'fatigue' ? (tLang.recapPhysTired || '😓 Fatigué') : e.physical_state === 'blessure' ? (tLang.recapPhysInjured || '🤕 Blessé') : (tLang.recapPhysNormal || '👍 Normal')} · ${e.mood === 'excellent' ? '😄' : e.mood === 'decu' ? '😞' : e.mood === 'frustre' ? '😤' : e.mood === 'neutre' ? '😐' : '🙂'}</div>
+                  <div style="font-size:11px;color:var(--muted)">${e.rpe ? 'RPE ' + e.rpe + '/10' : ''}${e.performance_note ? (e.rpe ? ' · ' : '') + ${'😰😓😐🙂😄'.split('')[(e.performance_note||1)-1]||''} + ' ' + e.performance_note + '/5' : ''}</div>
                 </div>
-              ` : ''}
+              ` : (() => {
+                // Inline recap for past events without recap (match/competition/entrainement)
+                const isPast = e.event_date < dateToStr(new Date());
+                if (!isPast || !['match','competition','entrainement'].includes(e.event_type)) return '';
+                const feelEmojis = ['😰','😓','😐','🙂','😄'];
+                return `
+                  <div style="margin-top:8px;padding:10px 12px;background:var(--bg);border-radius:10px;border:1px dashed var(--gold)40">
+                    <div style="font-size:10px;font-weight:700;color:var(--gold);margin-bottom:8px;letter-spacing:0.05em">📊 ${tLang.recapBadge||'RÉCAP'}</div>
+                    <div style="margin-bottom:8px">
+                      <div style="font-size:11px;color:var(--muted);margin-bottom:4px">${tLang.calRecapRPELabel||'RPE (effort)'} <span id="inlineRpeVal_${e.id}" style="color:var(--text);font-weight:700">6</span>/10</div>
+                      <input id="inlineRpe_${e.id}" type="range" min="1" max="10" value="6" oninput="document.getElementById('inlineRpeVal_${e.id}').textContent=this.value" style="width:100%;cursor:pointer;accent-color:#f59e0b"/>
+                    </div>
+                    <div style="margin-bottom:8px">
+                      <div style="font-size:11px;color:var(--muted);margin-bottom:4px">${tLang.calRecapFeelingLabel||'Ressenti'}</div>
+                      <div id="inlineFeeling_${e.id}" data-value="0" style="display:flex;gap:4px">
+                        ${feelEmojis.map((em,i) => `<button onclick="setInlineFeelingBtn('${e.id}',${i+1},this)" style="flex:1;padding:6px 2px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:16px;cursor:pointer;font-family:'Inter',sans-serif">${em}</button>`).join('')}
+                      </div>
+                    </div>
+                    <div style="margin-bottom:8px">
+                      <input id="inlineNote_${e.id}" type="text" class="form-input" placeholder="${tLang.calRecapNotePlaceholder||'Note optionnelle…'}" style="font-size:12px;padding:8px 10px"/>
+                    </div>
+                    <button onclick="saveInlineRecap('${e.id}')" style="width:100%;padding:8px;border-radius:8px;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">${tLang.calRecapSaveBtn||'Enregistrer le récap'}</button>
+                  </div>
+                `;
+              })()}
             </div>
           `;
         }).join('')}
@@ -6330,7 +6362,10 @@ function showAddEvent(dateStr) {
   if (pf) {
     selectedEventType = pf.event_type;
     selectedIntensity = pf.intensity;
+    selectedSessionType = pf.session_type || null;
     if (pf.event_time) defaultTime = pf.event_time.slice(0, 5);
+  } else {
+    selectedSessionType = null;
   }
 
   const modal = document.createElement('div');
@@ -6346,6 +6381,22 @@ function showAddEvent(dateStr) {
         <label class="form-label">${t.eventType}</label>
         <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
           ${types.map(tp => `<button class="sport-btn${tp===(pf?pf.event_type:'match')?' selected':''}" onclick="selectEventType(this,'${tp}')" style="padding:10px;font-size:12px">${EVENT_TYPES[tp].emoji} ${eventTypeLabel(tp)}</button>`).join('')}
+        </div>
+      </div>
+
+      <!-- Session type — visible only for entrainement -->
+      <div id="sessionTypeSection" class="form-field" style="display:${(pf?pf.event_type:'match')==='entrainement'?'block':'none'}">
+        <label class="form-label">${t.sessionTypeLabel||'Type de séance'}</label>
+        <div class="session-type-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+          ${[
+            ['collectif','🤝','sessionTypeCollectif'],
+            ['discipline','🏅','sessionTypeDiscipline'],
+            ['force','💪','sessionTypeForce'],
+            ['cardio','🫀','sessionTypeCardio'],
+            ['vitesse','⚡','sessionTypeVitesse'],
+            ['technique','🎯','sessionTypeTechnique'],
+            ['mobilite','🧘','sessionTypeMobilite']
+          ].map(([key,emoji,tKey]) => `<button class="sport-btn${(pf&&pf.session_type===key)?' selected':''}" onclick="selectSessionType(this,'${key}')" style="padding:8px 4px;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:2px">${emoji}<span style="font-size:10px">${t[tKey]||key}</span></button>`).join('')}
         </div>
       </div>
 
@@ -6677,10 +6728,19 @@ async function importIcsEvents() {
 
 let selectedEventType = 'match';
 let selectedIntensity = 'moyenne';
+let selectedSessionType = null; // sub-type for 'entrainement' events
 function selectEventType(btn, type) {
   btn.closest('.form-field').querySelectorAll('.sport-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
   selectedEventType = type;
+  // Show/hide session type picker only for training events
+  const stSection = document.getElementById('sessionTypeSection');
+  if (stSection) stSection.style.display = type === 'entrainement' ? 'block' : 'none';
+}
+function selectSessionType(btn, type) {
+  btn.closest('.session-type-grid').querySelectorAll('.sport-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedSessionType = type;
 }
 function selectIntensity(btn, level) {
   btn.closest('.form-field').querySelectorAll('.sport-btn').forEach(b => b.classList.remove('selected'));
@@ -6771,6 +6831,7 @@ async function saveEvent() {
     user_id: currentUser.id,
     title,
     event_type: selectedEventType,
+    session_type: selectedEventType === 'entrainement' ? (selectedSessionType || null) : null,
     event_time: time,
     duration_minutes: duration,
     location,
@@ -6814,12 +6875,13 @@ async function saveEvent() {
   renderCalendar();
 }
 
-function editEvent(id, title, type, date, time, location, intensity, notes) {
+function editEvent(id, title, type, date, time, location, intensity, notes, sessionType) {
   const existing = document.getElementById('eventModal');
   if (existing) existing.remove();
 
   selectedEventType = type;
   selectedIntensity = intensity;
+  selectedSessionType = sessionType || null;
 
   const tLang = T[currentLang] || T.fr;
   const types = ['match','competition','entrainement','autre'];
@@ -6838,6 +6900,22 @@ function editEvent(id, title, type, date, time, location, intensity, notes) {
         <label class="form-label">${tLang.eventType}</label>
         <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
           ${types.map(tp => `<button class="sport-btn${tp===type?' selected':''}" onclick="selectEventType(this,'${tp}')" style="padding:10px;font-size:12px">${EVENT_TYPES[tp].emoji} ${eventTypeLabel(tp)}</button>`).join('')}
+        </div>
+      </div>
+
+      <!-- Session type — visible only for entrainement -->
+      <div id="sessionTypeSection" class="form-field" style="display:${type==='entrainement'?'block':'none'}">
+        <label class="form-label">${tLang.sessionTypeLabel||'Type de séance'}</label>
+        <div class="session-type-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+          ${[
+            ['collectif','🤝','sessionTypeCollectif'],
+            ['discipline','🏅','sessionTypeDiscipline'],
+            ['force','💪','sessionTypeForce'],
+            ['cardio','🫀','sessionTypeCardio'],
+            ['vitesse','⚡','sessionTypeVitesse'],
+            ['technique','🎯','sessionTypeTechnique'],
+            ['mobilite','🧘','sessionTypeMobilite']
+          ].map(([key,emoji,tKey]) => `<button class="sport-btn${sessionType===key?' selected':''}" onclick="selectSessionType(this,'${key}')" style="padding:8px 4px;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:2px">${emoji}<span style="font-size:10px">${tLang[tKey]||key}</span></button>`).join('')}
         </div>
       </div>
 
@@ -6930,6 +7008,7 @@ async function updateEvent(id) {
   const { error } = await sb.from('calendar_events').update({
     title,
     event_type: selectedEventType,
+    session_type: selectedEventType === 'entrainement' ? (selectedSessionType || null) : null,
     event_date: date,
     event_time: time,
     location,
@@ -6942,6 +7021,38 @@ async function updateEvent(id) {
   document.getElementById('eventModal')?.remove();
   showToast(t.eventToastModified);
   renderCalendar();
+}
+
+async function saveInlineRecap(id) {
+  const t = T[currentLang] || T.fr;
+  const rpeVal = parseInt(document.getElementById('inlineRpe_' + id)?.value || '6');
+  const feelingVal = parseInt(document.getElementById('inlineFeeling_' + id)?.dataset?.value || '0') || null;
+  const noteVal = document.getElementById('inlineNote_' + id)?.value?.trim() || null;
+  const { error } = await sb.from('calendar_events').update({
+    rpe: rpeVal,
+    performance_note: feelingVal,
+    result: noteVal,
+    recap_done: true
+  }).eq('id', id);
+  if (error) { showToast('⚠️ ' + (t.eventErrorPrefix || 'Erreur:')); return; }
+  showToast(t.calRecapSavedToast || 'Récap enregistré ✓');
+  document.getElementById('eventModal')?.remove();
+  renderCalendar();
+}
+function setInlineFeelingBtn(id, val, btn) {
+  const container = btn.parentElement;
+  Array.from(container.children).forEach(b => {
+    b.style.background = 'var(--bg)';
+    b.style.borderColor = 'var(--border)';
+    b.style.color = 'var(--text)';
+  });
+  btn.style.background = 'linear-gradient(135deg,#f59e0b,#d97706)';
+  btn.style.borderColor = '#f59e0b';
+  btn.style.color = '#07091a';
+  container.dataset.value = val;
+  // also store on a hidden anchor
+  const anchor = document.getElementById('inlineFeeling_' + id);
+  if (anchor) anchor.dataset.value = val;
 }
 
 async function deleteEvent(id) {
@@ -10711,9 +10822,10 @@ async function renderJournal() {
     energy: todayLog.energy,
     motivation: todayLog.motivation,
     sleep_quality: todayLog.sleep_quality,
+    sleep_hours: todayLog.sleep_hours,
     pain_level: todayLog.pain_level,
-    nutrition_quality: todayLog.nutrition_quality,
-    training_done: todayLog.training_done
+    stress_level: todayLog.stress_level,
+    training_status: todayLog.training_status
   } : {};
 
   // v38 — Detect if today's entry is filled enough to show the summary view.
@@ -10741,14 +10853,15 @@ async function renderJournal() {
         </div>
         <button onclick="editJournalEntry()" style="padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-weight:600;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">✏️ ${t.editEntry || 'Modifier'}</button>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%, 110px), 1fr));gap:10px">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%, 100px), 1fr));gap:10px">
         <div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:26px;margin-bottom:4px">${moodEmojis[todayLog.mood-1] || '—'}</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${t.mood}</div></div>
         <div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--gold)">${todayLog.energy||'—'}/5</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${t.energy}</div></div>
         <div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--gold)">${todayLog.motivation||'—'}/5</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${t.motivation}</div></div>
         <div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--gold)">${todayLog.sleep_quality||'—'}/5</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${t.sleepQuality}</div></div>
+        ${todayLog.sleep_hours != null ? `<div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--text)">${todayLog.sleep_hours}h</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${t.sleepHours||'Sommeil'}</div></div>` : ''}
+        ${todayLog.stress_level != null ? `<div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:${(todayLog.stress_level||0) > 3 ? '#ef4444' : 'var(--text)'}">${todayLog.stress_level}/5</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${t.stressLevel||'Stress'}</div></div>` : ''}
         <div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:${(todayLog.pain_level||0) > 2 ? '#ef4444' : 'var(--text)'}">${todayLog.pain_level ?? 0}/5</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${t.painLevel}</div></div>
-        <div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--gold)">${todayLog.nutrition_quality||'—'}/5</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${t.nutritionQuality}</div></div>
-        <div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:${todayLog.training_done===true ? '#10b981' : todayLog.training_done===false ? 'var(--muted)' : 'var(--muted)'}">${todayLog.training_done===true ? '✓' : todayLog.training_done===false ? '✕' : '—'}</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${t.training}</div></div>
+        <div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:${todayLog.training_status?'14px':'20px'};font-weight:800;color:${todayLog.training_status==='done'?'#10b981':todayLog.training_status==='modified'?'#f59e0b':todayLog.training_status==='skipped'?'var(--muted)':'var(--muted)'}">${todayLog.training_status==='done'?'✓':todayLog.training_status==='modified'?'〜':todayLog.training_status==='skipped'?'✕':'—'}</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${t.training}</div></div>
       </div>
       ${todayLog.notes ? `
         <div style="margin-top:14px;background:var(--bg);border-radius:10px;padding:12px;border-left:3px solid var(--gold)">
@@ -10817,25 +10930,31 @@ async function renderJournal() {
           </div>
 
           <div class="form-field">
-            <label class="form-label">${t.painLevel} (0-5)</label>
-            <input type="range" min="0" max="5" value="${todayLog?.pain_level||0}" onchange="setJournalField('pain_level',this.value)" oninput="this.nextElementSibling.textContent=this.value+'/5'" style="width:100%;cursor:pointer;accent-color:#f59e0b"/>
-            <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:4px">${todayLog?.pain_level||0}/5</div>
+            <label class="form-label">${t.sleepHours||'Durée sommeil (h)'}</label>
+            <input type="number" min="0" max="24" step="0.5" value="${todayLog?.sleep_hours||''}" oninput="setJournalField('sleep_hours', parseFloat(this.value)||null)" placeholder="7.5" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:14px;font-weight:700;font-family:'Inter',sans-serif;text-align:center;box-sizing:border-box"/>
           </div>
 
           <div class="form-field">
-            <label class="form-label">${t.nutritionQuality}</label>
+            <label class="form-label">${t.stressLevel||'Stress'} (1-5)</label>
             <div class="journal-btn-row" style="display:flex;gap:4px">
               ${[1,2,3,4,5].map(i => `
-                <button class="sv-sel${todayLog?.nutrition_quality===i?' active':''}" onclick="setJournalField('nutrition_quality',${i},this)" style="flex:1 1 0;min-width:0;padding:8px 4px;border-radius:6px;border:1px solid var(--border);background:${todayLog?.nutrition_quality===i?'linear-gradient(135deg,#f59e0b,#d97706)':'var(--bg)'};color:var(--text);font-weight:700;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif">${i}</button>
+                <button class="sv-sel${todayLog?.stress_level===i?' active':''}" onclick="setJournalField('stress_level',${i},this)" style="flex:1 1 0;min-width:0;padding:8px 4px;border-radius:6px;border:1px solid var(--border);background:${todayLog?.stress_level===i?'linear-gradient(135deg,#f59e0b,#d97706)':'var(--bg)'};color:var(--text);font-weight:700;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif">${i}</button>
               `).join('')}
             </div>
           </div>
 
           <div class="form-field">
-            <label class="form-label">${t.training}</label>
-            <div class="journal-btn-row" style="display:flex;gap:8px">
-              <button class="sv-sel${todayLog?.training_done===true?' active':''}" onclick="setJournalField('training_done',true,this)" style="flex:1 1 0;min-width:0;padding:10px 6px;border-radius:8px;border:1px solid var(--border);background:${todayLog?.training_done===true?'linear-gradient(135deg,#f59e0b,#d97706)':'var(--bg)'};color:var(--text);font-weight:700;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap">✓ ${t.yes || 'Oui'}</button>
-              <button class="sv-sel${todayLog?.training_done===false?' active':''}" onclick="setJournalField('training_done',false,this)" style="flex:1 1 0;min-width:0;padding:10px 6px;border-radius:8px;border:1px solid var(--border);background:${todayLog?.training_done===false?'linear-gradient(135deg,#f59e0b,#d97706)':'var(--bg)'};color:var(--text);font-weight:700;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap">✕ ${t.no || 'Non'}</button>
+            <label class="form-label">${t.painLevel||'Douleurs'} (0-5)</label>
+            <input type="range" min="0" max="5" value="${todayLog?.pain_level||0}" onchange="setJournalField('pain_level',parseInt(this.value))" oninput="this.nextElementSibling.textContent=this.value+'/5'" style="width:100%;cursor:pointer;accent-color:#f59e0b"/>
+            <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:4px">${todayLog?.pain_level||0}/5</div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">${t.training||'Séance'}</label>
+            <div class="journal-btn-row" style="display:flex;gap:6px">
+              <button class="sv-sel${todayLog?.training_status==='done'?' active':''}" onclick="setJournalField('training_status','done',this)" style="flex:1 1 0;min-width:0;padding:10px 4px;border-radius:8px;border:1px solid var(--border);background:${todayLog?.training_status==='done'?'linear-gradient(135deg,#f59e0b,#d97706)':'var(--bg)'};color:var(--text);font-weight:700;font-size:11px;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap">✓ ${t.trainStatusDone||'Effectué'}</button>
+              <button class="sv-sel${todayLog?.training_status==='modified'?' active':''}" onclick="setJournalField('training_status','modified',this)" style="flex:1 1 0;min-width:0;padding:10px 4px;border-radius:8px;border:1px solid var(--border);background:${todayLog?.training_status==='modified'?'linear-gradient(135deg,#f59e0b,#d97706)':'var(--bg)'};color:var(--text);font-weight:700;font-size:11px;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap">〜 ${t.trainStatusModified||'Modifié'}</button>
+              <button class="sv-sel${todayLog?.training_status==='skipped'?' active':''}" onclick="setJournalField('training_status','skipped',this)" style="flex:1 1 0;min-width:0;padding:10px 4px;border-radius:8px;border:1px solid var(--border);background:${todayLog?.training_status==='skipped'?'linear-gradient(135deg,#f59e0b,#d97706)':'var(--bg)'};color:var(--text);font-weight:700;font-size:11px;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap">✕ ${t.trainStatusSkipped||'Annulé'}</button>
             </div>
           </div>
         </div>
