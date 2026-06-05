@@ -65,6 +65,12 @@ var T_DE = {
   // Event types & intensity
   eventTypeMatch:'Spiel', eventTypeCompetition:'Wettkampf', eventTypeTraining:'Training', eventTypeOther:'Sonstiges',
   eventTypeSommeil:'Schlaf', eventTypeRepos:'Ruhe', eventTypeBlessure:'Verletzung', eventTypeNutrition:'Ernährung', eventTypeMental:'Mental',
+  // Session types (Training)
+  sessionTypeLabel:'Trainingsart', sessionTypeCollectif:'Team', sessionTypeDiscipline:'Disziplin', sessionTypeForce:'Kraft', sessionTypeCardio:'Ausdauer', sessionTypeVitesse:'Schnelligkeit', sessionTypeTechnique:'Technik', sessionTypeMobilite:'Mobilität',
+  // Inline recap
+  calRecapRPELabel:'RPE (Belastung)', calRecapFeelingLabel:'Gefühl', calRecapNotePlaceholder:'Notiz (optional)…', calRecapSaveBtn:'Récap speichern', calRecapSavedToast:'Récap gespeichert ✓',
+  // Journal neue Felder
+  sleepHours:'Schlafdauer (h)', stressLevel:'Stress', trainStatusDone:'Durchgeführt', trainStatusModified:'Angepasst', trainStatusSkipped:'Abgesagt',
   intensityLight:'Leicht', intensityMedium:'Mittel', intensityHigh:'Intensiv',
   // Calendar form
   eventTitle:'Titel', eventType:'Typ', eventDate:'Datum', eventTime:'Uhrzeit', eventLocation:'Ort',
