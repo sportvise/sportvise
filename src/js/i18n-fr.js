@@ -84,6 +84,9 @@ var T_FR = {
   eventModalEditTitle:"Modifier l'événement", eventModalEditSub:'Modifie les détails de ton événement.',
   eventDuration:'Durée', eventTitlePlaceholder:'Ex: Match vs FC Sion',
   eventLocationPlaceholder:'Ex: Stade de la Tuilière, Lausanne', eventNotesPlaceholder:"Ex: Arriver 1h avant, échauffement spécial",
+  calMoreOptions:'Plus d\'options', calFewerOptions:'Moins d\'options',
+  calSeeCalendar:'Voir →', calSeeCalendarFull:'Voir le calendrier →',
+  calEventsAdded:'séances ajoutées au calendrier', calEventsMore:'autres',
   recurrenceLabel:'Répéter ?', recurrenceOnce:'Une fois', recurrenceWeekly:'Hebdo', recurrenceBiweekly:'2 sem.',
   recurrenceDays:'Jours de la semaine', recurrenceUntil:'Jusqu\'au',
   recurrenceCreated:'{n} événements créés', recurrenceTooMany:'Maximum 365 occurrences par série',
@@ -611,7 +614,23 @@ var T_FR = {
   // Multi-agent meeting empty state (v63.1.1)
   teamMeetingEmptyTitle: 'Démarre la réunion',
   teamMeetingEmptyHint: 'Sélectionne 2-4 agents et pose ta question. Ils répondent ensemble depuis leur domaine d\'expertise.',
+  teamMeetingDecision: 'Décision de l\'équipe',
+  teamMeetingHistoryEmpty: 'Aucune réunion passée. Lance ta première réunion !',
+  teamMeetingArchived: 'Réunion archivée — lance une nouvelle réunion pour continuer.',
+  teamMeetingArchivedLabel: 'Archivé',
+  teamMeetingHistoryLoading: 'Chargement…',
+  teamMeetingHistoryLogin: 'Connecte-toi pour voir ton historique.',
+  teamMeetingHistoryError: 'Erreur de chargement de l\'historique.',
+  teamMeetingStartBtn: 'Démarrer la réunion →',
+  teamMeetingTomorrow: 'demain',
+  teamMeetingInDays: 'dans {n} jours',
 
+  // v63.32 — Revue périodique Lucas
+  lucasReviewTitle: 'Revue mensuelle de ton équipe',
+  lucasReviewSubtitle: 'Lucas convoque ton équipe pour faire le point sur tes objectifs et ton mois sportif.',
+  lucasReviewCta: 'Lancer la revue →',
+  lucasReviewDismiss: 'Ne plus afficher ce mois',
+  lucasReviewQuestion: 'C\'est la revue mensuelle de mon équipe sportive. Analyse mon mois : objectifs, calendrier, forme générale. Qu\'est-ce qu\'on améliore ce mois ?',
 
   // Morning brief opt-in (v63.3.0 — killer feature #1)
   morningBriefOptInTitle: 'Active ton brief matinal ?',

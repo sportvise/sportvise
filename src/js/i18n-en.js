@@ -80,6 +80,9 @@ var T_EN = {
   eventModalEditTitle:'Edit event', eventModalEditSub:"Edit your event's details.",
   eventDuration:'Duration', eventTitlePlaceholder:'E.g. Match vs FC Sion',
   eventLocationPlaceholder:'E.g. Stade de la Tuilière, Lausanne', eventNotesPlaceholder:'E.g. Arrive 1h before, special warm-up',
+  calMoreOptions:'More options', calFewerOptions:'Fewer options',
+  calSeeCalendar:'View →', calSeeCalendarFull:'See calendar →',
+  calEventsAdded:'sessions added to calendar', calEventsMore:'more',
   recurrenceLabel:'Repeat?', recurrenceOnce:'Once', recurrenceWeekly:'Weekly', recurrenceBiweekly:'Every 2 wks',
   recurrenceDays:'Days of week', recurrenceUntil:'Until',
   recurrenceCreated:'{n} events created', recurrenceTooMany:'Max 365 occurrences per series',
@@ -603,7 +606,23 @@ var T_EN = {
   // Multi-agent meeting empty state (v63.1.1)
   teamMeetingEmptyTitle: 'Start the meeting',
   teamMeetingEmptyHint: 'Select 2-4 agents and ask your question. They answer together from their domain of expertise.',
+  teamMeetingDecision: 'Team decision',
+  teamMeetingHistoryEmpty: 'No past meetings. Start your first meeting!',
+  teamMeetingArchived: 'Archived meeting — start a new one to continue.',
+  teamMeetingArchivedLabel: 'Archived',
+  teamMeetingHistoryLoading: 'Loading…',
+  teamMeetingHistoryLogin: 'Log in to see your history.',
+  teamMeetingHistoryError: 'Error loading history.',
+  teamMeetingStartBtn: 'Start meeting →',
+  teamMeetingTomorrow: 'tomorrow',
+  teamMeetingInDays: 'in {n} days',
 
+  // v63.32 — Revue périodique Lucas
+  lucasReviewTitle: 'Monthly team review',
+  lucasReviewSubtitle: 'Lucas is calling your team together to review your goals and sporting month.',
+  lucasReviewCta: 'Start the review →',
+  lucasReviewDismiss: 'Don\'t show this month',
+  lucasReviewQuestion: 'This is my team\'s monthly review. Analyse my month: goals, calendar, overall form. What do we improve this month?',
 
   // Morning brief opt-in (v63.3.0 — killer feature #1)
   morningBriefOptInTitle: 'Activate your morning brief?',

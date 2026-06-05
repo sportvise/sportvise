@@ -287,18 +287,29 @@ function buildMeetingSystem(agent, otherAgentNames, lang, profile, calendar, dai
   const todayIso = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Zurich' });
   const dateInstruction = `[DATE DU JOUR : ${todayLabel} (${todayIso}). Utilise cette date pour tout raisonnement temporel.]`;
 
+  // v63.32 — Inter-agent dialogue flag : 1er tour vs follow-up
+  const isFollowupTurn = Array.isArray(history) && history.length > 0;
+  const firstOtherName = otherAgentNames[0]?.split(' ')[0] || 'un autre expert';
+
   // Marqueur MEETING : bloc spécifique qui explique à l'agent qu'il fait partie
   // d'une réunion d'équipe et qu'il doit rester dans son domaine.
+  // v63.32 — ajout directive DIALOGUE INTER-AGENTS obligatoire (moat cross-agent)
   const meetingContext = `[MODE RÉUNION D'ÉQUIPE — IMPORTANT]
 Tu participes à une réunion d'équipe avec d'autres agents SPORTVISE qui répondent en parallèle à la même question de l'athlète.
 Les autres agents présents : ${otherAgentNames.join(', ')}.
 
 Règles spécifiques au mode réunion :
 - Réponds UNIQUEMENT depuis ton domaine d'expertise (${agent.name} = ${agent.title || 'spécialiste'}).
-- N'aborde PAS les sujets qui sont clairement du domaine des autres agents présents (ils s'en occupent).
-- Sois concis : 2 paragraphes max, ~120 mots. L'user lira 3 réponses au total.
+- Sois concis : 2-3 paragraphes max, ~150 mots. L'athlète lira ${otherAgentNames.length + 1} réponses en parallèle.
 - Termine par UNE recommandation concrète et actionnable de TON domaine.
-- Si la question dépasse complètement ton domaine, dis-le brièvement et renvoie vers l'agent approprié.`;
+- Si la question dépasse complètement ton domaine, dis-le brièvement et renvoie vers l'agent approprié.
+
+DIALOGUE INTER-AGENTS (OBLIGATOIRE — c'est ce qui rend cette réunion unique vs un simple chat) :
+${!isFollowupTurn
+  ? `- 1er tour : Mentionne en 1 phrase ce qu'UN autre expert de la réunion va apporter sur SON domaine ("En complément de ce que ${firstOtherName} te dira sur [...], de mon côté..."), puis développe TON angle. Ne laisse pas ta réponse exister dans le vide — elle fait partie d'un dialogue.`
+  : `- Tour de suivi : Réagis EXPLICITEMENT à ce qu'au moins UN autre agent a dit au tour précédent ("En complément de ce que [prénom agent] a suggéré sur [...], de mon côté..." / "Là où [prénom agent] insiste sur [...], j'ajoute..."). Ne répète pas leur contenu — complémente, nuance ou renforce depuis TON domaine.`
+}
+- La référence croisée = max 2 phrases. Le reste = ton expertise.`;
 
   let sys = (modelConfig.systemPrefix || '') + agent.system + (GARDE_FOUS_GLOBAUX || '') +
             '\n\n' + langInstruction + '\n\n' + dateInstruction + '\n\n' + meetingContext;
