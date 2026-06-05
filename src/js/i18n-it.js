@@ -80,6 +80,9 @@ var T_IT = {
   eventModalEditTitle:'Modifica evento', eventModalEditSub:'Modifica i dettagli del tuo evento.',
   eventDuration:'Durata', eventTitlePlaceholder:'Es: Partita contro FC Lugano',
   eventLocationPlaceholder:'Es: Stadio di Cornaredo, Lugano', eventNotesPlaceholder:'Es: Arrivare 1h prima, riscaldamento speciale',
+  calMoreOptions:'Altre opzioni', calFewerOptions:'Meno opzioni',
+  calSeeCalendar:'Vedi →', calSeeCalendarFull:'Vedi il calendario →',
+  calEventsAdded:'sessioni aggiunte al calendario', calEventsMore:'altre',
   recurrenceLabel:'Ripeti?', recurrenceOnce:'Una volta', recurrenceWeekly:'Settimanale', recurrenceBiweekly:'Ogni 2 sett.',
   recurrenceDays:'Giorni della settimana', recurrenceUntil:'Fino al',
   recurrenceCreated:'{n} eventi creati', recurrenceTooMany:'Massimo 365 occorrenze per serie',
@@ -603,7 +606,23 @@ var T_IT = {
   // Multi-agent meeting empty state (v63.1.1)
   teamMeetingEmptyTitle: 'Avvia la riunione',
   teamMeetingEmptyHint: 'Seleziona 2-4 agenti e poni la tua domanda. Rispondono insieme dal loro dominio di expertise.',
+  teamMeetingDecision: 'Decisione del team',
+  teamMeetingHistoryEmpty: 'Nessuna riunione passata. Avvia la tua prima riunione!',
+  teamMeetingArchived: 'Riunione archiviata — avvia una nuova per continuare.',
+  teamMeetingArchivedLabel: 'Archiviato',
+  teamMeetingHistoryLoading: 'Caricamento…',
+  teamMeetingHistoryLogin: 'Accedi per vedere la tua cronologia.',
+  teamMeetingHistoryError: 'Errore nel caricamento della cronologia.',
+  teamMeetingStartBtn: 'Avvia riunione →',
+  teamMeetingTomorrow: 'domani',
+  teamMeetingInDays: 'tra {n} giorni',
 
+  // v63.32 — Revue périodique Lucas
+  lucasReviewTitle: 'Revisione mensile del team',
+  lucasReviewSubtitle: 'Lucas convoca il tuo team per fare il punto sugli obiettivi e sul mese sportivo.',
+  lucasReviewCta: 'Inizia la revisione →',
+  lucasReviewDismiss: 'Non mostrare questo mese',
+  lucasReviewQuestion: 'È la revisione mensile del mio team sportivo. Analizza il mio mese: obiettivi, calendario, forma generale. Cosa miglioriamo questo mese?',
 
   // Morning brief opt-in (v63.3.0 — killer feature #1)
   morningBriefOptInTitle: 'Attivare il tuo brief mattutino?',

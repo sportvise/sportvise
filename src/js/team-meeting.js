@@ -610,11 +610,11 @@ async function _loadMeetingHistory() {
   const el = document.getElementById('tmZoneHistory');
   if (!el) return;
   if (!currentUser?.id) {
-    el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">Connecte-toi pour voir ton historique.</div>';
+    el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">' + escapeHtml((T?.[currentLang]?.teamMeetingHistoryLogin) || 'Connecte-toi pour voir ton historique.') + '</div>';
     return;
   }
 
-  el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">Chargement…</div>';
+  el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">' + escapeHtml((T?.[currentLang]?.teamMeetingHistoryLoading) || 'Chargement…') + '</div>';
 
   try {
     const { data: threads, error } = await sb
@@ -659,7 +659,7 @@ async function _loadMeetingHistory() {
     el.innerHTML = html;
   } catch (e) {
     console.warn('[TEAM_MEETING] _loadMeetingHistory error:', e);
-    el.innerHTML = '<div style="padding:24px;text-align:center;color:#ef4444;font-size:12px">Erreur de chargement de l\'historique.</div>';
+    el.innerHTML = '<div style="padding:24px;text-align:center;color:#ef4444;font-size:12px">' + escapeHtml((T?.[currentLang]?.teamMeetingHistoryError) || 'Erreur de chargement de l\'historique.') + '</div>';
   }
 }
 
@@ -667,7 +667,7 @@ async function _loadMeetingHistory() {
 async function _openHistoryThread(threadId) {
   if (!threadId) return;
   const el = document.getElementById('tmZoneHistory');
-  if (el) el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">Chargement…</div>';
+  if (el) el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">' + escapeHtml((T?.[currentLang]?.teamMeetingHistoryLoading) || 'Chargement…') + '</div>';
 
   try {
     const { data: thread, error } = await sb
@@ -695,8 +695,8 @@ async function _openHistoryThread(threadId) {
     // Mode lecture : désactiver le composer
     const ta = document.getElementById('teamMeetingQuestion');
     const submitBtn = document.getElementById('teamMeetingSubmit');
-    if (ta) { ta.disabled = true; ta.placeholder = 'Réunion archivée — lance une nouvelle réunion pour continuer.'; }
-    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Archivé'; }
+    if (ta) { ta.disabled = true; ta.placeholder = (T?.[currentLang]?.teamMeetingArchived) || 'Réunion archivée — lance une nouvelle réunion pour continuer.'; }
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = (T?.[currentLang]?.teamMeetingArchivedLabel) || 'Archivé'; }
     const newBtn = document.getElementById('teamMeetingNewBtn');
     if (newBtn) { newBtn.style.display = ''; }
     const headerTurn = document.getElementById('teamMeetingHeaderTurn');
@@ -784,7 +784,9 @@ function _showMeetingTriggerCard(evt, suggestedAgents) {
 
   // Calculer "dans X jours"
   const daysUntil = Math.round((new Date(evt.event_date + 'T12:00:00') - new Date()) / (24 * 3600 * 1000));
-  const daysLabel = daysUntil <= 1 ? 'demain' : `dans ${daysUntil} jours`;
+  const daysLabel = daysUntil <= 1
+    ? ((T?.[currentLang]?.teamMeetingTomorrow) || 'demain')
+    : ((T?.[currentLang]?.teamMeetingInDays) || 'dans {n} jours').replace('{n}', daysUntil);
 
   card.innerHTML = `
     <div style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:linear-gradient(135deg,rgba(245,158,11,0.1),rgba(217,119,6,0.06));border:1px solid rgba(245,158,11,0.5);border-radius:12px;margin-bottom:16px">
@@ -792,7 +794,7 @@ function _showMeetingTriggerCard(evt, suggestedAgents) {
       <div style="flex:1;min-width:0">
         <div style="font-size:13px;font-weight:700;color:#f59e0b;margin-bottom:3px">${escapeHtml(evt.title)} — ${escapeHtml(daysLabel)}</div>
         <div style="font-size:11px;color:var(--muted);margin-bottom:10px">${escapeHtml(dateFormatted)}${evt.event_time ? ' · ' + evt.event_time : ''} · Ton équipe est prête</div>
-        <button onclick="openTeamMeetingWithEvent('${escapeHtml(evt.id)}','${escapeHtml(evt.title).replace(/'/g,'\\\'').replace(/"/g,'&quot;')}','${escapeHtml(evt.event_date)}',${JSON.stringify(suggestedAgents)})" style="padding:8px 14px;border-radius:8px;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-weight:700;font-size:12px;cursor:pointer;font-family:Inter,sans-serif">Démarrer la réunion →</button>
+        <button onclick="openTeamMeetingWithEvent('${escapeHtml(evt.id)}','${escapeHtml(evt.title).replace(/'/g,'\\\'').replace(/"/g,'&quot;')}','${escapeHtml(evt.event_date)}',${JSON.stringify(suggestedAgents)})" style="padding:8px 14px;border-radius:8px;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-weight:700;font-size:12px;cursor:pointer;font-family:Inter,sans-serif">${escapeHtml((T?.[currentLang]?.teamMeetingStartBtn) || 'Démarrer la réunion →')}</button>
       </div>
       <button onclick="_dismissMeetingTrigger('${escapeHtml(evt.id)}')" style="background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;flex-shrink:0;padding:0;line-height:1" title="Ne plus afficher">✕</button>
     </div>
@@ -811,4 +813,85 @@ function _dismissMeetingTrigger(eventId) {
   localStorage.setItem(dismissKey, String(Date.now() + 7 * 24 * 3600 * 1000));
   _hideMeetingTriggerCard();
   _hideSidebarBadge();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// REVUE PÉRIODIQUE LUCAS — convoquée une fois par mois calendaire
+// v63.32 : Lucas lance une revue mensuelle autour du calendrier + objectifs.
+// Affiché 1×/mois sur le dashboard. Dismissed via localStorage (clé : mois courant).
+// Agents par défaut : equipe (Lucas) + physique + mental.
+// ═══════════════════════════════════════════════════════════════════
+
+const _LUCAS_REVIEW_AGENTS = ['equipe', 'physique', 'mental'];
+
+function checkLucasPeriodicReview() {
+  if (!currentUser?.id) return;
+  // Clé de dismiss : YYYY-MM (unique par mois et par user)
+  const monthKey = new Date().toISOString().slice(0, 7);
+  const dismissed = localStorage.getItem(`sv_lucas_review_${currentUser.id}_${monthKey}`);
+  if (dismissed) return;
+  _showLucasReviewCard(monthKey);
+}
+
+function _showLucasReviewCard(monthKey) {
+  const card = document.getElementById('lucasReviewCard');
+  if (!card) return;
+  const t = T[currentLang] || T.fr;
+
+  const monthName = (() => {
+    try {
+      const locale = currentLang === 'de' ? 'de-CH' : currentLang === 'it' ? 'it-CH' : currentLang === 'en' ? 'en-CH' : 'fr-CH';
+      return new Date((monthKey || new Date().toISOString().slice(0, 7)) + '-15T12:00:00').toLocaleDateString(locale, { month: 'long', year: 'numeric' });
+    } catch (_) { return monthKey || ''; }
+  })();
+
+  card.innerHTML = `
+    <div style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:linear-gradient(135deg,rgba(99,102,241,0.08),rgba(79,70,229,0.04));border:1px solid rgba(99,102,241,0.3);border-radius:12px;margin-bottom:16px">
+      <span style="font-size:22px;flex-shrink:0">📋</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;color:#818cf8;margin-bottom:3px">${escapeHtml(t.lucasReviewTitle || 'Revue mensuelle de ton équipe')} — ${escapeHtml(monthName)}</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:10px">${escapeHtml(t.lucasReviewSubtitle || 'Lucas convoque ton équipe pour faire le point sur tes objectifs et ton mois sportif.')}</div>
+        <button onclick="openLucasPeriodicReview()" style="padding:8px 14px;border-radius:8px;border:none;background:linear-gradient(135deg,#818cf8,#6366f1);color:#fff;font-weight:700;font-size:12px;cursor:pointer;font-family:Inter,sans-serif">${escapeHtml(t.lucasReviewCta || 'Lancer la revue →')}</button>
+      </div>
+      <button onclick="_dismissLucasReview()" style="background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;flex-shrink:0;padding:0;line-height:1" title="${escapeHtml(t.lucasReviewDismiss || 'Ne plus afficher ce mois')}">✕</button>
+    </div>
+  `;
+  card.style.display = '';
+}
+
+function _dismissLucasReview() {
+  if (!currentUser?.id) return;
+  const monthKey = new Date().toISOString().slice(0, 7);
+  localStorage.setItem(`sv_lucas_review_${currentUser.id}_${monthKey}`, '1');
+  const card = document.getElementById('lucasReviewCard');
+  if (card) { card.innerHTML = ''; card.style.display = 'none'; }
+}
+
+// Ouvre la réunion pré-configurée pour la revue mensuelle.
+// Pré-sélectionne Lucas (equipe) + physique + mental, pré-remplit la question.
+function openLucasPeriodicReview() {
+  _dismissLucasReview(); // dismiss avant navigation (évite réaffichage au retour)
+  const t = T[currentLang] || T.fr;
+  const question = t.lucasReviewQuestion ||
+    'C\'est la revue mensuelle de mon équipe sportive. Analyse mon mois : objectifs, calendrier, forme générale. Qu\'est-ce qu\'on améliore ce mois ?';
+
+  if (typeof showPage === 'function') showPage('reunion');
+  // Réinitialiser l'état puis forcer les agents Lucas review
+  _resetMeetingState();
+  _teamMeetingSelectedAgents = [..._LUCAS_REVIEW_AGENTS];
+  _renderReunionContextHeader(null);
+  _renderTeamMeetingResultsArea();
+  _renderTeamMeetingAgentChips();
+  _resetComposerState();
+
+  // Pré-remplir la question après que le DOM /reunion est prêt
+  setTimeout(() => {
+    const ta = document.getElementById('teamMeetingQuestion');
+    if (ta) {
+      ta.value = question;
+      ta.focus();
+      // Déclencher l'event input pour que les éventuels compteurs de chars se mettent à jour
+      ta.dispatchEvent(new Event('input'));
+    }
+  }, 120);
 }

@@ -68,7 +68,7 @@ var T_DE = {
   // Session types (Training)
   sessionTypeLabel:'Trainingsart', sessionTypeCollectif:'Team', sessionTypeDiscipline:'Disziplin', sessionTypeForce:'Kraft', sessionTypeCardio:'Ausdauer', sessionTypeVitesse:'Schnelligkeit', sessionTypeTechnique:'Technik', sessionTypeMobilite:'Mobilität',
   // Inline recap
-  calRecapRPELabel:'RPE (Belastung)', calRecapFeelingLabel:'Gefühl', calRecapNotePlaceholder:'Notiz (optional)…', calRecapSaveBtn:'Récap speichern', calRecapSavedToast:'Récap gespeichert ✓',
+  calRecapRPELabel:'RPE (Belastung)', calRecapFeelingLabel:'Gefühl', calRecapNotePlaceholder:'Notiz (optional)…', calRecapSaveBtn:'Rückblick speichern', calRecapSavedToast:'Rückblick gespeichert ✓',
   // Journal neue Felder
   sleepHours:'Schlafdauer (h)', stressLevel:'Stress', trainStatusDone:'Durchgeführt', trainStatusModified:'Angepasst', trainStatusSkipped:'Abgesagt',
   intensityLight:'Leicht', intensityMedium:'Mittel', intensityHigh:'Intensiv',
@@ -80,6 +80,9 @@ var T_DE = {
   eventModalEditTitle:'Ereignis bearbeiten', eventModalEditSub:'Bearbeite die Details deines Ereignisses.',
   eventDuration:'Dauer', eventTitlePlaceholder:'Z. B. Spiel gegen FC Zürich',
   eventLocationPlaceholder:'Z. B. Stadion Letzigrund, Zürich', eventNotesPlaceholder:'Z. B. 1 Std. vorher ankommen, spezielles Aufwärmen',
+  calMoreOptions:'Weitere Optionen', calFewerOptions:'Weniger Optionen',
+  calSeeCalendar:'Ansehen →', calSeeCalendarFull:'Kalender ansehen →',
+  calEventsAdded:'Termine zum Kalender hinzugefügt', calEventsMore:'weitere',
   recurrenceLabel:'Wiederholen?', recurrenceOnce:'Einmal', recurrenceWeekly:'Wöchentlich', recurrenceBiweekly:'Alle 2 Wo.',
   recurrenceDays:'Wochentage', recurrenceUntil:'Bis zum',
   recurrenceCreated:'{n} Termine erstellt', recurrenceTooMany:'Maximal 365 Wiederholungen pro Serie',
@@ -603,7 +606,23 @@ var T_DE = {
   // Multi-agent meeting empty state (v63.1.1)
   teamMeetingEmptyTitle: 'Meeting starten',
   teamMeetingEmptyHint: 'Wähle 2-4 Agenten und stell deine Frage. Sie antworten gemeinsam aus ihrem Fachgebiet.',
+  teamMeetingDecision: 'Entscheidung des Teams',
+  teamMeetingHistoryEmpty: 'Noch keine Besprechung. Starte dein erstes Meeting!',
+  teamMeetingArchived: 'Archiviertes Meeting — starte ein neues, um fortzufahren.',
+  teamMeetingArchivedLabel: 'Archiviert',
+  teamMeetingHistoryLoading: 'Wird geladen…',
+  teamMeetingHistoryLogin: 'Melde dich an, um deinen Verlauf zu sehen.',
+  teamMeetingHistoryError: 'Fehler beim Laden des Verlaufs.',
+  teamMeetingStartBtn: 'Meeting starten →',
+  teamMeetingTomorrow: 'morgen',
+  teamMeetingInDays: 'in {n} Tagen',
 
+  // v63.32 — Revue périodique Lucas
+  lucasReviewTitle: 'Monatliche Team-Review',
+  lucasReviewSubtitle: 'Lucas lädt dein Team ein, um deine Ziele und deinen sportlichen Monat zu besprechen.',
+  lucasReviewCta: 'Review starten →',
+  lucasReviewDismiss: 'Diesen Monat nicht mehr anzeigen',
+  lucasReviewQuestion: 'Das ist die monatliche Review meines Sportteams. Analysiere meinen Monat: Ziele, Kalender, allgemeine Form. Was verbessern wir diesen Monat?',
 
   // Morning brief opt-in (v63.3.0 — killer feature #1)
   morningBriefOptInTitle: 'Morgen-Briefing aktivieren?',
