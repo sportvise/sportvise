@@ -64,6 +64,7 @@ var T_DE = {
   weeklyLoad:'Auslastung dieser Woche', events:'Ereignisse', eventSingular:'Ereignis', noEvents:'Keine Ereignisse', weekLoadRest:'Erholung',
   // Event types & intensity
   eventTypeMatch:'Spiel', eventTypeCompetition:'Wettkampf', eventTypeTraining:'Training', eventTypeOther:'Sonstiges',
+  eventTypeSommeil:'Schlaf', eventTypeRepos:'Ruhe', eventTypeBlessure:'Verletzung', eventTypeNutrition:'Ernährung', eventTypeMental:'Mental',
   intensityLight:'Leicht', intensityMedium:'Mittel', intensityHigh:'Intensiv',
   // Calendar form
   eventTitle:'Titel', eventType:'Typ', eventDate:'Datum', eventTime:'Uhrzeit', eventLocation:'Ort',
@@ -165,7 +166,8 @@ var T_DE = {
     calendrier:'Kalender', favoris:'Meine Favoriten', profil:'Mein Profil', abonnement:'Abonnement',
     objectifs:'Ziele', journal:'Tagebuch', progression:'Fortschritt',
     marketplace:'Programme', defis:'Herausforderungen', 'prepa-match':'Wettkampf-Vorbereitung',
-    parrainage:'Empfehlung', connexions:'Strava-Synchronisierung'
+    parrainage:'Empfehlung', connexions:'Strava-Synchronisierung',
+    installApp:'📲 App installieren'
   },
   agentDescs: {
     marketing:'Social-Media-Strategie, Media-Kit, Sichtbarkeit',
@@ -209,6 +211,14 @@ var T_DE = {
   calendarHelpRecapTitle:'Nach-Event-Recap',
   calendarHelpRecapDesc:'Nach einem Match oder Training: füge einen kurzen Recap hinzu (RPE, Leistung, Schlaf davor). Deine Agenten nutzen das für ihre nächsten Empfehlungen.',
   calendarHelpCta:'Mein 1. Event erstellen →',
+  calEdTitle:'Deine Agenten können deinen Kalender füllen',
+  calEdSub:'Bitte David um einen Trainingsplan — er fügt jede Einheit direkt hier mit einem Klick hinzu.',
+  calEdAgentMsg:'Erstelle mir einen Trainingsplan für diese Woche und füge die Einheiten zu meinem Kalender hinzu',
+  calEdCtaAgent:'Trainingsplan bei David anfragen →',
+  calEdCtaManual:'Manuell hinzufügen',
+  calChipLabel:'Zum Kalender hinzufügen?',
+  dashCheckCalendarTodo:'📅 Füge ein Spiel oder Training hinzu — deine Agenten brauchen es →',
+  dashCheckCalendarDone:'📅 Kalender ausgefüllt ✅',
   // Chantier #13 — Import iCal/.ics
   icsImportBtn:'📥 .ics importieren',
   icsImportTitle:'Aus Google / Apple / Outlook importieren',
@@ -417,6 +427,7 @@ var T_DE = {
   // DASHBOARD widgets (home page renderDashboard)
   dashLevelInter:'Fortgeschritten',
   dashLevelAdvanced:'Erfahren',
+  dashLevelAlmost:'Fast fertig',
   dashLevelComplete:'⭐ Komplett',
   dashCheckComplete:'Vervollständigen →',
   dashCheckAgentDone:'Erster Agent kontaktiert ✅',
@@ -549,9 +560,9 @@ var T_DE = {
   // Multi-agent meeting (v63.0.0 — killer feature ProductHunt)
   teamMeetingFabTitle: 'Team-Meeting',
   teamMeetingTitle: 'Team-Meeting',
-  teamMeetingSubtitle: 'Stell 2 oder 3 Experten-Agenten eine Frage. Sie antworten gemeinsam aus ihrem Fachgebiet.',
+  teamMeetingSubtitle: 'Stell 2 bis 4 Experten-Agenten eine Frage. Sie antworten gemeinsam aus ihrem Fachgebiet.',
   teamMeetingPlaceholder: 'Z.B.: Ich fühle mich vor einem Match in 3 Tagen müde, was tun?',
-  teamMeetingAgentsLabel: 'Agenten (2-3)',
+  teamMeetingAgentsLabel: 'Agenten (2-4)',
   teamMeetingCounter: '{n}/{max} Agenten ausgewählt',
   teamMeetingSubmit: 'Meeting starten',
   teamMeetingLoading: 'Meeting läuft…',
@@ -563,7 +574,7 @@ var T_DE = {
   teamMeetingErrServer: 'Serverfehler. Versuch es gleich nochmal.',
   teamMeetingErrAgent: 'Dieser Agent konnte diesmal nicht antworten.',
   teamMeetingLockedTitle: 'Team-Meeting — Plus & Pro',
-  teamMeetingLockedBody: 'Lass 2-3 Experten-Agenten gemeinsam auf deine Frage antworten. Verfügbar im Plan Plus (2/Monat) und Pro (unbegrenzt).',
+  teamMeetingLockedBody: 'Lass 2-4 Experten-Agenten gemeinsam auf deine Frage antworten. Verfügbar im Plan Plus (2/Monat) und Pro (unbegrenzt).',
   teamMeetingUpgrade: 'Pläne ansehen',
   teamMeetingQuotaTitle: 'Monatslimit erreicht',
   teamMeetingUpgradePro: 'Auf Pro upgraden',
@@ -576,6 +587,8 @@ var T_DE = {
   teamMeetingFollowupSubmit: 'Senden',
   teamMeetingTurnCounter: 'Runde {n}/{max}',
   teamMeetingTurnsLeft: '{n} Runde(n) übrig',
+  teamMeetingTabNew: 'Neues Meeting',
+  teamMeetingTabHistory: 'Verlauf',
   teamMeetingNewMeeting: 'Neues Meeting',
   teamMeetingMaxTurnsReached: 'Du hast das Rundenlimit für dieses Meeting erreicht. Starte ein neues.',
   teamMeetingMaxTurnsTitle: 'Rundenlimit erreicht',
@@ -583,7 +596,7 @@ var T_DE = {
 
   // Multi-agent meeting empty state (v63.1.1)
   teamMeetingEmptyTitle: 'Meeting starten',
-  teamMeetingEmptyHint: 'Wähle 2-3 Agenten und stell deine Frage. Sie antworten gemeinsam aus ihrem Fachgebiet.',
+  teamMeetingEmptyHint: 'Wähle 2-4 Agenten und stell deine Frage. Sie antworten gemeinsam aus ihrem Fachgebiet.',
 
 
   // Morning brief opt-in (v63.3.0 — killer feature #1)

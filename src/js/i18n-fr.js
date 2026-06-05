@@ -68,6 +68,7 @@ var T_FR = {
   weeklyLoad:'Charge cette semaine', events:'événements', eventSingular:'événement', noEvents:'Aucun événement', weekLoadRest:'Repos',
   // Event types & intensity
   eventTypeMatch:'Match', eventTypeCompetition:'Compétition', eventTypeTraining:'Entraînement', eventTypeOther:'Autre',
+  eventTypeSommeil:'Sommeil', eventTypeRepos:'Repos', eventTypeBlessure:'Blessure', eventTypeNutrition:'Nutrition', eventTypeMental:'Mental',
   intensityLight:'Légère', intensityMedium:'Moyenne', intensityHigh:'Intense',
   // Calendar form
   eventTitle:'Titre', eventType:'Type', eventDate:'Date', eventTime:'Heure', eventLocation:'Lieu',
@@ -169,7 +170,8 @@ var T_FR = {
     calendrier:'Calendrier', favoris:'Mes Favoris', profil:'Mon Profil', abonnement:'Abonnement',
     objectifs:'Objectifs', journal:'Journal', progression:'Progression',
     marketplace:'Programmes', defis:'Défis', 'prepa-match':'Prépa Compétition',
-    parrainage:'Parrainage', connexions:'Synchronisation Strava'
+    parrainage:'Parrainage', connexions:'Synchronisation Strava',
+    installApp:'📲 Installer l\'app'
   },
   agentDescs: {
     marketing:'Stratégie réseaux sociaux, media kit, visibilité',
@@ -213,6 +215,17 @@ var T_FR = {
   calendarHelpRecapTitle:'Récap post-événement',
   calendarHelpRecapDesc:'Après un match ou un entraînement, ajoute un court récap (RPE, performance, sommeil avant). Tes agents s\'en servent pour leurs prochains conseils.',
   calendarHelpCta:'Créer mon 1er événement →',
+  // Dashboard widget calendrier vide (affiché dans renderDashboard si 0 events)
+  calEdTitle:'Tes agents peuvent remplir ton calendrier',
+  calEdSub:'Demande à David un programme d\'entraînement — il ajoutera chaque séance directement ici en un clic.',
+  calEdAgentMsg:'Crée-moi un programme d\'entraînement pour cette semaine et ajoute les séances à mon calendrier',
+  calEdCtaAgent:'Demander un programme à David →',
+  calEdCtaManual:'Ajouter manuellement',
+  // Chip "Ajouter au calendrier ?" dans le chat agent
+  calChipLabel:'Ajouter au calendrier ?',
+  // Onboarding checklist étape 5
+  dashCheckCalendarTodo:'📅 Ajoute un match ou entraînement — tes agents en ont besoin →',
+  dashCheckCalendarDone:'📅 Calendrier renseigné ✅',
   // Chantier #13 — Import iCal/.ics
   icsImportBtn:'📥 Importer .ics',
   icsImportTitle:'Importer depuis Google / Apple / Outlook',
@@ -422,6 +435,7 @@ var T_FR = {
   // DASHBOARD widgets (home page renderDashboard)
   dashLevelInter:'Intermédiaire',
   dashLevelAdvanced:'Avancé',
+  dashLevelAlmost:'Presque prêt',
   dashLevelComplete:'⭐ Complet',
   dashCheckComplete:'Compléter →',
   dashCheckAgentDone:'Premier agent consulté ✅',
@@ -554,9 +568,9 @@ var T_FR = {
   // Multi-agent meeting (v63.0.0 — killer feature ProductHunt)
   teamMeetingFabTitle: 'Réunion d\'équipe',
   teamMeetingTitle: 'Réunion d\'équipe',
-  teamMeetingSubtitle: 'Pose une question à 2 ou 3 agents experts. Ils répondent ensemble depuis leur domaine.',
+  teamMeetingSubtitle: 'Pose une question à 2 à 4 agents experts. Ils répondent ensemble depuis leur domaine.',
   teamMeetingPlaceholder: 'Ex: Je me sens fatigué avant un match dans 3 jours, que faire ?',
-  teamMeetingAgentsLabel: 'Agents (2-3)',
+  teamMeetingAgentsLabel: 'Agents (2-4)',
   teamMeetingCounter: '{n}/{max} agents sélectionnés',
   teamMeetingSubmit: 'Lancer la réunion',
   teamMeetingLoading: 'Réunion en cours…',
@@ -568,7 +582,7 @@ var T_FR = {
   teamMeetingErrServer: 'Erreur serveur. Réessaie dans un instant.',
   teamMeetingErrAgent: 'Cet agent n\'a pas pu répondre cette fois.',
   teamMeetingLockedTitle: 'Réunion d\'équipe — Plus & Pro',
-  teamMeetingLockedBody: 'Demande à 2-3 agents experts de répondre ensemble à ta question. Disponible avec le plan Plus (2/mois) et Pro (illimité).',
+  teamMeetingLockedBody: 'Demande à 2-4 agents experts de répondre ensemble à ta question. Disponible avec le plan Plus (2/mois) et Pro (illimité).',
   teamMeetingUpgrade: 'Voir les plans',
   teamMeetingQuotaTitle: 'Quota mensuel atteint',
   teamMeetingUpgradePro: 'Passer en Pro',
@@ -581,6 +595,8 @@ var T_FR = {
   teamMeetingFollowupSubmit: 'Envoyer',
   teamMeetingTurnCounter: 'Tour {n}/{max}',
   teamMeetingTurnsLeft: '{n} tour(s) restant(s)',
+  teamMeetingTabNew: 'Nouvelle réunion',
+  teamMeetingTabHistory: 'Historique',
   teamMeetingNewMeeting: 'Nouvelle réunion',
   teamMeetingMaxTurnsReached: 'Tu as atteint la limite de tours pour cette réunion. Démarre-en une nouvelle.',
   teamMeetingMaxTurnsTitle: 'Limite de tours atteinte',
@@ -588,7 +604,7 @@ var T_FR = {
 
   // Multi-agent meeting empty state (v63.1.1)
   teamMeetingEmptyTitle: 'Démarre la réunion',
-  teamMeetingEmptyHint: 'Sélectionne 2-3 agents et pose ta question. Ils répondent ensemble depuis leur domaine d\'expertise.',
+  teamMeetingEmptyHint: 'Sélectionne 2-4 agents et pose ta question. Ils répondent ensemble depuis leur domaine d\'expertise.',
 
 
   // Morning brief opt-in (v63.3.0 — killer feature #1)

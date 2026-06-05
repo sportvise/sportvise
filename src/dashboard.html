@@ -723,7 +723,7 @@
     <button class="nav-item" onclick="showPage('connexions',this)">🔗 <span data-nav="connexions">Synchronisation Strava</span></button>
     <button class="nav-item" onclick="showPage('abonnement',this)">💳 <span data-nav="abonnement">Abonnement</span></button>
     <!-- v63.9 — lien guide installation PWA, masqué si déjà en standalone -->
-    <a id="installAppNavLink" href="/install.html" class="nav-item" style="text-decoration:none;display:flex">📲 <span style="margin-left:0" data-nav="installApp">Installer l'app</span></a>
+    <a id="installAppNavLink" href="/install.html" class="nav-item" style="text-decoration:none;display:flex"><span style="margin-left:0" data-nav="installApp">📲 Installer l'app</span></a>
   </nav>
   <div class="sidebar-footer">
     <div id="adminLink" style="display:none;margin-bottom:8px">
@@ -2858,7 +2858,7 @@ async function showPage(page, el) {
     document.getElementById('pageSubtitle').textContent = (T[currentLang]?.pageCalSubtitle) || 'Matchs, compétitions et entraînements';
     renderCalendar();
   } else if (page === 'abonnement') {
-    document.getElementById('pageTitle').textContent = '💳 Abonnement';
+    document.getElementById('pageTitle').textContent = '💳 ' + ((T[currentLang]?.navLabels?.abonnement) || T[currentLang]?.subscription || 'Abonnement');
     document.getElementById('pageSubtitle').textContent = (T[currentLang]?.pageSubSubtitle) || 'Gère ton plan SPORTVISE';
     renderAbonnement();
   } else if (page === 'objectifs') {
@@ -2877,21 +2877,21 @@ async function showPage(page, el) {
     document.getElementById('pageSubtitle').textContent = t.pageProgSubtitle || 'Votre évolution dans le temps';
     renderProgression();
   } else if (page === 'defis') {
-    document.getElementById('pageTitle').textContent = '🏅 Défis';
+    document.getElementById('pageTitle').textContent = '🏅 ' + ((T[currentLang]?.navLabels?.defis) || 'Défis');
     document.getElementById('pageSubtitle').textContent = (T[currentLang]?.pageDefisSubtitle) || 'Relève des défis hebdomadaires et partage tes stats';
-    if (userPlan === 'free' && !svTrialActive) { renderLockedFeature('Défis', '🏅', 'Relève des défis hebdomadaires, partage tes stats et gagne des badges.', 'plus'); }
+    if (userPlan === 'free' && !svTrialActive) { renderLockedFeature(T[currentLang]?.navLabels?.defis || 'Défis', '🏅', 'Relève des défis hebdomadaires, partage tes stats et gagne des badges.', 'plus'); }
     else { renderDefis(); }
   } else if (page === 'prepa-match') {
-    document.getElementById('pageTitle').textContent = '⚡ Prépa Compétition';
+    document.getElementById('pageTitle').textContent = '⚡ ' + ((T[currentLang]?.navLabels?.['prepa-match']) || 'Prépa Compétition');
     document.getElementById('pageSubtitle').textContent = (T[currentLang]?.pagePrepaSubtitle) || 'Plan de préparation coordonné par tes agents IA';
-    if (userPlan === 'free' && !svTrialActive) { renderLockedFeature('Prépa Compétition', '⚡', 'Plan de préparation J-3 à Jour J coordonné par David, Emma, Clara, Nora et Julie.', 'plus'); }
+    if (userPlan === 'free' && !svTrialActive) { renderLockedFeature(T[currentLang]?.navLabels?.['prepa-match'] || 'Prépa Compétition', '⚡', 'Plan de préparation J-3 à Jour J coordonné par David, Emma, Clara, Nora et Julie.', 'plus'); }
     else { renderPrepaMatch(); }
   } else if (page === 'connexions') {
     document.getElementById('pageTitle').textContent = '🔗 ' + ((T[currentLang]?.navLabels?.connexions) || 'Synchronisation Strava');
     document.getElementById('pageSubtitle').textContent = (T[currentLang]?.pageConnSubtitle) || 'Connecte tes apps sportives pour importer tes données';
     renderConnexions();
   } else if (page === 'marketplace') {
-    document.getElementById('pageTitle').textContent = '🏪 Marketplace';
+    document.getElementById('pageTitle').textContent = '🏪 ' + ((T[currentLang]?.navLabels?.marketplace) || 'Marketplace');
     document.getElementById('pageSubtitle').textContent = (T[currentLang]?.pageMarketSubtitle) || "Programmes d'entraînement et guides créés par tes agents";
     renderMarketplace();
   } else if (page === 'reunion') {
@@ -6133,7 +6133,7 @@ function renderWeekView(today) {
     weekDays.push({ date: d, dateStr, name: dayNames[i], dayNum: d.getDate(), events: dayEvts, isToday: d.getTime() === today.getTime() });
   }
 
-  const monthAbbrs = ['jan','fév','mar','avr','mai','juin','juil','août','sept','oct','nov','déc'];
+  const monthAbbrs = (t.monthNames || ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre']).map(m => m.slice(0,3).toLowerCase());
   const weekLabel = `${ws.getDate()} ${monthAbbrs[ws.getMonth()]} — ${weekDays[6].date.getDate()} ${monthAbbrs[weekDays[6].date.getMonth()]} ${ws.getFullYear()}`;
 
   return `

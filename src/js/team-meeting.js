@@ -430,11 +430,14 @@ async function submitTeamMeeting() {
   _teamMeetingActive = true;
 
   // Re-render thread complet avec synthèse
-  resultsEl.innerHTML = _renderThreadHtml(_teamMeetingHistory);
-  _scrollThreadToBottom();
-
-  _updateComposerForActiveThread();
-  _renderTeamMeetingAgentChips();
+  // Re-fetch resultsEl: renderReunion() peut avoir remplacé le DOM si l'utilisateur a navigué
+  const liveResultsEl = document.getElementById('teamMeetingResults');
+  if (liveResultsEl) {
+    liveResultsEl.innerHTML = _renderThreadHtml(_teamMeetingHistory);
+    _scrollThreadToBottom();
+    _updateComposerForActiveThread();
+    _renderTeamMeetingAgentChips();
+  }
 }
 
 function _restoreSubmitButton(btn, ta) {
@@ -458,29 +461,41 @@ function _renderLoader() {
 }
 
 function _renderOptimisticQuestion(question, turnNum) {
-  return '<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;margin-top:20px">' +
-    `<div style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center">${turnNum}</div>` +
-    '<div style="flex:1"><div style="font-size:11px;color:var(--muted);margin-bottom:2px">' +
-    escapeHtml((T?.[currentLang]?.teamMeetingQuestionLabel) || 'Question') + '</div>' +
-    '<div style="font-size:13px;color:var(--text);font-weight:600;line-height:1.4">' +
-    escapeHtml(question) + '</div></div></div>';
+  return `<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:18px">` +
+    `<div style="flex-shrink:0;width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center">${turnNum}</div>` +
+    `<div style="flex:1;padding-top:3px">` +
+    `<div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:4px">${escapeHtml((T?.[currentLang]?.teamMeetingQuestionLabel) || 'Question')}</div>` +
+    `<div style="font-size:14px;color:var(--text);font-weight:600;line-height:1.45">${escapeHtml(question)}</div>` +
+    `</div></div>`;
 }
 
+// v63.31.1 — Redesign layout : card avec header coloré par agent, gap 12px, padding généreux.
 function _renderThreadHtml(history) {
   let html = '';
   history.forEach((turn, idx) => {
-    // Question header
-    html += `<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;margin-top:${idx === 0 ? '0' : '24px'}">`;
-    html += `<div style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center">${idx + 1}</div>`;
-    html += `<div style="flex:1"><div style="font-size:11px;color:var(--muted);margin-bottom:2px">${escapeHtml((T?.[currentLang]?.teamMeetingQuestionLabel) || 'Question')}</div>`;
-    html += `<div style="font-size:13px;color:var(--text);font-weight:600;line-height:1.4">${escapeHtml(turn.question)}</div></div></div>`;
+    // Séparateur entre tours
+    if (idx > 0) {
+      html += `<div style="border-top:1px solid var(--border);margin:28px 0 20px"></div>`;
+    }
 
-    // Réponses agents
+    // Question header
+    html += `<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:18px">`;
+    html += `<div style="flex-shrink:0;width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center">${idx + 1}</div>`;
+    html += `<div style="flex:1;padding-top:3px">`;
+    html += `<div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:4px">${escapeHtml((T?.[currentLang]?.teamMeetingQuestionLabel) || 'Question')}</div>`;
+    html += `<div style="font-size:14px;color:var(--text);font-weight:600;line-height:1.45">${escapeHtml(turn.question)}</div>`;
+    html += `</div></div>`;
+
+    // Cards agents — gap 12px, indentées sous la question
+    html += `<div style="display:flex;flex-direction:column;gap:12px;margin-left:40px;margin-bottom:14px">`;
+
     (turn.responses || []).forEach(r => {
       if (r.error) {
-        html += `<div style="border:1px solid #1e2d47;border-radius:10px;padding:10px;margin-bottom:8px;margin-left:36px;background:rgba(239,68,68,0.04)">
-          <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px">${escapeHtml(r.agent_name || r.agentId)}</div>
-          <div style="font-size:11px;color:#ef4444">${escapeHtml((T?.[currentLang]?.teamMeetingErrAgent) || 'Cet agent n\'a pas pu répondre cette fois.')}</div>
+        html += `<div style="border:1px solid rgba(239,68,68,0.3);border-radius:12px;overflow:hidden">
+          <div style="padding:10px 14px;background:rgba(239,68,68,0.1);border-bottom:1px solid rgba(239,68,68,0.2)">
+            <span style="font-size:12px;font-weight:700;color:#ef4444">${escapeHtml(r.agent_name || r.agentId)}</span>
+          </div>
+          <div style="padding:12px 14px;font-size:12px;color:#ef4444">${escapeHtml((T?.[currentLang]?.teamMeetingErrAgent) || 'Cet agent n\'a pas pu répondre cette fois.')}</div>
         </div>`;
         return;
       }
@@ -488,19 +503,22 @@ function _renderThreadHtml(history) {
       const emoji = agentObj?.emoji || '🧑‍💼';
       const color = agentObj?.color || '#f59e0b';
       const replyHtml = (r.reply || '').split('\n').map(line => escapeHtml(line)).join('<br>');
-      html += `<div style="border-left:3px solid ${color};border-radius:0 10px 10px 0;padding:10px 12px;margin-bottom:8px;margin-left:36px;background:rgba(7,9,26,0.4)">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-          <div style="font-size:14px">${emoji}</div>
+      // Header band coloré (couleur agent en 8-digit hex : XX = opacité)
+      html += `<div style="border:1px solid ${color}40;border-radius:12px;overflow:hidden">
+        <div style="padding:10px 14px;background:${color}18;border-bottom:1px solid ${color}25;display:flex;align-items:center;gap:8px">
+          <span style="font-size:18px;line-height:1">${emoji}</span>
           <div>
-            <span style="font-size:12px;font-weight:700;color:var(--text)">${escapeHtml(r.agent_name)}</span>
-            <span style="font-size:10px;color:var(--muted);margin-left:4px">${escapeHtml(r.agent_title || '')}</span>
+            <div style="font-size:12px;font-weight:700;color:var(--text)">${escapeHtml(r.agent_name)}</div>
+            <div style="font-size:10px;color:var(--muted)">${escapeHtml(r.agent_title || '')}</div>
           </div>
         </div>
-        <div style="font-size:12px;color:var(--text);line-height:1.5">${replyHtml}</div>
+        <div style="padding:14px;font-size:13px;color:var(--text);line-height:1.6">${replyHtml}</div>
       </div>`;
     });
 
-    // v63.31 — Bloc synthèse "Décision de l'équipe" après les réponses agents
+    html += `</div>`;
+
+    // Bloc synthèse "Décision de l'équipe"
     if (turn.synthesis) {
       html += _renderSynthesisBlock(turn.synthesis);
     }
@@ -508,32 +526,30 @@ function _renderThreadHtml(history) {
   return html;
 }
 
-// v63.31 — Rendu du bloc synthèse facilitateur (4e call Sonnet)
+// v63.31.1 — Bloc synthèse : même card design, header doré, bullets →
 function _renderSynthesisBlock(synthesisText) {
   if (!synthesisText) return '';
-  // Parse les bullets (format "• action" ou "- action" ou "1. action")
   const lines = synthesisText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
   const bullets = lines.map(l => l.replace(/^[•\-\*\d+\.\s]+/, '').trim()).filter(l => l.length > 3);
 
   let bulletsHtml = '';
   bullets.forEach(b => {
-    bulletsHtml += `<div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-start">
-      <span style="color:#f59e0b;font-weight:800;flex-shrink:0">→</span>
-      <span>${escapeHtml(b)}</span>
+    bulletsHtml += `<div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start">
+      <span style="color:#f59e0b;font-weight:800;flex-shrink:0;font-size:14px;line-height:1.4">→</span>
+      <span style="font-size:13px;line-height:1.5">${escapeHtml(b)}</span>
     </div>`;
   });
 
   if (!bulletsHtml) {
-    // Fallback : texte brut si le format n'est pas parsable
-    bulletsHtml = `<div style="font-size:12px;color:var(--text);line-height:1.5">${escapeHtml(synthesisText)}</div>`;
+    bulletsHtml = `<div style="font-size:13px;color:var(--text);line-height:1.5">${escapeHtml(synthesisText)}</div>`;
   }
 
-  return `<div style="margin-left:36px;margin-top:10px;margin-bottom:4px;border:1px solid rgba(245,158,11,0.4);border-radius:10px;padding:12px 14px;background:linear-gradient(135deg,rgba(245,158,11,0.07),rgba(217,119,6,0.04))">
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
-      <span style="font-size:14px">✅</span>
-      <span style="font-size:11px;font-weight:800;color:#f59e0b;text-transform:uppercase;letter-spacing:0.5px">${escapeHtml((T?.[currentLang]?.teamMeetingDecision) || 'Décision de l\'équipe')}</span>
+  return `<div style="margin-left:40px;border:1px solid rgba(245,158,11,0.45);border-radius:12px;overflow:hidden">
+    <div style="padding:10px 14px;background:linear-gradient(135deg,rgba(245,158,11,0.18),rgba(217,119,6,0.1));border-bottom:1px solid rgba(245,158,11,0.25);display:flex;align-items:center;gap:8px">
+      <span style="font-size:16px">✅</span>
+      <span style="font-size:11px;font-weight:800;color:#f59e0b;text-transform:uppercase;letter-spacing:0.6px">${escapeHtml((T?.[currentLang]?.teamMeetingDecision) || 'Décision de l\'équipe')}</span>
     </div>
-    <div style="font-size:12px;color:var(--text);line-height:1.6">${bulletsHtml}</div>
+    <div style="padding:14px;color:var(--text)">${bulletsHtml}</div>
   </div>`;
 }
 
@@ -554,6 +570,7 @@ function _flashErrorInline(msg) {
 }
 
 function _renderError(resultsEl, msg) {
+  if (!resultsEl) return;
   resultsEl.innerHTML = '<div style="color:#ef4444;padding:16px;font-size:13px;border:1px solid #ef4444;border-radius:10px;background:rgba(239,68,68,0.06);text-align:center">⚠️ ' + escapeHtml(msg) + '</div>';
 }
 
