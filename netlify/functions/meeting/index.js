@@ -272,11 +272,12 @@ function buildHistoryContextBlock(history, agentId) {
 }
 
 function buildMeetingSystem(agent, otherAgentNames, lang, profile, calendar, dailyLog, modelConfig, history, agentId) {
+  // v63.34 — instruction langue renforcée et déplacée à la fin du prompt (recency effect)
   const langInstructions = {
-    fr: 'Réponds toujours en français.',
-    de: 'Antworte immer auf Deutsch (Schweizerdeutsch-freundlich, aber Standard-Deutsch).',
-    en: 'Always respond in English.',
-    it: 'Rispondi sempre in italiano.'
+    fr: '[LANGUE OBLIGATOIRE — INSTRUCTION FINALE] Tu dois IMPÉRATIVEMENT répondre en français, quelle que soit la langue des instructions précédentes, du profil ou des exemples.',
+    de: '[PFLICHTSPRACHE — ABSCHLIESSENDE ANWEISUNG] Du musst ZWINGEND auf Deutsch antworten, unabhängig von der Sprache der vorherigen Anweisungen.',
+    en: '[MANDATORY LANGUAGE — FINAL INSTRUCTION] You MUST respond in English, regardless of the language of any previous instructions, profile, or examples.',
+    it: '[LINGUA OBBLIGATORIA — ISTRUZIONE FINALE] Devi rispondere OBBLIGATORIAMENTE in italiano, indipendentemente dalla lingua delle istruzioni precedenti.'
   };
   const langInstruction = langInstructions[lang] || langInstructions.fr;
 
@@ -311,8 +312,9 @@ ${!isFollowupTurn
 }
 - La référence croisée = max 2 phrases. Le reste = ton expertise.`;
 
+  // v63.34 — langInstruction déplacée à la FIN (recency effect maximal, écrase tout le contexte précédent)
   let sys = (modelConfig.systemPrefix || '') + agent.system + (GARDE_FOUS_GLOBAUX || '') +
-            '\n\n' + langInstruction + '\n\n' + dateInstruction + '\n\n' + meetingContext;
+            '\n\n' + dateInstruction + '\n\n' + meetingContext;
 
   if (profile) {
     sys += `\n\n[PROFIL ATHLÈTE]\n${profile}`;
@@ -325,6 +327,8 @@ ${!isFollowupTurn
   }
   // v63.1.0 — contexte des autres agents aux tours précédents (threading)
   sys += buildHistoryContextBlock(history, agentId);
+  // Langue en dernier — instruction finale, priorité maximale
+  sys += '\n\n' + langInstruction;
   return sys;
 }
 
@@ -405,14 +409,18 @@ async function callOneAgent({ agentId, question, history, otherAgentNames, lang,
 // Modèle : Sonnet (même que les agents) — max 200 tokens (très court).
 // ─────────────────────────────────────────────────────────────
 function buildSynthesisSystem(lang) {
-  const langInstructions = {
-    fr: 'Réponds en français.',
-    de: 'Antworte auf Deutsch (Standarddeutsch).',
-    en: 'Respond in English.',
-    it: 'Rispondi in italiano.'
+  // v63.34 — langue EN PREMIER (priorité maximale, évite confusion avec contenus mixtes)
+  const langLabels = {
+    fr: 'FRANÇAIS',
+    de: 'DEUTSCH',
+    en: 'ENGLISH',
+    it: 'ITALIANO'
   };
-  return `Tu es le facilitateur de la réunion d'équipe SPORTVISE.
-Ton rôle : synthétiser les conseils des experts en 3 points d'action concrets pour l'athlète.
+  const langLabel = langLabels[lang] || langLabels.fr;
+  const langOpening = `[LANGUE OBLIGATOIRE : ${langLabel}. Toute ta réponse doit être dans cette langue.]\n\n`;
+
+  return langOpening + `Tu es le facilitateur de la réunion d'équipe SPORTVISE.
+Ton rôle : synthétiser les conseils des experts (qui peuvent être dans des langues variées) en 3 points d'action concrets pour l'athlète.
 
 RÈGLES STRICTES :
 - Exactement 3 bullets, chacun ≤ 18 mots.
@@ -421,8 +429,7 @@ RÈGLES STRICTES :
 - Aucune intro, aucune conclusion, aucun titre — seulement les 3 bullets.
 - Chaque bullet = une action concrète et immédiatement actionnable.
 - Format exact : "• [action]" × 3 lignes, rien d'autre.
-
-${langInstructions[lang] || langInstructions.fr}`;
+- Ignore les différences de langue dans les réponses des experts — synthétise le contenu.`;
 }
 
 async function callSynthesis({ question, responses, lang, modelConfig, apiKey }) {
@@ -449,12 +456,17 @@ async function callSynthesis({ question, responses, lang, modelConfig, apiKey })
       })
     });
     if (!response.ok) {
-      console.warn('[MEETING] synthesis non-ok status:', response.status);
+      const errBody = await response.text().catch(() => '');
+      console.warn('[MEETING] synthesis non-ok status:', response.status, errBody.slice(0, 200));
       return null;
     }
     const data = await response.json();
-    const text = data.content?.[0]?.text || null;
-    if (!text) return null;
+    const rawText = data.content?.[0]?.text;
+    const text = (typeof rawText === 'string' && rawText.trim().length > 0) ? rawText.trim() : null;
+    if (!text) {
+      console.warn('[MEETING] synthesis empty text — stop_reason:', data.stop_reason, 'content_length:', data.content?.length, 'raw:', JSON.stringify(rawText).slice(0, 100));
+      return null;
+    }
     console.log(`[MEETING] synthesis done latency=${Date.now() - startTs}ms input=${data.usage?.input_tokens} output=${data.usage?.output_tokens}`);
     return { text, inputTokens: data.usage?.input_tokens ?? null, outputTokens: data.usage?.output_tokens ?? null };
   } catch (e) {

@@ -646,7 +646,7 @@ async function _loadMeetingHistory() {
         return a ? (a.emoji || '') + ' ' + a.name : aid;
       }).join(', ');
 
-      html += `<div onclick="_openHistoryThread(${JSON.stringify(thread.id)})" style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;cursor:pointer;transition:border-color 0.15s" onmouseover="this.style.borderColor='#f59e0b'" onmouseout="this.style.borderColor='var(--border)'">
+      html += `<div onclick="_openHistoryThread('${thread.id}')" style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;cursor:pointer;transition:border-color 0.15s" onmouseover="this.style.borderColor='#f59e0b'" onmouseout="this.style.borderColor='var(--border)'">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
           <div style="font-size:10px;color:var(--muted)">${escapeHtml(date)} · ${turns.length} tour${turns.length > 1 ? 's' : ''}</div>
           <div style="font-size:10px;color:var(--muted)">${escapeHtml(agentNames)}</div>
