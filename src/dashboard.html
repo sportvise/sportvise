@@ -1814,6 +1814,14 @@ async function init() {
   setLang(currentLang);
   // Chantier #14 — Repeupler le cache Strava depuis Supabase si localStorage vide
   hydrateStravaFromSupabase().catch(e => console.warn('[STRAVA] hydration skip:', e.message));
+  // v63.40.1 — Nettoyage localStorage stale (clés avec date > 30j)
+  try {
+    const _cutoff = new Date(); _cutoff.setDate(_cutoff.getDate() - 30);
+    Object.keys(localStorage).forEach(k => {
+      const m = k.match(/(\d{4}-\d{2}-\d{2})$/);
+      if (m && new Date(m[1]) < _cutoff) localStorage.removeItem(k);
+    });
+  } catch(_) {}
   showPage('dashboard', document.querySelector('.nav-item.active'));
 
   // v63.3.0 — Dispatcher event 'sv-dashboard-ready' pour trigger des opt-in modals
@@ -3313,6 +3321,117 @@ const _SV_SWIPER_AGENTS = [
   },
 ];
 
+// ── Traductions des labels de statut (4 langues) ─────────────────────────
+const _svStatusTrans = {
+  en: {
+    'Action requise':     'Action needed',
+    'À surveiller':       'To monitor',
+    'En cours':           'In progress',
+    'À réviser':          'To review',
+    'Données manquantes': 'Missing data',
+    'Optimisé':           'Optimized',
+    'À jour':             'Up to date',
+    'Récupération OK':    'Recovery OK',
+  },
+  de: {
+    'Action requise':     'Handlungsbedarf',
+    'À surveiller':       'Beobachten',
+    'En cours':           'Laufend',
+    'À réviser':          'Zu prüfen',
+    'Données manquantes': 'Daten fehlen',
+    'Optimisé':           'Optimiert',
+    'À jour':             'Aktuell',
+    'Récupération OK':    'Erholung OK',
+  },
+  it: {
+    'Action requise':     'Azione richiesta',
+    'À surveiller':       'Da monitorare',
+    'En cours':           'In corso',
+    'À réviser':          'Da rivedere',
+    'Données manquantes': 'Dati mancanti',
+    'Optimisé':           'Ottimizzato',
+    'À jour':             'Aggiornato',
+    'Récupération OK':    'Recupero OK',
+  }
+};
+function _svTranslStatus(s) {
+  if (currentLang === 'fr') return s;
+  var m = s.match(/^([\u{1F534}\u{1F7E1}\u{1F7E2}]+\s*)(.+)$/u);
+  if (!m) return s;
+  var map = _svStatusTrans[currentLang] || _svStatusTrans.en;
+  return m[1] + (map[m[2]] || m[2]);
+}
+
+// ── Traductions des statusNotes (FR + EN, DE, IT) ────────────────────────
+const _svStatusNotes = {
+  equipe: {
+    fr: '2 clubs SFL ont demandé des infos — réponse avant vendredi',
+    en: '2 Swiss league clubs requested info — respond by Friday',
+    de: '2 Schweizer Liga-Clubs haben Infos angefragt — bis Freitag antworten',
+    it: '2 club SFL hanno richiesto informazioni — rispondere entro venerdì',
+  },
+  marketing: {
+    fr: 'Media kit en cours — 2 marques en attente de retour',
+    en: 'Media kit in progress — 2 brands awaiting response',
+    de: 'Mediabausatz in Arbeit — 2 Marken warten auf Rückmeldung',
+    it: 'Media kit in corso — 2 marchi in attesa di risposta',
+  },
+  sponsors: {
+    fr: 'Négociation équipementier suisse — retour semaine prochaine',
+    en: 'Negotiating with Swiss equipment brand — response next week',
+    de: 'Verhandlung mit Schweizer Ausrüster — Antwort nächste Woche',
+    it: 'Trattativa con fornitore svizzero — risposta la prossima settimana',
+  },
+  contrats: {
+    fr: 'Contrat expire dans 4 mois — 3 clauses à renégocier',
+    en: 'Contract expires in 4 months — 3 clauses to renegotiate',
+    de: 'Vertrag läuft in 4 Monaten ab — 3 Klauseln neu verhandeln',
+    it: 'Contratto scade tra 4 mesi — 3 clausole da rinegoziare',
+  },
+  finance: {
+    fr: 'Pilier 3a optimisé — déclaration VD en cours',
+    en: 'Pillar 3a optimized — Vaud tax return in progress',
+    de: 'Säule 3a optimiert — Steuererklärung VD läuft',
+    it: 'Pilastro 3a ottimizzato — dichiarazione VD in corso',
+  },
+  comptabilite: {
+    fr: 'Comptes à jour — prochain acompte AVS dans 3 semaines',
+    en: 'Accounts up to date — next AVS payment in 3 weeks',
+    de: 'Buchhaltung aktuell — nächste AHV-Zahlung in 3 Wochen',
+    it: 'Contabilità aggiornata — prossimo pagamento AVS in 3 settimane',
+  },
+  physique: {
+    fr: 'Charge semaine +18% — plan adapté disponible',
+    en: 'Weekly load +18% — adapted plan available',
+    de: 'Wochenbelastung +18% — angepasster Plan verfügbar',
+    it: 'Carico settimanale +18% — piano adattato disponibile',
+  },
+  mental: {
+    fr: '3 matchs importants dans 10 jours',
+    en: '3 important matches in 10 days',
+    de: '3 wichtige Spiele in 10 Tagen',
+    it: '3 partite importanti in 10 giorni',
+  },
+  nutrition: {
+    fr: 'Plan du mois actif — tout dans les clous',
+    en: 'Monthly plan active — everything on track',
+    de: 'Monatsplan aktiv — alles im Rahmen',
+    it: 'Piano mensile attivo — tutto in ordine',
+  },
+  sommeil: {
+    fr: 'Aucune donnée depuis 3 jours — connecte ton tracker',
+    en: 'No data for 3 days — connect your tracker',
+    de: 'Keine Daten seit 3 Tagen — Tracker verbinden',
+    it: 'Nessun dato da 3 giorni — connetti il tracker',
+  },
+  recuperation: {
+    fr: 'Charge actuelle optimale — repos bien intégré',
+    en: 'Current load optimal — rest well integrated',
+    de: 'Aktuelle Belastung optimal — Erholung gut integriert',
+    it: 'Carico attuale ottimale — riposo ben integrato',
+  },
+};
+
 // Preserve card index across dashboard re-renders (navigation entre sections → retour dashboard)
 if (!window._svSwiper) window._svSwiper = { idx: 0, tab: 'profil' };
 
@@ -3369,6 +3488,13 @@ function _svSwiperRender() {
   var iExpert   = t.swiperExpertise || 'Domaines d\'expertise';
   var iBestOf   = t.swiperBestOf   || 'Pour tirer le meilleur de';
   var iTalkTo   = t.pmTalkTo       || t.talkTo || 'Parler à';
+  // Contenu localisé (status, note, description)
+  var agStatus     = _svTranslStatus(ag.status);
+  var _snMap       = _svStatusNotes[ag.id] || {};
+  var agStatusNote = _snMap[currentLang] || _snMap.en || _snMap.fr || ag.statusNote;
+  var agDesc       = (currentLang !== 'fr' && t.agentDescs && t.agentDescs[ag.id])
+                       ? t.agentDescs[ag.id]
+                       : ag.description;
   var reqPlan   = locked ? getRequiredPlan(ag.id) : '';
   var iLocked   = locked ? (t.swiperLocked || 'Plan {plan} requis').replace('{plan}', reqPlan === 'plus' ? 'Plus' : 'Pro') : '';
   var tabs = [
@@ -3420,7 +3546,7 @@ function _svSwiperRender() {
       ? '🔒 ' + iTalkTo + ' ' + agName + ' — ' + iLocked
       : iTalkTo + ' ' + agName + ' →';
     tabContent =
-      '<p style="font-size:13.5px;color:' + cMuted + ';line-height:1.65;margin:0 0 16px 0;font-style:italic">"' + ag.description + '"</p>' +
+      '<p style="font-size:13.5px;color:' + cMuted + ';line-height:1.65;margin:0 0 16px 0;font-style:italic">"' + agDesc + '"</p>' +
       '<button onclick="_svOpenAgent(\'' + ag.id + '\')" style="' + ctaStyle + ';border-radius:12px;padding:11px 20px;font-size:13px;font-weight:800;cursor:pointer;width:100%;letter-spacing:0.01em;font-family:\'Inter\',-apple-system,sans-serif;-webkit-tap-highlight-color:transparent">' + ctaLabel + '</button>';
   } else if (s.tab === 'skills') {
     tabContent =
@@ -3463,9 +3589,9 @@ function _svSwiperRender() {
             '</div>' +
           '</div>' +
           '<div style="margin-top:14px;display:flex;align-items:center;gap:8px;background:' + cStatusBg + ';border:1px solid ' + cStatusBd + ';border-radius:12px;padding:8px 12px">' +
-            '<span style="font-size:12px;font-weight:700;color:' + cStatusTxt + '">' + ag.status + '</span>' +
+            '<span style="font-size:12px;font-weight:700;color:' + cStatusTxt + '">' + agStatus + '</span>' +
             '<span style="font-size:11px;color:' + cFaint + '">•</span>' +
-            '<span style="font-size:11px;color:' + cFainter + ';flex:1">' + ag.statusNote + '</span>' +
+            '<span style="font-size:11px;color:' + cFainter + ';flex:1">' + agStatusNote + '</span>' +
           '</div>' +
         '</div>' +
 
@@ -3543,7 +3669,12 @@ function _svInitDrag() {
 }
 
 // ── DASHBOARD ───────────────────────────────────────
+// Guard : évite le double appel renderDashboard au chargement (onAuthStateChange + showPage init)
+let _svDashRendering = false;
 async function renderDashboard() {
+  if (_svDashRendering) return;
+  _svDashRendering = true;
+  try {
   const meta = currentUser?.user_metadata || {};
   const name = (meta.full_name || userProfile?.full_name || 'Athlète').split(' ')[0];
   // v42 — display localized labels but compute existence from raw profile fields
@@ -3996,6 +4127,7 @@ async function renderDashboard() {
   }
   // v63.13.0 — fade-in après le rendu synchrone du dashboard
   _svFadeIn();
+  } finally { _svDashRendering = false; }
 }
 
 // ── LOCKED AGENT PAGE ──────────────────────────────
@@ -5222,7 +5354,8 @@ function summarizeUpcomingSeries(serie, today, typeLabels) {
     datesDetail = `prochaines dates: ${next3} (+${serie.length - 3} autres après suivant la même cadence)`;
   }
 
-  return `🔁 Série récurrente '${sample.title}' (${typeLabel}, ${serie.length} occurrences à venir, jours: ${days.join('/')}${time ? ' à ' + time : ''}, intensité ${sample.intensity || 'moyenne'}${sample.location ? ', lieu: ' + sample.location : ''}, prochaine ${whenNext}, ${datesDetail})`;
+  const durStr = sample.duration_minutes ? `, ${sample.duration_minutes}min` : '';
+  return `🔁 Série récurrente '${sample.title}' (${typeLabel}, ${serie.length} occurrences à venir, jours: ${days.join('/')}${time ? ' à ' + time : ''}${durStr}, intensité ${sample.intensity || 'moyenne'}${sample.location ? ', lieu: ' + sample.location : ''}, prochaine ${whenNext}, ${datesDetail})`;
 }
 
 // v62.7 — Génère une ligne summary agrégée pour une série de récaps passés.
@@ -5250,6 +5383,11 @@ function summarizePastSeries(serie) {
     parts.push(`performance moyenne=${avgPerf}/10`);
   }
   if (physTop) parts.push(`état physique majoritaire="${physTop[0]}" (${physTop[1]}/${serie.length})`);
+  const withDur = serie.filter(e => e.duration_minutes > 0);
+  if (withDur.length > 0) {
+    const avgDur = Math.round(withDur.reduce((s,e) => s + e.duration_minutes, 0) / withDur.length);
+    parts.push(`durée moyenne=${avgDur}min`);
+  }
   if (injuries.length > 0) parts.push(`⚠️ ${injuries.length} blessure${injuries.length>1?'s':''} signalée${injuries.length>1?'s':''} dans la série`);
   parts.push(`dernière le ${last.event_date}`);
 
@@ -5331,7 +5469,8 @@ async function getCalendarContext() {
           const diff = Math.round((d - today) / 86400000);
           const when = diff === 0 ? "AUJOURD'HUI" : diff === 1 ? 'DEMAIN' : `dans ${diff} jours`;
           const intens = e.intensity ? ` (intensité: ${e.intensity})` : '';
-          return `${typeLabels[e.event_type] || 'Événement'} ${when}: ${e.title}${e.event_time ? ' à ' + e.event_time.slice(0,5) : ''}${e.location ? ' (' + e.location + ')' : ''}${intens}${e.notes ? ' — Note: ' + e.notes : ''}`;
+          const dur = e.duration_minutes ? `, ${e.duration_minutes}min` : '';
+          return `${typeLabels[e.event_type] || 'Événement'} ${when}: ${e.title}${e.event_time ? ' à ' + e.event_time.slice(0,5) : ''}${dur}${e.location ? ' (' + e.location + ')' : ''}${intens}${e.notes ? ' — Note: ' + e.notes : ''}`;
         }).join('\n');
       }
     }
@@ -5350,6 +5489,7 @@ async function getCalendarContext() {
       if (past.oneShots.length > 0) {
         ctx += past.oneShots.map(e => {
           let recap = `${e.title} (${e.event_date}): performance=${e.performance_note}/10`;
+          if (e.duration_minutes) recap += `, durée=${e.duration_minutes}min`;
           if (e.rpe) recap += `, RPE=${e.rpe}/10`;
           recap += `, physique=${e.physical_state}, humeur=${e.mood}`;
           if (e.result) recap += `, résultat=${e.result}`;
@@ -6898,14 +7038,14 @@ function showAddEvent(dateStr) {
         </div>
         <div class="form-field">
           <label class="form-label">${t.eventDuration}</label>
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px" id="evDurationBtns">
-            ${[30,60,90,120,150,180].map(m => {
-              const lbl = m < 60 ? m + ' min' : (m % 60 === 0 ? (m/60) + 'h' : Math.floor(m/60) + 'h' + (m%60));
-              const sel = (pf ? pf.duration_minutes : 90) === m;
-              return `<button type="button" class="sport-btn${sel ? ' selected' : ''}" onclick="selectDuration(this,${m})" style="padding:8px 4px;font-size:11px">${lbl}</button>`;
-            }).join('')}
+          <div style="display:flex;align-items:center;gap:10px">
+            <input type="number" class="form-input" id="evDuration"
+              value="${pf ? pf.duration_minutes : 90}"
+              min="5" max="720" step="5"
+              placeholder="${t.eventDurationPlaceholder || '90'}"
+              style="width:110px;flex-shrink:0" />
+            <span style="font-size:13px;color:var(--muted);font-weight:500">min</span>
           </div>
-          <input type="hidden" id="evDuration" value="${pf ? pf.duration_minutes : 90}" />
         </div>
       </div>
 
@@ -7281,10 +7421,9 @@ function selectIntensity(btn, level) {
 }
 
 function selectDuration(btn, minutes) {
-  btn.closest('#evDurationBtns').querySelectorAll('.sport-btn').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-  const hidden = document.getElementById('evDuration');
-  if (hidden) hidden.value = minutes;
+  // v63.40.1 — remplacé par input numérique libre. Fonction conservée pour compatibilité.
+  const input = document.getElementById('evDuration');
+  if (input) input.value = minutes;
 }
 
 // ── v62 RÉCURRENCE ─────────────────────────────────────
