@@ -666,7 +666,7 @@ var T_IT = {
   perfEmptySub: 'Registra la tua prima misurazione qui sotto o dillo a un agente (es: "Ho fatto i 30m in 4,2s")',
   // v63.17 — Dashboard contextuel
   dashResumeTitle: 'Continuare una conversazione',
-  dashResumeAgo: 'fa', dashResumeDay: 'giorno', dashResumeDays: 'giorni',
+  dashResumeAgo: '', dashResumeDay: 'giorno fa', dashResumeDays: 'giorni fa',
   dashResumeJustNow: 'appena ora', dashResumeHoursAgo: ' h fa',
   dashResumeCta: 'Riprendi →',
   dashHeaderResume: 'riprendi →',

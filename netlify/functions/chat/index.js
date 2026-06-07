@@ -519,8 +519,8 @@ Format : 8-15 lignes max, tutoiement, ton chaleureux et professionnel, pas d'emo
     systemWithLang += `\n\n[CALENDRIER — CAPTURE AUTOMATIQUE]
 Si dans SON MESSAGE l'athlète mentionne explicitement une date + un événement (sportif, nutritionnel, mental, récupération…), tu dois :
 1. Confirmer brièvement dans ta réponse que tu l'as ajouté à son calendrier ("Noté, je l'ajoute à ton calendrier.").
-2. Ajouter à la TOUTE FIN de ta réponse, sur une ligne seule, ce tag :
-[CAL_EVENT:type=entrainement|date=2026-06-15|title=Entraînement|time=10:00]
+2. Ajouter à la TOUTE FIN de ta réponse, sur une ligne seule, un tag par événement :
+[CAL_EVENT:type=entrainement|date=2026-06-15|title=Force membres inférieurs]
 
 Types valides — utilise TOUJOURS le type adapté à l'événement :
 - match : match officiel, compétition par équipe
@@ -535,9 +535,10 @@ Types valides — utilise TOUJOURS le type adapté à l'événement :
 
 IMPORTANT : n'utilise JAMAIS type=entrainement pour un plan nutrition, une séance mentale ou un protocole sommeil. Le type doit refléter la nature réelle de l'événement.
 
-Date : YYYY-MM-DD obligatoire — si l'athlète dit "samedi" ou "dans 3 jours", calcule depuis la date du jour fournie dans le contexte
-Time : HH:MM — inclus uniquement si mentionné, sinon omets le champ time
-Title : nom de l'événement tel que l'athlète l'a nommé (max 60 chars)
+Date : YYYY-MM-DD obligatoire — si l'athlète dit "samedi" ou "dans 3 jours", calcule depuis la date du jour fournie dans le contexte.
+Time : HH:MM — inclus UNIQUEMENT si l'athlète a mentionné une heure précise. N'invente JAMAIS une heure par défaut (pas de 10:00, pas de 09:00). Si l'heure n'est pas connue, omets totalement le champ time.
+Title : nom court et descriptif de l'événement (max 60 chars).
+DÉDUPLICATION : n'émets JAMAIS deux tags avec la même date ET le même type. Par exemple, si un jour est "repos", émet un seul [CAL_EVENT:type=repos|date=...], pas deux.
 
 RÈGLE STRICTE : n'inclus le tag QUE si l'athlète mentionne explicitement une date ET un événement dans son message. Ne force jamais la question calendrier si le sujet n'est pas abordé.`;
   }
@@ -624,6 +625,9 @@ RÈGLE STRICTE : n'inclus le tag QUE si l'athlète mentionne explicitement une d
   // sur les plans multi-jours (plan nutrition 7j = jusqu'à 21 inserts séquentiels).
   // Fix : accumulation des payloads valides + 1 seul POST avec tableau JSON.
   const batchPayloads = [];
+  // v63.35 — Déduplication : évite les doublons (même date + même type) que l'agent peut émettre
+  // quand il génère un plan multi-jours (ex: 2 tags "repos" le même jour).
+  const _seenSlots = new Set();
 
   for (const match of calEventMatches) {
     const fields = {};
@@ -654,11 +658,20 @@ RÈGLE STRICTE : n'inclus le tag QUE si l'athlète mentionne explicitement une d
     const eventDate = fields.date || null;
     if (!eventDate || !/^\d{4}-\d{2}-\d{2}$/.test(eventDate)) continue;
 
+    // v63.35 — Déduplication : ignorer si même (date + type) déjà présent dans ce batch
+    const _slotKey = eventDate + '|' + eventType;
+    if (_seenSlots.has(_slotKey)) {
+      console.log(`[CHAT] duplicate CAL_EVENT skipped: ${_slotKey}`);
+      continue;
+    }
+    _seenSlots.add(_slotKey);
+
     const eventPayload = {
       user_id: user.id,
       title: (fields.title || 'Événement sportif').slice(0, 100),
       event_type: eventType,
       event_date: eventDate,
+      // v63.35 — Ne stocker l'heure que si l'agent l'a fournie explicitement (pas de time=10:00 par défaut)
       event_time: (fields.time && /^\d{2}:\d{2}$/.test(fields.time)) ? fields.time : null,
       duration_minutes: fields.duration ? Math.min(parseInt(fields.duration) || 90, 480) : 90,
       notes: fields.description ? fields.description.slice(0, 1000) : null

@@ -3152,7 +3152,10 @@ async function renderDashboard() {
     if (diff < 90) return t.dashResumeJustNow || 'à l\'instant';
     if (diff < 1440) return Math.floor(diff / 60) + (t.dashResumeHoursAgo || ' h');
     const days = Math.floor(diff / 1440);
-    return (t.dashResumeAgo || 'il y a') + ' ' + days + ' ' + (days > 1 ? (t.dashResumeDays || 'jours') : (t.dashResumeDay || 'jour'));
+    // v63.35 — fix "il y a 5 days ago" : dashResumeAgo peut être '' (EN) → ne pas utiliser || qui traite '' comme falsy
+    const _agoPrefix = (t.dashResumeAgo != null) ? t.dashResumeAgo : 'il y a';
+    const _agoSuffix = days > 1 ? (t.dashResumeDays || 'jours') : (t.dashResumeDay || 'jour');
+    return _agoPrefix ? _agoPrefix + ' ' + days + ' ' + _agoSuffix : days + ' ' + _agoSuffix;
   }
 
   // v63.17 — Sous-ligne header contextuelle (priorité décroissante)
@@ -3288,7 +3291,7 @@ async function renderDashboard() {
         <span style="font-size:24px;flex-shrink:0">⚡</span>
         <div style="flex:1;min-width:0">
           <div style="font-size:13px;font-weight:700;color:#f59e0b;margin-bottom:3px">${escapeHtml(te.title)} — ${escapeHtml(daysLabel)}</div>
-          <div style="font-size:11px;color:var(--muted);margin-bottom:10px">${escapeHtml(dateFormatted)}${te.event_time ? ' · ' + te.event_time : ''} · ${t.teamMeetingTriggerLabel || 'Ton équipe est prête'}</div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:10px">${escapeHtml(dateFormatted)}${te.event_time ? ' · ' + te.event_time.slice(0,5) : ''} · ${t.teamMeetingTriggerLabel || 'Ton équipe est prête'}</div>
           <button onclick="openTeamMeetingWithEvent('${escapeHtml(te.id)}','${escapeHtml(te.title).replace(/'/g, "\\'")}','${escapeHtml(te.event_date)}',['physique','mental','nutrition'])" style="padding:8px 14px;border-radius:8px;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-weight:700;font-size:12px;cursor:pointer;font-family:Inter,sans-serif">${t.teamMeetingTriggerCta || 'Démarrer la réunion →'}</button>
         </div>
         <button onclick="_dismissMeetingTrigger('${escapeHtml(te.id)}');document.getElementById('meetingTriggerCard').style.display='none';" style="background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;flex-shrink:0;padding:0;line-height:1" title="Ne plus afficher">✕</button>
@@ -3318,7 +3321,7 @@ async function renderDashboard() {
 
       return '<div onclick="showPage(\'prepa-match\',null)" style="background:linear-gradient(135deg,' + cdColor + '12,' + cdColor + '05);border:1px solid ' + cdColor + '35;border-radius:14px;padding:16px;margin-bottom:16px;cursor:pointer;display:flex;align-items:center;gap:14px;transition:all 0.2s" onmouseover="this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.transform=\'none\'">' +
         '<div style="font-size:28px;font-weight:900;color:' + cdColor + '">' + cd + '</div>' +
-        '<div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--text)">' + m.title + '</div><div style="font-size:11px;color:var(--muted)">' + mDate.toLocaleDateString({fr:'fr-CH',de:'de-CH',en:'en-GB',it:'it-CH'}[currentLang]||'fr-CH', {weekday:'long', day:'numeric', month:'long'}) + (m.event_time ? ' ' + (t.dashPrepaAt||'à') + ' ' + m.event_time : '') + '</div></div>' +
+        '<div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--text)">' + m.title + '</div><div style="font-size:11px;color:var(--muted)">' + mDate.toLocaleDateString({fr:'fr-CH',de:'de-CH',en:'en-GB',it:'it-CH'}[currentLang]||'fr-CH', {weekday:'long', day:'numeric', month:'long'}) + (m.event_time ? ' ' + (t.dashPrepaAt||'à') + ' ' + m.event_time.slice(0,5) : '') + '</div></div>' +
         '<div style="font-size:12px;color:' + cdColor + ';font-weight:700">' + (t.dashPrepaPlan||'Voir le plan ⚡') + '</div>' +
       '</div>';
     })()}
@@ -6122,7 +6125,7 @@ async function renderCalendar() {
         style="width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#07091a;font-size:14px;font-weight:800;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;margin-bottom:8px;box-shadow:0 2px 12px #f59e0b30"
         onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 20px #f59e0b50'"
         onmouseout="this.style.transform='none';this.style.boxShadow='0 2px 12px #f59e0b30'">
-        + ${t.addEvent}
+        ${t.addEvent}
       </button>
       <button onclick="showIcsImport()"
         style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;margin-bottom:16px"
@@ -6465,9 +6468,14 @@ function showAddEvent(dateStr) {
         </div>
         <div class="form-field">
           <label class="form-label">${t.eventDuration}</label>
-          <select class="form-input form-select" id="evDuration" style="padding:11px 12px">
-            ${[30,60,90,120,150,180].map(m => `<option value="${m}"${(pf ? pf.duration_minutes : 90) === m ? ' selected' : ''}>${m < 60 ? m + ' min' : (m/60 % 1 === 0 ? (m/60) + 'h' : Math.floor(m/60) + 'h' + (m%60))}</option>`).join('')}
-          </select>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px" id="evDurationBtns">
+            ${[30,60,90,120,150,180].map(m => {
+              const lbl = m < 60 ? m + ' min' : (m % 60 === 0 ? (m/60) + 'h' : Math.floor(m/60) + 'h' + (m%60));
+              const sel = (pf ? pf.duration_minutes : 90) === m;
+              return `<button type="button" class="sport-btn${sel ? ' selected' : ''}" onclick="selectDuration(this,${m})" style="padding:8px 4px;font-size:11px">${lbl}</button>`;
+            }).join('')}
+          </div>
+          <input type="hidden" id="evDuration" value="${pf ? pf.duration_minutes : 90}" />
         </div>
       </div>
 
@@ -6840,6 +6848,13 @@ function selectIntensity(btn, level) {
   btn.closest('.form-field').querySelectorAll('.sport-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
   selectedIntensity = level;
+}
+
+function selectDuration(btn, minutes) {
+  btn.closest('#evDurationBtns').querySelectorAll('.sport-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  const hidden = document.getElementById('evDuration');
+  if (hidden) hidden.value = minutes;
 }
 
 // ── v62 RÉCURRENCE ─────────────────────────────────────
@@ -12119,7 +12134,7 @@ async function renderPrepaMatch() {
   html += '<div style="font-size:48px;font-weight:900;color:' + countdownColor + ';letter-spacing:-2px">' + countdown + '</div>';
   html += '<div style="font-size:18px;font-weight:700;color:var(--text);margin:8px 0 4px">' + targetEvent.title + '</div>';
   html += '<div style="font-size:13px;color:var(--muted)">' + new Date(targetEvent.event_date).toLocaleDateString(({fr:'fr-CH',de:'de-CH',en:'en-GB',it:'it-CH'}[currentLang]||'fr-CH'), {weekday:'long', day:'numeric', month:'long'});
-  if (targetEvent.event_time) html += ' ' + t.pmAt + ' ' + targetEvent.event_time;
+  if (targetEvent.event_time) html += ' ' + t.pmAt + ' ' + targetEvent.event_time.slice(0,5);
   if (targetEvent.location) html += ' · 📍 ' + targetEvent.location;
   html += '</div>';
 
