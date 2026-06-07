@@ -541,6 +541,8 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     /* v63.15 — Tooltip "Me décrire" */
     @keyframes svTooltipIn { from{opacity:0;transform:translateY(-5px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes svCardIn { from{opacity:0;transform:translateX(16px)} to{opacity:1;transform:translateX(0)} }
+    @keyframes svFadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
     .file-preview {
       position: relative; background: var(--bg3); border: 1px solid var(--border);
       border-radius: 12px; padding: 10px; margin: 0 12px 8px 12px;
@@ -3081,6 +3083,465 @@ function renderReunion() {
   });
 }
 
+// ══════════════════════════════════════════════════════════════════════
+// SPORTVISE — AGENT SWIPER  v63.40
+// Remplace les deux grilles agents du Dashboard par un composant card
+// swipeable (touch + mouse drag). Données enrichies (description longue,
+// skills, conseils d'usage) pour les 11 agents.
+// ══════════════════════════════════════════════════════════════════════
+
+const _SV_SWIPER_AGENTS = [
+  {
+    id: 'equipe',
+    emoji: '💼', color: '#fb923c',
+    colorDim: 'rgba(251,146,60,0.15)', accentGlow: 'rgba(251,146,60,0.22)',
+    gradient: 'linear-gradient(145deg,#1a1108 0%,#0D0F1A 60%)',
+    description: "Je gère ta carrière comme une entreprise. Clubs, transferts, essais, opportunités — je cartographie le marché suisse et international pour te placer au bon endroit au bon moment.",
+    skills: [
+      { label: 'Réseau clubs SFL/NL', level: 94 },
+      { label: 'Négociation transfert', level: 88 },
+      { label: 'Veille marché', level: 92 },
+      { label: "Gestion d'essais", level: 87 },
+    ],
+    howToUse: [
+      { icon: '🗺️', tip: 'Dis-moi où tu veux jouer dans 1 an, 3 ans — je construis une roadmap réaliste' },
+      { icon: '📁', tip: 'Partage ton profil complet : stats, vidéos, contrat actuel — je prépare ton dossier' },
+      { icon: '🔔', tip: 'Active mes alertes pour recevoir les opportunités qui matchent ton profil en temps réel' },
+    ],
+    status: '🔴 Action requise', urgency: 'high',
+    statusNote: '2 clubs SFL ont demandé des infos — réponse avant vendredi',
+  },
+  {
+    id: 'marketing',
+    emoji: '🎯', color: '#6366f1',
+    colorDim: 'rgba(99,102,241,0.15)', accentGlow: 'rgba(99,102,241,0.22)',
+    gradient: 'linear-gradient(145deg,#0f0f1f 0%,#0D0F1A 60%)',
+    description: "Je construis ta présence en ligne et ton attractivité pour les sponsors. Réseaux sociaux, media kit, contenu — je transforme ta visibilité en levier de carrière.",
+    skills: [
+      { label: 'Stratégie réseaux', level: 92 },
+      { label: 'Media Kit', level: 88 },
+      { label: 'Contenu sponsorisé', level: 85 },
+      { label: 'Personal Branding', level: 91 },
+    ],
+    howToUse: [
+      { icon: '📸', tip: 'Partage tes stats Instagram/TikTok — je construis ton argumentaire sponsor' },
+      { icon: '🎯', tip: 'Dis-moi les marques qui t\'inspirent — je cible les bons interlocuteurs' },
+      { icon: '📆', tip: 'Planifie tes posts avec moi — 4 publications/semaine = 3× plus de portée organique' },
+    ],
+    status: '🟡 En cours', urgency: 'medium',
+    statusNote: 'Media kit en cours — 2 marques en attente de retour',
+  },
+  {
+    id: 'sponsors',
+    emoji: '🤝', color: '#f59e0b',
+    colorDim: 'rgba(245,158,11,0.15)', accentGlow: 'rgba(245,158,11,0.22)',
+    gradient: 'linear-gradient(145deg,#1a1407 0%,#0D0F1A 60%)',
+    description: "Je transforme ta visibilité en revenus. Prospection de sponsors, négociation de partenariats, suivi des livraisons — je gère toute la relation commerciale pour que tu te concentres sur le terrain.",
+    skills: [
+      { label: 'Prospection marque', level: 89 },
+      { label: 'Négociation partenariat', level: 92 },
+      { label: 'Suivi contractuel', level: 87 },
+      { label: "Valorisation d'image", level: 90 },
+    ],
+    howToUse: [
+      { icon: '📸', tip: 'Partage tes stats de réseaux sociaux et ta visibilité — c\'est la base de mon argumentaire' },
+      { icon: '🎯', tip: 'Dis-moi les marques qui t\'intéressent — je cible les bons interlocuteurs' },
+      { icon: '✅', tip: 'Valide les contreparties avec moi avant d\'accepter — certains deals coûtent plus qu\'ils ne rapportent' },
+    ],
+    status: '🟡 En cours', urgency: 'medium',
+    statusNote: 'Négociation équipementier suisse — retour semaine prochaine',
+  },
+  {
+    id: 'contrats',
+    emoji: '⚖️', color: '#8b5cf6',
+    colorDim: 'rgba(139,92,246,0.15)', accentGlow: 'rgba(139,92,246,0.22)',
+    gradient: 'linear-gradient(145deg,#120e1a 0%,#0D0F1A 60%)',
+    description: "Je lis les contrats là où les autres signent sans lire. Droit sportif suisse, clauses abusives, droits image, transferts — je protège tes intérêts à chaque signature.",
+    skills: [
+      { label: 'Droit sportif suisse', level: 97 },
+      { label: 'Analyse contractuelle', level: 95 },
+      { label: "Droits d'image", level: 89 },
+      { label: 'Clauses de rupture', level: 91 },
+    ],
+    howToUse: [
+      { icon: '📄', tip: 'Envoie-moi tout contrat avant de signer — même les avenants "mineurs"' },
+      { icon: '⏰', tip: 'Préviens-moi 3 mois avant la fin de ton contrat pour anticiper la renégociation' },
+      { icon: '🏦', tip: 'Partage les offres reçues — je compare et identifie les points à améliorer' },
+    ],
+    status: '🟡 À réviser', urgency: 'medium',
+    statusNote: 'Contrat expire dans 4 mois — 3 clauses à renégocier',
+  },
+  {
+    id: 'finance',
+    emoji: '💶', color: '#10b981',
+    colorDim: 'rgba(16,185,129,0.15)', accentGlow: 'rgba(16,185,129,0.22)',
+    gradient: 'linear-gradient(145deg,#091413 0%,#0D0F1A 60%)',
+    description: "Beaucoup d'athlètes gagnent bien et finissent leur carrière sans patrimoine. Mon rôle : que chaque franc gagné travaille pour ton futur. Fiscalité suisse, pilier 3a, investissements.",
+    skills: [
+      { label: 'Fiscalité sportive CH', level: 94 },
+      { label: 'Pilier 3a/3b', level: 96 },
+      { label: 'Gestion patrimoniale', level: 91 },
+      { label: 'Optimisation revenus', level: 93 },
+    ],
+    howToUse: [
+      { icon: '📋', tip: 'Partage ta situation financière globale : salaires, primes, droits image, canton de résidence' },
+      { icon: '🎯', tip: 'Définis tes objectifs post-carrière — je construis le plan à rebours depuis aujourd\'hui' },
+      { icon: '📆', tip: 'Consulte-moi avant chaque changement de club ou de canton — les implications fiscales sont importantes' },
+    ],
+    status: '🟢 À jour', urgency: 'low',
+    statusNote: 'Pilier 3a optimisé — déclaration VD en cours',
+  },
+  {
+    id: 'comptabilite',
+    emoji: '📊', color: '#94a3b8',
+    colorDim: 'rgba(148,163,184,0.15)', accentGlow: 'rgba(148,163,184,0.22)',
+    gradient: 'linear-gradient(145deg,#0e1117 0%,#0D0F1A 60%)',
+    description: "La comptabilité sportive suisse ne s'improvise pas. Je gère tes factures, ta TVA, tes frais déductibles — pour que chaque franc soit déclaré et optimisé.",
+    skills: [
+      { label: 'Facturation QR-bill', level: 97 },
+      { label: 'Fiscalité sportive CH', level: 94 },
+      { label: 'Gestion TVA', level: 91 },
+      { label: 'Frais déductibles', level: 96 },
+    ],
+    howToUse: [
+      { icon: '📄', tip: 'Envoie-moi tes contrats et factures — je génère les documents conformes CH' },
+      { icon: '📦', tip: 'Regroupe tes reçus chaque mois — je classe et calcule tes frais déductibles' },
+      { icon: '📅', tip: 'Consulte-moi avant chaque changement de statut — les implications AVS comptent' },
+    ],
+    status: '🟢 À jour', urgency: 'low',
+    statusNote: 'Comptes à jour — prochain acompte AVS dans 3 semaines',
+  },
+  {
+    id: 'physique',
+    emoji: '🏋️', color: '#ef4444',
+    colorDim: 'rgba(239,68,68,0.15)', accentGlow: 'rgba(239,68,68,0.22)',
+    gradient: 'linear-gradient(145deg,#1a0f0e 0%,#0D0F1A 60%)',
+    description: "Je suis ton coach physique personnel. Je conçois tes cycles d'entraînement, surveille ta charge semaine après semaine, et anticipe les blessures avant qu'elles arrivent.",
+    skills: [
+      { label: 'Planification cyclique', level: 95 },
+      { label: 'Prévention blessures', level: 90 },
+      { label: 'Récupération', level: 85 },
+      { label: 'Analyse de charge', level: 92 },
+    ],
+    howToUse: [
+      { icon: '📅', tip: 'Partage ton calendrier de matchs et d\'entraînements au début de chaque semaine' },
+      { icon: '💬', tip: 'Dis-moi comment tu te sens physiquement — douleurs, fatigue, sensations' },
+      { icon: '📊', tip: 'Connecte ton tracker fitness pour que j\'aie accès à tes données HRV et sommeil' },
+    ],
+    status: '🔴 Action requise', urgency: 'high',
+    statusNote: 'Charge semaine +18% — plan adapté disponible',
+  },
+  {
+    id: 'mental',
+    emoji: '🧠', color: '#06b6d4',
+    colorDim: 'rgba(6,182,212,0.15)', accentGlow: 'rgba(6,182,212,0.22)',
+    gradient: 'linear-gradient(145deg,#0e1020 0%,#0D0F1A 60%)',
+    description: "Je travaille sur ce qu'on ne voit pas : la confiance, la concentration, la gestion de la pression. Mon rôle est de faire de ta tête ton meilleur atout le jour J.",
+    skills: [
+      { label: 'Gestion du stress', level: 96 },
+      { label: 'Préparation match', level: 91 },
+      { label: 'Confiance en soi', level: 88 },
+      { label: 'Routines mentales', level: 93 },
+    ],
+    howToUse: [
+      { icon: '🧘', tip: 'Décris ton état mental avant un match important — je prépare un protocole sur mesure' },
+      { icon: '📝', tip: 'Tiens un journal post-match avec moi : on analyse ensemble ce qui t\'a bloqué' },
+      { icon: '🎯', tip: 'Partage tes objectifs de saison — je construis une progression psychologique autour' },
+    ],
+    status: '🟡 À surveiller', urgency: 'medium',
+    statusNote: '3 matchs importants dans 10 jours',
+  },
+  {
+    id: 'nutrition',
+    emoji: '🥗', color: '#84cc16',
+    colorDim: 'rgba(132,204,22,0.15)', accentGlow: 'rgba(132,204,22,0.22)',
+    gradient: 'linear-gradient(145deg,#0a150f 0%,#0D0F1A 60%)',
+    description: "La nutrition c'est 30% de ta performance. Je construis des plans alimentaires précis autour de ton agenda — entraînements, matchs, récupération — adaptés à la réalité suisse.",
+    skills: [
+      { label: 'Plans périodisés', level: 93 },
+      { label: 'Supplémentation', level: 90 },
+      { label: 'Nutrition match day', level: 96 },
+      { label: 'Gestion du poids', level: 88 },
+    ],
+    howToUse: [
+      { icon: '🗓️', tip: 'Partage ton planning hebdomadaire — je synchronise l\'alimentation avec la charge' },
+      { icon: '🛒', tip: 'Dis-moi tes contraintes (budget, temps, préférences) — je fais du concret, pas du théorique' },
+      { icon: '📈', tip: 'Note tes sensations après les repas pre/post match — on affine ensemble au fil du temps' },
+    ],
+    status: '🟢 Optimisé', urgency: 'low',
+    statusNote: 'Plan du mois actif — tout dans les clous',
+  },
+  {
+    id: 'sommeil',
+    emoji: '😴', color: '#a78bfa',
+    colorDim: 'rgba(167,139,250,0.15)', accentGlow: 'rgba(167,139,250,0.22)',
+    gradient: 'linear-gradient(145deg,#120e1a 0%,#0D0F1A 60%)',
+    description: "La récupération c'est l'entraînement invisible. Je surveille ton sommeil, ton HRV, ta fatigue accumulée — et j'interviens avant que la surcharge devienne blessure.",
+    skills: [
+      { label: 'Analyse sommeil', level: 95 },
+      { label: 'Gestion HRV', level: 92 },
+      { label: 'Protocoles récup', level: 90 },
+      { label: 'Détection surmenage', level: 94 },
+    ],
+    howToUse: [
+      { icon: '⌚', tip: 'Connecte ton Garmin, Whoop ou Oura — sans données je travaille à l\'aveugle' },
+      { icon: '😴', tip: 'Note ta qualité de sommeil perçue chaque matin — les données subjectives comptent autant que les objectives' },
+      { icon: '🚨', tip: 'Contacte-moi dès que tu te sens anormalement fatigué — j\'interviens en préventif' },
+    ],
+    status: '🟡 Données manquantes', urgency: 'medium',
+    statusNote: 'Aucune donnée depuis 3 jours — connecte ton tracker',
+  },
+  {
+    id: 'recuperation',
+    emoji: '♻️', color: '#14b8a6',
+    colorDim: 'rgba(20,184,166,0.15)', accentGlow: 'rgba(20,184,166,0.22)',
+    gradient: 'linear-gradient(145deg,#091413 0%,#0D0F1A 60%)',
+    description: "Un athlète qui récupère bien progresse deux fois plus vite. Je conçois tes protocoles post-effort, préviens les blessures et optimise tes périodes de repos.",
+    skills: [
+      { label: 'Protocoles post-effort', level: 93 },
+      { label: 'Foam rolling & massage', level: 90 },
+      { label: 'Prévention blessures', level: 92 },
+      { label: 'Planification repos', level: 88 },
+    ],
+    howToUse: [
+      { icon: '🏋️', tip: 'Dis-moi ce que tu viens de faire — j\'adapte le protocole à l\'effort exact' },
+      { icon: '📍', tip: 'Signale tes zones de douleur — j\'interviens en préventif avant que ça empire' },
+      { icon: '📝', tip: 'Note tes sensations le lendemain — on calibre ta charge ensemble' },
+    ],
+    status: '🟢 Récupération OK', urgency: 'low',
+    statusNote: 'Charge actuelle optimale — repos bien intégré',
+  },
+];
+
+// Preserve card index across dashboard re-renders (navigation entre sections → retour dashboard)
+if (!window._svSwiper) window._svSwiper = { idx: 0, tab: 'profil' };
+
+// Ouvre la page de l'agent en passant le bon élément sidebar pour le highlight actif
+function _svOpenAgent(id) {
+  var btn = document.querySelector("[onclick*=\"'" + id + "'\"]");
+  showPage(id, btn);
+}
+
+function _svSwiperRender() {
+  var container = document.getElementById('svAContainer');
+  if (!container) return;
+  var s = window._svSwiper;
+  var ag = _SV_SWIPER_AGENTS[s.idx];
+  if (!ag) return;
+  var agData = AGENTS[ag.id];
+  if (!agData) return;
+  var locked = isAgentLocked(ag.id);
+  var agName = agData.name;
+  var t = T[currentLang] || T['fr'];
+  var agRole = ((t.agentTitles && t.agentTitles[ag.id]) || agData.title).split('&')[0].trim();
+  var total = _SV_SWIPER_AGENTS.length;
+
+  // ── Light mode detection ─────────────────────────────
+  var isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  var cMuted   = isLight ? 'var(--muted)'              : 'rgba(255,255,255,0.6)';
+  var cFaint   = isLight ? 'var(--muted)'              : 'rgba(255,255,255,0.35)';
+  var cFainter = isLight ? 'var(--muted)'              : 'rgba(255,255,255,0.45)';
+  var cLabel   = isLight ? 'var(--muted)'              : 'rgba(255,255,255,0.3)';
+  var cStatusBg  = isLight ? 'var(--bg)'               : 'rgba(255,255,255,0.04)';
+  var cStatusBd  = isLight ? 'var(--border)'           : 'rgba(255,255,255,0.07)';
+  var cStatusTxt = isLight ? 'var(--text)'             : 'rgba(255,255,255,0.7)';
+  var cTrack     = isLight ? 'var(--border)'           : 'rgba(255,255,255,0.07)';
+  var cTipBg     = isLight ? 'var(--bg)'               : 'rgba(255,255,255,0.04)';
+  var cTipBd     = isLight ? 'var(--border)'           : 'rgba(255,255,255,0.06)';
+  var cTabDiv    = isLight ? 'var(--border)'           : 'rgba(255,255,255,0.06)';
+  var cTabOff    = isLight ? 'var(--muted)'            : 'rgba(255,255,255,0.3)';
+  var cDotOff    = isLight ? 'var(--border)'           : 'rgba(255,255,255,0.15)';
+  var cNavBd     = isLight ? 'var(--border)'           : 'rgba(255,255,255,0.1)';
+  var cNavBg     = isLight ? 'var(--bg3)'              : 'rgba(255,255,255,0.06)';
+  var cNavTxt    = isLight ? 'var(--text)'             : 'rgba(255,255,255,0.6)';
+  var cNavDis    = isLight ? 'var(--border)'           : 'rgba(255,255,255,0.15)';
+  var cardBg     = isLight ? 'var(--bg3)'              : ag.gradient;
+  var cardShadow = isLight ? 'none'                    : '0 20px 60px ' + ag.accentGlow;
+  var ctaLockedBg = isLight ? 'var(--bg)'             : 'rgba(255,255,255,0.08)';
+  var ctaLockedColor = isLight ? 'var(--muted)'       : 'rgba(255,255,255,0.45)';
+  var ctaLockedBd = isLight ? 'var(--border)'         : 'rgba(255,255,255,0.12)';
+  var headerDivider = isLight ? 'var(--border)'       : 'rgba(255,255,255,0.06)';
+
+  // ── i18n strings ─────────────────────────────────────
+  var iLabel    = t.swiperLabel    || 'Tes Agents';
+  var iTitle    = t.swiperTitle    || 'Qui peut t\'aider ?';
+  var iHint     = t.swiperHint     || '← glisse pour changer d\'agent →';
+  var iExpert   = t.swiperExpertise || 'Domaines d\'expertise';
+  var iBestOf   = t.swiperBestOf   || 'Pour tirer le meilleur de';
+  var iTalkTo   = t.pmTalkTo       || t.talkTo || 'Parler à';
+  var reqPlan   = locked ? getRequiredPlan(ag.id) : '';
+  var iLocked   = locked ? (t.swiperLocked || 'Plan {plan} requis').replace('{plan}', reqPlan === 'plus' ? 'Plus' : 'Pro') : '';
+  var tabs = [
+    { key: 'profil',  label: t.swiperTabProfil || 'Profil' },
+    { key: 'skills',  label: t.swiperTabSkills  || 'Compétences' },
+    { key: 'tips',    label: t.swiperTabTips    || 'Utiliser' },
+  ];
+
+  // ── Skill bars ────────────────────────────────────────
+  var skillsHtml = ag.skills.map(function(sk) {
+    return '<div style="margin-bottom:10px">' +
+      '<div style="display:flex;justify-content:space-between;margin-bottom:5px">' +
+        '<span style="font-size:11.5px;color:' + cMuted + ';font-weight:500">' + sk.label + '</span>' +
+        '<span style="font-size:11px;color:' + ag.color + ';font-weight:700">' + sk.level + '%</span>' +
+      '</div>' +
+      '<div style="height:4px;background:' + cTrack + ';border-radius:4px;overflow:hidden">' +
+        '<div style="height:100%;width:' + sk.level + '%;background:linear-gradient(90deg,' + ag.color + '88,' + ag.color + ');border-radius:4px"></div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  // ── How-to-use tips ───────────────────────────────────
+  var howHtml = ag.howToUse.map(function(h) {
+    return '<div style="display:flex;gap:12px;align-items:flex-start;background:' + cTipBg + ';border:1px solid ' + cTipBd + ';border-radius:12px;padding:11px 13px">' +
+      '<span style="font-size:16px;flex-shrink:0;margin-top:1px">' + h.icon + '</span>' +
+      '<span style="font-size:12.5px;color:' + cMuted + ';line-height:1.5">' + h.tip + '</span>' +
+    '</div>';
+  }).join('');
+
+  // ── Navigation dots (larger touch target for iPhone) ──
+  var dotsHtml = _SV_SWIPER_AGENTS.map(function(a, i) {
+    return '<button onclick="_svGo(' + i + ')" style="width:' + (i === s.idx ? '24px' : '7px') + ';height:7px;border-radius:4px;border:none;background:' + (i === s.idx ? ag.color : cDotOff) + ';cursor:pointer;padding:8px 3px;box-sizing:content-box;transition:all 0.3s ease;flex-shrink:0;-webkit-tap-highlight-color:transparent"></button>';
+  }).join('');
+
+  // ── Tab buttons ───────────────────────────────────────
+  var tabsHtml = tabs.map(function(tb) {
+    var active = s.tab === tb.key;
+    return '<button onclick="_svTab(\'' + tb.key + '\')" style="flex:1;border:none;background:transparent;color:' + (active ? ag.color : cTabOff) + ';font-size:12px;font-weight:700;padding:12px 8px;cursor:pointer;border-bottom:2px solid ' + (active ? ag.color : 'transparent') + ';transition:all 0.2s;font-family:\'Inter\',-apple-system,sans-serif;-webkit-tap-highlight-color:transparent">' + tb.label + '</button>';
+  }).join('');
+
+  // ── Tab content ───────────────────────────────────────
+  var tabContent = '';
+  if (s.tab === 'profil') {
+    var ctaBg = (ag.color === '#84cc16' || ag.color === '#f59e0b') ? '#07091a' : (isLight ? '#fff' : '#fff');
+    var ctaStyle = locked
+      ? 'background:' + ctaLockedBg + ';color:' + ctaLockedColor + ';border:1px solid ' + ctaLockedBd
+      : 'background:' + ag.color + ';color:' + ctaBg + ';border:none';
+    var ctaLabel = locked
+      ? '🔒 ' + iTalkTo + ' ' + agName + ' — ' + iLocked
+      : iTalkTo + ' ' + agName + ' →';
+    tabContent =
+      '<p style="font-size:13.5px;color:' + cMuted + ';line-height:1.65;margin:0 0 16px 0;font-style:italic">"' + ag.description + '"</p>' +
+      '<button onclick="_svOpenAgent(\'' + ag.id + '\')" style="' + ctaStyle + ';border-radius:12px;padding:11px 20px;font-size:13px;font-weight:800;cursor:pointer;width:100%;letter-spacing:0.01em;font-family:\'Inter\',-apple-system,sans-serif;-webkit-tap-highlight-color:transparent">' + ctaLabel + '</button>';
+  } else if (s.tab === 'skills') {
+    tabContent =
+      '<div style="font-size:11.5px;color:' + cFaint + ';text-transform:uppercase;letter-spacing:0.07em;margin-bottom:14px;font-weight:600">' + iExpert + '</div>' +
+      skillsHtml;
+  } else {
+    tabContent =
+      '<div style="font-size:11.5px;color:' + cFaint + ';text-transform:uppercase;letter-spacing:0.07em;margin-bottom:14px;font-weight:600">' + iBestOf + ' ' + agName + '</div>' +
+      '<div style="display:flex;flex-direction:column;gap:10px">' + howHtml + '</div>';
+  }
+
+  // ── Arrow buttons ─────────────────────────────────────
+  var arrowPrev = '<button onclick="_svGo(' + (s.idx - 1) + ')" ' + (s.idx === 0 ? 'disabled' : '') + ' style="width:32px;height:32px;border-radius:50%;border:1px solid ' + cNavBd + ';background:' + (s.idx === 0 ? 'transparent' : cNavBg) + ';color:' + (s.idx === 0 ? cNavDis : cNavTxt) + ';cursor:' + (s.idx === 0 ? 'default' : 'pointer') + ';font-size:14px;display:flex;align-items:center;justify-content:center;font-family:inherit;-webkit-tap-highlight-color:transparent">‹</button>';
+  var arrowNext = '<button onclick="_svGo(' + (s.idx + 1) + ')" ' + (s.idx === total - 1 ? 'disabled' : '') + ' style="width:32px;height:32px;border-radius:50%;border:1px solid ' + cNavBd + ';background:' + (s.idx === total - 1 ? 'transparent' : cNavBg) + ';color:' + (s.idx === total - 1 ? cNavDis : cNavTxt) + ';cursor:' + (s.idx === total - 1 ? 'default' : 'pointer') + ';font-size:14px;display:flex;align-items:center;justify-content:center;font-family:inherit;-webkit-tap-highlight-color:transparent">›</button>';
+
+  // ── Inject ────────────────────────────────────────────
+  container.innerHTML =
+    '<div style="max-width:520px;margin:0 auto">' +
+
+      // Section label + counter
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">' +
+        '<div>' +
+          '<div style="font-size:11px;color:' + cFaint + ';text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px">' + iLabel + '</div>' +
+          '<div style="font-size:18px;color:var(--text);font-weight:800">' + iTitle + '</div>' +
+        '</div>' +
+        '<div style="font-size:12px;color:' + cLabel + ';font-weight:500">' + (s.idx + 1) + ' / ' + total + '</div>' +
+      '</div>' +
+
+      // Main card — touch-action:pan-y blocks horizontal browser scroll, lets vertical scroll pass
+      '<div id="svACard" style="background:' + cardBg + ';border:1px solid ' + ag.color + '28;border-radius:24px;overflow:hidden;margin-bottom:16px;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:pan-y;animation:svCardIn 0.3s ease;box-shadow:' + cardShadow + ';' + (locked ? 'opacity:0.75;' : '') + '">' +
+
+        // Identity header
+        '<div style="padding:22px 22px 18px;border-bottom:1px solid ' + headerDivider + ';position:relative;overflow:hidden">' +
+          '<div style="position:absolute;top:-30px;right:-30px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,' + ag.color + '22 0%,transparent 70%);pointer-events:none"></div>' +
+          '<div style="display:flex;align-items:flex-start;gap:14px">' +
+            '<div style="width:60px;height:60px;border-radius:18px;background:' + ag.colorDim + ';border:2px solid ' + ag.color + '44;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0">' + ag.emoji + '</div>' +
+            '<div style="flex:1">' +
+              '<div style="font-size:22px;font-weight:800;color:var(--text);letter-spacing:-0.02em;margin-bottom:4px">' + agName + (locked ? ' 🔒' : '') + '</div>' +
+              '<div style="display:inline-block;background:' + ag.colorDim + ';border:1px solid ' + ag.color + '44;color:' + ag.color + ';font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:0.02em">' + agRole + '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div style="margin-top:14px;display:flex;align-items:center;gap:8px;background:' + cStatusBg + ';border:1px solid ' + cStatusBd + ';border-radius:12px;padding:8px 12px">' +
+            '<span style="font-size:12px;font-weight:700;color:' + cStatusTxt + '">' + ag.status + '</span>' +
+            '<span style="font-size:11px;color:' + cFaint + '">•</span>' +
+            '<span style="font-size:11px;color:' + cFainter + ';flex:1">' + ag.statusNote + '</span>' +
+          '</div>' +
+        '</div>' +
+
+        // Tabs bar
+        '<div style="display:flex;border-bottom:1px solid ' + cTabDiv + '">' + tabsHtml + '</div>' +
+
+        // Tab content
+        '<div style="padding:18px 22px 22px;min-height:180px;animation:svFadeUp 0.25s ease">' + tabContent + '</div>' +
+      '</div>' +
+
+      // Navigation (dots + arrows)
+      '<div style="display:flex;align-items:center;justify-content:center;gap:12px">' +
+        arrowPrev +
+        '<div style="display:flex;align-items:center;gap:5px">' + dotsHtml + '</div>' +
+        arrowNext +
+      '</div>' +
+      '<div style="text-align:center;margin-top:10px;font-size:11px;color:' + cFaint + ';letter-spacing:0.03em">' + iHint + '</div>' +
+
+    '</div>';
+
+  _svInitDrag();
+}
+
+function _svGo(idx) {
+  if (idx < 0 || idx >= _SV_SWIPER_AGENTS.length) return;
+  window._svSwiper.idx = idx;
+  window._svSwiper.tab = 'profil';
+  _svSwiperRender();
+}
+
+function _svTab(tab) {
+  window._svSwiper.tab = tab;
+  _svSwiperRender();
+}
+
+function _svSwiperInit() {
+  if (!window._svSwiper) window._svSwiper = { idx: 0, tab: 'profil' };
+  else window._svSwiper.tab = 'profil'; // reset tab, conserve l'index
+  _svSwiperRender();
+}
+
+function _svInitDrag() {
+  var card = document.getElementById('svACard');
+  if (!card) return;
+  var _ds = null, _dd = 0, _dy = 0, _dragging = false;
+  function _start(x, y) { _ds = x; _dy = y; _dragging = false; _dd = 0; }
+  function _move(x, y, e) {
+    if (_ds === null) return;
+    var dx = x - _ds;
+    var dy = Math.abs(y - _dy);
+    // Only capture drag if clearly horizontal (dx > dy) — lets vertical scroll through on iPhone
+    if (!_dragging && dy > Math.abs(dx)) { _ds = null; return; }
+    _dd = dx;
+    if (Math.abs(_dd) > 5) {
+      _dragging = true;
+      card.style.transform = 'translateX(' + (_dd * 0.08) + 'px)';
+      if (e && e.cancelable) e.preventDefault(); // block page scroll during horizontal swipe
+    }
+  }
+  function _end() {
+    if (_dragging) {
+      card.style.transform = 'none';
+      if (_dd < -50) _svGo(window._svSwiper.idx + 1);
+      else if (_dd > 50) _svGo(window._svSwiper.idx - 1);
+    }
+    _ds = null; _dd = 0; _dy = 0; _dragging = false;
+  }
+  card.addEventListener('mousedown',  function(e) { _start(e.clientX, e.clientY); });
+  card.addEventListener('mousemove',  function(e) { _move(e.clientX, e.clientY, e); });
+  card.addEventListener('mouseup',    _end);
+  card.addEventListener('mouseleave', _end);
+  card.addEventListener('touchstart', function(e) { _start(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+  card.addEventListener('touchmove',  function(e) { _move(e.touches[0].clientX, e.touches[0].clientY, e); }); // non-passive : permet preventDefault
+  card.addEventListener('touchend',   _end);
+}
+
 // ── DASHBOARD ───────────────────────────────────────
 async function renderDashboard() {
   const meta = currentUser?.user_metadata || {};
@@ -3444,43 +3905,12 @@ async function renderDashboard() {
          de place pour une info non-actionnable. agentCounts reste calculé en amont
          (badges, agent favori). -->
 
-    <!-- AGENTS GROUPÉS -->
-    <div class="section-title" style="margin-top:8px">💼 ${t.businessAgents}</div>
-    <div class="agents-grid" style="margin-bottom:20px">
-      ${['equipe','marketing','sponsors','contrats','finance','comptabilite'].map(id => {
-        const a = AGENTS[id]; if(!a) return '';
-        const locked = isAgentLocked(id);
-        const reqPlan = locked ? getRequiredPlan(id) : '';
-        return `<button class="agent-card" style="border-color:${a.color}35;background:linear-gradient(135deg,var(--bg3),${a.color}12);${locked ? 'opacity:0.6;' : ''}" onclick="showPage('${id}',document.querySelector('[onclick*=\\'${id}\\']'))">
-          <div style="position:absolute;top:-10px;right:-10px;width:60px;height:60px;border-radius:50%;background:${a.color};opacity:0.08;"></div>
-          ${locked ? '<div style="position:absolute;top:8px;right:8px;font-size:14px;opacity:0.7">🔒</div>' : ''}
-          <div class="agent-emoji">${a.emoji}</div>
-          <div class="agent-name" style="color:var(--text);font-size:14px;font-weight:800">${a.name}</div>
-          <div class="agent-role" style="color:${a.color};font-size:11px;font-weight:700;margin-bottom:8px">${((T[currentLang]?.agentTitles?.[id]) || a.title).split('&')[0].trim()}</div>
-          <div class="agent-desc" style="color:var(--muted);font-size:11px;line-height:1.5">${T[currentLang].agentDescs[id] || a.desc}</div>
-          ${locked ? '<div style="margin-top:10px;font-size:10px;color:' + (reqPlan === 'plus' ? '#06b6d4' : '#f59e0b') + ';font-weight:700">Plan ' + (reqPlan === 'plus' ? 'Plus' : 'Pro') + ' requis</div>' : '<div class="online" style="margin-top:10px"><div class="online-dot"></div>' + T[currentLang].online + '</div>'}
-        </button>`;
-      }).join('')}
-    </div>
-
-    <div class="section-title">💪 ${t.performanceAgents}</div>
-    <div class="agents-grid">
-      ${['physique','mental','nutrition','sommeil','recuperation'].map(id => {
-        const a = AGENTS[id]; if(!a) return '';
-        const locked = isAgentLocked(id);
-        const reqPlan = locked ? getRequiredPlan(id) : '';
-        return `<button class="agent-card" style="border-color:${a.color}35;background:linear-gradient(135deg,var(--bg3),${a.color}12);${locked ? 'opacity:0.6;' : ''}" onclick="showPage('${id}',document.querySelector('[onclick*=\\'${id}\\']'))">
-          <div style="position:absolute;top:-10px;right:-10px;width:60px;height:60px;border-radius:50%;background:${a.color};opacity:0.08;"></div>
-          ${locked ? '<div style="position:absolute;top:8px;right:8px;font-size:14px;opacity:0.7">🔒</div>' : ''}
-          <div class="agent-emoji">${a.emoji}</div>
-          <div class="agent-name" style="color:var(--text);font-size:14px;font-weight:800">${a.name}</div>
-          <div class="agent-role" style="color:${a.color};font-size:11px;font-weight:700;margin-bottom:8px">${((T[currentLang]?.agentTitles?.[id]) || a.title).split('&')[0].trim()}</div>
-          <div class="agent-desc" style="color:var(--muted);font-size:11px;line-height:1.5">${T[currentLang].agentDescs[id] || a.desc}</div>
-          ${locked ? '<div style="margin-top:10px;font-size:10px;color:' + (reqPlan === 'plus' ? '#06b6d4' : '#f59e0b') + ';font-weight:700">Plan ' + (reqPlan === 'plus' ? 'Plus' : 'Pro') + ' requis</div>' : '<div class="online" style="margin-top:10px"><div class="online-dot"></div>' + T[currentLang].online + '</div>'}
-        </button>`;
-      }).join('')}
-    </div>
+    <!-- AGENTS SWIPER — v63.40 (remplace les deux grilles statiques) -->
+    <div id="svAContainer" style="margin-top:8px"></div>
   `;
+
+  // v63.40 — Init agent swiper (remplace les deux grilles statiques)
+  _svSwiperInit();
 
   // Trigger Lucas welcome onboarding for brand-new users
   // v46: dual-check via isOnboardDone évite de re-trigger pour un user existant
