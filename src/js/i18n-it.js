@@ -78,7 +78,7 @@ var T_IT = {
   // v52 — Add/Edit event modals i18n
   eventModalAddTitle:'Nuovo evento', eventModalAddSub:'Aggiunga una partita, una competizione o un allenamento.',
   eventModalEditTitle:'Modifica evento', eventModalEditSub:'Modifica i dettagli del tuo evento.',
-  eventDuration:'Durata', eventTitlePlaceholder:'Es: Partita contro FC Lugano',
+  eventDuration:'Durata (min)', eventDurationPlaceholder:'Es: 90', eventTitlePlaceholder:'Es: Partita contro FC Lugano',
   eventLocationPlaceholder:'Es: Stadio di Cornaredo, Lugano', eventNotesPlaceholder:'Es: Arrivare 1h prima, riscaldamento speciale',
   calMoreOptions:'Altre opzioni', calFewerOptions:'Meno opzioni',
   calSeeCalendar:'Vedi →', calSeeCalendarFull:'Vedi il calendario →',

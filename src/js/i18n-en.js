@@ -78,7 +78,7 @@ var T_EN = {
   // v52 — Add/Edit event modals i18n
   eventModalAddTitle:'New event', eventModalAddSub:'Add a match, competition or training.',
   eventModalEditTitle:'Edit event', eventModalEditSub:"Edit your event's details.",
-  eventDuration:'Duration', eventTitlePlaceholder:'E.g. Match vs FC Sion',
+  eventDuration:'Duration (min)', eventDurationPlaceholder:'E.g. 90', eventTitlePlaceholder:'E.g. Match vs FC Sion',
   eventLocationPlaceholder:'E.g. Stade de la Tuilière, Lausanne', eventNotesPlaceholder:'E.g. Arrive 1h before, special warm-up',
   calMoreOptions:'More options', calFewerOptions:'Fewer options',
   calSeeCalendar:'View →', calSeeCalendarFull:'See calendar →',

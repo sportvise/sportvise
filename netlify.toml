@@ -38,6 +38,9 @@
     Cache-Control = "no-cache, no-store, must-revalidate, max-age=0"
     Pragma = "no-cache"
     Expires = "0"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://browser.sentry-cdn.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.sentry.io https://fcm.googleapis.com https://browser.sentry-cdn.com; worker-src 'self' blob:; frame-ancestors 'none'; object-src 'none';"
 
 [[headers]]
   for = "/*.html"
@@ -47,6 +50,9 @@
     Cache-Control = "no-cache, no-store, must-revalidate, max-age=0"
     Pragma = "no-cache"
     Expires = "0"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://browser.sentry-cdn.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.sentry.io https://fcm.googleapis.com https://browser.sentry-cdn.com; worker-src 'self' blob:; frame-ancestors 'none'; object-src 'none';"
 
 # Hashed assets — cache FOREVER (the hash changes when content changes)
 [[headers]]
