@@ -674,4 +674,15 @@ var T_DE = {
   dashScoreTitle: 'Dein SPORTVISE-Score',
   dashScoreSub: 'Fülle 3 Tage dein Tagebuch aus, um deinen Form-, Erholungs- und Belastungs-Score zu sehen.',
 
+  // Swiper agents dashboard (v63.40)
+  swiperLabel: 'Deine Agenten',
+  swiperTitle: 'Wer kann dir helfen?',
+  swiperHint: '← wischen um Agenten zu wechseln →',
+  swiperTabProfil: 'Profil',
+  swiperTabSkills: 'Fähigkeiten',
+  swiperTabTips: 'Nutzen',
+  swiperExpertise: 'Fachbereiche',
+  swiperBestOf: 'Das Beste aus',
+  swiperLocked: 'Plan {plan} erforderlich',
+
 };

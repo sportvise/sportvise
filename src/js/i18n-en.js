@@ -674,4 +674,15 @@ var T_EN = {
   dashScoreTitle: 'Your SPORTVISE Score',
   dashScoreSub: 'Log 3 days in your journal to see your fitness, recovery and load score.',
 
+  // Swiper agents dashboard (v63.40)
+  swiperLabel: 'Your Agents',
+  swiperTitle: 'Who can help you?',
+  swiperHint: '← swipe to browse agents →',
+  swiperTabProfil: 'Profile',
+  swiperTabSkills: 'Skills',
+  swiperTabTips: 'How to use',
+  swiperExpertise: 'Areas of expertise',
+  swiperBestOf: 'To get the most from',
+  swiperLocked: '{plan} plan required',
+
 };

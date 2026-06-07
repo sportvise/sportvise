@@ -674,4 +674,15 @@ var T_IT = {
   dashScoreTitle: 'Il tuo Score SPORTVISE',
   dashScoreSub: 'Compila 3 giorni di diario per vedere il tuo score di forma, recupero e carico.',
 
+  // Swiper agents dashboard (v63.40)
+  swiperLabel: 'I tuoi Agenti',
+  swiperTitle: 'Chi può aiutarti?',
+  swiperHint: '← scorri per cambiare agente →',
+  swiperTabProfil: 'Profilo',
+  swiperTabSkills: 'Competenze',
+  swiperTabTips: 'Come usare',
+  swiperExpertise: 'Aree di competenza',
+  swiperBestOf: 'Per ottenere il meglio da',
+  swiperLocked: 'Piano {plan} richiesto',
+
 };
