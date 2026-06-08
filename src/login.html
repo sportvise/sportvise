@@ -390,6 +390,13 @@
         <button class="sport-btn" onclick="selectSport(this,'Autre')">🏅 <span data-i18n="sportOther">Autre</span></button>
       </div>
     </div>
+    <!-- CGU — case obligatoire (LPD/RGPD) -->
+    <div class="field" id="termsField" style="margin-top:4px;margin-bottom:4px">
+      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;line-height:1.5;color:var(--muted);font-weight:400">
+        <input type="checkbox" id="termsCheck" style="margin-top:2px;flex-shrink:0;accent-color:#f0a500;width:16px;height:16px;cursor:pointer" />
+        <span><span data-i18n="termsCheckPre">J'accepte les </span><a href="terms_fr.html" data-legal-section="terms" data-i18n="termsCheckTos" target="_blank" style="color:#f0a500;text-decoration:underline;font-weight:500">CGU</a><span data-i18n="termsCheckMid"> et la </span><a href="privacy_fr.html" data-legal-section="privacy" data-i18n="termsCheckPrivacy" target="_blank" style="color:#f0a500;text-decoration:underline;font-weight:500">Politique de confidentialité</a></span>
+      </label>
+    </div>
     <button class="btn-main" id="signupBtn" onclick="signup()" data-i18n="btnSignup">Créer mon compte →</button>
   </div>
 
@@ -458,7 +465,9 @@
       okResetSent:"✅ Un email de réinitialisation a été envoyé ! Vérifiez votre boîte de réception.",
       okSignupConfirm:"✅ Compte créé ! Vérifiez votre boîte email — cliquez le lien de confirmation pour activer votre compte, puis connectez-vous.",
       okSignupRedirect:"✅ Compte créé ! Bienvenue sur SPORTVISE — on vous emmène sur votre espace…",
-      btnBackToLoginFinal:"Retour à la connexion →"
+      btnBackToLoginFinal:"Retour à la connexion →",
+      termsCheckPre:"J'accepte les ", termsCheckTos:"CGU", termsCheckMid:" et la ", termsCheckPrivacy:"Politique de confidentialité",
+      errTermsCheck:"Veuillez accepter les CGU et la politique de confidentialité pour continuer."
     },
     de: {
       tagline:"🇨🇭 KI-Sportmanagement · Schweiz",
@@ -504,7 +513,9 @@
       okResetSent:"✅ Eine Reset-E-Mail wurde gesendet! Überprüfe deinen Posteingang.",
       okSignupConfirm:"✅ Konto erstellt! Überprüfe dein E-Mail-Postfach — klicke den Bestätigungslink, um dein Konto zu aktivieren, und melde dich dann an.",
       okSignupRedirect:"✅ Konto erstellt! Willkommen bei SPORTVISE — wir bringen dich zu deinem Bereich…",
-      btnBackToLoginFinal:"Zurück zur Anmeldung →"
+      btnBackToLoginFinal:"Zurück zur Anmeldung →",
+      termsCheckPre:"Ich akzeptiere die ", termsCheckTos:"AGB", termsCheckMid:" und die ", termsCheckPrivacy:"Datenschutzrichtlinie",
+      errTermsCheck:"Bitte akzeptiere die AGB und die Datenschutzrichtlinie, um fortzufahren."
     },
     en: {
       tagline:"🇨🇭 AI Sports Management · Switzerland",
@@ -550,7 +561,9 @@
       okResetSent:"✅ A reset email has been sent! Check your inbox.",
       okSignupConfirm:"✅ Account created! Check your email inbox — click the confirmation link to activate your account, then log in.",
       okSignupRedirect:"✅ Account created! Welcome to SPORTVISE — taking you to your space…",
-      btnBackToLoginFinal:"Back to login →"
+      btnBackToLoginFinal:"Back to login →",
+      termsCheckPre:"I accept the ", termsCheckTos:"Terms of Use", termsCheckMid:" and ", termsCheckPrivacy:"Privacy Policy",
+      errTermsCheck:"Please accept the Terms of Use and Privacy Policy to continue."
     },
     it: {
       tagline:"🇨🇭 Gestione Sportiva IA · Svizzera",
@@ -596,7 +609,9 @@
       okResetSent:"✅ Un'email di reimpostazione è stata inviata! Controlla la tua casella.",
       okSignupConfirm:"✅ Account creato! Controlla la tua email — clicca il link di conferma per attivare il tuo account, poi accedi.",
       okSignupRedirect:"✅ Account creato! Benvenuto su SPORTVISE — ti portiamo nel tuo spazio…",
-      btnBackToLoginFinal:"Torna all'accesso →"
+      btnBackToLoginFinal:"Torna all'accesso →",
+      termsCheckPre:"Accetto i ", termsCheckTos:"Termini di Utilizzo", termsCheckMid:" e la ", termsCheckPrivacy:"Privacy Policy",
+      errTermsCheck:"Accetta i Termini di Utilizzo e la Privacy Policy per continuare."
     }
   };
 
@@ -707,6 +722,9 @@
     document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
     document.getElementById('signupForm').style.display = tab === 'signup' ? 'block' : 'none';
     document.getElementById('resetForm').style.display = tab === 'reset' ? 'block' : 'none';
+    // Reset CGU checkbox when switching tabs
+    const tc = document.getElementById('termsCheck');
+    if (tc) tc.checked = false;
     hideAlert();
   }
 
@@ -804,6 +822,7 @@
     const password = document.getElementById('signupPassword').value;
     if (!name || !email || !password) return showAlert(tr('errAllFields'), 'error');
     if (password.length < 8) return showAlert(tr('errPwd8Chars'), 'error');
+    if (!document.getElementById('termsCheck')?.checked) return showAlert(tr('errTermsCheck'), 'error');
     setLoading('signupBtn', true);
     const { data, error } = await sb.auth.signUp({
       email, password,
