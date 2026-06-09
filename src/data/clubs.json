@@ -1,0 +1,79 @@
+{
+  "_meta": {
+    "saison": "2026-27",
+    "mis_a_jour": "2026-06-09",
+    "version_sportvise": "63.41.0",
+    "note": "SOURCE DE VÉRITÉ UNIQUE — modifier uniquement ce fichier. build.js l'injecte dans dashboard.html au build."
+  },
+  "football": {
+    "Super League": [
+      "BSC Young Boys",
+      "FC Basel",
+      "Servette FC",
+      "FC Lugano",
+      "FC Zürich",
+      "FC Lausanne-Sport",
+      "FC St-Gallen",
+      "FC Luzern",
+      "FC Sion",
+      "FC Vaduz",
+      "FC Thun",
+      "Grasshopper Club"
+    ],
+    "Challenge League": [
+      "FC Aarau",
+      "Neuchâtel Xamax",
+      "FC Winterthur",
+      "FC Wil",
+      "AC Bellinzona",
+      "FC Stade Lausanne-Ouchy",
+      "Étoile Carouge",
+      "FC Rapperswil-Jona",
+      "Yverdon Sport"
+    ]
+  },
+  "hockey": {
+    "National League": [
+      "SC Bern",
+      "ZSC Lions",
+      "HC Davos",
+      "EV Zug",
+      "HC Lugano",
+      "Lausanne HC",
+      "HC Fribourg-Gottéron",
+      "HC Ambri-Piotta",
+      "SCL Tigers",
+      "EHC Biel-Bienne",
+      "HC Ajoie",
+      "Rapperswil-Jona Lakers",
+      "EHC Kloten",
+      "Genève-Servette HC"
+    ],
+    "Swiss League": [
+      "EHC Arosa",
+      "EHC Basel",
+      "HC La Chaux-de-Fonds",
+      "GCK Lions",
+      "EHC Olten",
+      "SC Rapperswil-Jona Lakers II",
+      "HC Sierre",
+      "HC Thurgau",
+      "EHC Visp",
+      "HC Winterthur",
+      "HC Chur"
+    ]
+  },
+  "basketball": {
+    "SB League": [
+      "Fribourg Olympic",
+      "Lions de Genève",
+      "Union Neuchâtel Basket",
+      "Starwings Basket Regio Basel",
+      "Pully Lausanne Basketball",
+      "BBC Monthey",
+      "Jubilee Basket Berne",
+      "Nyon Basket",
+      "Swiss Central Basket"
+    ]
+  }
+}

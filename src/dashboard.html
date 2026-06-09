@@ -4274,6 +4274,10 @@ async function renderChat(page) {
   } catch(e) { console.warn('[KICKOFF] processing error:', e); }
   // Proactive messages removed — replaced by Morning Brief modal
 
+  // v63.42.0 — Bannière J+2 calendrier vide (Phase 1 #5)
+  const _showCalBanner = (memberDays >= 2) && ((_calCount || 0) === 0) && !sessionStorage.getItem('sv_cal_banner_dismissed');
+  const _calBannerHtml = _showCalBanner ? '<div id="svCalBanner" style="margin:8px 16px 0;padding:12px 14px;background:linear-gradient(135deg,#3b82f608,#6366f108);border:1px solid #3b82f630;border-radius:10px;display:flex;align-items:flex-start;gap:10px"><span style="font-size:18px;flex-shrink:0">📅</span><div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px">Calendrier vide</div><div style="font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:8px">Tu n\'as pas encore d\'événements dans ton calendrier. Dis-moi juste : quand est ton prochain match ou entraînement ?</div><button onclick="const i=document.getElementById(\'chatInput\');i.value=\'Mon prochain événement : \';i.focus();i.setSelectionRange(i.value.length,i.value.length);document.getElementById(\'svCalBanner\').remove();sessionStorage.setItem(\'sv_cal_banner_dismissed\',\'1\')" style="padding:6px 12px;border-radius:7px;border:none;background:#3b82f6;color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;margin-right:6px">📅 Ajouter</button><button onclick="document.getElementById(\'svCalBanner\').remove();sessionStorage.setItem(\'sv_cal_banner_dismissed\',\'1\')" style="padding:6px 10px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:11px;cursor:pointer;font-family:Inter,sans-serif">Plus tard</button></div></div>' : '';
+
   const t = T[currentLang];
   document.getElementById('mainContent').innerHTML = `
     <div class="chat-container">
@@ -4310,6 +4314,7 @@ async function renderChat(page) {
         <span>${(t.agentDisclaimer || '{name} est un assistant IA. Ses conseils ne remplacent pas l\'avis d\'un professionnel qualifié (médecin, avocat, comptable).').replace('{name}', agent.name)} <a href="#" onclick="event.preventDefault();showDisclaimer()" style="color:${agent.color};text-decoration:underline;font-weight:600">${t.agentDisclaimerLink || 'En savoir plus'}</a></span>
       </div>
       ${getQuickActions(page, agent)}</div>
+      ${_calBannerHtml}
       <div class="chat-messages" id="chatMessages">${renderMessages(page, agent)}</div>
       <div id="filePreviewArea"></div>
       <div class="chat-input-row">
@@ -11435,6 +11440,19 @@ function editJournalEntry() {
   renderJournal();
 }
 
+// ── SLEEP HELPERS (v63.42.1) ─────────────────────────
+function _svFmtSleep(h) {
+  if (h == null || isNaN(h)) return '—';
+  const hrs = Math.floor(h);
+  const mins = Math.round((h - hrs) * 60);
+  return hrs + 'h' + String(mins).padStart(2, '0');
+}
+function _svUpdateSleepHours() {
+  const h = parseInt(document.getElementById('svSleepH')?.value) || 0;
+  const m = parseInt(document.getElementById('svSleepM')?.value) || 0;
+  setJournalField('sleep_hours', (h > 0 || m > 0) ? h + m / 60 : null);
+}
+
 async function renderJournal() {
   const t = T[currentLang];
   const today = dateToStr();
@@ -11500,7 +11518,7 @@ async function renderJournal() {
         <div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--gold)">${todayLog.energy||'—'}/5</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${t.energy}</div></div>
         <div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--gold)">${todayLog.motivation||'—'}/5</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${t.motivation}</div></div>
         <div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--gold)">${todayLog.sleep_quality||'—'}/5</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${t.sleepQuality}</div></div>
-        ${todayLog.sleep_hours != null ? `<div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--text)">${todayLog.sleep_hours}h</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${t.sleepHours||'Sommeil'}</div></div>` : ''}
+        ${todayLog.sleep_hours != null ? `<div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--text)">${_svFmtSleep(todayLog.sleep_hours)}</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${t.sleepHours||'Sommeil'}</div></div>` : ''}
         ${todayLog.stress_level != null ? `<div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:${(todayLog.stress_level||0) > 3 ? '#ef4444' : 'var(--text)'}">${todayLog.stress_level}/5</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${t.stressLevel||'Stress'}</div></div>` : ''}
         <div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:${(todayLog.pain_level||0) > 2 ? '#ef4444' : 'var(--text)'}">${todayLog.pain_level ?? 0}/5</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${t.painLevel}</div></div>
         <div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:${todayLog.training_status?'14px':'20px'};font-weight:800;color:${todayLog.training_status==='done'?'#10b981':todayLog.training_status==='modified'?'#f59e0b':todayLog.training_status==='skipped'?'var(--muted)':'var(--muted)'}">${todayLog.training_status==='done'?'✓':todayLog.training_status==='modified'?'〜':todayLog.training_status==='skipped'?'✕':'—'}</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${t.training}</div></div>
@@ -11572,8 +11590,23 @@ async function renderJournal() {
           </div>
 
           <div class="form-field">
-            <label class="form-label">${t.sleepHours||'Durée sommeil (h)'}</label>
-            <input type="number" min="0" max="24" step="0.5" value="${todayLog?.sleep_hours||''}" oninput="setJournalField('sleep_hours', parseFloat(this.value)||null)" placeholder="7.5" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:14px;font-weight:700;font-family:'Inter',sans-serif;text-align:center;box-sizing:border-box"/>
+            <label class="form-label">${t.sleepHours||'Durée sommeil'}</label>
+            <div style="display:flex;align-items:center;gap:6px;justify-content:center">
+              <input type="number" id="svSleepH" min="0" max="24" step="1"
+                value="${todayLog?.sleep_hours != null ? Math.floor(todayLog.sleep_hours) : ''}"
+                oninput="_svUpdateSleepHours()" placeholder="7"
+                style="width:54px;padding:8px 6px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:14px;font-weight:700;font-family:'Inter',sans-serif;text-align:center;box-sizing:border-box"/>
+              <span style="font-size:13px;font-weight:700;color:var(--muted)">h</span>
+              <select id="svSleepM" onchange="_svUpdateSleepHours()"
+                style="width:66px;padding:8px 6px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:14px;font-weight:700;font-family:'Inter',sans-serif;text-align:center;box-sizing:border-box">
+                ${['00','05','10','15','20','25','30','35','40','45','50','55'].map(m => {
+                  const mv = parseInt(m);
+                  const curM = todayLog?.sleep_hours != null ? Math.round(((todayLog.sleep_hours % 1) * 60) / 5) * 5 % 60 : 0;
+                  return '<option value="' + mv + '"' + (mv === curM ? ' selected' : '') + '>' + m + '</option>';
+                }).join('')}
+              </select>
+              <span style="font-size:13px;font-weight:700;color:var(--muted)">min</span>
+            </div>
           </div>
 
           <div class="form-field">
@@ -11927,6 +11960,17 @@ async function renderProgression() {
   const bestScore = scores.length > 0 ? Math.max(...scores.map(s=>s.score||0)) : 0;
   const trainings = logs.filter(l => l.training_done).length;
 
+  // v63.42.0 — Chart.js metrics (Phase 1 #6)
+  const _chartMetricsDef = [
+    { key:'poids',          label: t.perfMetricPoids    || 'Poids',          unit: t.perfUnitKg  || 'kg',        color:'#f59e0b', emoji:'⚖️' },
+    { key:'sprint_30m',     label: t.perfMetricSprint   || 'Sprint 30m',     unit: t.perfUnitSec || 's',         color:'#ef4444', emoji:'⚡' },
+    { key:'vo2max',         label: t.perfMetricVo2      || 'VO2max estimé',  unit: t.perfUnitMl  || 'ml/kg/min', color:'#06b6d4', emoji:'🫁' },
+    { key:'distance_hebdo', label: t.perfMetricDistance || 'Distance hebdo', unit: t.perfUnitKm  || 'km',        color:'#10b981', emoji:'🏃' },
+  ];
+  const chartMetrics = _chartMetricsDef.map(m => ({
+    ...m, logs: perfData.filter(p => p.metric_name === m.key)
+  })).filter(m => m.logs.length >= 2);
+
   document.getElementById('mainContent').innerHTML = `
     <div style="max-width:1000px">
       <!-- Stats Cards -->
@@ -12183,6 +12227,15 @@ async function renderProgression() {
         </div>
       </div>
 
+      <!-- COURBES CHART.JS (v63.42.0) -->
+      ${chartMetrics.length > 0 ? `
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:20px">
+        <h3 style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:4px">📈 ${t.perfChartsTitle || 'Courbes de progression'}</h3>
+        <p style="font-size:11px;color:var(--muted);margin-bottom:14px">${t.perfChartsSub || 'Évolution de tes métriques dans le temps'}</p>
+        ${chartMetrics.map(m => '<div style="margin-bottom:20px"><div style="font-size:10px;font-weight:700;color:' + m.color + ';text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px">' + m.emoji + ' ' + m.label + '</div><div style="position:relative;height:120px"><canvas id="svPerfChart_' + m.key + '" style="width:100%;height:100%"></canvas></div></div>').join('')}
+      </div>
+      ` : ''}
+
       <!-- RAPPORT MENSUEL PDF -->
       ${userPlan === 'pro' && logs.length >= 7 ? `
       <div style="background:linear-gradient(135deg,#f59e0b08,#d9770608);border:1px solid #f59e0b30;border-radius:12px;padding:16px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between">
@@ -12205,6 +12258,69 @@ async function renderProgression() {
   `;
   // v63.13.0 — fade-in après le rendu de la progression
   _svFadeIn();
+  // v63.42.0 — Chart.js charts
+  if (chartMetrics.length > 0) _svInitPerfCharts(chartMetrics);
+}
+
+// ── PROGRESSION CHARTS (v63.42.0) ────────────────────
+function _svInitPerfCharts(chartMetrics) {
+  const CDN = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js';
+  function _draw() {
+    if (!window.Chart) return;
+    chartMetrics.forEach(m => {
+      const canvas = document.getElementById('svPerfChart_' + m.key);
+      if (!canvas) return;
+      if (canvas._svChart) { canvas._svChart.destroy(); canvas._svChart = null; }
+      const labels = m.logs.map(l => new Date(l.log_date).toLocaleDateString('fr-FR', {day:'numeric',month:'short'}));
+      const values = m.logs.map(l => parseFloat(l.value));
+      const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+      canvas._svChart = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            data: values,
+            borderColor: m.color,
+            backgroundColor: m.color + '18',
+            borderWidth: 2,
+            pointRadius: 3,
+            pointBackgroundColor: m.color,
+            fill: true,
+            tension: 0.3
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: ctx => ctx.parsed.y + ' ' + m.unit } }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { font: { size: 9 }, color: '#888', maxRotation: 0, maxTicksLimit: 8 }
+            },
+            y: {
+              grid: { color: isDark ? '#ffffff10' : '#00000010' },
+              ticks: { font: { size: 9 }, color: '#888' },
+              beginAtZero: false
+            }
+          }
+        }
+      });
+    });
+  }
+  if (window.Chart) { _draw(); return; }
+  if (document.querySelector('script[data-svchartjs]')) {
+    const _wait = setInterval(() => { if (window.Chart) { clearInterval(_wait); _draw(); } }, 100);
+    return;
+  }
+  const _s = document.createElement('script');
+  _s.setAttribute('data-svchartjs', '1');
+  _s.src = CDN;
+  _s.onload = _draw;
+  document.head.appendChild(_s);
 }
 
 // ── DÉFIS HEBDOMADAIRES + PARTAGE STORIES ───────────
@@ -13671,37 +13787,10 @@ function renderConnexions() {
   }
 }
 
-// ─── v63.27.0 — Autocomplete club dans le profil ─────────────────────────────
-// Listes curées par division (clubs avec calendrier importable via API-Sports).
-// Ordre : 1re division d'abord, division 2 ensuite (commentaires de repère).
-// v63.40.9 — Clubs mis à jour saison 2026-27 :
-// Football : Vaduz promu SL, Winterthur relégué CL.
-// Hockey Swiss League : 11 clubs complets (vs 6 avant).
-// Basket SBL : aligné sur agents-data.js (9 clubs vérifiés).
-const _SV_CLUBS = {
-  football: [
-    // Super League 2026-27 (12 clubs)
-    'BSC Young Boys','FC Basel','Servette FC','FC Lugano','FC Zürich','FC Lausanne-Sport',
-    'FC St-Gallen','FC Luzern','FC Sion','FC Vaduz','FC Thun','Grasshopper Club',
-    // Challenge League 2026-27
-    'FC Aarau','Neuchâtel Xamax','FC Winterthur','FC Wil','AC Bellinzona','FC Stade Lausanne-Ouchy',
-    'Étoile Carouge','FC Rapperswil-Jona','Yverdon Sport'
-  ],
-  hockey: [
-    // National League 2026-27 (14 clubs)
-    'SC Bern','ZSC Lions','HC Davos','EV Zug','HC Lugano','Lausanne HC','HC Fribourg-Gottéron',
-    'HC Ambri-Piotta','SCL Tigers','EHC Biel-Bienne','HC Ajoie','Rapperswil-Jona Lakers',
-    'EHC Kloten','Genève-Servette HC',
-    // Swiss League 2025-26 (11 clubs)
-    'EHC Arosa','EHC Basel','HC La Chaux-de-Fonds','GCK Lions','EHC Olten',
-    'SC Rapperswil-Jona Lakers II','HC Sierre','HC Thurgau','EHC Visp','HC Winterthur','HC Chur'
-  ],
-  basketball: [
-    // SB League (Ligue A) 2025-26 (9 clubs)
-    'Fribourg Olympic','Lions de Genève','Union Neuchâtel Basket','Starwings Basket Regio Basel',
-    'Pully Lausanne Basketball','BBC Monthey','Jubilee Basket Berne','Nyon Basket','Swiss Central Basket'
-  ]
-};
+// ─── Autocomplete club dans le profil ────────────────────────────────────────
+// SOURCE DE VÉRITÉ : src/data/clubs.json — NE PAS MODIFIER ICI.
+// build.js injecte automatiquement __SV_CLUBS_DATA__ au build depuis clubs.json.
+const _SV_CLUBS = __SV_CLUBS_DATA__;
 function _svUpdateClubList() {
   const sport = (document.getElementById('pSport')?.value || '').toLowerCase();
   const dl = document.getElementById('clubSuggestions');

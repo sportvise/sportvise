@@ -22,8 +22,18 @@
  * Créé en v62.33 (audit complet 2026-05-08, risque 2.2 #2).
  */
 
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
 const BASE = process.env.BASE || 'https://sportvise.ch';
 const TIMEOUT_MS = 15000;
+
+// Lecture locale du source dashboard.html (le prod slim n'embarque pas _SV_CLUBS)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname  = dirname(__filename);
+let srcDashboard = null;
+try { srcDashboard = readFileSync(join(__dirname, '../src/dashboard.html'), 'utf8'); } catch(e) { srcDashboard = null; }
 
 let passes = 0;
 let fails = 0;
@@ -322,67 +332,55 @@ async function main() {
   }
 
   // ── 11. Clubs list sanity (static — no API cost) ──────────────────────
-  // Vérifie que _SV_CLUBS dans dashboard.html est cohérent avec la saison.
-  // Détecte les désynchronisations de listes sans avoir à ouvrir le fichier manuellement.
-  section('Clubs list sanity (dashboard.html)');
-  if (!dashboard.error && dashboard.status === 200) {
-    const src = dashboard.text;
+  // SOURCE DE VÉRITÉ : src/data/clubs.json (depuis v63.42.0 — build.js injecte dans dashboard.html).
+  // Le bloc _SV_CLUBS dans dashboard.html est désormais un placeholder → on lit clubs.json directement.
+  section('Clubs list sanity (src/data/clubs.json)');
+  let clubsJson = null;
+  try { clubsJson = JSON.parse(readFileSync(join(__dirname, '../src/data/clubs.json'), 'utf8')); } catch(e) { clubsJson = null; }
+  if (clubsJson) {
+    const slClubs  = clubsJson?.football?.['Super League'] || [];
+    const clClubs  = clubsJson?.football?.['Challenge League'] || [];
+    const hlClubs  = clubsJson?.hockey?.['Swiss League'] || [];
+    const sblClubs = clubsJson?.basketball?.['SB League'] || [];
 
     // Football Super League — clubs attendus 2026-27
-    const slMustHave   = ['FC Lausanne-Sport', 'FC Vaduz', 'FC Thun', 'Grasshopper Club', 'BSC Young Boys'];
+    const slMustHave    = ['FC Lausanne-Sport', 'FC Vaduz', 'FC Thun', 'Grasshopper Club', 'BSC Young Boys'];
     const slMustNotHave = ['FC Winterthur']; // relégué en CL
     for (const c of slMustHave) {
-      // Doit apparaître AVANT "Challenge League" dans le source
-      const slIdx = src.indexOf('Super League');
-      const clIdx = src.indexOf('Challenge League');
-      const clubIdx = src.indexOf(`'${c}'`);
-      if (clubIdx > 0 && clubIdx < clIdx) ok(`SL 2026-27 contient "${c}"`);
-      else if (src.includes(`'${c}'`)) fail(`"${c}" présent mais pas en Super League (mauvaise division ?)`);
+      if (slClubs.includes(c)) ok(`SL 2026-27 contient "${c}"`);
+      else if (clClubs.includes(c)) fail(`"${c}" présent en CL mais pas en SL (mauvaise division)`);
       else fail(`SL 2026-27 manque "${c}"`);
     }
     for (const c of slMustNotHave) {
-      const clIdx  = src.indexOf('Challenge League');
-      const clubIdx = src.indexOf(`'${c}'`);
-      if (clubIdx > 0 && clubIdx < clIdx) fail(`"${c}" toujours en Super League (devrait être en CL)`);
+      if (slClubs.includes(c)) fail(`"${c}" toujours en Super League (devrait être en CL)`);
       else ok(`SL 2026-27 ne contient plus "${c}" (relégué correct)`);
     }
 
     // Football Challenge League — FC Winterthur doit y être
-    const clStart = src.indexOf('// Challenge League');
-    const hlStart = src.indexOf('// National League');
-    if (clStart > 0 && hlStart > clStart) {
-      const clBlock = src.slice(clStart, hlStart);
-      if (clBlock.includes("'FC Winterthur'")) ok('CL 2026-27 contient "FC Winterthur" (relégué SL)');
-      else fail('CL 2026-27 manque "FC Winterthur"');
-      if (clBlock.includes("'FC Vaduz'")) fail('"FC Vaduz" encore en CL (devrait être en SL)');
-      else ok('"FC Vaduz" absent de la CL (promu SL correct)');
-      // Clubs 1ère ligue promo retirés
-      for (const c of ['SC Brühl', 'FC Schaffhausen']) {
-        if (clBlock.includes(`'${c}'`)) fail(`CL contient "${c}" (club de 1ère Ligue, à retirer)`);
-        else ok(`CL ne contient plus "${c}" (niveau incorrect retiré)`);
-      }
-    } else warn('Impossible de localiser le bloc Challenge League dans dashboard.html');
+    if (clClubs.includes('FC Winterthur')) ok('CL 2026-27 contient "FC Winterthur" (relégué SL)');
+    else fail('CL 2026-27 manque "FC Winterthur"');
+    if (clClubs.includes('FC Vaduz')) fail('"FC Vaduz" encore en CL (devrait être en SL)');
+    else ok('"FC Vaduz" absent de la CL (promu SL correct)');
+    for (const c of ['SC Brühl', 'FC Schaffhausen']) {
+      if (clClubs.includes(c)) fail(`CL contient "${c}" (club de 1ère Ligue, à retirer)`);
+      else ok(`CL ne contient plus "${c}" (niveau incorrect retiré)`);
+    }
 
     // Hockey Swiss League — doit avoir 11 clubs
-    const slHStart = src.indexOf('// Swiss League');
-    const bbStart  = src.indexOf('basketball:');
-    if (slHStart > 0 && bbStart > slHStart) {
-      const slBlock = src.slice(slHStart, bbStart);
-      const swissLeagueClubs = ['EHC Arosa','HC Thurgau','HC Chur','HC Winterthur','EHC Olten','EHC Visp','HC Sierre','GCK Lions','EHC Basel','HC La Chaux-de-Fonds'];
-      for (const c of swissLeagueClubs) {
-        if (slBlock.includes(`'${c}'`)) ok(`Swiss League contient "${c}"`);
-        else fail(`Swiss League manque "${c}"`);
-      }
-    } else warn('Impossible de localiser le bloc Swiss League dans dashboard.html');
+    const swissLeagueClubs = ['EHC Arosa','HC Thurgau','HC Chur','HC Winterthur','EHC Olten','EHC Visp','HC Sierre','GCK Lions','EHC Basel','HC La Chaux-de-Fonds'];
+    for (const c of swissLeagueClubs) {
+      if (hlClubs.includes(c)) ok(`Swiss League contient "${c}"`);
+      else fail(`Swiss League manque "${c}"`);
+    }
 
     // Basket — clubs vérifiés agents-data
     const basketMust = ['Fribourg Olympic','Lions de Genève','Jubilee Basket Berne','Nyon Basket','Swiss Central Basket'];
     for (const c of basketMust) {
-      if (src.includes(`'${c}'`)) ok(`SBL contient "${c}"`);
+      if (sblClubs.includes(c)) ok(`SBL contient "${c}"`);
       else fail(`SBL manque "${c}"`);
     }
   } else {
-    warn('dashboard.html non accessible — clubs sanity skippé');
+    warn('src/data/clubs.json non lisible localement — clubs sanity skippé');
   }
 
   // ── 12. Calendar import — sports-data FC Lausanne-Sport (opt-in) ──────
