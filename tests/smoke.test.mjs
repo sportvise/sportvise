@@ -321,6 +321,236 @@ async function main() {
     }
   }
 
+  // ── 11. Clubs list sanity (static — no API cost) ──────────────────────
+  // Vérifie que _SV_CLUBS dans dashboard.html est cohérent avec la saison.
+  // Détecte les désynchronisations de listes sans avoir à ouvrir le fichier manuellement.
+  section('Clubs list sanity (dashboard.html)');
+  if (!dashboard.error && dashboard.status === 200) {
+    const src = dashboard.text;
+
+    // Football Super League — clubs attendus 2026-27
+    const slMustHave   = ['FC Lausanne-Sport', 'FC Vaduz', 'FC Thun', 'Grasshopper Club', 'BSC Young Boys'];
+    const slMustNotHave = ['FC Winterthur']; // relégué en CL
+    for (const c of slMustHave) {
+      // Doit apparaître AVANT "Challenge League" dans le source
+      const slIdx = src.indexOf('Super League');
+      const clIdx = src.indexOf('Challenge League');
+      const clubIdx = src.indexOf(`'${c}'`);
+      if (clubIdx > 0 && clubIdx < clIdx) ok(`SL 2026-27 contient "${c}"`);
+      else if (src.includes(`'${c}'`)) fail(`"${c}" présent mais pas en Super League (mauvaise division ?)`);
+      else fail(`SL 2026-27 manque "${c}"`);
+    }
+    for (const c of slMustNotHave) {
+      const clIdx  = src.indexOf('Challenge League');
+      const clubIdx = src.indexOf(`'${c}'`);
+      if (clubIdx > 0 && clubIdx < clIdx) fail(`"${c}" toujours en Super League (devrait être en CL)`);
+      else ok(`SL 2026-27 ne contient plus "${c}" (relégué correct)`);
+    }
+
+    // Football Challenge League — FC Winterthur doit y être
+    const clStart = src.indexOf('// Challenge League');
+    const hlStart = src.indexOf('// National League');
+    if (clStart > 0 && hlStart > clStart) {
+      const clBlock = src.slice(clStart, hlStart);
+      if (clBlock.includes("'FC Winterthur'")) ok('CL 2026-27 contient "FC Winterthur" (relégué SL)');
+      else fail('CL 2026-27 manque "FC Winterthur"');
+      if (clBlock.includes("'FC Vaduz'")) fail('"FC Vaduz" encore en CL (devrait être en SL)');
+      else ok('"FC Vaduz" absent de la CL (promu SL correct)');
+      // Clubs 1ère ligue promo retirés
+      for (const c of ['SC Brühl', 'FC Schaffhausen']) {
+        if (clBlock.includes(`'${c}'`)) fail(`CL contient "${c}" (club de 1ère Ligue, à retirer)`);
+        else ok(`CL ne contient plus "${c}" (niveau incorrect retiré)`);
+      }
+    } else warn('Impossible de localiser le bloc Challenge League dans dashboard.html');
+
+    // Hockey Swiss League — doit avoir 11 clubs
+    const slHStart = src.indexOf('// Swiss League');
+    const bbStart  = src.indexOf('basketball:');
+    if (slHStart > 0 && bbStart > slHStart) {
+      const slBlock = src.slice(slHStart, bbStart);
+      const swissLeagueClubs = ['EHC Arosa','HC Thurgau','HC Chur','HC Winterthur','EHC Olten','EHC Visp','HC Sierre','GCK Lions','EHC Basel','HC La Chaux-de-Fonds'];
+      for (const c of swissLeagueClubs) {
+        if (slBlock.includes(`'${c}'`)) ok(`Swiss League contient "${c}"`);
+        else fail(`Swiss League manque "${c}"`);
+      }
+    } else warn('Impossible de localiser le bloc Swiss League dans dashboard.html');
+
+    // Basket — clubs vérifiés agents-data
+    const basketMust = ['Fribourg Olympic','Lions de Genève','Jubilee Basket Berne','Nyon Basket','Swiss Central Basket'];
+    for (const c of basketMust) {
+      if (src.includes(`'${c}'`)) ok(`SBL contient "${c}"`);
+      else fail(`SBL manque "${c}"`);
+    }
+  } else {
+    warn('dashboard.html non accessible — clubs sanity skippé');
+  }
+
+  // ── 12. Calendar import — sports-data FC Lausanne-Sport (opt-in) ──────
+  // Vérifie que le Tier 3 hyphen-stripping résout bien le bug "Club non trouvé".
+  // Opt-in car coûte 1-2 appels API-Sports (quota limité).
+  section('Calendar import sports-data (opt-in — set SV_TEST_SPORTS_DATA=1)');
+  if (!process.env.SV_TEST_SPORTS_DATA) {
+    warn('SV_TEST_SPORTS_DATA absent → sports-data skippé (export SV_TEST_SPORTS_DATA=1 pour activer)');
+  } else {
+    const clubsToCheck = [
+      { club: 'FC Lausanne-Sport', sport: 'football', league: 207 },
+      { club: 'BSC Young Boys',    sport: 'football', league: 207 },
+      { club: 'SC Bern',           sport: 'hockey',   league: 38  },
+    ];
+    for (const { club, sport, league } of clubsToCheck) {
+      const sdRes = await getResponse(
+        `/.netlify/functions/sports-data?sport=${sport}&action=team-fixtures&league=${league}&club=${encodeURIComponent(club)}`
+      );
+      if (sdRes.error) { fail(`sports-data "${club}" : crash → ${sdRes.error}`); continue; }
+      if (sdRes.status !== 200) { fail(`sports-data "${club}" → ${sdRes.status}`); continue; }
+      try {
+        const body = JSON.parse(sdRes.text);
+        if (body?.data?.teamFound === true) ok(`sports-data "${club}" → teamFound: true ✓`);
+        else if (body?.data?.teamFound === false) fail(`sports-data "${club}" → teamFound: false (club non trouvé dans l'API)`);
+        else fail(`sports-data "${club}" → structure inattendue : ${JSON.stringify(body).slice(0, 80)}`);
+      } catch (e) {
+        fail(`sports-data "${club}" → JSON invalide : ${e.message}`);
+      }
+    }
+  }
+
+  // ── 13. Qualité agents — tutoiement & longueur (opt-in avec auth) ─────
+  // Vérifie que les agents ne vouvoient pas l'athlète et que bypassSession1
+  // produit un message court (< 1400 chars ≈ 350 tokens).
+  // Requiert SV_TEST_EMAIL + SV_TEST_PASSWORD (réutilise la session section 10).
+  // Coût : ~1 appel Haiku (~$0.001) par run.
+  section('Qualité agents — tutoiement & bypassSession1 (opt-in)');
+  const testEmailQ = process.env.SV_TEST_EMAIL;
+  const testPasswordQ = process.env.SV_TEST_PASSWORD;
+  if (!testEmailQ || !testPasswordQ) {
+    warn('SV_TEST_EMAIL/PASSWORD absents → qualité agents skippée');
+  } else {
+    // Re-login (section 10 peut avoir expiré ou pas tourné)
+    let qToken = null;
+    try {
+      const SUPABASE_URL = 'https://ckikyvokurpehavjlkbc.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNraWt5dm9rdXJwZWhhdmpsa2JjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMjE2MzgsImV4cCI6MjA5MTY5NzYzOH0.nbvRqNly8KnqlaInY62C9YOA5-32YxrFSavXyreCOYY';
+      const ac = new AbortController();
+      const t = setTimeout(() => ac.abort(), TIMEOUT_MS);
+      const authRes = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_ANON_KEY, 'content-type': 'application/json' },
+        body: JSON.stringify({ email: testEmailQ, password: testPasswordQ }),
+        signal: ac.signal
+      });
+      clearTimeout(t);
+      const authBody = await authRes.json();
+      if (authRes.status === 200 && authBody.access_token) qToken = authBody.access_token;
+    } catch (e) { warn(`Re-login échoué : ${e.message}`); }
+
+    if (qToken) {
+      // 13a. bypassSession1 — message de bienvenue court, pas de vouvoiement
+      try {
+        const ac = new AbortController();
+        const t = setTimeout(() => ac.abort(), 30000);
+        const ahaRes = await fetch(`${BASE}/.netlify/functions/chat`, {
+          method: 'POST',
+          headers: { 'authorization': `Bearer ${qToken}`, 'content-type': 'application/json' },
+          body: JSON.stringify({
+            agentId: 'equipe',
+            message: 'Première analyse d\'onboarding. Voici mon profil : Sport: Football, Niveau: Professionnel, Objectif principal: Progresser. Donne-moi ta première analyse personnalisée.',
+            history: [],
+            lang: 'fr',
+            bypassSession1: true
+          }),
+          signal: ac.signal
+        });
+        clearTimeout(t);
+        if (ahaRes.status === 200) {
+          const body = JSON.parse(await ahaRes.text());
+          const reply = body.reply || body.message || body.content || '';
+          // Longueur : bienvenue = court (< 1400 chars)
+          if (reply.length === 0) {
+            fail('bypassSession1 → reply vide');
+          } else if (reply.length > 1400) {
+            fail(`bypassSession1 → réponse trop longue : ${reply.length} chars (max 1400 — trop lent pour une bienvenue)`);
+          } else {
+            ok(`bypassSession1 → longueur OK : ${reply.length} chars`);
+          }
+          // Tutoiement : détecter "vous" / "votre" / "vos" singuliers
+          // Heuristique : chercher " vous " / " votre " / " vos " comme mots isolés
+          const vouvoiement = reply.match(/\b(vous|votre|vos)\b/gi) || [];
+          if (vouvoiement.length > 0) {
+            fail(`bypassSession1 → VOUVOIEMENT détecté : "${vouvoiement.join('", "')}" dans la réponse`);
+          } else {
+            ok(`bypassSession1 → pas de vouvoiement singulier ✓`);
+          }
+        } else if (ahaRes.status === 429) {
+          warn('bypassSession1 → 429 rate-limited (quota atteint — OK)');
+        } else {
+          fail(`bypassSession1 → ${ahaRes.status}`);
+        }
+      } catch (e) {
+        fail(`bypassSession1 : crash → ${e.message}`);
+      }
+
+      // 13b. Message normal agent — tutoiement
+      try {
+        const ac = new AbortController();
+        const t = setTimeout(() => ac.abort(), 30000);
+        const normRes = await fetch(`${BASE}/.netlify/functions/chat`, {
+          method: 'POST',
+          headers: { 'authorization': `Bearer ${qToken}`, 'content-type': 'application/json' },
+          body: JSON.stringify({
+            agentId: 'physique',
+            message: 'Donne-moi un conseil court pour récupérer après un match.',
+            history: [],
+            lang: 'fr'
+          }),
+          signal: ac.signal
+        });
+        clearTimeout(t);
+        if (normRes.status === 200) {
+          const body = JSON.parse(await normRes.text());
+          const reply = body.reply || body.message || body.content || '';
+          const vouvoiement = reply.match(/\b(vous|votre|vos)\b/gi) || [];
+          if (vouvoiement.length > 0) fail(`Agent physique → VOUVOIEMENT : "${vouvoiement.join('", "')}" (règle tutoiement violée)`);
+          else ok(`Agent physique → tutoiement OK (preview: "${reply.slice(0,60)}…")`);
+        } else if (normRes.status === 429) {
+          warn('Agent physique → 429 rate-limited');
+        } else {
+          fail(`Agent physique → ${normRes.status}`);
+        }
+      } catch (e) {
+        fail(`Agent physique : crash → ${e.message}`);
+      }
+    } else {
+      warn('Pas de token → tests qualité agents skippés');
+    }
+  }
+
+  // ── 14. Briefs push — endpoints accessibles (opt-in trigger token) ─────
+  section('Briefs push — endpoints (opt-in — set BRIEF_TRIGGER_TOKEN=…)');
+  const triggerToken = process.env.BRIEF_TRIGGER_TOKEN;
+  if (!triggerToken) {
+    warn('BRIEF_TRIGGER_TOKEN absent → briefs push skippés (export BRIEF_TRIGGER_TOKEN=… pour activer)');
+  } else {
+    for (const fnName of ['send-morning-brief', 'send-evening-brief']) {
+      const briefRes = await getResponse(`/.netlify/functions/${fnName}`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-trigger-token': triggerToken },
+        body: JSON.stringify({})
+      });
+      if (briefRes.error) { fail(`${fnName} : crash → ${briefRes.error}`); continue; }
+      if (briefRes.status === 200) {
+        try {
+          const b = JSON.parse(briefRes.text);
+          if (b.ok === true) ok(`${fnName} → 200 ok:true (totalUsers: ${b.totalUsers ?? '?'}, sent: ${b.sent ?? '?'})`);
+          else fail(`${fnName} → 200 mais ok:false — ${JSON.stringify(b).slice(0,80)}`);
+        } catch (e) { fail(`${fnName} → 200 mais JSON invalide`); }
+      } else if (briefRes.status === 401) {
+        fail(`${fnName} → 401 (token invalide ou absent)`);
+      } else {
+        fail(`${fnName} → ${briefRes.status}`);
+      }
+    }
+  }
+
   // ── Récap ──
   console.log(`\n\x1b[1m── Récap ───────────\x1b[0m`);
   console.log(`  Passes  : \x1b[32m${passes}\x1b[0m`);
