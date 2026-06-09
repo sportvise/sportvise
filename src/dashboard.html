@@ -4274,8 +4274,17 @@ async function renderChat(page) {
   } catch(e) { console.warn('[KICKOFF] processing error:', e); }
   // Proactive messages removed — replaced by Morning Brief modal
 
+  // v63.42.1 — Fix: memberDays et _calCount hors scope (définis dans renderDashboard, pas renderChat)
+  const memberDays = currentUser.created_at
+    ? Math.floor((Date.now() - new Date(currentUser.created_at)) / 86400000) : 0;
+  let _calCount = 0;
+  try {
+    const { count: _cc } = await sb.from('calendar_events').select('*',{count:'exact',head:true}).eq('user_id', currentUser.id);
+    _calCount = _cc || 0;
+  } catch(e) { /* silently ignore — bannière simplement masquée si erreur */ }
+
   // v63.42.0 — Bannière J+2 calendrier vide (Phase 1 #5)
-  const _showCalBanner = (memberDays >= 2) && ((_calCount || 0) === 0) && !sessionStorage.getItem('sv_cal_banner_dismissed');
+  const _showCalBanner = (memberDays >= 2) && (_calCount === 0) && !sessionStorage.getItem('sv_cal_banner_dismissed');
   const _calBannerHtml = _showCalBanner ? '<div id="svCalBanner" style="margin:8px 16px 0;padding:12px 14px;background:linear-gradient(135deg,#3b82f608,#6366f108);border:1px solid #3b82f630;border-radius:10px;display:flex;align-items:flex-start;gap:10px"><span style="font-size:18px;flex-shrink:0">📅</span><div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px">Calendrier vide</div><div style="font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:8px">Tu n\'as pas encore d\'événements dans ton calendrier. Dis-moi juste : quand est ton prochain match ou entraînement ?</div><button onclick="const i=document.getElementById(\'chatInput\');i.value=\'Mon prochain événement : \';i.focus();i.setSelectionRange(i.value.length,i.value.length);document.getElementById(\'svCalBanner\').remove();sessionStorage.setItem(\'sv_cal_banner_dismissed\',\'1\')" style="padding:6px 12px;border-radius:7px;border:none;background:#3b82f6;color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;margin-right:6px">📅 Ajouter</button><button onclick="document.getElementById(\'svCalBanner\').remove();sessionStorage.setItem(\'sv_cal_banner_dismissed\',\'1\')" style="padding:6px 10px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:11px;cursor:pointer;font-family:Inter,sans-serif">Plus tard</button></div></div>' : '';
 
   const t = T[currentLang];
