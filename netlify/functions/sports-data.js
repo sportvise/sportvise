@@ -183,7 +183,7 @@ exports.handler = async (event) => {
           }
           team = r1.team;
 
-          // Tier 2: simplified name fallback
+          // Tier 2: simplified name fallback (strip common prefixes/suffixes)
           if (!team) {
             const simplified = params.club
               .replace(/^(FC|HC|SC|FCC|BC|BSC|EHC|SCB)\s+/i, '')
@@ -193,6 +193,22 @@ exports.handler = async (event) => {
             if (simplified && simplified.length >= 3 && simplified.toLowerCase() !== params.club.toLowerCase()) {
               const r2 = await trySearch(simplified);
               if (r2.ok && r2.team) team = r2.team;
+              // Tier 3: replace hyphens with spaces (e.g. "Lausanne-Sport" → "Lausanne Sport")
+              if (!team && simplified.includes('-')) {
+                const noHyphen = simplified.replace(/-/g, ' ').trim();
+                if (noHyphen.toLowerCase() !== simplified.toLowerCase()) {
+                  const r3 = await trySearch(noHyphen);
+                  if (r3.ok && r3.team) team = r3.team;
+                }
+              }
+            }
+          }
+          // Tier 3b: hyphen fallback on full original name (e.g. "FC Lausanne-Sport")
+          if (!team && params.club.includes('-')) {
+            const noHyphenFull = params.club.replace(/-/g, ' ').trim();
+            if (noHyphenFull.toLowerCase() !== params.club.toLowerCase()) {
+              const r3b = await trySearch(noHyphenFull);
+              if (r3b.ok && r3b.team) team = r3b.team;
             }
           }
 

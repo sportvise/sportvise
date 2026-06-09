@@ -13674,27 +13674,32 @@ function renderConnexions() {
 // ─── v63.27.0 — Autocomplete club dans le profil ─────────────────────────────
 // Listes curées par division (clubs avec calendrier importable via API-Sports).
 // Ordre : 1re division d'abord, division 2 ensuite (commentaires de repère).
+// v63.40.9 — Clubs mis à jour saison 2026-27 :
+// Football : Vaduz promu SL, Winterthur relégué CL.
+// Hockey Swiss League : 11 clubs complets (vs 6 avant).
+// Basket SBL : aligné sur agents-data.js (9 clubs vérifiés).
 const _SV_CLUBS = {
   football: [
-    // Super League
+    // Super League 2026-27 (12 clubs)
     'BSC Young Boys','FC Basel','Servette FC','FC Lugano','FC Zürich','FC Lausanne-Sport',
-    'FC St-Gallen','FC Luzern','FC Sion','FC Winterthur','FC Thun','Grasshopper Club',
-    // Challenge League
-    'FC Aarau','Neuchâtel Xamax','FC Vaduz','FC Wil','AC Bellinzona','FC Stade Lausanne-Ouchy',
-    'FC Schaffhausen','Étoile Carouge','SC Brühl','FC Rapperswil-Jona','Yverdon Sport'
+    'FC St-Gallen','FC Luzern','FC Sion','FC Vaduz','FC Thun','Grasshopper Club',
+    // Challenge League 2026-27
+    'FC Aarau','Neuchâtel Xamax','FC Winterthur','FC Wil','AC Bellinzona','FC Stade Lausanne-Ouchy',
+    'Étoile Carouge','FC Rapperswil-Jona','Yverdon Sport'
   ],
   hockey: [
-    // National League
+    // National League 2026-27 (14 clubs)
     'SC Bern','ZSC Lions','HC Davos','EV Zug','HC Lugano','Lausanne HC','HC Fribourg-Gottéron',
     'HC Ambri-Piotta','SCL Tigers','EHC Biel-Bienne','HC Ajoie','Rapperswil-Jona Lakers',
     'EHC Kloten','Genève-Servette HC',
-    // Swiss League
-    'HC La Chaux-de-Fonds','EHC Olten','EHC Visp','HC Sierre','GCK Lions','EHC Basel'
+    // Swiss League 2025-26 (11 clubs)
+    'EHC Arosa','EHC Basel','HC La Chaux-de-Fonds','GCK Lions','EHC Olten',
+    'SC Rapperswil-Jona Lakers II','HC Sierre','HC Thurgau','EHC Visp','HC Winterthur','HC Chur'
   ],
   basketball: [
-    // SB League
-    'Fribourg Olympic','BBC Lausanne','Lions de Genève','SAM Massagno','Starwings Basket',
-    'Swiss Central Basket','BBC Monthey-Chablais','Union Neuchâtel','Spinelli Massagno','Pully Lausanne Foxes'
+    // SB League (Ligue A) 2025-26 (9 clubs)
+    'Fribourg Olympic','Lions de Genève','Union Neuchâtel Basket','Starwings Basket Regio Basel',
+    'Pully Lausanne Basketball','BBC Monthey','Jubilee Basket Berne','Nyon Basket','Swiss Central Basket'
   ]
 };
 function _svUpdateClubList() {
