@@ -39,8 +39,48 @@ try {
   console.warn('  ⚠️  Could not read version.json:', e.message);
 }
 
+// ── 0b. Inject clubs data from src/data/clubs.json ──────────────────────────
+// Source de vérité unique pour les listes de clubs (_SV_CLUBS dans dashboard).
+// Format JSON → converti en objet JS plat { football: [...], hockey: [...], basketball: [...] }
+// où chaque sport = tableau de tous les clubs (toutes divisions confondues).
+let svClubsInject = 'null'; // fallback si fichier absent
+try {
+  const clubsJson = JSON.parse(fs.readFileSync(path.join(SRC, 'data', 'clubs.json'), 'utf8'));
+  // Aplatir : { "Super League": [...], "Challenge League": [...] } → [...]
+  const flat = {};
+  for (const [sport, divisions] of Object.entries(clubsJson)) {
+    if (sport === '_meta') continue;
+    const allClubs = [];
+    for (const [division, clubs] of Object.entries(divisions)) {
+      allClubs.push(`    // ${division}`);
+      clubs.forEach(c => allClubs.push(`    '${c.replace(/'/g, "\\'")}'`));
+    }
+    flat[sport] = allClubs;
+  }
+  const lines = ['{\n'];
+  const sports = Object.keys(flat);
+  sports.forEach((sport, i) => {
+    lines.push(`  ${sport}: [\n${flat[sport].join(',\n')}\n  ]`);
+    if (i < sports.length - 1) lines.push(',\n');
+  });
+  lines.push('\n}');
+  svClubsInject = lines.join('');
+  const total = Object.values(flat).reduce((acc, v) => acc + v.filter(l => !l.trim().startsWith('//') && l.trim()).length, 0);
+  console.log(`  ✅ clubs.json injecté → ${total} clubs (${sports.join(', ')})`);
+} catch (e) {
+  console.warn('  ⚠️  src/data/clubs.json absent ou invalide :', e.message);
+}
+
 // ── 1. Process dashboard.html ──────────────────────
 let dashboardRaw = fs.readFileSync(path.join(SRC, 'dashboard.html'), 'utf8');
+
+// Inject _SV_CLUBS from clubs.json
+if (dashboardRaw.includes('__SV_CLUBS_DATA__')) {
+  dashboardRaw = dashboardRaw.replace('__SV_CLUBS_DATA__', svClubsInject);
+  console.log('  ✅ __SV_CLUBS_DATA__ remplacé dans dashboard.html');
+} else {
+  console.warn('  ⚠️  Placeholder __SV_CLUBS_DATA__ introuvable dans dashboard.html');
+}
 
 // Inject APP_V from version.json (overrides the hardcoded value in source)
 if (appVersion) {
