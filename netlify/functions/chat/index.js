@@ -467,23 +467,26 @@ ${smartContext}`;
   // ou hors contexte car le modèle tente d'être utile à tout prix).
   const isFirstMessageWithAgent = !history || history.length === 0;
   if (bypassSession1) {
-    // v63.30 — Moment aha onboarding : analyse directe AVANT le 1er vrai chat.
-    // Pas de présentation, pas de question — une preuve de valeur immédiate
-    // ancrée sur du spécifique suisse RÉEL. Anti-fiction strict.
-    systemWithLang += `\n\n[AHA — PREMIÈRE ANALYSE D'ONBOARDING]
-Cet athlète vient de terminer son onboarding. Tu produis ta TOUTE PREMIÈRE analyse, affichée AVANT le premier chat. Objectif : prouver immédiatement ta valeur et ta connaissance du contexte sportif suisse.
+    // v63.40.7 — Message de bienvenue onboarding (remplace l'analyse factuelle v63.30
+    // qui produisait des erreurs graves : contrats inventés, chiffres non vérifiés).
+    // Objectif : présenter SPORTVISE, ses domaines, son mode de fonctionnement.
+    // Aucun fait inventé possible — aucune analyse, aucun chiffre.
+    systemWithLang += `\n\n[BIENVENUE — MESSAGE D'ACCUEIL ONBOARDING]
+Cet athlète vient de terminer son onboarding. Tu produis son PREMIER MESSAGE, affiché AVANT le premier vrai chat. C'est un message de bienvenue : pas une analyse, pas un conseil.
 
-STRUCTURE (4-6 phrases, pas plus) :
-1. Une observation concrète sur SON profil (sport + niveau + objectif), pas générique.
-2. UN fait spécifique suisse RÉEL et pertinent (seuil Swiss Olympic Card, logique Aide Sportive Suisse, médecine du sport, structure fédérale, fixture importée si dispo dans le contexte). Du vrai, du vérifiable.
-3. UNE première action immédiate et actionnable que tu lui recommandes.
+STRUCTURE (3 à 4 phrases courtes, MAXIMUM) :
+1. Une phrase d'accueil chaleureuse et directe qui lui confirme qu'il est au bon endroit — en lien avec son sport et son objectif si connus.
+2. Ce que SPORTVISE (11 agents spécialisés) peut faire concrètement dans son domaine : exemples de thèmes couverts adaptés à son sport/objectif (carrière, sponsors, finances, contrats, physique, mental, nutrition, sommeil, récupération…).
+3. Comment ça fonctionne : chaque agent est expert de son domaine, il peut poser n'importe quelle question à n'importe quel moment, les agents se parlent entre eux pour une vue complète.
+4. (Optionnel) Une invitation courte à commencer.
 
 INTERDIT ABSOLU :
-- Te présenter ("Salut, je suis…"), souhaiter la bienvenue, ou poser une question.
-- Inventer une date, une compétition, un match, un chiffre non vérifié (doctrine anti-fiction). Si tu n'as pas la donnée, ancre sur une constante suisse vraie, jamais sur une prédiction.
-- Rester vague ("je peux t'aider à progresser…") — la force vient de la spécificité réelle.
+- Inventer un seul chiffre, fait, statistique, montant, nom de club, date de mercato ou donnée contractuelle. ZÉRO fait inventé.
+- Faire une "première analyse" ou donner un conseil concret — c'est une présentation, pas un bilan.
+- Dépasser 4 phrases.
+- Vouvoyer l'athlète : "vous / votre / vos" comme forme de politesse singulière sont INTERDITS. Tutoiement strict. Exemple CORRECT : "tu as accès à 11 agents". Exemple INTERDIT : "vous avez accès à 11 agents". (Le "vous" pluriel réel reste autorisé si plusieurs personnes sont désignées.)
 
-Ton : direct, expert, chaleureux, tutoiement, pas d'emoji décoratif. C'est une démonstration de compétence, pas une conversation.`;
+Ton : chaleureux, confiant, tutoiement strict.`;
   } else if (isFirstMessageWithAgent) {
     systemWithLang += `\n\n[SESSION 1 — DÉBUT DE RELATION AVEC L'ATHLÈTE — v63.11.3]
 C'est ta première interaction avec cet athlète sur ton domaine d'expertise.
@@ -571,7 +574,8 @@ RÈGLE STRICTE : n'inclus le tag QUE si l'athlète mentionne explicitement une d
       headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
       body: JSON.stringify({
         model: modelConfig.id,
-        max_tokens: modelConfig.maxTokens,
+        // bypassSession1 = message de bienvenue court → 350 tokens max (rapide + concis)
+        max_tokens: bypassSession1 ? 350 : modelConfig.maxTokens,
         temperature: modelConfig.temperature,
         system: systemWithLang,
         messages
