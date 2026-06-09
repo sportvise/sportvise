@@ -14,6 +14,11 @@
 [functions."meeting-trigger"]
   schedule = "0 6 * * *"
 
+# Brief du soir — 18:30 UTC = 20:30 CEST (été) / 19:30 CET (hiver)
+# Push 🌙 aux users opt-in sans daily_log du jour.
+[functions."send-evening-brief"]
+  schedule = "30 18 * * *"
+
 # v63.3.7 — Pin Node 22 LTS pour fix Apple Web Push BadJwtToken.
 # Diagnostic 09/05/2026 : sandbox Node v22.22.0 / OpenSSL 3.x = Apple accepte JWT (status 201
 # Created confirmé via reproduction directe avec mêmes keys / subject / endpoint / payload

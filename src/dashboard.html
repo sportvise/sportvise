@@ -9735,9 +9735,10 @@ function closeMorningBrief() {
 // ── EVENING BRIEF — Discreet journal express ────────
 async function showEveningBrief() {
   try {
-    // Only show after 18h
+    // Only show between 18h and 22h59 (no brief after midnight)
     const hour = new Date().getHours();
     if (hour < 18) return;
+    if (hour >= 23) return;
 
     // Only show after onboarding (v46: dual-check via isOnboardDone)
     if (!isOnboardDone()) return;
@@ -9791,8 +9792,8 @@ async function showEveningBrief() {
     // If mood AND energy are already filled, journal is done — skip
     if (todayLog && todayLog.mood && todayLog.energy) return;
 
-    // Mark as shown
-    localStorage.setItem(briefKey, '1');
+    // Store key for saveEveningBrief (localStorage written only on successful save)
+    _eveningBriefKey = briefKey;
 
     const name = (userProfile?.full_name || currentUser.user_metadata?.full_name || 'Champion').split(' ')[0];
     const t = T[currentLang];
@@ -9889,7 +9890,8 @@ async function showEveningBrief() {
 }
 
 // Evening brief state
-var _eveningData = {};
+var _eveningData   = {};
+var _eveningBriefKey = null; // localStorage key — written only on successful save
 
 function selectEveningField(field, value, btn) {
   // Mark as interacted (cancel auto-dismiss)
@@ -9940,6 +9942,8 @@ async function saveEveningBrief() {
       await sb.from('daily_log').insert(logData);
     }
 
+    // Mark as seen today — only on successful save
+    if (_eveningBriefKey) { localStorage.setItem(_eveningBriefKey, '1'); }
     // Success feedback
     var tt = T[currentLang]; if (btn) { btn.textContent = '✅ ' + (tt.briefSaved||'Enregistré !'); btn.style.background = '#10b981'; }
     setTimeout(() => closeEveningBrief(), 800);
@@ -9956,7 +9960,8 @@ function closeEveningBrief() {
     el.style.transform = 'translateY(100%)';
     setTimeout(() => el.remove(), 400);
   }
-  _eveningData = {};
+  _eveningData    = {};
+  _eveningBriefKey = null;
 }
 
 /* ── checkProactiveAgents REMOVED v24 (replaced by Morning Brief) ──
