@@ -470,6 +470,9 @@ function _renderOptimisticQuestion(question, turnNum) {
 }
 
 // v63.31.1 — Redesign layout : card avec header coloré par agent, gap 12px, padding généreux.
+// v63.44.0 — gras markdown minimal, à appliquer UNIQUEMENT sur du texte déjà échappé
+function _mtBold(s) { return s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>'); }
+
 function _renderThreadHtml(history) {
   let html = '';
   history.forEach((turn, idx) => {
@@ -502,7 +505,9 @@ function _renderThreadHtml(history) {
       const agentObj = (typeof AGENTS !== 'undefined' && AGENTS[r.agentId]) ? AGENTS[r.agentId] : null;
       const emoji = agentObj?.emoji || '🧑‍💼';
       const color = agentObj?.color || '#f59e0b';
-      const replyHtml = (r.reply || '').split('\n').map(line => escapeHtml(line)).join('<br>');
+      // v63.44.0 — parse le gras markdown APRÈS escapeHtml (sinon "**Recommandation**"
+      // s'affichait avec les astérisques bruts dans les réponses de réunion).
+      const replyHtml = (r.reply || '').split('\n').map(line => _mtBold(escapeHtml(line))).join('<br>');
       // Header band coloré (couleur agent en 8-digit hex : XX = opacité)
       html += `<div style="border:1px solid ${color}40;border-radius:12px;overflow:hidden">
         <div style="padding:10px 14px;background:${color}18;border-bottom:1px solid ${color}25;display:flex;align-items:center;gap:8px">
@@ -536,12 +541,12 @@ function _renderSynthesisBlock(synthesisText) {
   bullets.forEach(b => {
     bulletsHtml += `<div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start">
       <span style="color:#f59e0b;font-weight:800;flex-shrink:0;font-size:14px;line-height:1.4">→</span>
-      <span style="font-size:13px;line-height:1.5">${escapeHtml(b)}</span>
+      <span style="font-size:13px;line-height:1.5">${_mtBold(escapeHtml(b))}</span>
     </div>`;
   });
 
   if (!bulletsHtml) {
-    bulletsHtml = `<div style="font-size:13px;color:var(--text);line-height:1.5">${escapeHtml(synthesisText)}</div>`;
+    bulletsHtml = `<div style="font-size:13px;color:var(--text);line-height:1.5">${_mtBold(escapeHtml(synthesisText))}</div>`;
   }
 
   return `<div style="margin-left:40px;border:1px solid rgba(245,158,11,0.45);border-radius:12px;overflow:hidden">
