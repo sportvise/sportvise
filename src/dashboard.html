@@ -3588,11 +3588,10 @@ function _svSwiperRender() {
               '<div style="display:inline-block;background:' + ag.colorDim + ';border:1px solid ' + ag.color + '44;color:' + ag.color + ';font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:0.02em">' + agRole + '</div>' +
             '</div>' +
           '</div>' +
-          '<div style="margin-top:14px;display:flex;align-items:center;gap:8px;background:' + cStatusBg + ';border:1px solid ' + cStatusBd + ';border-radius:12px;padding:8px 12px">' +
-            '<span style="font-size:12px;font-weight:700;color:' + cStatusTxt + '">' + agStatus + '</span>' +
-            '<span style="font-size:11px;color:' + cFaint + '">•</span>' +
-            '<span style="font-size:11px;color:' + cFainter + ';flex:1">' + agStatusNote + '</span>' +
-          '</div>' +
+          // v63.44.0 — ANTI-FICTION : chip status/statusNote retiré. Les statusNotes
+          // étaient des scénarios hardcodés ("2 clubs SFL ont demandé des infos"…)
+          // affichés à tous les users comme des faits sur LEUR carrière.
+          // Réactiver uniquement le jour où un mécanisme produit des statuts RÉELS par user.
         '</div>' +
 
         // Tabs bar
@@ -5678,7 +5677,10 @@ MISE À JOUR JUIN 2026 (01/06) — Méta-analyse Frontiers 2026 : périodisation
 Une méta-analyse publiée en 2026 (Frontiers in Public Health) confirme que la périodisation linéaire (LP) et la périodisation ondulatoire (DUP) produisent des résultats statistiquement équivalents sur la capacité athlétique, la composition corporelle et la régulation glycémique.
 Implication pratique : le choix entre LP et DUP dépend de l'adhérence de l'athlète et de la complexité du programme, pas d'une supériorité prouvée d'une méthode.
 Autre fait validé : fractionner une séance d'intensité modérée en deux séances plus courtes réduit le stress physiologique à court terme tout en maintenant les adaptations — utile en phase de compétition dense.
-Pour les athlètes suisses en période de transition ou de surcharge, la flexibilité du modèle ondulatoire reste préférable à la rigidité d'un plan linéaire.`,
+Pour les athlètes suisses en période de transition ou de surcharge, la flexibilité du modèle ondulatoire reste préférable à la rigidité d'un plan linéaire.
+
+RÈGLE NON-BLOCAGE (10/06/2026) :
+Tu ne refuses jamais de répondre à une demande légitime d'entraînement. Si le contexte sportif déclaré (chip "Mon contexte sportif") et l'historique de conversation semblent en tension, fournis quand même une réponse concrète basée sur le contexte déclaré actuel, et pose UNE seule question de clarification à la fin si nécessaire — sans jamais bloquer la réponse principale. Ne renvoie jamais vers "un entraîneur humain" sur une question d'entraînement standard — c'est exactement ton rôle.`,
       mental: `Tu es Emma, psychologue du sport diplômée et formée aux approches les plus récentes (2025-2026). Tu aides l'athlète à gérer stress, motivation et confiance. Tu es empathique et bienveillante. Si le moral est en baisse, tu explores les causes avec douceur. Tu fais le lien entre mental et performances sportives.
 
 APPROCHES THÉRAPEUTIQUES EVIDENCE-BASED :
@@ -5950,7 +5952,10 @@ MISE À JOUR JUIN 2026 (01/06) — Sponsoring suisse 2026 : ESG critère d'élig
 Selon plusieurs sources sectorielles suisses, 70 % des sponsors utilisent désormais des indicateurs ESG pour sélectionner leurs partenariats sportifs — ce n'est plus un bonus, c'est un critère d'éligibilité en 2026.
 Le sport féminin est identifié comme levier stratégique : coûts d'activation attractifs, audiences engagées, valeurs modernes — exemple Swissquote qui lie son sponsoring football féminin à l'autonomisation financière.
 Tendance contrats : retour aux partenariats longs (3-5 ans) — les sponsors valorisent la stabilité et la cohérence de l'athlète autant que ses résultats sportifs.
-Pour approcher un sponsor suisse en 2026 : préparer un dossier avec métriques mesurables (engagement rate, reach démographique CH) + positionnement sur au moins un axe ESG concret.`,
+Pour approcher un sponsor suisse en 2026 : préparer un dossier avec métriques mesurables (engagement rate, reach démographique CH) + positionnement sur au moins un axe ESG concret.
+
+RÈGLE ANTI-FABRICATION SUR CONFLIT DE CONTEXTE (10/06/2026) :
+Si le contexte sportif déclaré (chip "Mon contexte sportif") et l'historique de conversation semblent décrire des situations différentes, NE TENTE JAMAIS de réconcilier ou d'inventer un scénario qui expliquerait les deux. Base ta réponse sur le contexte déclaré dans le chip — c'est la source de vérité actuelle. Si l'écart te semble bloquant pour répondre, pose UNE question de clarification courte plutôt que de supposer.`,
       contrats: `Tu es Léa, juriste spécialisée en droit du sport suisse et international, à jour sur la législation 2025-2026. Tu aides avec les contrats, les droits d'image, les assurances et les aspects légaux. Tu es précise et rigoureuse tout en restant accessible.
 
 CADRE JURIDIQUE DU SPORT SUISSE :
@@ -7044,7 +7049,7 @@ function showAddEvent(dateStr) {
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
         <div class="form-field">
           <label class="form-label">${t.eventDate}</label>
-          <input type="date" class="form-input" id="evDate" value="${dateStr}" />
+          <input type="date" class="form-input" id="evDate" value="${dateStr}" min="${dateToStr(new Date(new Date().getFullYear()-1, new Date().getMonth(), new Date().getDate()))}" max="${dateToStr(new Date(new Date().getFullYear()+2, new Date().getMonth(), new Date().getDate()))}" />
         </div>
         <div class="form-field">
           <label class="form-label">${t.eventTime}</label>
@@ -7518,6 +7523,17 @@ async function saveEvent() {
 
   if (!title || !date) return alert(t.eventValidationError);
 
+  // v63.44.0 — Garde-fou date : borne l'année. Sans cette validation, un date input
+  // mal saisi (ex. année "62026") était accepté par le front ET par Supabase, et la
+  // Prépa Compétition affichait ensuite "J-21914550" en permanence (l'événement
+  // aberrant devenait le "prochain match" pour toujours). Bornes : -1 an / +2 ans.
+  const _evD = parseEventDate(date);
+  const _minD = new Date(); _minD.setFullYear(_minD.getFullYear() - 1);
+  const _maxD = new Date(); _maxD.setFullYear(_maxD.getFullYear() + 2);
+  if (!_evD || isNaN(_evD.getTime()) || _evD < startOfLocalDay(_minD) || _evD > _maxD) {
+    return alert((t.eventDateInvalid || 'Date invalide — choisis une date entre aujourd\'hui-1 an et {max}.').replace('{max}', dateToStr(_maxD)));
+  }
+
   // Base payload commun à toutes les occurrences (et au cas one-shot)
   const basePayload = {
     user_id: currentUser.id,
@@ -7619,7 +7635,7 @@ function editEvent(id, title, type, date, time, location, intensity, notes, sess
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div class="form-field">
           <label class="form-label">${tLang.eventDate}</label>
-          <input type="date" class="form-input" id="evDate" value="${date}" />
+          <input type="date" class="form-input" id="evDate" value="${date}" min="${dateToStr(new Date(new Date().getFullYear()-1, new Date().getMonth(), new Date().getDate()))}" max="${dateToStr(new Date(new Date().getFullYear()+2, new Date().getMonth(), new Date().getDate()))}" />
         </div>
         <div class="form-field">
           <label class="form-label">${tLang.eventTime}</label>
@@ -7669,6 +7685,14 @@ async function updateEvent(id) {
   const notes = document.getElementById('evNotes').value.trim() || null;
 
   if (!title || !date) return alert(t.eventValidationError);
+
+  // v63.44.0 — même garde-fou date que saveEvent (borne -1 an / +2 ans)
+  const _evD = parseEventDate(date);
+  const _minD = new Date(); _minD.setFullYear(_minD.getFullYear() - 1);
+  const _maxD = new Date(); _maxD.setFullYear(_maxD.getFullYear() + 2);
+  if (!_evD || isNaN(_evD.getTime()) || _evD < startOfLocalDay(_minD) || _evD > _maxD) {
+    return alert((t.eventDateInvalid || 'Date invalide — choisis une date entre aujourd\'hui-1 an et {max}.').replace('{max}', dateToStr(_maxD)));
+  }
 
   // v62 — si _editingSeriesContext set, on est en mode "modifier toute la série depuis cette date".
   // On n'update PAS event_date ni event_time (sinon toutes les occurrences auraient la même date,
@@ -7750,7 +7774,14 @@ function setInlineFeelingBtn(id, val, btn) {
 async function deleteEvent(id) {
   const t = T[currentLang] || T.fr;
   if (!confirm(t.eventConfirmDelete)) return;
-  await sb.from('calendar_events').delete().eq('id', id);
+  // v63.44.0 — Fix échec silencieux : l'ancienne version ignorait `error` ET le cas
+  // "0 ligne supprimée" (PostgREST renvoie 204 même quand rien ne matche) → toast
+  // succès alors que l'événement restait en DB (constaté à l'audit du 10/06).
+  // count:'exact' + .eq(user_id) = on vérifie qu'une ligne a vraiment été supprimée.
+  const { error, count } = await sb.from('calendar_events')
+    .delete({ count: 'exact' }).eq('id', id).eq('user_id', currentUser.id);
+  if (error) return alert(t.eventErrorPrefix + ' ' + error.message);
+  if (!count) return alert(t.eventDeleteFailed || '⚠️ La suppression a échoué. Réessaie.');
   // Remove from local array immediately for instant UI update
   calendarEvents = calendarEvents.filter(e => e.id !== id);
   document.getElementById('eventModal')?.remove();
@@ -11958,7 +11989,14 @@ async function renderProgression() {
   const perfData = perfLogs || [];
 
   const moodEmojis = t.moodEmojis || ['😫','😕','😐','🙂','😁'];
-  const scores = fitnessScores || [];
+  // v63.44.0 — FIX graphe "Derniers 30 jours" toujours vide : la table fitness_score
+  // n'est alimentée nulle part dans le code (le SELECT ci-dessus est sa seule référence).
+  // On calcule les scores depuis daily_log (même méthode computeFitnessScore que le
+  // widget Score du dashboard), avec la table en fallback si elle se remplit un jour.
+  const _computedScores = (dailyLogs || [])
+    .map(l => ({ score: computeFitnessScore(l), score_date: l.log_date }))
+    .filter(s => s.score !== null && s.score !== undefined);
+  const scores = (fitnessScores && fitnessScores.length > 0) ? fitnessScores : _computedScores;
   const logs = dailyLogs || [];
 
   const completedGoals = (allGoals||[]).filter(g => g.status === 'completed').length;
@@ -12096,8 +12134,11 @@ async function renderProgression() {
             const strength = absVal >= 0.7 ? 'Forte' : absVal >= 0.4 ? 'Modérée' : 'Faible';
             const direction = c.val > 0 ? '↗ positive' : c.val < 0 ? '↘ inverse' : '— neutre';
             const barColor = c.val > 0 ? '#10b981' : '#ef4444';
+            // v63.44.0 — élision FR correcte ("Plus d'entraînement" et non "Plus de entraînement",
+            // "humeur en baisse" et non "moins de humeur")
+            const _elide = w => (/^[aeiouyéèh]/i.test(w) ? "d'" + w : 'de ' + w);
             const insight = c.val > 0.5 ? `Quand ton ${c.a.toLowerCase()} monte, ton ${c.b.toLowerCase()} suit !`
-              : c.val < -0.5 ? `Plus de ${c.a.toLowerCase()} = moins de ${c.b.toLowerCase()}.`
+              : c.val < -0.5 ? `Plus ${_elide(c.a.toLowerCase())} = ${c.b.toLowerCase()} en baisse.`
               : '';
             return `<div style="margin-bottom:12px">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
@@ -12661,18 +12702,28 @@ async function renderPrepaMatch() {
 
   const athleteName = (userProfile?.full_name || 'Athlète').split(' ')[0];
 
-  if (!allFuture || allFuture.length === 0) {
+  // v63.44.0 — Filet de sécurité : ignorer les événements à date aberrante (> +2 ans).
+  // Un event créé avec une année fausse (ex. "62026", possible avant le garde-fou de
+  // saveEvent) devenait le "prochain match" et affichait J-21914550 en permanence.
+  var _pmMaxDate = new Date(today.getFullYear() + 2, today.getMonth(), today.getDate());
+  var _pmSane = function(e) { var d = parseEventDate(e.event_date); return d && !isNaN(d.getTime()) && d <= _pmMaxDate; };
+  var eventsSane = (events || []).filter(_pmSane);
+  var allFutureSane = (allFuture || []).filter(_pmSane);
+
+  if (!allFutureSane || allFutureSane.length === 0) {
     document.getElementById('mainContent').innerHTML = '<div style="max-width:700px;margin:0 auto;text-align:center;padding:60px 20px">' +
       '<div style="font-size:56px;margin-bottom:16px">⚡</div>' +
       '<h2 style="font-size:22px;font-weight:800;color:var(--text);margin-bottom:8px">' + t.pmEmptyTitle + '</h2>' +
       '<p style="color:var(--muted);margin-bottom:24px;font-size:14px">' + t.pmEmptySub + '</p>' +
-      '<button onclick="showPage(\'calendrier\',null)" class="btn btn-gold" style="font-family:Inter,sans-serif">' + t.pmEmptyBtn + '</button>' +
+      // v63.44.0 — la classe .btn-gold n'existe pas dans dashboard.html (bouton rendu en
+      // style navigateur brut). Styles inline alignés sur les autres CTA gold.
+      '<button onclick="showPage(\'calendrier\',null)" style="font-family:Inter,sans-serif;background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#1a1a2e;border:none;border-radius:12px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(245,158,11,0.3)">' + t.pmEmptyBtn + '</button>' +
     '</div>';
     return;
   }
 
   // Pick the next upcoming match
-  var targetEvent = events && events.length > 0 ? events[0] : allFuture[0];
+  var targetEvent = eventsSane.length > 0 ? eventsSane[0] : allFutureSane[0];
   var evtDate = parseEventDate(targetEvent.event_date);
   var daysUntil = Math.round((evtDate - today) / 86400000);
   var countdown = daysUntil < 0 ? t.pmCountdownPast : daysUntil === 0 ? t.pmCountdownDay : 'J-' + daysUntil;
@@ -12895,11 +12946,11 @@ async function renderPrepaMatch() {
   html += '<button onclick="showPage(\'journal\',null)" style="background:var(--bg3);color:var(--text);border:1px solid var(--border);padding:14px;border-radius:12px;font-weight:600;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">' + t.pmJournalBtn + '</button>';
   html += '</div>';
 
-  // Other upcoming matches
-  if (allFuture && allFuture.length > 1) {
+  // Other upcoming matches (v63.44.0 — liste filtrée des dates aberrantes)
+  if (allFutureSane && allFutureSane.length > 1) {
     html += '<div style="margin-top:12px">';
     html += '<h3 style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px">' + t.pmUpcoming + '</h3>';
-    allFuture.slice(1, 5).forEach(function(ev) {
+    allFutureSane.slice(1, 5).forEach(function(ev) {
       var evD = new Date(ev.event_date);
       var dU = Math.round((evD - today) / 86400000);
       html += '<div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between">';
