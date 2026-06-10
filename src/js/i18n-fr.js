@@ -108,6 +108,7 @@ var T_FR = {
   dayLetters:['D','L','M','M','J','V','S'],
   eventBtnAdd:'Ajouter →', eventBtnSave:'Enregistrer ✓',
   eventValidationError:'Remplis le titre et la date.', eventErrorPrefix:'Erreur:',
+  eventDateInvalid:'Date invalide — choisis une date entre aujourd\'hui-1 an et {max}.', eventDeleteFailed:'⚠️ La suppression a échoué. Réessaie.',
   eventToastModified:'✅ Événement modifié !', eventToastDeleted:'🗑 Événement supprimé', eventConfirmDelete:'Supprimer cet événement ?',
   save:'Sauvegarder', cancel:'Annuler', delete:'Supprimer', skip:'Passer', yes:'Oui', no:'Non',
   // Event modal

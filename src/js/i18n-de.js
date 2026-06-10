@@ -104,6 +104,7 @@ var T_DE = {
   dayLetters:['S','M','D','M','D','F','S'],
   eventBtnAdd:'Hinzufügen →', eventBtnSave:'Speichern ✓',
   eventValidationError:'Bitte fülle Titel und Datum aus.', eventErrorPrefix:'Fehler:',
+  eventDateInvalid:'Ungültiges Datum — wähle ein Datum zwischen heute-1 Jahr und {max}.', eventDeleteFailed:'⚠️ Löschen fehlgeschlagen. Versuche es erneut.',
   eventToastModified:'✅ Ereignis aktualisiert!', eventToastDeleted:'🗑 Ereignis gelöscht', eventConfirmDelete:'Dieses Ereignis löschen?',
   save:'Speichern', cancel:'Abbrechen', delete:'Löschen', skip:'Überspringen', yes:'Ja', no:'Nein',
   // Event modal

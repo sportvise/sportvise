@@ -104,6 +104,7 @@ var T_EN = {
   dayLetters:['S','M','T','W','T','F','S'],
   eventBtnAdd:'Add →', eventBtnSave:'Save ✓',
   eventValidationError:'Please fill in the title and date.', eventErrorPrefix:'Error:',
+  eventDateInvalid:'Invalid date — pick a date between today-1 year and {max}.', eventDeleteFailed:'⚠️ Deletion failed. Please try again.',
   eventToastModified:'✅ Event updated!', eventToastDeleted:'🗑 Event deleted', eventConfirmDelete:'Delete this event?',
   save:'Save', cancel:'Cancel', delete:'Delete', skip:'Skip', yes:'Yes', no:'No',
   // Event modal
