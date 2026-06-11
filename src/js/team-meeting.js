@@ -641,7 +641,7 @@ async function _loadMeetingHistory() {
     let html = '';
     threads.forEach(thread => {
       const date = (() => {
-        try { return new Date(thread.created_at).toLocaleDateString('fr-CH', { day: 'numeric', month: 'short', year: 'numeric' }); }
+        try { return (typeof svParseTs === 'function' ? svParseTs(thread.created_at) : new Date(thread.created_at)).toLocaleDateString('fr-CH', { day: 'numeric', month: 'short', year: 'numeric' }); }
         catch (_) { return thread.created_at?.slice(0, 10) || ''; }
       })();
       const turns = Array.isArray(thread.turns) ? thread.turns : [];

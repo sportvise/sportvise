@@ -28,7 +28,7 @@ var T_EN = {
   messagestoday:'Messages today', limitReached:'Limit reached',
   planFree:'Free Plan', messagesRemaining:'messages remaining', upgradeToPro:'Upgrade to Pro',
   // v63.8 — 14-day trial + monthly permanent free
-  trialActive:'Free trial active', trialBannerSub:'Full access to all 11 agents and team meetings',
+  trialActive:'Free trial active', trialBadge:'Trial', trialBannerSub:'Full access to all 11 agents and team meetings',
   trialKeepAccess:'Choose my plan', messagesMonth:'Messages this month',
   limitMsgMinute:'Too many messages at once. Try again in a minute.',
   limitMsgDay:'You\'ve reached your daily limit. Try again tomorrow.',
