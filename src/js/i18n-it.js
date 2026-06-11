@@ -28,7 +28,7 @@ var T_IT = {
   messagestoday:'Messaggi oggi', limitReached:'Limite raggiunto',
   planFree:'Piano Free', messagesRemaining:'messaggi rimanenti', upgradeToPro:'Passa a Pro',
   // v63.8 — Prova di 14 giorni + free permanente mensile
-  trialActive:'Prova gratuita attiva', trialBannerSub:'Accesso completo a tutti gli 11 agenti e alle riunioni di squadra',
+  trialActive:'Prova gratuita attiva', trialBadge:'Prova', trialBannerSub:'Accesso completo a tutti gli 11 agenti e alle riunioni di squadra',
   trialKeepAccess:'Scegli il mio piano', messagesMonth:'Messaggi questo mese',
   limitMsgMinute:'Troppi messaggi in una volta. Riprova tra un minuto.',
   limitMsgDay:'Hai raggiunto il limite giornaliero. Riprova domani.',

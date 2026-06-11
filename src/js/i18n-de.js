@@ -28,7 +28,7 @@ var T_DE = {
   messagestoday:'Nachrichten heute', limitReached:'Limit erreicht',
   planFree:'Plan Free', messagesRemaining:'verbleibende Nachrichten', upgradeToPro:'Upgrade zu Pro',
   // v63.8 — 14-Tage-Testphase + monatlicher Permanent-Free-Plan
-  trialActive:'Kostenlose Testphase aktiv', trialBannerSub:'Voller Zugriff auf alle 11 Agenten und Team-Meetings',
+  trialActive:'Kostenlose Testphase aktiv', trialBadge:'Testphase', trialBannerSub:'Voller Zugriff auf alle 11 Agenten und Team-Meetings',
   trialKeepAccess:'Meinen Plan wählen', messagesMonth:'Nachrichten diesen Monat',
   limitMsgMinute:'Zu viele Nachrichten auf einmal. Versuch es in einer Minute erneut.',
   limitMsgDay:'Du hast dein Tageslimit erreicht. Versuch es morgen erneut.',
