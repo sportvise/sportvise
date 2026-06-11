@@ -828,16 +828,16 @@ const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ── AGENTS DATA ─────────────────────────────────────
 const AGENTS = {
-  marketing:  { name:'Alex', title:'Marketing & Personal Branding', emoji:'🎯', color:'#6366f1', desc:'Stratégie réseaux sociaux, media kit, visibilité', greeting:'Bonjour ! Je suis Alex, votre agent marketing. Comment puis-je booster votre visibilité aujourd\'hui ?', getResponse(m){const t=m.toLowerCase();if(t.includes('instagram')||t.includes('réseau'))return'📱 **Stratégie réseaux sociaux** : 4 posts/semaine — 40% entraînements, 30% performances, 20% lifestyle, 10% engagement. Les Reels génèrent 3× plus de portée organique. Je prépare votre calendrier éditorial ?';if(t.includes('sponsor')||t.includes('marque'))return'🤝 **Attractivité sponsors** : Pour séduire des marques suisses, nous avons besoin d\'un media kit pro. Avec 10k abonnés engagés vous pouvez prétendre à CHF 800–2\'500/mois par partenaire.';return'📊 Mes 3 priorités pour votre profil : (1) Optimiser votre bio avec mots-clés sportifs, (2) Créer un highlight "Performances", (3) Initier un partenariat local suisse. Par quoi commencer ?';} },
-  finance:    { name:'Sophie', title:'Conseil Financier', emoji:'💶', color:'#10b981', desc:'Fiscalité suisse, pilier 3a, gestion patrimoniale', greeting:'Bonjour ! Je suis Sophie, conseillère financière spécialisée sportifs suisses. Comment optimiser vos revenus ?', getResponse(m){const t=m.toLowerCase();if(t.includes('impôt')||t.includes('fiscal'))return'🇨🇭 **Fiscalité sportive CH** : Provision fiscale 25-30%, pilier 3a (max CHF 7\'056/an déductible pour salariés), et fiduciaire spécialisé sportifs recommandé. Le canton de Vaud propose des déductions avantageuses.';if(t.includes('épargne')||t.includes('investis'))return'📈 **Plan épargne athlète** : 50% vie courante, 20% pilier 3a, 15% fonds urgence (6 mois), 15% ETF Swiss Market Index. Préparez la reconversion dès maintenant !';return'💡 Actions immédiates : (1) Ouvrir un pilier 3a — vous perdez CHF 7\'258 de déduction chaque année sans ça, (2) Compte épargne dédié sport 20% auto, (3) Documenter TOUS vos frais professionnels.';} },
-  sponsors:   { name:'Marc', title:'Gestion des Sponsors', emoji:'🤝', color:'#f59e0b', desc:'Prospection, négociation, suivi partenariats', greeting:'Salut ! Je suis Marc, votre chasseur de sponsors suisses. Le marché est riche en opportunités pour votre profil !', getResponse(m){const t=m.toLowerCase();if(t.includes('trouver')||t.includes('chercher'))return'🔍 **Cibles prioritaires** :\n🥇 National : Helvetia, Swisslos, Migros SportXX\n🥈 Régional VD/GE : PME locales, agences immo\n🥉 Lifestyle : Sponser, Isostar CH, équipementiers\n\nJe rédige les emails de prospection. On lance ?';if(t.includes('prix')||t.includes('combien'))return'💰 **Tarification** :\n• 1k–5k abonnés → CHF 200–500/mois\n• 5k–15k → CHF 500–2\'000/mois\n• 15k–50k → CHF 2\'000–8\'000/mois\n\n+Bonus visibilité maillot, événements, exclusivité.';return'📊 Objectif Q2 : +2 sponsors → CHF 4\'500/mois. Actions : finaliser media kit, cibler 8 entreprises régionales. Votre prochain match est une opportunité contenu — brief photo ?';} },
-  contrats:   { name:'Léa', title:'Négociation de Contrats', emoji:'⚖️', color:'#8b5cf6', desc:'Droit sportif suisse, analyse contrats', greeting:'Bonjour ! Je suis Léa, spécialiste droit sportif suisse. Chaque contrat impacte votre carrière — je protège vos intérêts.', getResponse(m){const t=m.toLowerCase();if(t.includes('club')||t.includes('signer'))return'⚽ **Contrat club suisse** :\n1. Salaire fixe + primes performance\n2. Droits à l\'image : min. 50% pour vous !\n3. Durée : 1–2 ans (flexibilité)\n4. Clause libératoire : CHF 50k–200k\n5. Formation continue garantie\n\nPartagez le document pour analyse.';if(t.includes('image')||t.includes('droits'))return'🖼️ **Droits à l\'image** : Votre actif le plus précieux ! Standard recommandé : 70% pour vous / 30% club. Si exclusivité demandée → +20-30% du salaire compensatoire.';return'🔍 Les 3 erreurs les plus fréquentes : (1) Céder tous les droits image sans compensation, (2) Clauses non-concurrence trop larges, (3) Oublier les clauses résiliation. Contrat à analyser ?';} },
-  physique:   { name:'David', title:'Préparation Physique', emoji:'🏋️', color:'#ef4444', desc:'Programme entraînement, prévention blessures', greeting:'Hey ! Je suis David, votre préparateur physique. Performance, récupération, prévention — construisons ensemble votre meilleure version !', getResponse(m){const t=m.toLowerCase();if(t.includes('programme')||t.includes('semaine'))return'📅 **Programme semaine footballeur** :\n• Lundi : Récupération active (natation)\n• Mardi : Force (squat, deadlift)\n• Mercredi : Endurance spécifique\n• Jeudi : Vitesse & agilité\n• Vendredi : Activation légère\n• Samedi : MATCH 🏆\n• Dimanche : Repos obligatoire\n\nPersonnalisation selon votre calendrier ?';if(t.includes('blessure')||t.includes('douleur'))return'🩹 **Prévention blessures** : Programme FIFA 11+ — réduction de 50% des blessures ! Nordic curls pour ischio-jambiers, proprioception cheville/genou, échauffement dynamique 15min. Zone concernée ?';return'💪 Bilan physique complet recommandé : VO2max, sprint 10–30m, tests force. 90min → programme entièrement personnalisé. Prochain créneau en début de semaine ?';} },
-  mental:     { name:'Emma', title:'Préparation Mentale', emoji:'🧠', color:'#06b6d4', desc:'Psychologie sport, gestion stress, performance', greeting:'Bonjour ! Je suis Emma, psychologue du sport. Le mental représente 50% de la performance — travaillons ensemble.', getResponse(m){const t=m.toLowerCase();if(t.includes('stress')||t.includes('pression')||t.includes('match'))return'🎯 **Protocole pré-match** :\n• J−1 : Visualisation positive 15min\n• Matin J : Routine identique à chaque fois\n• 2h avant : Cohérence cardiaque (5s/5s, 5min)\n• 30min avant : Playlist + rappel de 3 forces\n• 5min avant : Ancrage positif\n\nOn personnalise cette routine ensemble ?';if(t.includes('confiance')||t.includes('doute'))return'💪 **Reconstruire la confiance** : (1) Carnet de victoires — 5 réussites/semaine, (2) Victoires de process plutôt que résultat, (3) "Je suis préparé, je vais performer" vs "j\'espère ne pas rater". Protocole 21 jours ?';return'🌟 Évaluation profil mental sportif (20 questions, 10min) → forces mentales + plan personnalisé. On commence ?';} },
-  nutrition:  { name:'Clara', title:'Nutrition Sportive', emoji:'🥗', color:'#84cc16', desc:'Plans alimentaires, supplémentation, récupération', greeting:'Salut ! Je suis Clara, votre nutritionniste sportive. La nutrition = 30% de votre performance. Construisons votre plan sur mesure !', getResponse(m){const t=m.toLowerCase();if(t.includes('plan')||t.includes('repas')||t.includes('manger'))return'🍽️ **Plan journalier (75kg)** :\n🌅 Matin : Avoine + fromage blanc + fruits\n☕ Collation : Banane + amandes\n🥗 Déjeuner : Riz + poulet + légumes\n🍌 Pré-training : Toast + beurre cacahuète\n🥛 Post-training : Whey + fruit\n🍣 Dîner : Saumon + quinoa + légumes\n\n~3\'200 kcal | 180g protéines | 420g glucides';if(t.includes('supplément')||t.includes('complément'))return'💊 **Supplémentation WADA-conforme** :\n✅ Créatine 5g/jour → force +8%\n✅ Vitamine D3 2000UI → crucial hiver CH ☀️\n✅ Oméga-3 2g → anti-inflammatoire\n✅ Magnésium 400mg → sommeil + crampes\n\n⚠️ Vérifiez swiss-sport.org/antidopage';return'🔬 Pour votre plan optimal : (1) Poids et objectif, (2) Intolérances, (3) Budget repas. En attendant : 35-40ml eau/kg/jour = minimum 2.6L pour 75kg. L\'eau suisse est parfaite ! 🇨🇭';} },
-  equipe:{ name:'Lucas', title:'Manager Sportif', emoji:'💼', color:'#fb923c', desc:'Gestion de carrière, clubs, transferts, essais', greeting:'Salut ! Je suis Lucas, votre Manager Sportif. Que vous cherchiez à changer de club, monter en division ou commencer une nouvelle aventure en Suisse, je suis là pour gérer votre carrière !', getResponse(m){const t=m.toLowerCase();if(t.includes('trouver')||t.includes('cherche')||t.includes('club')||t.includes('équipe'))return'🔍 **Stratégie de recherche** : Pour trouver le bon club en Suisse, voici ma méthode : (1) Définir votre cible — niveau souhaité (Super League? Challenge League? 1ère Ligue?), région (Romande/Alémanique), et vos critères (salaire, temps de jeu, projet sportif), (2) Préparer un CV sportif avec vos stats, vidéos highlights et références, (3) Contacter directement les responsables sportifs des clubs. Quel sport et quel niveau visez-vous ?';if(t.includes('transfert')||t.includes('changer')||t.includes('quitter'))return'📋 **Processus de transfert** : En Suisse, les périodes de transfert sont : **Été** (1er juillet - 31 août) et **Hiver** (1er - 31 janvier) pour le football professionnel. Pour les ligues amateurs, les mutations sont possibles jusqu\'au 31 mars. Points clés : vérifiez votre contrat actuel (clause libératoire?), obtenez votre certificat international si transfert cantonal/national, et assurez-vous d\'être en règle avec votre ancien club avant de signer.';if(t.includes('essai')||t.includes('trial')||t.includes('test'))return'🎯 **Préparer votre essai** : Avant un essai en club suisse : (1) Arrivez 30min en avance, tenue irréprochable, (2) Montrez votre profil avec vos stats et highlights (max 3min de vidéo), (3) Pendant l\'essai : communication positive avec les coéquipiers, effort visible même si techniquement en dessous, (4) Après : envoyez un email de remerciement dans les 24h. Les recruteurs suisses valorisent beaucoup le professionnalisme et l\'attitude.';return'📍 **Carte des clubs suisses** : Je connais tous les clubs par niveau et région — de la Super League aux ligues régionales en passant par la Challenge League. Dites-moi votre sport, votre niveau actuel et votre région préférée, et je vous propose une liste de clubs correspondant à votre profil avec les contacts des responsables sportifs !';} },
-  sommeil:{ name:'Nora', title:'Spécialiste du Sommeil', emoji:'😴', color:'#a78bfa', desc:'Optimisation du sommeil, récupération, performance', greeting:'Bonsoir ! Je suis Nora, votre spécialiste du sommeil sportif. Un sommeil optimisé = +15% de performance. Comment puis-je améliorer votre récupération ?', getResponse(m){const t=m.toLowerCase();if(t.includes('dormir')||t.includes('sommeil')||t.includes('nuit')||t.includes('insomn'))return'🌙 **Optimisation du sommeil** : Objectif 8-9h pour les sportifs actifs. Les 4 piliers essentiels : chambre à 18°C + obscurité totale + pas d\'écrans 60min avant + même heure coucher/lever 7j/7. Rappel clé : la GH (hormone de croissance) est libérée pendant le sommeil profond — c\'est là que vos muscles se reconstruisent. Chaque heure perdue = récupération musculaire réduite.';if(t.includes('match')||t.includes('compétition')||t.includes('soir'))return'🏟️ **Après match du soir** : L\'activation post-compétition retarde le sommeil de 2-3h. Mon protocole : (1) Douche froide 5min → calme le système nerveux, (2) Collation légère : banane + lait chaud (tryptophane → mélatonine), (3) Cohérence cardiaque 5min (5s inspire / 5s expire), (4) Chambre noire et fraîche. Évitez l\'analyse vidéo et les réseaux sociaux le soir du match.';if(t.includes('sieste')||t.includes('récupér')||t.includes('fatigue'))return'💤 **Sieste stratégique** : Power nap 20min entre 13h-15h = récupération optimale sans inertie. Réglez une alarme à 20min exactement pour rester en sommeil léger. Pour récupération intensive (tournoi, double journée) : sieste 90min complète (1 cycle entier). Monitorer avec Oura Ring ou Whoop pour suivre votre VFC et score de récupération chaque nuit.';if(t.includes('déplac')||t.includes('voyage')||t.includes('hôtel'))return'✈️ **Sommeil en déplacement** : Kit de voyage essentiel : masque de nuit + bouchons d\'oreilles + spray magnésium + application bruit blanc. À l\'arrivée : exposez-vous à la lumière naturelle le matin pour recaler votre horloge biologique. Évitez l\'alcool (détruit le sommeil profond même en petite quantité). Chambre d\'hôtel : rideau occultant, thermostat à 18°C.';return'📊 **Évaluation de votre sommeil** : Pour créer votre protocole personnalisé, dites-moi : (1) Durée moyenne par nuit ? (2) Réveil naturel ou alarme ? (3) Entraînements/matchs le soir ? (4) Déplacements fréquents ? (5) Vous sentez-vous reposé le matin ? Ces infos me permettent de cibler exactement ce qui limitera le plus vos performances.';} },
-  comptabilite:{ name:'Pierre', title:'Comptabilité & Facturation', emoji:'📊', color:'#94a3b8', desc:'Comptabilité sportive, factures, déclarations', greeting:'Bonjour ! Je suis Pierre, expert-comptable spécialisé athlètes suisses. Rigueur helvétique garantie !', getResponse(m){const t=m.toLowerCase();if(t.includes('facture')||t.includes('facturer'))return'📄 **Facture sponsor suisse** :\n1. Coordonnées + IBAN\n2. Coordonnées débiteur\n3. Date + numéro unique\n4. Description prestations précise\n5. Montant HT + TVA 7.7%\n6. Délai 30 jours net\n7. QR Code paiement (obligatoire CH)\n\nJe génère vos factures PDF automatiquement !';if(t.includes('tva')||t.includes('impôt'))return'🇨🇭 **TVA & Obligations** :\nSeuil TVA : CHF 100\'000/an. Déductions : frais déplacement CHF 0.70/km, matériel sportif, honoraires agent, formation. Déclaration fiscale : 31 mars N+1 (prolongation possible août).';return'📈 **Tableau de bord** :\n• Revenus YTD : CHF 42\'500\n• Charges déductibles : CHF 8\'200\n• Provision fiscale : CHF 10\'500 ✅\n• À facturer : CHF 3\'200\n\nProchaine échéance : Acompte AVS Q2 (30 avril).';} },
+  marketing:  { name:'Alex', title:'Marketing & Personal Branding', emoji:'🎯', color:'#6366f1', desc:'Stratégie réseaux sociaux, media kit, visibilité', greeting:'Salut ! Je suis Alex, ton agent marketing. Comment je peux booster ta visibilité aujourd\'hui ?', getResponse(m){const t=m.toLowerCase();if(t.includes('instagram')||t.includes('réseau'))return'📱 **Stratégie réseaux sociaux** : 4 posts/semaine — 40% entraînements, 30% performances, 20% lifestyle, 10% engagement. Les Reels génèrent 3× plus de portée organique. Je prépare votre calendrier éditorial ?';if(t.includes('sponsor')||t.includes('marque'))return'🤝 **Attractivité sponsors** : Pour séduire des marques suisses, nous avons besoin d\'un media kit pro. Avec 10k abonnés engagés vous pouvez prétendre à CHF 800–2\'500/mois par partenaire.';return'📊 Mes 3 priorités pour votre profil : (1) Optimiser votre bio avec mots-clés sportifs, (2) Créer un highlight "Performances", (3) Initier un partenariat local suisse. Par quoi commencer ?';} },
+  finance:    { name:'Sophie', title:'Conseil Financier', emoji:'💶', color:'#10b981', desc:'Fiscalité suisse, pilier 3a, gestion patrimoniale', greeting:'Salut ! Je suis Sophie, conseillère financière spécialisée sportifs suisses. On optimise tes revenus ?', getResponse(m){const t=m.toLowerCase();if(t.includes('impôt')||t.includes('fiscal'))return'🇨🇭 **Fiscalité sportive CH** : Provision fiscale 25-30%, pilier 3a (max CHF 7\'056/an déductible pour salariés), et fiduciaire spécialisé sportifs recommandé. Le canton de Vaud propose des déductions avantageuses.';if(t.includes('épargne')||t.includes('investis'))return'📈 **Plan épargne athlète** : 50% vie courante, 20% pilier 3a, 15% fonds urgence (6 mois), 15% ETF Swiss Market Index. Préparez la reconversion dès maintenant !';return'💡 Actions immédiates : (1) Ouvrir un pilier 3a — vous perdez CHF 7\'258 de déduction chaque année sans ça, (2) Compte épargne dédié sport 20% auto, (3) Documenter TOUS vos frais professionnels.';} },
+  sponsors:   { name:'Marc', title:'Gestion des Sponsors', emoji:'🤝', color:'#f59e0b', desc:'Prospection, négociation, suivi partenariats', greeting:'Salut ! Je suis Marc, ton chasseur de sponsors suisses. Le marché est riche en opportunités pour ton profil !', getResponse(m){const t=m.toLowerCase();if(t.includes('trouver')||t.includes('chercher'))return'🔍 **Cibles prioritaires** :\n🥇 National : Helvetia, Swisslos, Migros SportXX\n🥈 Régional VD/GE : PME locales, agences immo\n🥉 Lifestyle : Sponser, Isostar CH, équipementiers\n\nJe rédige les emails de prospection. On lance ?';if(t.includes('prix')||t.includes('combien'))return'💰 **Tarification** :\n• 1k–5k abonnés → CHF 200–500/mois\n• 5k–15k → CHF 500–2\'000/mois\n• 15k–50k → CHF 2\'000–8\'000/mois\n\n+Bonus visibilité maillot, événements, exclusivité.';return'📊 Objectif Q2 : +2 sponsors → CHF 4\'500/mois. Actions : finaliser media kit, cibler 8 entreprises régionales. Votre prochain match est une opportunité contenu — brief photo ?';} },
+  contrats:   { name:'Léa', title:'Négociation de Contrats', emoji:'⚖️', color:'#8b5cf6', desc:'Droit sportif suisse, analyse contrats', greeting:'Salut ! Je suis Léa, spécialiste droit sportif suisse. Chaque contrat impacte ta carrière — je protège tes intérêts.', getResponse(m){const t=m.toLowerCase();if(t.includes('club')||t.includes('signer'))return'⚽ **Contrat club suisse** :\n1. Salaire fixe + primes performance\n2. Droits à l\'image : min. 50% pour vous !\n3. Durée : 1–2 ans (flexibilité)\n4. Clause libératoire : CHF 50k–200k\n5. Formation continue garantie\n\nPartagez le document pour analyse.';if(t.includes('image')||t.includes('droits'))return'🖼️ **Droits à l\'image** : Votre actif le plus précieux ! Standard recommandé : 70% pour vous / 30% club. Si exclusivité demandée → +20-30% du salaire compensatoire.';return'🔍 Les 3 erreurs les plus fréquentes : (1) Céder tous les droits image sans compensation, (2) Clauses non-concurrence trop larges, (3) Oublier les clauses résiliation. Contrat à analyser ?';} },
+  physique:   { name:'David', title:'Préparation Physique', emoji:'🏋️', color:'#ef4444', desc:'Programme entraînement, prévention blessures', greeting:'Hey ! Je suis David, ton préparateur physique. Performance, récupération, prévention — construisons ensemble ta meilleure version !', getResponse(m){const t=m.toLowerCase();if(t.includes('programme')||t.includes('semaine'))return'📅 **Programme semaine footballeur** :\n• Lundi : Récupération active (natation)\n• Mardi : Force (squat, deadlift)\n• Mercredi : Endurance spécifique\n• Jeudi : Vitesse & agilité\n• Vendredi : Activation légère\n• Samedi : MATCH 🏆\n• Dimanche : Repos obligatoire\n\nPersonnalisation selon votre calendrier ?';if(t.includes('blessure')||t.includes('douleur'))return'🩹 **Prévention blessures** : Programme FIFA 11+ — réduction de 50% des blessures ! Nordic curls pour ischio-jambiers, proprioception cheville/genou, échauffement dynamique 15min. Zone concernée ?';return'💪 Bilan physique complet recommandé : VO2max, sprint 10–30m, tests force. 90min → programme entièrement personnalisé. Prochain créneau en début de semaine ?';} },
+  mental:     { name:'Emma', title:'Préparation Mentale', emoji:'🧠', color:'#06b6d4', desc:'Psychologie sport, gestion stress, performance', greeting:'Salut ! Je suis Emma, psychologue du sport. Le mental représente 50% de la performance — on travaille ça ensemble.', getResponse(m){const t=m.toLowerCase();if(t.includes('stress')||t.includes('pression')||t.includes('match'))return'🎯 **Protocole pré-match** :\n• J−1 : Visualisation positive 15min\n• Matin J : Routine identique à chaque fois\n• 2h avant : Cohérence cardiaque (5s/5s, 5min)\n• 30min avant : Playlist + rappel de 3 forces\n• 5min avant : Ancrage positif\n\nOn personnalise cette routine ensemble ?';if(t.includes('confiance')||t.includes('doute'))return'💪 **Reconstruire la confiance** : (1) Carnet de victoires — 5 réussites/semaine, (2) Victoires de process plutôt que résultat, (3) "Je suis préparé, je vais performer" vs "j\'espère ne pas rater". Protocole 21 jours ?';return'🌟 Évaluation profil mental sportif (20 questions, 10min) → forces mentales + plan personnalisé. On commence ?';} },
+  nutrition:  { name:'Clara', title:'Nutrition Sportive', emoji:'🥗', color:'#84cc16', desc:'Plans alimentaires, supplémentation, récupération', greeting:'Salut ! Je suis Clara, ta nutritionniste sportive. La nutrition = 30% de ta performance. Construisons ton plan sur mesure !', getResponse(m){const t=m.toLowerCase();if(t.includes('plan')||t.includes('repas')||t.includes('manger'))return'🍽️ **Plan journalier (75kg)** :\n🌅 Matin : Avoine + fromage blanc + fruits\n☕ Collation : Banane + amandes\n🥗 Déjeuner : Riz + poulet + légumes\n🍌 Pré-training : Toast + beurre cacahuète\n🥛 Post-training : Whey + fruit\n🍣 Dîner : Saumon + quinoa + légumes\n\n~3\'200 kcal | 180g protéines | 420g glucides';if(t.includes('supplément')||t.includes('complément'))return'💊 **Supplémentation WADA-conforme** :\n✅ Créatine 5g/jour → force +8%\n✅ Vitamine D3 2000UI → crucial hiver CH ☀️\n✅ Oméga-3 2g → anti-inflammatoire\n✅ Magnésium 400mg → sommeil + crampes\n\n⚠️ Vérifiez swiss-sport.org/antidopage';return'🔬 Pour votre plan optimal : (1) Poids et objectif, (2) Intolérances, (3) Budget repas. En attendant : 35-40ml eau/kg/jour = minimum 2.6L pour 75kg. L\'eau suisse est parfaite ! 🇨🇭';} },
+  equipe:{ name:'Lucas', title:'Manager Sportif', emoji:'💼', color:'#fb923c', desc:'Gestion de carrière, clubs, transferts, essais', greeting:'Salut ! Je suis Lucas, ton Manager Sportif. Que tu cherches à changer de club, monter en division ou commencer une nouvelle aventure en Suisse, je suis là pour gérer ta carrière !', getResponse(m){const t=m.toLowerCase();if(t.includes('trouver')||t.includes('cherche')||t.includes('club')||t.includes('équipe'))return'🔍 **Stratégie de recherche** : Pour trouver le bon club en Suisse, voici ma méthode : (1) Définir votre cible — niveau souhaité (Super League? Challenge League? 1ère Ligue?), région (Romande/Alémanique), et vos critères (salaire, temps de jeu, projet sportif), (2) Préparer un CV sportif avec vos stats, vidéos highlights et références, (3) Contacter directement les responsables sportifs des clubs. Quel sport et quel niveau visez-vous ?';if(t.includes('transfert')||t.includes('changer')||t.includes('quitter'))return'📋 **Processus de transfert** : En Suisse, les périodes de transfert sont : **Été** (1er juillet - 31 août) et **Hiver** (1er - 31 janvier) pour le football professionnel. Pour les ligues amateurs, les mutations sont possibles jusqu\'au 31 mars. Points clés : vérifiez votre contrat actuel (clause libératoire?), obtenez votre certificat international si transfert cantonal/national, et assurez-vous d\'être en règle avec votre ancien club avant de signer.';if(t.includes('essai')||t.includes('trial')||t.includes('test'))return'🎯 **Préparer votre essai** : Avant un essai en club suisse : (1) Arrivez 30min en avance, tenue irréprochable, (2) Montrez votre profil avec vos stats et highlights (max 3min de vidéo), (3) Pendant l\'essai : communication positive avec les coéquipiers, effort visible même si techniquement en dessous, (4) Après : envoyez un email de remerciement dans les 24h. Les recruteurs suisses valorisent beaucoup le professionnalisme et l\'attitude.';return'📍 **Carte des clubs suisses** : Je connais tous les clubs par niveau et région — de la Super League aux ligues régionales en passant par la Challenge League. Dites-moi votre sport, votre niveau actuel et votre région préférée, et je vous propose une liste de clubs correspondant à votre profil avec les contacts des responsables sportifs !';} },
+  sommeil:{ name:'Nora', title:'Spécialiste du Sommeil', emoji:'😴', color:'#a78bfa', desc:'Optimisation du sommeil, récupération, performance', greeting:'Salut ! Je suis Nora, ta spécialiste du sommeil sportif. Un sommeil optimisé = +15% de performance. On améliore ta récupération ?', getResponse(m){const t=m.toLowerCase();if(t.includes('dormir')||t.includes('sommeil')||t.includes('nuit')||t.includes('insomn'))return'🌙 **Optimisation du sommeil** : Objectif 8-9h pour les sportifs actifs. Les 4 piliers essentiels : chambre à 18°C + obscurité totale + pas d\'écrans 60min avant + même heure coucher/lever 7j/7. Rappel clé : la GH (hormone de croissance) est libérée pendant le sommeil profond — c\'est là que vos muscles se reconstruisent. Chaque heure perdue = récupération musculaire réduite.';if(t.includes('match')||t.includes('compétition')||t.includes('soir'))return'🏟️ **Après match du soir** : L\'activation post-compétition retarde le sommeil de 2-3h. Mon protocole : (1) Douche froide 5min → calme le système nerveux, (2) Collation légère : banane + lait chaud (tryptophane → mélatonine), (3) Cohérence cardiaque 5min (5s inspire / 5s expire), (4) Chambre noire et fraîche. Évitez l\'analyse vidéo et les réseaux sociaux le soir du match.';if(t.includes('sieste')||t.includes('récupér')||t.includes('fatigue'))return'💤 **Sieste stratégique** : Power nap 20min entre 13h-15h = récupération optimale sans inertie. Réglez une alarme à 20min exactement pour rester en sommeil léger. Pour récupération intensive (tournoi, double journée) : sieste 90min complète (1 cycle entier). Monitorer avec Oura Ring ou Whoop pour suivre votre VFC et score de récupération chaque nuit.';if(t.includes('déplac')||t.includes('voyage')||t.includes('hôtel'))return'✈️ **Sommeil en déplacement** : Kit de voyage essentiel : masque de nuit + bouchons d\'oreilles + spray magnésium + application bruit blanc. À l\'arrivée : exposez-vous à la lumière naturelle le matin pour recaler votre horloge biologique. Évitez l\'alcool (détruit le sommeil profond même en petite quantité). Chambre d\'hôtel : rideau occultant, thermostat à 18°C.';return'📊 **Évaluation de votre sommeil** : Pour créer votre protocole personnalisé, dites-moi : (1) Durée moyenne par nuit ? (2) Réveil naturel ou alarme ? (3) Entraînements/matchs le soir ? (4) Déplacements fréquents ? (5) Vous sentez-vous reposé le matin ? Ces infos me permettent de cibler exactement ce qui limitera le plus vos performances.';} },
+  comptabilite:{ name:'Pierre', title:'Comptabilité & Facturation', emoji:'📊', color:'#94a3b8', desc:'Comptabilité sportive, factures, déclarations', greeting:'Salut ! Je suis Pierre, expert-comptable spécialisé athlètes suisses. Rigueur helvétique garantie !', getResponse(m){const t=m.toLowerCase();if(t.includes('facture')||t.includes('facturer'))return'📄 **Facture sponsor suisse** :\n1. Coordonnées + IBAN\n2. Coordonnées débiteur\n3. Date + numéro unique\n4. Description prestations précise\n5. Montant HT + TVA 7.7%\n6. Délai 30 jours net\n7. QR Code paiement (obligatoire CH)\n\nJe génère vos factures PDF automatiquement !';if(t.includes('tva')||t.includes('impôt'))return'🇨🇭 **TVA & Obligations** :\nSeuil TVA : CHF 100\'000/an. Déductions : frais déplacement CHF 0.70/km, matériel sportif, honoraires agent, formation. Déclaration fiscale : 31 mars N+1 (prolongation possible août).';return'📈 **Tableau de bord** :\n• Revenus YTD : CHF 42\'500\n• Charges déductibles : CHF 8\'200\n• Provision fiscale : CHF 10\'500 ✅\n• À facturer : CHF 3\'200\n\nProchaine échéance : Acompte AVS Q2 (30 avril).';} },
   recuperation:{ name:'Julie', title:'Récupération & Régénération', emoji:'♻️', color:'#14b8a6', desc:'Protocoles post-effort, récupération active, prévention blessures', greeting:'Salut ! Je suis Julie, ta spécialiste récupération. Un athlète qui récupère bien est un athlète qui progresse — on optimise tes temps de repos ensemble !', getResponse(m){const t=m.toLowerCase();if(t.includes('après')||t.includes('post')||t.includes('match')||t.includes('entraînement'))return'🧊 **Protocole post-effort** :\n• 0-15min : Retour au calme progressif (marche, vélo léger)\n• 15-30min : Étirements doux (pas d\'étirements intenses !)\n• 30-60min : Collation récupération (20g protéines + glucides)\n• 1-2h : Douche contrastée (30s froid / 1min chaud × 5)\n• Soirée : Foam rolling 15min zones sollicitées\n\nQuel type d\'effort tu viens de faire ?';if(t.includes('foam')||t.includes('rouleau')||t.includes('massage')||t.includes('étir'))return'🔵 **Auto-massage & Foam Rolling** :\n• Quadriceps : 2min par jambe, rouler lentement\n• Ischio-jambiers : 2min, croiser une jambe sur l\'autre\n• Mollets : 1min30, tourner le pied int/ext\n• Dos (thoracique) : 2min, bras croisés\n• IT Band : 1min30 (douloureux mais efficace !)\n\n⚠️ Jamais sur une zone blessée ou enflammée. Pression 6/10.';if(t.includes('blessure')||t.includes('douleur')||t.includes('prévention'))return'🛡️ **Prévention blessures** :\n• Échauffement dynamique 15min (obligatoire !)\n• Ratio charge/récupération : ne jamais augmenter >10%/semaine\n• Zones à risque : ischio-jambiers, chevilles, épaules\n• Signaux d\'alerte : douleur >3/10 le lendemain = trop de charge\n• Programme FIFA 11+ : -50% blessures prouvé !\n\n⚠️ Si douleur persistante >48h, consulte un médecin du sport.';if(t.includes('repos')||t.includes('off')||t.includes('jour'))return'📅 **Planification repos** :\n• 1 jour off complet/semaine (minimum !)\n• Semaine de décharge toutes les 3-4 semaines (-40% volume)\n• Récupération active jours off : marche 30min, natation légère, yoga\n• Sommeil = récupération #1 (cf. Nora)\n\nTon corps se renforce au repos, pas à l\'entraînement. Ne culpabilise jamais de te reposer !';return'♻️ **Évaluation récupération** : Pour personnaliser ton protocole, dis-moi : (1) Combien de séances/semaine ? (2) Type de sport et intensité ? (3) Temps de repos actuel entre les séances ? (4) Douleurs ou zones fragiles ? (5) Accès à du matériel (foam roller, pistolet massage, bain froid) ? Je crée ton plan récupération sur mesure !';} }
 };
 
@@ -961,6 +961,13 @@ function showLucasWelcome() {
   let advancing = false; // v55 — debounce pour éviter le double-clic qui empile 2 setTimeout(step++) → crash steps[5]
   let finishing = false; // v62.13 — debounce finishOnboarding (anti double-clic 'Parler à Sophie' avec await DB lent)
   const data = { sport: '', level: '', goal: '' };
+  // v63.45 — le sport est déjà choisi au signup (user_metadata → profiles via trigger).
+  // Avant : étape 1/3 le redemandait sans présélection (friction relevée test 11/06).
+  // On préremplit ; l'athlète peut toujours changer d'un clic.
+  try {
+    const _signupSport = (userProfile && userProfile.sport) || (currentUser && currentUser.user_metadata && currentUser.user_metadata.sport) || '';
+    if (_signupSport) data.sport = (typeof sportKey === 'function' && sportKey(_signupSport)) || _signupSport;
+  } catch(_) {}
   // v63.30 — moment aha : agent recommandé calculé en step 4, consommé par render() pour lancer l'analyse live.
   let lastReco = null, lastLocked = false, ahaTriggered = false;
 
@@ -1004,12 +1011,12 @@ function showLucasWelcome() {
           <div style="font-size:20px;font-weight:800;color:#f1f5f9;margin-bottom:4px">${t.obSportTitle}</div>
           <div style="font-size:13px;color:#64748b;margin-bottom:20px">${t.obSportSub}</div>
           <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:400px;margin:0 auto 20px">
-            ${sports.map(s => `<button class="ob-sport-btn" onclick="selectOnboardSport(this,'${s.key}')" style="padding:10px 16px;border-radius:10px;border:1px solid #1e2d47;background:#111827;color:#f1f5f9;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s">${s.label}</button>`).join('')}
+            ${sports.map(s => { const sel = s.key === data.sport; return `<button class="ob-sport-btn" onclick="selectOnboardSport(this,'${s.key}')" style="padding:10px 16px;border-radius:10px;border:1px solid ${sel?'#f59e0b':'#1e2d47'};background:${sel?'#f59e0b15':'#111827'};color:#f1f5f9;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s">${s.label}</button>`; }).join('')}
           </div>
           <div style="margin-bottom:16px">
             <input id="obCustomSport" type="text" placeholder="${t.obSportCustom}" style="padding:10px 16px;border-radius:10px;border:1px solid #1e2d47;background:#111827;color:#f1f5f9;font-size:13px;width:200px;font-family:'Inter',sans-serif;text-align:center" oninput="onboardData.sport=this.value"/>
           </div>
-          <button id="obSportNext" onclick="nextOnboardStep()" style="background:#1e2d47;color:#64748b;border:none;padding:12px 36px;border-radius:10px;font-weight:700;font-size:14px;cursor:not-allowed;font-family:'Inter',sans-serif;transition:all 0.2s" disabled>${t.obNext}</button>
+          <button id="obSportNext" onclick="nextOnboardStep()" style="background:${data.sport?'linear-gradient(135deg,#f59e0b,#d97706)':'#1e2d47'};color:${data.sport?'#07091a':'#64748b'};border:none;padding:12px 36px;border-radius:10px;font-weight:700;font-size:14px;cursor:${data.sport?'pointer':'not-allowed'};font-family:'Inter',sans-serif;transition:all 0.2s" ${data.sport?'':'disabled'}>${t.obNext}</button>
         </div>
       `,
       // Step 2: Level
@@ -1624,6 +1631,19 @@ const FREE_MSG_LIMIT = 30; // free permanent — 30 msg / 30 jours glissants (co
 let svTrialActive = false; // compte free encore dans ses 14 jours d'essai
 let svTrialDaysLeft = 0;   // jours d'essai restants (pour la bannière)
 
+// ── v63.45 — Parsing timestamps Supabase ──
+// Les colonnes `timestamp` (sans fuseau) arrivent comme "2026-06-11T04:14:23.123"
+// → new Date() les parse en HEURE LOCALE alors qu'elles sont en UTC, d'où des
+// écarts type "il y a 3 h" pour une conversation de 2 minutes (bug test 11/06).
+// svParseTs() force le suffixe Z quand aucune info de fuseau n'est présente.
+function svParseTs(ts) {
+  if (ts == null) return new Date(NaN);
+  if (ts instanceof Date || typeof ts === 'number') return new Date(ts);
+  let s = String(ts).trim().replace(' ', 'T');
+  if (/T\d{2}:\d{2}/.test(s) && !/(Z|[+\-]\d{2}:?\d{2})$/i.test(s)) s += 'Z';
+  return new Date(s);
+}
+
 // ── AGENT ACCESS BY PLAN — extrait dans src/js/helpers-agent-access.js (v62.37 Phase 2)
 let selectedLevel = '';
 let notifications = {};
@@ -1755,7 +1775,7 @@ async function init() {
   svTrialActive = false;
   svTrialDaysLeft = 0;
   if (SV_TRIAL_ENABLED && userPlan === 'free' && currentUser.created_at) {
-    const ageMs = Date.now() - new Date(currentUser.created_at).getTime();
+    const ageMs = Date.now() - svParseTs(currentUser.created_at).getTime();
     const left = Math.ceil((TRIAL_DAYS * 86400000 - ageMs) / 86400000);
     if (ageMs >= 0 && left > 0) { svTrialActive = true; svTrialDaysLeft = left; }
   }
@@ -1772,8 +1792,11 @@ async function init() {
   document.getElementById('userName').textContent = name;
 
   // Display plan badge
+  // v63.45 — pendant l'essai 14j, afficher "Essai · J-X" au lieu de "Plan Free"
+  // (incohérence header vs bannière "Essai gratuit en cours" — bug test 11/06)
+  const _trialBadgeTxt = '🎁 ' + ((T[currentLang] || T.fr).trialBadge || 'Essai') + ' · J-' + svTrialDaysLeft;
   const planLabel = document.querySelector('.user-plan');
-  if (planLabel) planLabel.textContent = userPlan === 'pro' ? '⚡ Plan Pro' : (userPlan === 'plus' ? '💎 Plan Plus' : '🆓 Plan Free');
+  if (planLabel) planLabel.textContent = userPlan === 'pro' ? '⚡ Plan Pro' : (userPlan === 'plus' ? '💎 Plan Plus' : (svTrialActive ? _trialBadgeTxt : '🆓 Plan Free'));
 
   // v62.12: topbar plan badge — sync dynamique avec userPlan (avant: hard-codé "Plan Pro ✦" pour tous)
   const topbarPlanBadge = document.getElementById('topbarPlanBadge');
@@ -1784,6 +1807,9 @@ async function init() {
     } else if (userPlan === 'plus') {
       topbarPlanBadge.textContent = '💎 Plan Plus';
       topbarPlanBadge.className = 'badge badge-green';
+    } else if (svTrialActive) {
+      topbarPlanBadge.textContent = _trialBadgeTxt;
+      topbarPlanBadge.className = 'badge badge-gold';
     } else {
       topbarPlanBadge.textContent = '🆓 Plan Free';
       topbarPlanBadge.className = 'badge badge-muted';
@@ -3698,7 +3724,7 @@ async function renderDashboard() {
     physique:'David',mental:'Emma',nutrition:'Clara',comptabilite:'Pierre',sommeil:'Nora',recuperation:'Julie',equipe:'Lucas'};
   const topAgentName = topAgentEntry ? (agentNames[topAgentEntry[0]] || topAgentEntry[0]) : '—';
   const memberDays = currentUser.created_at
-    ? Math.floor((Date.now() - new Date(currentUser.created_at)) / 86400000) : 0;
+    ? Math.floor((Date.now() - svParseTs(currentUser.created_at)) / 86400000) : 0;
 
   // Checklist dynamique
   const step1Done = true; // connecté = compte créé ✅
@@ -3739,7 +3765,7 @@ async function renderDashboard() {
     .sort(function(a, b) { return b[1] > a[1] ? 1 : -1; })
     .slice(0, 2);
   function _svTimeAgo(isoDate) {
-    const diff = Math.floor((Date.now() - new Date(isoDate)) / 60000);
+    const diff = Math.floor((Date.now() - svParseTs(isoDate)) / 60000);
     if (diff < 90) return t.dashResumeJustNow || 'à l\'instant';
     if (diff < 1440) return Math.floor(diff / 60) + (t.dashResumeHoursAgo || ' h');
     const days = Math.floor(diff / 1440);
@@ -3751,7 +3777,7 @@ async function renderDashboard() {
 
   // v63.17 — Sous-ligne header contextuelle (priorité décroissante)
   const _lastMsgDate = userMsgs.length > 0
-    ? new Date(userMsgs.reduce(function(best, m) { return m.created_at > best ? m.created_at : best; }, userMsgs[0].created_at))
+    ? svParseTs(userMsgs.reduce(function(best, m) { return m.created_at > best ? m.created_at : best; }, userMsgs[0].created_at))
     : null;
   const _daysSinceMsg = _lastMsgDate ? Math.floor((Date.now() - _lastMsgDate) / 86400000) : null;
   let _headerSub = '';
@@ -4196,7 +4222,7 @@ async function renderChat(page) {
         chats[page] = history.map(m => ({
           from: m.role === 'agent' ? 'agent' : 'user',
           text: m.content,
-          ts: new Date(m.created_at).toLocaleTimeString('fr-CH', { hour:'2-digit', minute:'2-digit' })
+          ts: svParseTs(m.created_at).toLocaleTimeString('fr-CH', { hour:'2-digit', minute:'2-digit' })
         }));
         // Cache for offline use (last 50 messages per agent)
         try { localStorage.setItem(`sv_cache_${currentUser.id}_${page}`, JSON.stringify(chats[page].slice(-50))); } catch(e) {}
@@ -4275,7 +4301,7 @@ async function renderChat(page) {
 
   // v63.42.1 — Fix: memberDays et _calCount hors scope (définis dans renderDashboard, pas renderChat)
   const memberDays = currentUser.created_at
-    ? Math.floor((Date.now() - new Date(currentUser.created_at)) / 86400000) : 0;
+    ? Math.floor((Date.now() - svParseTs(currentUser.created_at)) / 86400000) : 0;
   let _calCount = 0;
   try {
     const { count: _cc } = await sb.from('calendar_events').select('*',{count:'exact',head:true}).eq('user_id', currentUser.id);
@@ -4930,7 +4956,7 @@ async function renderFavoris() {
     const name = agent ? agent.name : (agentNames[f.agent_id] || f.agent_id);
     const emoji = agent ? agent.emoji : '💬';
     const color = agent ? agent.color : '#f59e0b';
-    const date = new Date(f.created_at).toLocaleDateString('fr-CH', { day:'2-digit', month:'short', year:'numeric' });
+    const date = svParseTs(f.created_at).toLocaleDateString('fr-CH', { day:'2-digit', month:'short', year:'numeric' });
     return `
       <div data-fav-card="${f.id}" data-agent="${f.agent_id}" onclick="goToFavoriteAgent('${f.agent_id}')" style="background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:18px;border-left:3px solid ${color};cursor:pointer;transition:all 0.2s" onmouseover="this.style.borderColor='${color}50'" onmouseout="this.style.borderColor='var(--border)'">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
@@ -5208,7 +5234,7 @@ async function getOtherAgentsSummary(currentAgentId) {
     // Helper : format relative time (FR)
     const nowMs = Date.now();
     const relTime = (iso) => {
-      const ms = nowMs - new Date(iso).getTime();
+      const ms = nowMs - svParseTs(iso).getTime();
       const h = ms / 3.6e6;
       if (h < 1) return 'il y a moins d\'1h';
       if (h < 24) return `il y a ${Math.round(h)}h`;
@@ -6341,7 +6367,7 @@ async function renderParrainage() {
             <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
               <div>
                 <div style="font-size:13px;color:var(--text)">${r.referred_email || t.referredViaLink}</div>
-                <div style="font-size:11px;color:var(--muted);margin-top:2px">${new Date(r.created_at).toLocaleDateString(currentLang || 'fr')}</div>
+                <div style="font-size:11px;color:var(--muted);margin-top:2px">${svParseTs(r.created_at).toLocaleDateString(currentLang || 'fr')}</div>
               </div>
               <span style="padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;background:${r.status==='confirmed'?'#10b98120':'#f59e0b15'};color:${r.status==='confirmed'?'#10b981':'#f59e0b'}">
                 ${r.status === 'confirmed' ? t.statusConfirmed : t.statusPending}
@@ -8307,7 +8333,7 @@ async function generateWelcomeCardAsync(payload) {
 //  - isWithinWindow : true si user < 7j ET pas dismissed
 async function loadWelcomeCardForDisplay() {
   const userId = currentUser?.id;
-  const createdAt = currentUser?.created_at ? new Date(currentUser.created_at).getTime() : null;
+  const createdAt = currentUser?.created_at ? svParseTs(currentUser.created_at).getTime() : null;
   const ageMs = createdAt ? (Date.now() - createdAt) : Infinity;
   const isWithinWindow = ageMs < _WELCOME_CARD_WINDOW_MS;
 
@@ -9491,7 +9517,7 @@ async function showMorningBrief(forceShow = false) {
           // Heuristique simple : dernière réponse agent contient un '?' ET pas de réponse user postérieure.
           if (!agentMsg.content || !/\?/.test(agentMsg.content)) continue;
           const userMsg = lastUserMsgByAgent[agentId];
-          if (userMsg && new Date(userMsg.created_at) > new Date(agentMsg.created_at)) continue;
+          if (userMsg && svParseTs(userMsg.created_at) > svParseTs(agentMsg.created_at)) continue;
           candidates.push({ agent_id: agentId, ts: agentMsg.created_at });
         }
         candidates.sort((a, b) => new Date(b.ts) - new Date(a.ts));
@@ -14952,12 +14978,25 @@ function showShortcutsHelp() {
 
   // Logique d'affichage : s'affiche au 2e visit du dashboard si user est null/later
   // ET push API supportée ET VAPID configurée.
-  function maybeShowMorningBriefOptIn() {
+  // v63.45 — ET le compte a au moins UNE donnée réelle (événement calendrier ou entrée
+  // journal). Doctrine anti-bruit : un compte vide recevait la modal dès sa 2e navigation
+  // (bug test 11/06) alors que le brief n'aurait eu aucun contenu à pousser. Le chip
+  // sidebar "Active tes briefs matinaux" reste le nudge inline permanent, lui.
+  async function maybeShowMorningBriefOptIn() {
     if (typeof isPushSupported !== 'function' || !isPushSupported()) return;
     if (typeof getVapidPublicKey !== 'function' || !getVapidPublicKey()) return; // pas configuré côté env
 
     var status = (typeof getMorningBriefStatus === 'function') ? getMorningBriefStatus() : null;
     if (status === 'on' || status === 'off') return; // déjà décidé définitivement
+
+    // v63.45 — compte sans données = pas de modal (le brief serait vide)
+    try {
+      var _counts = await Promise.all([
+        sb.from('calendar_events').select('*', { count: 'exact', head: true }).eq('user_id', currentUser.id),
+        sb.from('daily_log').select('*', { count: 'exact', head: true }).eq('user_id', currentUser.id)
+      ]);
+      if (((_counts[0].count || 0) + (_counts[1].count || 0)) === 0) return;
+    } catch(_) { return; }
 
     // Détection 2e visite : si sv_first_dashboard_seen_at est défini, c'est une visite n+1
     var firstSeenKey = 'sv_first_dashboard_seen_at';
