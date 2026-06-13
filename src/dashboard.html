@@ -5581,8 +5581,9 @@ async function sendMsg(page) {
     return;
   }
 
-  // Check message limit for free users
-  if (userPlan === 'free' && dailyMsgCount >= FREE_MSG_LIMIT) {
+  // Check message limit for free users (hors essai — pendant l'essai 14j, accès complet
+  // côté frontend ; le backend applique son propre cap trial = 20 msg/jour, LIMITS.trial)
+  if (userPlan === 'free' && !svTrialActive && dailyMsgCount >= FREE_MSG_LIMIT) {
     const msgs = document.getElementById('chatMessages');
     const limitMsg = `<div style="background:#f59e0b15;border:1px solid #f59e0b30;border-radius:12px;padding:16px;margin:12px 0;text-align:center">
       <div style="font-size:20px;margin-bottom:8px">🔒</div>
@@ -5617,7 +5618,7 @@ async function sendMsg(page) {
     userMsg.imageData = attachedFile.data;
   }
   chats[page].push(userMsg);
-  if (userPlan === 'free') dailyMsgCount++;
+  if (userPlan === 'free' && !svTrialActive) dailyMsgCount++;
 
   // Save user message to Supabase (avec await pour garantir la sauvegarde)
   const { error: saveErr } = await sb.from('messages').insert({
@@ -8535,7 +8536,7 @@ function injectCheckinCard() {
   const insightEl = document.getElementById('weeklyInsightCard');
   const welcomeEl = document.getElementById('welcomeCard');
   const html = `
-    <div id="checkinCard" style="background:linear-gradient(135deg,#0ea5e915,#0284c715);border:1px solid #0ea5e950;border-radius:14px;padding:18px;margin-bottom:16px;position:relative;opacity:0;transform:translateY(-8px);transition:opacity 0.4s ease, transform 0.4s ease">
+    <div id="checkinCard" style="background:linear-gradient(135deg,#0ea5e915,#0284c715);border:1px solid #0ea5e950;border-radius:14px;padding:18px;margin-bottom:16px;position:relative">
       <div style="font-size:11px;font-weight:800;color:#0ea5e9;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px">
         ✨ ${escapeHtml(t.checkinCardTitle || 'Ton journal du jour')}
       </div>
@@ -8555,11 +8556,6 @@ function injectCheckinCard() {
   } else {
     wrapper.insertAdjacentHTML('afterbegin', html);
   }
-
-  requestAnimationFrame(() => {
-    const el = document.getElementById('checkinCard');
-    if (el) { el.style.opacity = '1'; el.style.transform = 'translateY(0)'; }
-  });
 }
 
 // Dismiss la carte pour la journée uniquement (réapparaît demain)
