@@ -5308,6 +5308,15 @@ async function getOtherAgentsSummary(currentAgentId) {
 // signaux clés (RPE moyen, blessures, état dominant). Conditionnel ≥2 events sur 7j
 // pour éviter du bruit chez les users avec peu de data. Cap implicite par le filtre
 // 14j amont (LIMIT 10).
+// Charge de séance (méthode Foster, "session-RPE") = RPE perçu (1-10) × durée réelle
+// en minutes = charge en AU (arbitrary units). C'est ce chiffre, pas le RPE seul, qui
+// alimente l'ACWR et la détection de surcharge côté agents (Marc/David/Emma).
+function sessionLoad(e) {
+  if (!e || typeof e.rpe !== 'number' || e.rpe <= 0) return null;
+  if (typeof e.duration_minutes !== 'number' || e.duration_minutes <= 0) return null;
+  return e.rpe * e.duration_minutes;
+}
+
 function buildEventTrendsBlock(pastEvents) {
   if (!pastEvents || pastEvents.length === 0) return '';
   const now = Date.now();
@@ -5322,6 +5331,15 @@ function buildEventTrendsBlock(pastEvents) {
   if (withRpe.length > 0) {
     const avgRpe = (withRpe.reduce((s,e) => s + e.rpe, 0) / withRpe.length).toFixed(1);
     lines.push(`- RPE moyen : ${avgRpe}/10 (${withRpe.length} séance${withRpe.length>1?'s':''} avec RPE renseigné sur 7j)`);
+  }
+  // Charge de séance 7j (méthode Foster : RPE × durée réelle en min = AU).
+  // Plus pertinent que le RPE brut seul pour détecter une surcharge — deux séances
+  // RPE 8 de 45min et 2h n'ont pas le même impact.
+  const withLoad = eventsLast7d.filter(e => sessionLoad(e) !== null);
+  if (withLoad.length > 0) {
+    const totalLoad = withLoad.reduce((s,e) => s + sessionLoad(e), 0);
+    const avgLoad = Math.round(totalLoad / withLoad.length);
+    lines.push(`- Charge de séance (RPE×durée) : ${totalLoad} AU sur 7j, moyenne ${avgLoad} AU/séance (${withLoad.length} séance${withLoad.length>1?'s':''})`);
   }
   // Performance moyenne 7j
   const withPerf = eventsLast7d.filter(e => typeof e.performance_note === 'number' && e.performance_note > 0);
@@ -7962,6 +7980,9 @@ function showRecapModal(eventId, eventTitle, eventType, eventDate, existing) {
 
   // Pre-fill defaults from `existing` (edit flow) or use sane defaults (new recap flow).
   const eHas = existing && typeof existing === 'object';
+  // Pour le 1er récap (existing non fourni), on retrouve l'event dans le state global
+  // pour récupérer la durée planifiée — base de départ pour la "durée réelle".
+  const evRef = eHas ? existing : (calendarEvents || []).find(x => x.id === eventId);
   if (eHas) {
     recapPerformance = existing.performance_note || 7;
     recapPhysical    = existing.physical_state || 'normal';
@@ -7975,6 +7996,7 @@ function showRecapModal(eventId, eventTitle, eventType, eventDate, existing) {
   const initStrengths  = eHas ? (existing.strengths || '')   : '';
   const initWeaknesses = eHas ? (existing.weaknesses || '')  : '';
   const initNotes      = eHas ? (existing.recap_notes || '') : '';
+  const initDuration   = (evRef && evRef.duration_minutes) ? evRef.duration_minutes : 90;
 
   // Helper to mark `selected` class on the right button per categorical field.
   const sel = (field, val) => field === val ? ' selected' : '';
@@ -7994,17 +8016,7 @@ function showRecapModal(eventId, eventTitle, eventType, eventDate, existing) {
         <input type="text" class="form-input" id="recapResult" value="${initResult.replace(/"/g,'&quot;')}" placeholder="${t.recapResultPlaceholder}" />
       </div>` : ''}
 
-      <div class="form-field">
-        <label class="form-label">${t.recapPerfLabel}</label>
-        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px" id="recapStars">
-          ${[1,2,3,4,5,6,7,8,9,10].map(n => `
-            <button onclick="selectPerformance(${n})" id="star${n}"
-              style="padding:10px 0;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--muted);font-size:13px;font-weight:800;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.15s">${n}</button>
-          `).join('')}
-        </div>
-      </div>
-
-      <!-- v50: NEW field — RPE (Rating of Perceived Exertion, 1-10) -->
+      <!-- v64: NEW field — RPE (Rating of Perceived Exertion, 1-10), 1ère question : prioritaire. -->
       <div class="form-field">
         <label class="form-label">${t.recapRpeLabel}</label>
         <div style="font-size:11px;color:var(--muted);margin-bottom:6px">${t.recapRpeHint}</div>
@@ -8014,6 +8026,15 @@ function showRecapModal(eventId, eventTitle, eventType, eventDate, existing) {
               style="padding:10px 0;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--muted);font-size:13px;font-weight:800;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.15s">${n}</button>
           `).join('')}
         </div>
+      </div>
+
+      <!-- v64: NEW field — durée réelle, pré-remplie depuis l'event (estimation), corrigible.
+           RPE × durée = charge de séance (méthode Foster), c'est cette valeur qui alimente
+           l'ACWR — sans correction de durée, le RPE seul ne dit pas grand-chose. -->
+      <div class="form-field">
+        <label class="form-label">${t.recapDurationLabel}</label>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px">${t.recapDurationHint}</div>
+        <input type="number" class="form-input" id="recapDuration" min="1" max="600" step="5" value="${initDuration}" />
       </div>
 
       <div class="form-field">
@@ -8026,25 +8047,50 @@ function showRecapModal(eventId, eventTitle, eventType, eventDate, existing) {
         </div>
       </div>
 
-      <div class="form-field">
-        <label class="form-label">${t.recapMoodLabel}</label>
-        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">
-          <button class="sport-btn${sel(recapMood,'frustre')}" onclick="selectMood(this,'frustre')" style="padding:8px 4px;font-size:16px">😤</button>
-          <button class="sport-btn${sel(recapMood,'decu')}" onclick="selectMood(this,'decu')" style="padding:8px 4px;font-size:16px">😞</button>
-          <button class="sport-btn${sel(recapMood,'neutre')}" onclick="selectMood(this,'neutre')" style="padding:8px 4px;font-size:16px">😐</button>
-          <button class="sport-btn${sel(recapMood,'bien')}" onclick="selectMood(this,'bien')" style="padding:8px 4px;font-size:16px">🙂</button>
-          <button class="sport-btn${sel(recapMood,'excellent')}" onclick="selectMood(this,'excellent')" style="padding:8px 4px;font-size:16px">😄</button>
+      <!-- v64: tout le reste = détails optionnels, repliés par défaut pour réduire la
+           friction du récap rapide (3 champs ci-dessus suffisent à l'essentiel pour les agents). -->
+      <button type="button" onclick="toggleRecapDetails()" id="recapDetailsToggle"
+        style="width:100%;text-align:left;background:none;border:none;border-top:1px solid var(--border);padding:12px 0 4px;margin-bottom:8px;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">
+        ${t.recapDetailsToggle} ▾
+      </button>
+      <div id="recapDetailsBlock" style="display:none">
+
+        <div class="form-field">
+          <label class="form-label">${t.recapPerfLabel}</label>
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px" id="recapStars">
+            ${[1,2,3,4,5,6,7,8,9,10].map(n => `
+              <button onclick="selectPerformance(${n})" id="star${n}"
+                style="padding:10px 0;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--muted);font-size:13px;font-weight:800;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.15s">${n}</button>
+            `).join('')}
+          </div>
         </div>
-      </div>
 
-      <div class="form-field">
-        <label class="form-label">${t.recapStrengthsLabel}</label>
-        <input type="text" class="form-input" id="recapStrengths" value="${initStrengths.replace(/"/g,'&quot;')}" placeholder="${t.recapStrengthsPlaceholder}" />
-      </div>
+        <div class="form-field">
+          <label class="form-label">${t.recapMoodLabel}</label>
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">
+            <button class="sport-btn${sel(recapMood,'frustre')}" onclick="selectMood(this,'frustre')" style="padding:8px 4px;font-size:16px">😤</button>
+            <button class="sport-btn${sel(recapMood,'decu')}" onclick="selectMood(this,'decu')" style="padding:8px 4px;font-size:16px">😞</button>
+            <button class="sport-btn${sel(recapMood,'neutre')}" onclick="selectMood(this,'neutre')" style="padding:8px 4px;font-size:16px">😐</button>
+            <button class="sport-btn${sel(recapMood,'bien')}" onclick="selectMood(this,'bien')" style="padding:8px 4px;font-size:16px">🙂</button>
+            <button class="sport-btn${sel(recapMood,'excellent')}" onclick="selectMood(this,'excellent')" style="padding:8px 4px;font-size:16px">😄</button>
+          </div>
+        </div>
 
-      <div class="form-field">
-        <label class="form-label">${t.recapWeaknessesLabel}</label>
-        <input type="text" class="form-input" id="recapWeaknesses" value="${initWeaknesses.replace(/"/g,'&quot;')}" placeholder="${t.recapWeaknessesPlaceholder}" />
+        <div class="form-field">
+          <label class="form-label">${t.recapStrengthsLabel}</label>
+          <input type="text" class="form-input" id="recapStrengths" value="${initStrengths.replace(/"/g,'&quot;')}" placeholder="${t.recapStrengthsPlaceholder}" />
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">${t.recapWeaknessesLabel}</label>
+          <input type="text" class="form-input" id="recapWeaknesses" value="${initWeaknesses.replace(/"/g,'&quot;')}" placeholder="${t.recapWeaknessesPlaceholder}" />
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">${t.recapNotesLabel}</label>
+          <input type="text" class="form-input" id="recapNotes" value="${initNotes.replace(/"/g,'&quot;')}" placeholder="${t.recapNotesPlaceholder}" />
+        </div>
+
       </div>
 
       ${_pendingRecapsCount > 1 ? `<div style="text-align:center;font-size:11px;color:var(--muted);margin-bottom:8px;font-weight:600">${(t.recapPendingCount || '{n} récap(s) en attente').replace('{n}', _pendingRecapsCount)}</div>` : ''}
@@ -8063,7 +8109,23 @@ function showRecapModal(eventId, eventTitle, eventType, eventDate, existing) {
   setTimeout(() => {
     try { selectPerformance(recapPerformance); } catch(_){}
     if (recapRpe !== null) { try { selectRpe(recapRpe); } catch(_){} }
+    // En édition, si des détails existent déjà, on déplie directement le bloc détails
+    // pour que l'utilisateur les retrouve sans clic supplémentaire.
+    if (eHas && (existing.performance_note || existing.strengths || existing.weaknesses || existing.recap_notes || (existing.mood && existing.mood !== 'bien'))) {
+      try { toggleRecapDetails(true); } catch(_){}
+    }
   }, 0);
+}
+
+// v64: replie/déplie le bloc "détails optionnels" du récap rapide.
+function toggleRecapDetails(forceOpen) {
+  const block = document.getElementById('recapDetailsBlock');
+  const toggle = document.getElementById('recapDetailsToggle');
+  if (!block || !toggle) return;
+  const t = T[currentLang] || T.fr;
+  const open = forceOpen === true ? true : block.style.display === 'none';
+  block.style.display = open ? 'block' : 'none';
+  toggle.innerHTML = `${t.recapDetailsToggle} ${open ? '▴' : '▾'}`;
 }
 
 let recapPerformance = 7;
@@ -8139,6 +8201,11 @@ async function saveRecap(eventId) {
   const strengths = document.getElementById('recapStrengths')?.value?.trim() || null;
   const weaknesses = document.getElementById('recapWeaknesses')?.value?.trim() || null;
   const notes = document.getElementById('recapNotes')?.value?.trim() || null;
+  // v64: durée réelle (corrige l'estimation de planification). RPE × cette durée =
+  // charge de séance (sessionLoad), recalculée à la volée partout où c'est utilisé —
+  // pas de colonne dédiée, juste duration_minutes mis à jour avec la vraie valeur.
+  const durationInput = parseInt(document.getElementById('recapDuration')?.value, 10);
+  const duration_minutes = (Number.isFinite(durationInput) && durationInput > 0) ? durationInput : undefined;
   // v50: Build payload conditionally — only include rpe if user actually picked one,
   // so editing without touching RPE doesn't overwrite an existing value with NULL.
   const payload = {
@@ -8148,14 +8215,16 @@ async function saveRecap(eventId) {
     mood: recapMood,
     strengths,
     weaknesses,
+    recap_notes: notes,
     recap_done: true
   };
   if (recapRpe !== null) payload.rpe = recapRpe;
+  if (duration_minutes !== undefined) payload.duration_minutes = duration_minutes;
 
   const { error } = await sb.from('calendar_events').update(payload).eq('id', eventId);
   if (error) return alert('Erreur: ' + error.message);
   document.getElementById('eventModal')?.remove();
-  console.log(`[RECAP] saved id=${eventId} rpe=${recapRpe ?? 'null'} perf=${recapPerformance} lang=${currentLang}`);
+  console.log(`[RECAP] saved id=${eventId} rpe=${recapRpe ?? 'null'} duration=${duration_minutes ?? 'unchanged'} perf=${recapPerformance} lang=${currentLang}`);
   showToast(t.recapToastSaved || '✅ Récap enregistré ! Vos agents en tiendront compte.');
   // Reset for next recap
   recapPerformance = 7; recapPhysical = 'normal'; recapMood = 'bien'; recapRpe = null;
