@@ -366,18 +366,24 @@ async function main() {
       else ok(`CL ne contient plus "${c}" (niveau incorrect retiré)`);
     }
 
-    // Hockey Swiss League — doit avoir 11 clubs
-    const swissLeagueClubs = ['EHC Arosa','HC Thurgau','HC Chur','HC Winterthur','EHC Olten','EHC Visp','HC Sierre','GCK Lions','EHC Basel','HC La Chaux-de-Fonds'];
+    // Hockey Swiss League — doit avoir 11 clubs (v63.45.1 : Bellinzona Snakes remplace Lakers II, vérifié web 11/06/2026)
+    const swissLeagueClubs = ['EHC Arosa','HC Thurgau','HC Chur','HC Winterthur','EHC Olten','EHC Visp','HC Sierre','GCK Lions','EHC Basel','HC La Chaux-de-Fonds','GDT Bellinzona Snakes'];
     for (const c of swissLeagueClubs) {
       if (hlClubs.includes(c)) ok(`Swiss League contient "${c}"`);
       else fail(`Swiss League manque "${c}"`);
     }
+    if (hlClubs.includes('SC Rapperswil-Jona Lakers II')) fail('"SC Rapperswil-Jona Lakers II" encore en Swiss League (club inexistant, retiré v63.45.1)');
+    else ok('"SC Rapperswil-Jona Lakers II" absent de la Swiss League');
 
-    // Basket — clubs vérifiés agents-data
-    const basketMust = ['Fribourg Olympic','Lions de Genève','Jubilee Basket Berne','Nyon Basket','Swiss Central Basket'];
+    // Basket — clubs SBL vérifiés web 11/06/2026 (v63.45.1 : Massagno/Lugano Tigers/BBC Nyon entrent, Jubilee/Swiss Central sortent)
+    const basketMust = ['Fribourg Olympic','Lions de Genève','Spinelli Massagno','Lugano Tigers','BBC Nyon','Pully Lausanne Foxes'];
     for (const c of basketMust) {
       if (sblClubs.includes(c)) ok(`SBL contient "${c}"`);
       else fail(`SBL manque "${c}"`);
+    }
+    for (const c of ['Jubilee Basket Berne','Swiss Central Basket']) {
+      if (sblClubs.includes(c)) fail(`SBL contient "${c}" (pas en SBL 2026-27, retiré v63.45.1)`);
+      else ok(`SBL ne contient plus "${c}"`);
     }
   } else {
     warn('src/data/clubs.json non lisible localement — clubs sanity skippé');
