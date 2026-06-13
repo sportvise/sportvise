@@ -45,8 +45,8 @@ National League 2026-2027 (14 clubs, 52 matchs par équipe) — Champion 2025-26
 HC Ajoie (JU – Porrentruy) | HC Ambrì-Piotta (TI) | SC Bern (BE – PostFinance Arena 17'031 places) | EHC Biel/Bienne (BE – Tissot Arena) | HC Davos (GR) | HC Fribourg-Gottéron (FR – BCF Arena — CHAMPION 2025-26) | Genève-Servette HC (GE) | EHC Kloten (ZH – SWISS Arena) | Lausanne HC (VD – Vaudoise Aréna) | HC Lugano (TI – Cornèr Arena) | SCL Tigers (BE – Langnau) | SC Rapperswil-Jona Lakers (SG) | ZSC Lions (ZH – Swiss Life Arena 12'000 pl.) | EV Zug (ZG – Bossard Arena)
 Format : 6 premiers → playoffs directs, 7e–10e → play-ins, 2 derniers → playouts vs Swiss League. Même 14 clubs pour 2026-27 (HC Sierre champion Swiss League n'a pas demandé la montée).
 
-Swiss League 2025-2026 (2e division, 11 clubs) :
-EHC Arosa (GR) | EHC Basel (BS) | HC La Chaux-de-Fonds (NE) | GCK Lions (ZH – club école ZSC) | EHC Olten (SO) | SC Rapperswil-Jona Lakers II | HC Sierre (VS – Lonza Arena) | HC Thurgau (TG) | EHC Visp (VS) | HC Winterthur (ZH) | HC Chur (GR)
+Swiss League 2026-2027 (2e division, 11 clubs) :
+EHC Arosa (GR) | EHC Basel (BS) | HC La Chaux-de-Fonds (NE) | GCK Lions (ZH – club école ZSC) | GDT Bellinzona Snakes (TI – ex-Ticino Rockets, relocalisé à Bellinzone) | EHC Olten (SO) | HC Sierre (VS – Lonza Arena) | HC Thurgau (TG) | EHC Visp (VS) | HC Winterthur (ZH) | HC Chur (GR)
 
 CLUBS HOCKEY PAR CANTON :
 Berne (BE) : SC Bern (NL), EHC Biel (NL), SCL Tigers/Langnau (NL)
@@ -55,7 +55,7 @@ Vaud (VD) : Lausanne HC (NL)
 Genève (GE) : Genève-Servette HC (NL)
 Grisons (GR) : HC Davos (NL), EHC Arosa (SL), HC Chur (SL)
 Fribourg (FR) : HC Fribourg-Gottéron (NL)
-Tessin (TI) : HC Lugano (NL), HC Ambrì-Piotta (NL)
+Tessin (TI) : HC Lugano (NL), HC Ambrì-Piotta (NL), GDT Bellinzona Snakes (SL)
 Zoug (ZG) : EV Zug (NL)
 St-Gall (SG) : SC Rapperswil-Jona Lakers (NL)
 Valais (VS) : HC Sierre (SL), EHC Visp (SL)
@@ -75,8 +75,8 @@ Glacier d'été (préparation) : Saas-Fee (VS), Zermatt (VS), Titlis (OW).
 Formation élite : Snowsports Switzerland, centres régionaux par canton (VS fort en ski alpin, GR fort en ski nordique).
 
 BASKETBALL (Swiss Basketball — swissbasketball.ch) :
-Swiss Basketball League (SBL) 2025-2026 : 9 clubs.
-Principaux clubs : Fribourg Olympic (FR — club référence suisse, multiple champion) | Lions de Genève (GE — champion 2025-26) | Union Neuchâtel Basket (NE) | Starwings Basket Regio Basel (BS/BL) | Pully Lausanne Basketball (VD) | BBC Monthey (VS) | Jubilee Basket Berne (BE) | Nyon Basket (VD) | Swiss Central Basket (LU)
+Swiss Basketball League (SBL) 2026-2027 : 9 clubs.
+Principaux clubs : Fribourg Olympic (FR — club référence suisse, multiple champion) | Lions de Genève (GE) | Union Neuchâtel (NE) | Starwings Basket (BS/BL) | Pully Lausanne Foxes (VD) | BBC Monthey-Chablais (VS) | BBC Nyon (VD) | Spinelli Massagno (TI – SAM Basket) | Lugano Tigers (TI)
 Saison : octobre → avril, playoffs mai. Coupe de Suisse : finale février.
 Fribourg Olympic : club le plus titré de Suisse, formateur de nombreux joueurs pros, infrastructure pro-européenne.
 

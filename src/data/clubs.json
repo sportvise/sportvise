@@ -1,9 +1,9 @@
 {
   "_meta": {
     "saison": "2026-27",
-    "mis_a_jour": "2026-06-09",
-    "version_sportvise": "63.41.0",
-    "note": "SOURCE DE VÉRITÉ UNIQUE — modifier uniquement ce fichier. build.js l'injecte dans dashboard.html au build."
+    "mis_a_jour": "2026-06-11",
+    "version_sportvise": "63.45.1",
+    "note": "SOURCE DE VÉRITÉ UNIQUE — modifier uniquement ce fichier. build.js l'injecte dans dashboard.html au build. Hockey SL + basket SBL vérifiés web 11/06/2026 (Bellinzona Snakes remplace Lakers II ; SBL : Massagno/Lugano Tigers/BBC Nyon, exit Jubilee/Swiss Central)."
   },
   "football": {
     "Super League": [
@@ -54,8 +54,8 @@
       "EHC Basel",
       "HC La Chaux-de-Fonds",
       "GCK Lions",
+      "GDT Bellinzona Snakes",
       "EHC Olten",
-      "SC Rapperswil-Jona Lakers II",
       "HC Sierre",
       "HC Thurgau",
       "EHC Visp",
@@ -67,13 +67,13 @@
     "SB League": [
       "Fribourg Olympic",
       "Lions de Genève",
-      "Union Neuchâtel Basket",
-      "Starwings Basket Regio Basel",
-      "Pully Lausanne Basketball",
-      "BBC Monthey",
-      "Jubilee Basket Berne",
-      "Nyon Basket",
-      "Swiss Central Basket"
+      "Union Neuchâtel",
+      "Starwings Basket",
+      "Pully Lausanne Foxes",
+      "BBC Monthey-Chablais",
+      "BBC Nyon",
+      "Spinelli Massagno",
+      "Lugano Tigers"
     ]
   }
 }

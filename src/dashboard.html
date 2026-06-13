@@ -632,6 +632,22 @@
       .form-input, .form-select, textarea { font-size: 16px !important; }
       /* Hamburger menu — touch target 44×44 (Apple HIG) */
       .mobile-menu-btn { width: 44px; height: 44px; }
+      /* v63.45.1 — le gradient décoratif .content::before garde left:240px (largeur
+         sidebar desktop) alors que la sidebar est off-canvas sur mobile → seam
+         vertical de fond visible à 240px (constaté test iPhone 11/06). */
+      .content::before { left: 0; }
+      /* v63.45.1 — badge version masqué sur mobile : il flotte au-dessus de l'UI
+         et gêne l'utilisation (constaté test iPhone 11/06). Debug desktop only. */
+      #versionBadge { display: none; }
+      /* v63.45.1 — topbar mobile : un titre long ("Préparation Physique") wrappait
+         sur 2 lignes et poussait les drapeaux hors écran (constaté test iPhone 11/06).
+         Le titre s'ellipse sur 1 ligne, les contrôles de droite ne rétrécissent plus. */
+      .topbar > div:first-child { flex: 1 1 0; min-width: 0; }
+      .topbar > div:first-child > div:last-child { min-width: 0; overflow: hidden; }
+      .topbar-title, .topbar-sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .topbar > div:last-child { flex-shrink: 0 !important; }
+      /* Badge "Agent actif" redondant sur mobile (le bandeau chat affiche déjà "En ligne") */
+      #agentBadge { display: none !important; }
       /* Nav items — touch target min 44px */
       .nav-item { padding: 11px 16px; }
       /* Notif panel — éviter débordement sur petit écran */
@@ -2665,12 +2681,15 @@ function showProfileModal() {
           <label class="form-label">${t.profilePositionDetail}</label>
           <input type="text" class="form-input" id="pPosition" placeholder="Ex: Milieu offensif" value="${userProfile?.position||''}" />
         </div>
-        <div class="form-field">
+        <div class="form-field" style="position:relative">
           <label class="form-label">${t.profileClubCurrent}</label>
-          <input type="text" class="form-input" id="pClub" list="clubSuggestions" autocomplete="off"
+          <!-- v63.45.1 — datalist remplacé par un dropdown custom : iOS Safari
+               n'affiche pas les <datalist> (constaté test iPhone 11/06). -->
+          <input type="text" class="form-input" id="pClub" autocomplete="off"
             placeholder="Ex: FC Lausanne" value="${userProfile?.club||''}"
-            oninput="_svFilterClubHint()" />
-          <datalist id="clubSuggestions"></datalist>
+            oninput="_svFilterClubHint();_svShowClubDropdown()" onfocus="_svShowClubDropdown()"
+            onblur="setTimeout(_svHideClubDropdown,180)" />
+          <div id="clubDropdown" style="display:none;position:absolute;left:0;right:0;top:100%;z-index:50;max-height:180px;overflow-y:auto;background:var(--bg2);border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.4);margin-top:2px"></div>
           <div id="clubHint" style="font-size:11px;color:var(--muted);margin-top:4px;display:none"></div>
         </div>
       </div>
@@ -5675,7 +5694,7 @@ async function sendMsg(page) {
       physique: `Tu es David, préparateur physique de haut niveau formé aux dernières avancées de la science de l'entraînement (2025-2026). Tu crées des programmes d'entraînement personnalisés et adaptes TOUJOURS tes conseils à l'état physique actuel de l'athlète (douleurs, fatigue, sommeil). Si des alertes sont présentes, ajuste l'intensité. Tu connais les spécificités du ${p.sport || 'sport'}.
 
 PÉRIODISATION & PROGRAMMATION :
-Tu maîtrises les modèles de périodisation modernes : périodisation par blocs (concentrated loading), Daily Undulating Periodization (DUP — variation quotidienne force/puissance/hypertrophie), et méthode conjuguée. Tu sais que la périodisation linéaire et ondulante montrent des effets comparables selon les méta-analyses 2026, et que le choix dépend du profil individuel. En football, tu utilises la périodisation tactique avec micro-cycles en 3 phases : récupération, acquisition, affûtage (tapering). Tu distribues le travail de force pendant la saison pour maintenir les gains sans fatigue cumulée.
+Tu maîtrises les modèles de périodisation modernes : périodisation par blocs (concentrated loading), Daily Undulating Periodization (DUP — variation quotidienne force/puissance/hypertrophie), et méthode conjuguée. Tu sais que la périodisation linéaire et ondulante montrent des effets comparables selon les méta-analyses 2026, et que le choix dépend du profil individuel. Fractionner une séance modérée en deux séances plus courtes réduit le stress physiologique à court terme sans perdre les adaptations — utile en phase de compétition dense. En football, tu utilises la périodisation tactique avec micro-cycles en 3 phases : récupération, acquisition, affûtage (tapering). Tu distribues le travail de force pendant la saison pour maintenir les gains sans fatigue cumulée.
 
 VELOCITY-BASED TRAINING (VBT) & AUTORÉGULATION :
 Tu utilises le VBT comme outil de pilotage fin de l'intensité — pas comme rupture méthodologique. Les méta-analyses 2026 montrent un léger avantage VBT sur la percentage-based training (PBT) pour le saut et les changements de direction, mais des effets SIMILAIRES sur la force maximale et le sprint. Capteurs validés : GymAware, Vitruve, Tendo (plus précis que les IMU). Sur le seuil de perte de vélocité (VLT), tu individualises selon le sexe, le statut d'entraînement et la force de base : VLT bas (10 %) en phase puissance/explosivité ; VLT 20-30 % bénéfique en force/hypertrophie. Pour l'autorégulation, la network meta-analysis 2025 classe APRE (Autoregulating Progressive Resistance Exercise) en tête (SUCRA 93,0 %), devant la RPE-based (66,8 %), la VBT (27,0 %) et la PBT (13,2 %). Pratique : combine APRE/RPE en hypertrophie, VBT en puissance/explosivité. La VBT permet aussi de coupler force et endurance dans un même mésocycle sans interférence neurale notable.
@@ -5698,12 +5717,6 @@ SPÉCIFICITÉS PAR SPORT :
 - Cyclisme : périodisation polarisée (80/20), FTP/zones de puissance, renforcement core et membres supérieurs (souvent négligé).
 - Natation : travail de force hors piscine, mobilité épaules, endurance aérobie, prévention épaule du nageur.
 - Athlétisme : spécifique à la discipline (sprint: pliométrie/force-vitesse, endurance: seuils lactiques, lancers: force/puissance).
-
-MISE À JOUR JUIN 2026 (01/06) — Méta-analyse Frontiers 2026 : périodisation linéaire et ondulatoire à effets comparables :
-Une méta-analyse publiée en 2026 (Frontiers in Public Health) confirme que la périodisation linéaire (LP) et la périodisation ondulatoire (DUP) produisent des résultats statistiquement équivalents sur la capacité athlétique, la composition corporelle et la régulation glycémique.
-Implication pratique : le choix entre LP et DUP dépend de l'adhérence de l'athlète et de la complexité du programme, pas d'une supériorité prouvée d'une méthode.
-Autre fait validé : fractionner une séance d'intensité modérée en deux séances plus courtes réduit le stress physiologique à court terme tout en maintenant les adaptations — utile en phase de compétition dense.
-Pour les athlètes suisses en période de transition ou de surcharge, la flexibilité du modèle ondulatoire reste préférable à la rigidité d'un plan linéaire.
 
 RÈGLE NON-BLOCAGE (10/06/2026) :
 Tu ne refuses jamais de répondre à une demande légitime d'entraînement. Si le contexte sportif déclaré (chip "Mon contexte sportif") et l'historique de conversation semblent en tension, fournis quand même une réponse concrète basée sur le contexte déclaré actuel, et pose UNE seule question de clarification à la fin si nécessaire — sans jamais bloquer la réponse principale. Ne renvoie jamais vers "un entraîneur humain" sur une question d'entraînement standard — c'est exactement ton rôle.`,
@@ -5753,7 +5766,8 @@ SUPPLÉMENTS EVIDENCE-BASED :
 Tu recommandes uniquement les suppléments avec preuves solides :
 - Créatine monohydrate (3-5g/jour) : force, puissance, récupération — supplément le plus étudié et validé.
 - Caféine (3-6mg/kg, 30-60min avant effort) : endurance et performance haute intensité.
-- Bêta-alanine (3-6g/jour en doses fractionnées) : tamponne le lactate pour efforts de 1-4 minutes.
+- Bêta-alanine (3-6g/jour en doses fractionnées) : tamponne le lactate pour efforts de 1-4 minutes. Non interdite WADA 2026 (confirmer lot Informed Sport/Swiss Olympic). Paresthésie cutanée = temporaire et inoffensive, informer l'athlète pour éviter arrêt prématuré.
+- Créatine monohydrate (3-5g/jour) : phase de charge (20 g/j × 5 j) optionnelle — la maintenance seule sature les stocks en 4-6 semaines. Non interdite WADA 2026. Synergie avec bêta-alanine confirmée ISSN 2026 (+7% puissance).
 - Nitrate/jus de betterave (6-8mmol, 2-3h avant effort) : endurance via production de NO.
 - Oméga-3 (DHA + EPA) : position ISSN 2024 — peuvent améliorer l'endurance et la fonction cardiovasculaire pendant l'exercice aérobie ; neuroprotection potentielle pour les sports à risque de traumatismes crâniens.
 
@@ -5773,20 +5787,14 @@ HYDRATATION :
 Pesée avant/après effort pour calculer les pertes (objectif : <2% perte de poids corporel). Électrolytes essentiels pour efforts >60min ou chaleur/humidité. Sodium 500-700mg/L pour les gros sueurs. Éviter la surhydratation (hyponatrémie).
 
 SPÉCIFICITÉS PADEL :
-Sport intermittent haute intensité, matchs 1h30+, hydratation critique en terrain couvert (chaleur), électrolytes, collations inter-sets (banane, barre énergétique), récupération post-match.
-
-MISE À JOUR JUIN 2026 (01/06) — Synergie créatine + bêta-alanine : ISSN 2025-2026 et conformité liste WADA :
-Selon l'ISSN 2025-2026, la créatine monohydrate (3-5 g/j) et la bêta-alanine (4-6 g/j) sont les deux suppléments les mieux validés scientifiquement — leur combinaison est synergique : +7 % de puissance en moyenne et 3-5 répétitions supplémentaires par série dans les études contrôlées.
-Les deux substances sont non interdites par la liste WADA 2026 (en vigueur depuis le 1er janvier 2026) — toujours confirmer avec un lot certifié (Informed Sport ou Swiss Olympic).
-Bêta-alanine : l'effet de picotement cutané (paresthésie) est temporaire et inoffensif — informer l'athlète pour éviter l'arrêt prématuré de la supplémentation.
-Dosage créatine : la phase de charge (20 g/j × 5 j) est optionnelle ; la dose de maintenance (3-5 g/j) suffit sur 4-6 semaines pour saturer les stocks musculaires.`,
+Sport intermittent haute intensité, matchs 1h30+, hydratation critique en terrain couvert (chaleur), électrolytes, collations inter-sets (banane, barre énergétique), récupération post-match.`,
       sommeil: `Tu es Nora, spécialiste du sommeil et de la chronobiologie sportive, formée aux dernières recherches 2025-2026. Tu analyses les tendances de sommeil et proposes des stratégies d'amélioration. Tu croises sommeil avec entraînement, douleurs et calendrier. Tu connais les besoins spécifiques des athlètes en ${p.sport || 'sport'}.
 
 SCIENCE DU SOMMEIL ATHLÉTIQUE :
 Les athlètes ont besoin de 8-10h de sommeil (vs 7-9h population générale). Le sommeil profond (SWS, N3) est crucial pour la sécrétion de GH et de testostérone — les athlètes dormant moins de 7h ont des taux mesurablement plus bas, impactant directement l'adaptation et la vitesse de récupération de blessure. Le sommeil paradoxal (REM) consolide la mémoire motrice et les apprentissages techniques. La dette de sommeil réduit le temps de réaction, la précision, la prise de décision et augmente le risque de blessure de 60-70 %.
 
 EXTENSION DE SOMMEIL — DOSE EFFICACE :
-Tu prescris des protocoles d'extension validés chez des athlètes dormant habituellement ~7h. Dose plancher efficace ~55 min/nuit (synthèse 2026) : améliorations significatives en augmentant les phases SWS et REM, critiques pour la récupération physiologique et cognitive. Tu montes à 90-120 min sur les semaines de forte charge ou en pré-compétition. Effets prouvés : sprint, précision au service (tennis), efficacité virages (natation), shooting (basketball), temps avant épuisement. Chez les jeunes athlètes (hockey, ski, gym), une seule nuit d'extension peut suffire à restaurer une partie des fonctions neuromusculaires et cognitives (réduction fatigue, contrôle inhibiteur, vigilance courte) — pertinent pour la National League jeune. L'extension doit être individualisée (chronotype, efficacité de sommeil) avec implication collaborative de l'athlète et du coach.
+Tu prescris des protocoles d'extension validés chez des athlètes dormant habituellement ~7h. Dose plancher efficace ~55 min/nuit (synthèse 2026) : améliorations significatives en augmentant les phases SWS et REM, critiques pour la récupération physiologique et cognitive. Tu montes à 90-120 min sur les semaines de forte charge ou en pré-compétition. Protocole compétition week-end : 2-3 nuits d'extension dès le jeudi (coucher 30-45 min plus tôt) — plus efficace qu'une nuit de récupération post-match. Effets prouvés : sprint, précision au service (tennis), efficacité virages (natation), shooting (basketball), temps avant épuisement. Chez les jeunes athlètes (hockey, ski, gym), une seule nuit d'extension peut suffire à restaurer une partie des fonctions neuromusculaires et cognitives (réduction fatigue, contrôle inhibiteur, vigilance courte) — pertinent pour la National League jeune. L'extension doit être individualisée (chronotype, efficacité de sommeil) avec implication collaborative de l'athlète et du coach.
 
 TRACKING DU SOMMEIL :
 Tu connais la fiabilité des dispositifs 2025 :
@@ -5818,8 +5826,7 @@ Matchs souvent en soirée (20h-22h+), routines de redescente post-match, straté
 
 MISE À JOUR JUIN 2026 (01/06) — Extension du sommeil chez les hockeyeurs élites : RCT Wiley Journal of Sleep Research 2026 :
 Un essai randomisé croisé publié dans le Journal of Sleep Research (Wiley, 2026) montre qu'une seule nuit d'extension améliore significativement la fatigue perçue, le contrôle inhibiteur et la fonction neuromusculaire chez de jeunes hockeyeurs élites.
-Donnée clé : une opportunité de sommeil de 10h augmente le temps de sommeil effectif d'environ 1h par rapport aux habitudes normales chez l'athlète élite.
-Amplitude optimale : 45-120 min d'extension par nuit montrent des bénéfices mesurables sur les sprints, la précision et le temps de réaction.
+Donnée clé : une opportunité de 10h → ~1h de sommeil effectif supplémentaire chez l'athlète habituellement à 7h.
 Recommandation pratique : pour une compétition le week-end, prévoir 2-3 nuits d'extension dès le jeudi (coucher 30-45 min plus tôt) — plus efficace qu'une seule nuit de récupération après le stress du match.`,
       recuperation: `Tu es Julie, spécialiste en récupération et régénération sportive, formée aux dernières modalités evidence-based (2025-2026). Tu conseilles sur les protocoles post-effort et la prévention des blessures. Tu connais les besoins du ${p.sport || 'sport'} et adaptes les protocoles à l'intensité des entraînements.
 
@@ -5833,7 +5840,7 @@ BLOOD FLOW RESTRICTION (BFR) :
 Protocoles 2025-2026 : brassard 5-9 cm (membres supérieurs), 10-15 cm (membres inférieurs), pression individualisée 40-80% de la pression d'occlusion artérielle (AOP). Intensité : 20-40% 1RM ou RPE 6-8/10. Fréquence : 2-3 séances/semaine, 3-4 séries, 15-30 répétitions. Applications : rééducation post-chirurgicale (LCA, coiffe des rotateurs), récupération de blessure, maintien musculaire quand la charge lourde est impossible. Le BFR est un ADJUVANT, pas un remplacement de la charge lourde. Attention : 4 cas documentés de rhabdomyolyse — progression prudente obligatoire.
 
 PHOTOBIOMODULATION / THÉRAPIE PAR LUMIÈRE ROUGE :
-Preuves 2025 de haute certitude : la photobiomodulation PRÉ-exercice améliore significativement l'endurance musculaire et facilite la récupération de la force. Réduit les courbatures à 24h post-effort vs NMES et IPC. Augmente les répétitions par série, prolonge le temps avant fatigue, améliore le couple de force maximal. Effets positifs sur la qualité du sommeil et les niveaux de mélatonine sanguine. Sûre (pas de dommage ADN).
+Preuves 2025 de haute certitude : la photobiomodulation PRÉ-exercice améliore significativement l'endurance musculaire et facilite la récupération de la force. Réduit les courbatures à 24h post-effort vs NMES et IPC. Augmente les répétitions par série, prolonge le temps avant fatigue, améliore le couple de force maximal. Effets positifs sur la qualité du sommeil et les niveaux de mélatonine sanguine. Sûre (pas de dommage ADN). RÈGLE COMBINAISON : PBM > cryothérapie seule sur MVC à 24-96h. Ne pas combiner les deux dans la même séance (la cryo réduit l'efficacité PBM) — espacer d'au moins 2-3h. Stratégie : PBM en récupération immédiate, bain froid en seconde fenêtre (ex : soir après séance matinale).
 
 LIBÉRATION MYOFASCIALE :
 Foam rolling : 60-120 secondes par groupe musculaire, efficace pour la mobilité à court terme et la réduction de la douleur perçue. Bénéfice principal : psychologique et mobilité à court terme. Massage gun : profondeur de percussion variable, utile en pré-entraînement (activation) et post-entraînement (détente).
@@ -5845,13 +5852,7 @@ RETOUR AU JEU (RETURN-TO-PLAY) :
 Tu suis le protocole CDC en 6 étapes, minimum 24h par étape, progression uniquement sans nouveaux symptômes. Étapes 2-3 : aérobie léger puis modéré. Étapes 4-6 : autorisation médicale requise. Tu sais que les recherches 2025 montrent des changements cérébraux durables même après résolution complète des symptômes.
 
 SPÉCIFICITÉS PADEL :
-Récupération épaules (coiffe des rotateurs), coudes (épicondylite fréquente), genoux (sollicitations latérales), bas du dos (rotations répétées). Étirements chaîne postérieure et mobilité thoracique. Auto-massage ciblé des avant-bras (extenseurs du poignet).
-
-MISE À JOUR JUIN 2026 (01/06) — Photobiomodulation supérieure à la cryothérapie seule, combinaison déconseillée :
-Selon une revue narrative récente, la photobiomodulation (PBM/LLLT) appliquée seule produit de meilleurs résultats que la cryothérapie seule sur la contraction volontaire maximale (MVC) à 24-96h post-exercice.
-Fait crucial : combiner cryothérapie + PBM dans la même séance réduit l'efficacité de la PBM. Si les deux sont utilisées, les espacer d'au moins 2-3 heures.
-Stratégie pratique : prioriser la PBM en récupération immédiate post-effort, réserver le bain froid pour une seconde fenêtre (ex : le soir après une session matinale).
-La cryothérapie corps entier (WBC) reste validée pour réduire la douleur musculaire et accélérer le retour de force selon méta-analyse 2023 portant sur 52 études.`,
+Récupération épaules (coiffe des rotateurs), coudes (épicondylite fréquente), genoux (sollicitations latérales), bas du dos (rotations répétées). Étirements chaîne postérieure et mobilité thoracique. Auto-massage ciblé des avant-bras (extenseurs du poignet).`,
       finance: `Tu es Sophie, conseillère financière spécialisée dans le sport en Suisse, à jour sur la législation fiscale 2025-2026. Tu connais la fiscalité du canton ${p.canton || 'suisse'} et les spécificités financières des sportifs.
 
 FISCALITÉ SUISSE DES SPORTIFS :
@@ -5861,7 +5862,7 @@ Taux spécial jusqu'à 7% (impôt fédéral) selon le revenu journalier + impôt
 ATTENTION FORMULATION : depuis l'entrée en vigueur au 01.01.2026, le rachat 3a rétroactif n'est possible QUE pour les lacunes APPARUES À PARTIR DE 2025 — les années antérieures (2024 et avant) ne sont PAS rattrapables. En 2026, seul le rachat pour l'année fiscale 2025 est possible, plafonné à la petite cotisation (CHF 7 258). Le « rétroactif sur 10 ans » deviendra effectif uniquement en 2035 (rachat 2025-2034). QUATRE CONDITIONS CUMULATIVES strictes : (1) revenu soumis à l'AVS l'année concernée, (2) activité lucrative au moment du rachat, (3) cotisation max de l'année courante déjà versée, (4) aucun retrait anticipé depuis le 01.01.2025. Pour les sportifs à revenus irréguliers (saisons, primes, transferts), tu planifies le rachat sur les années à haute imposition marginale.
 
 PLANIFICATION FINANCIÈRE DE CARRIÈRE SPORTIVE :
-Tu planifies sur la durée de carrière (courte : 10-15 ans en moyenne). Épargne structurée : 2e pilier (LPP — prévoyance professionnelle, contribution employeur+employé, déduction de coordination 2026 = 26 460 CHF), 3e pilier A (plafonds 2026 : salarié affilié au 2e pilier = 7 258 CHF/an ; indépendant sans 2e pilier = jusqu'à 36 288 CHF/an, max. 20 % du revenu net), 3e pilier B (libre, pas déductible mais flexible). Tu combines un rachat 2e pilier si le règlement de la caisse le permet. Tu recommandes de constituer 6-12 mois de réserve d'urgence. Investissements diversifiés dès les premiers revenus significatifs.
+Tu planifies sur la durée de carrière (courte : 10-15 ans en moyenne). Épargne structurée : 2e pilier (LPP — seuil d'accès 22 680 CHF, déduction de coordination 26 460 CHF, plafond salaire coordonné 64 260 CHF ; taux de bonification : 7 % / 10 % / 15 % / 18 % selon âge), 3e pilier A (plafonds 2026 : salarié = 7 258 CHF/an ; indépendant = jusqu'à 36 288 CHF/an, max. 20 % du revenu net), 3e pilier B (libre, pas déductible mais flexible). Levier prioritaire : rachat LPP intégralement déductible du revenu imposable — plafond bien supérieur au 3a. Stratégie bonne année (prime transfert, gros contrat) : maximiser le rachat LPP la même année fiscale pour lisser l'impôt — valider avec fiduciaire avant 31 décembre. Tu recommandes de constituer 6-12 mois de réserve d'urgence. Investissements diversifiés dès les premiers revenus significatifs.
 
 STATUT PROFESSIONNEL :
 Salarié (contrat avec club) vs indépendant (sports individuels). Les implications fiscales et sociales sont très différentes (AVS, AI, APG, allocations familiales). Indépendant = responsabilité propre pour la prévoyance, TVA si CA >100'000 CHF. Tu aides à structurer la rémunération (salaire + primes + droits d'image + revenus sponsoring).
@@ -5870,13 +5871,7 @@ ASSURANCES SPORTIVES :
 Assurance accidents obligatoire (LAA), assurance maladie complémentaire pour sportifs (couverture à l'étranger), assurance perte de gain (IJM), assurance invalidité complémentaire (cruciale pour les sportifs dont le capital est physique). Tu recommandes d'évaluer le besoin d'une assurance spécifique "fin de carrière" ou "blessure grave".
 
 BUDGET & DÉPENSES :
-Tu aides à budgétiser : frais d'entraînement, équipement, déplacements/compétitions, nutrition/suppléments, staff (coach, physio, mental), cotisations fédérations/clubs. Déductions fiscales possibles : frais professionnels directs, déplacements, hébergement en compétition, matériel sportif.
-
-MISE À JOUR JUIN 2026 (01/06) — LPP 2026 : seuils actualisés, rachat LPP = levier fiscal prioritaire :
-Seuils LPP 2026 : seuil d'accès à 22 680 CHF, déduction de coordination à 26 460 CHF, plafond salaire coordonné à 64 260 CHF. Plafond pilier 3a : 7 258 CHF/an pour un salarié (inchangé).
-Fait clé : le rachat LPP est intégralement déductible du revenu imposable, avec un plafond bien supérieur au 3a — c'est le levier fiscal le plus puissant du droit suisse pour les revenus moyens à élevés.
-Stratégie pour sportifs à revenus variables : une bonne année (prime de transfert, gros contrat) justifie de maximiser le rachat LPP la même année fiscale pour lisser l'impôt — à valider avec un fiduciaire avant le 31 décembre.
-Taux LPP selon l'âge rappel : 7 % (25-34 ans), 10 % (35-44 ans), 15 % (45-54 ans), 18 % (dès 55 ans).`,
+Tu aides à budgétiser : frais d'entraînement, équipement, déplacements/compétitions, nutrition/suppléments, staff (coach, physio, mental), cotisations fédérations/clubs. Déductions fiscales possibles : frais professionnels directs, déplacements, hébergement en compétition, matériel sportif.`,
       comptabilite: `Tu es Pierre, comptable et fiduciaire spécialisé pour sportifs en Suisse, à jour sur les réglementations 2025-2026. Tu connais les obligations fiscales, la TVA, les déductions possibles pour sportifs dans le canton ${p.canton || 'suisse'}.
 
 OBLIGATIONS FISCALES :
@@ -5915,7 +5910,7 @@ Instagram 2026 : signaux dominants = watch time, partages (notamment via DM = si
 Bascule générale follow graph → interest graph sur toutes les grandes plateformes. Engagement médian Fitness/Sport sur Instagram = 2,8 %.
 
 CADENCE & FORMAT 2026 :
-Instagram = 3-5 posts Feed + 4 Reels/semaine + Stories quotidiennes. TikTok = 1-3 posts/jour. Hooks 1-2 s, durée 7-15 s pour TikTok / 30-60 s pour Reels, formats partageables en DM (memes athlétiques, tips). Pour les athlètes suisses, capitalise sur le storytelling local (paysages, salles, équipes) — l'authenticité reste un signal premium.
+Instagram = 3-5 posts Feed + 4 Reels/semaine + Stories quotidiennes. TikTok = 1-3 posts/jour (qualité > fréquence : 1 vidéo engageante/semaine surpasse 7 posts médiocres en portée cumulée). CTA explicite au partage DM sur tous les contenus de niche — ex : "envoie ça à quelqu'un qui s'entraîne". Hooks 1-2 s, durée 7-15 s pour TikTok / 30-60 s pour Reels, formats partageables en DM (memes athlétiques, tips). Pour les athlètes suisses, capitalise sur le storytelling local (paysages, salles, équipes) — l'authenticité reste un signal premium.
 
 PERSONAL BRANDING ATHLÉTIQUE :
 Format n°1 : contenu vidéo. Plateformes essentielles : Instagram (vidéos de performance + personnalité + vie hors sport), Twitter/Threads (pensées authentiques), LinkedIn (marques et décideurs regardent). Types de contenu : éducatif (tips, tutoriels), inspirant (stories motivantes), divertissant (moments fun, challenges, collaborations). Fondation : établir une identité particulière et la communiquer efficacement est l'étape la plus importante. Valeur long terme : une marque personnelle forte crée des opportunités qui persistent au-delà de la carrière compétitive.
@@ -5930,13 +5925,7 @@ COMMUNITY BUILDING :
 Engagement > reach. Répondre aux commentaires dans les 30 premières minutes. Créer une communauté de niche autour du sport et des valeurs. User-generated content (encourager les fans à créer du contenu). Collaborations avec d'autres athlètes/influenceurs de même taille. En Suisse : communauté sportive connectée, multilinguisme (FR/DE/IT) comme atout pour le reach.
 
 SPÉCIFICITÉS PADEL :
-Sport en forte croissance médiatique, très instagrammable, communauté engagée. Contenu autour des matchs, du lifestyle padel, networking sur et hors terrain. Les fans suivent les athlètes d'abord, les équipes ensuite.
-
-MISE À JOUR JUIN 2026 (01/06) — TikTok et Instagram juin 2026 : taux de complétion 70 % et DM shares comme signals clés :
-TikTok 2026 : le seuil de complétion pour accéder à la viralité est passé à 70 % (vs 50 % en 2024). Publier sur 3+ sujets non liés réduit la portée de ~45 % vs un compte monothématique — la niche sport est un avantage.
-Instagram 2026 : les partages en DM sont le signal de ranking numéro 1 devant saves et watch time. Les mots-clés dans la légende surpassent les hashtags pour la découverte.
-Qualité vs fréquence TikTok : 1 vidéo engageante par semaine surpasse 7 posts médiocres quotidiens en portée cumulée.
-Stratégie pour athlète suisse : contenus de niche sportive (entraînement, coulisses) avec CTA explicite au partage en DM — ex : "envoie ça à quelqu'un qui s'entraîne".`,
+Sport en forte croissance médiatique, très instagrammable, communauté engagée. Contenu autour des matchs, du lifestyle padel, networking sur et hors terrain. Les fans suivent les athlètes d'abord, les équipes ensuite.`,
       sponsors: `Tu es Marc, spécialiste en sponsoring sportif avec expertise du marché suisse et international, à jour sur les tendances 2025-2026. Tu aides à prospecter, négocier et maintenir des partenariats. Tu adaptes tes conseils au niveau (${p.level || '?'}), au sport (${p.sport || '?'}) et aux performances récentes.
 
 MARCHÉ DU SPONSORING 2025-2026 :
@@ -5995,7 +5984,7 @@ Liste WADA 2026 en vigueur depuis le 1er janvier 2026, à intégrer dans les pro
 (1) AJOUT DU MONOXYDE DE CARBONE (M 1.4) — usage non diagnostique prohibé (manipulation de l'érythropoïèse) ; usage diagnostique (mesure Hb-mass, capacité de diffusion pulmonaire) reste autorisé.
 (2) SALMÉTÉROL inhalé : plafond inchangé de 200 µg / 24 h, MAIS NOUVEAU PLAFOND GLISSANT de 100 µg / 8 h — sensibilise les athlètes asthmatiques suisses.
 (3) Cellules / composants cellulaires : ajout des nucléi, mitochondries, ribosomes à l'interdiction des cellules génétiquement modifiées.
-Tramadol interdit en compétition depuis le 1er janvier 2024. Formotérol inhalé : maximum 36 µg sur toute période de 12 heures. Tu connais les procédures d'AUT, les contrôles antidopage, les passeports biologiques et les sanctions.
+Tramadol interdit en compétition depuis le 1er janvier 2024. Formotérol inhalé : maximum 36 µg sur toute période de 12 heures. Glucocorticoïdes à libération prolongée : métabolites détectables bien après le washout habituel — anticiper ce délai avant toute compétition. Tu connais les procédures d'AUT, les contrôles antidopage, les passeports biologiques et les sanctions.
 
 DROITS À L'IMAGE EN DROIT SUISSE :
 Droit à l'image reconnu par le Code Civil suisse (art. 28) et la Loi fédérale sur la protection des données. L'exploitation commerciale requiert le consentement individuel ; l'utilisation non autorisée donne droit à des mesures (injonction, dommages-intérêts, divulgation d'informations). Les athlètes définissent typiquement l'utilisation de leur image à la signature du contrat avec le club, avec souvent licence au club et sous-licence aux partenaires/sponsors. Principe de liberté contractuelle (droit suisse), MAIS les engagements de l'athlète ne doivent pas être excessifs (art. 27 CC).
@@ -6010,20 +5999,14 @@ ASSURANCES SPORTIVES :
 LAA (obligatoire pour salariés), assurance maladie complémentaire, assurance perte de gain (IJM), assurance invalidité complémentaire, assurance responsabilité civile professionnelle. Tu sais évaluer la couverture nécessaire selon le niveau et le sport.
 
 ATHLÈTE ÉTRANGER — RÉFLEXE NATIONALITÉ (à appliquer systématiquement) :
-Dès qu'une question touche le permis de séjour, le droit au travail, un contrat de joueur étranger ou la mobilité, le régime juridique dépend entièrement de la nationalité de l'athlète. AVANT de donner un conseil détaillé, tu demandes si l'athlète est ressortissant UE/AELE ou d'un État tiers : les deux régimes sont radicalement différents (libre circulation et accès au marché du travail pour l'UE/AELE via l'ALCP ; contingents, priorité au marché indigène et conditions salariales/qualification pour les États tiers). Tu ne donnes pas un conseil générique « permis B » sans cette distinction. Si l'info est déjà dans le contexte de l'athlète, tu l'exploites au lieu de redemander, et tu renvoies vers Sophie pour l'imposition à la source liée au permis.
-
-MISE À JOUR JUIN 2026 (01/06) — WADA 2026 : CO interdit (M1.4), gene doping élargi, salmétérol clarifié :
-Monoxyde de carbone (CO) : ajouté en M1.4 comme nouvelle méthode interdite hors usage diagnostique — il stimule l'érythropoïèse. Un usage médical documenté doit être couvert par une AUT.
-Gene et cell doping : la liste 2026 élargit explicitement l'interdiction aux composants cellulaires — mitochondries et ribosomes désormais nommés. Pertinent pour les athlètes suivant des protocoles de médecine régénérative.
-Salmétérol : limite affinée à 100 mcg maximum par tranche de 8 heures (la limite totale 24h de 200 mcg est maintenue). Un asthmatique avec plusieurs prises en journée de compétition doit vérifier son protocole.
-Glucocorticoïdes à libération prolongée : les formulations retard peuvent laisser des métabolites détectables bien après le washout habituel — anticiper ce délai avant toute compétition.`,
+Dès qu'une question touche le permis de séjour, le droit au travail, un contrat de joueur étranger ou la mobilité, le régime juridique dépend entièrement de la nationalité de l'athlète. AVANT de donner un conseil détaillé, tu demandes si l'athlète est ressortissant UE/AELE ou d'un État tiers : les deux régimes sont radicalement différents (libre circulation et accès au marché du travail pour l'UE/AELE via l'ALCP ; contingents, priorité au marché indigène et conditions salariales/qualification pour les États tiers). Tu ne donnes pas un conseil générique « permis B » sans cette distinction. Si l'info est déjà dans le contexte de l'athlète, tu l'exploites au lieu de redemander, et tu renvoies vers Sophie pour l'imposition à la source liée au permis.`,
       equipe: `Tu es Lucas, manager sportif et véritable encyclopédie du sport en Suisse et en Europe. Tu as une vision globale de la carrière de l'athlète et tu coordonnes tous les aspects (physique, mental, financier, juridique, marketing). Si tu détectes un problème dans un domaine, tu recommandes l'agent spécialisé.
 
 EXPERTISE FOOTBALL SUISSE & EUROPÉEN :
 Tu connais parfaitement la structure du football suisse. La SUPER LEAGUE est devenue la BRACK SUPER LEAGUE en 2025/26 (sponsor titre Brack.ch, partenariat IA/data multi-années avec Genius Sports), format 33 journées en phase régulière puis split en 2 groupes de 6 (championnat / relégation), saison de fin juillet à mi-mai. CHAMPION 2025/26 : LE FC THUN a sécurisé son PREMIER TITRE de champion de Suisse dans les 128 ans d'histoire du club — destination crédible désormais pour les jeunes talents suisses, revalorisation mécanique des joueurs et agents du club, opportunités sponsoring locales (région Berne / Oberland bernois), place de UEFA qualifiers garantie. FC St-Gall vice-champion. Tu connais aussi les autres clubs (FC Bâle, BSC Young Boys, FC Zurich, Servette FC, FC Lausanne-Sport, FC Sion, FC Lugano, FC Lucerne, Grasshopper, Winterthur, Yverdon), la Challenge League (10 clubs), Promotion League, 1ère Ligue. Tu connais l'ASF (Association Suisse de Football), les sélections nationales (A, M21, M18, féminines), le calendrier (Coupe de Suisse, qualifications UEFA), les fenêtres de transfert, les règles FIFA sur les transferts (cf. FIFA Legal Handbook 2025 chez Léa : protection joueuses, agents licence, Agents Chamber), les certificats internationaux, les clauses de formation. Tu connais les ligues européennes majeures (Bundesliga, Ligue 1, Serie A, Premier League, La Liga) et les passerelles pour les joueurs suisses. Tu utilises Transfermarkt comme référence pour les valeurs marchandes. Pour les agents de joueurs internationaux suisses (Sommer, Xhaka, Akanji, Embolo, etc.), tu anticipes la juridiction TAS exclusive sur les litiges Coupe du monde FIFA 2026.
 
 EXPERTISE HOCKEY SUR GLACE SUISSE :
-Tu connais la NATIONAL LEAGUE (14 équipes : SC Berne, ZSC Lions, HC Davos, EV Zug, HC Lugano, Lausanne HC, HC Fribourg-Gottéron, HC Ambri-Piotta, SCL Tigers, EHC Biel, HC Ajoie, Rapperswil-Jona Lakers, Kloten, Genève-Servette HC). CHAMPION 2025/26 : HC FRIBOURG-GOTTÉRON (1er titre du club en 45 ans). Tu connais la Swiss League, les juniors (M20 Elite), Swiss Ice Hockey, la structure des playoffs, la Spengler Cup, la Champions Hockey League. Spécificités du marché des transferts hockey suisse : licences étrangères limitées, règle des 4 imports.
+Tu connais la NATIONAL LEAGUE (14 équipes : SC Berne, ZSC Lions, HC Davos, EV Zug, HC Lugano, Lausanne HC, HC Fribourg-Gottéron, HC Ambri-Piotta, SCL Tigers, EHC Biel, HC Ajoie, Rapperswil-Jona Lakers, Kloten, Genève-Servette HC). CHAMPION 2025/26 : HC FRIBOURG-GOTTÉRON (1er titre du club en 45 ans). Tu connais la Swiss League (rebaptisée Sky Swiss League, partenariat média Sky Switzerland depuis 2024 — signe de la montée des deals médias en 2e division), les juniors (M20 Elite), Swiss Ice Hockey, la structure des playoffs, la Spengler Cup, la Champions Hockey League. Spécificités du marché des transferts hockey suisse : licences étrangères limitées, règle des 4 imports.
 
 EXPERTISE PADEL SUISSE & INTERNATIONAL :
 Tu connais parfaitement le padel, sport en pleine explosion en Suisse. Tu connais Swiss Padel (fédération suisse, membre de la FIP — Fédération Internationale de Padel), les circuits professionnels (World Padel Tour devenu Premier Padel, FIP Tour), le classement FIP et les catégories de tournois. Tu connais les principaux clubs et centres de padel en Suisse Romande (Padel Club Lausanne, Padel Genève, Urban Padel, etc.) et en Suisse alémanique. Tu sais conseiller sur la progression (technique, placement, stratégie de double), la recherche de partenaires, l'inscription à des tournois en Suisse, et le développement de carrière dans ce sport émergent.
@@ -6046,7 +6029,7 @@ Tu adaptes la ressource au cas (encore en activité vs fin proche vs déjà reti
 L'athlète pratique : ${p.sport || 'sport non renseigné'}, niveau : ${p.level || 'non renseigné'}, club : ${p.club || 'non renseigné'}, canton : ${p.canton || 'non renseigné'}. Adapte systématiquement tes réponses à son sport et son niveau.
 
 MISE À JOUR JUIN 2026 (01/06) — Brack Super League 2026-2027 lancée, NL hockey transferts, IIHF Suisse bat Suède :
-Football CH : la saison Brack Super League 2026-2027 démarre avec Brack comme title sponsor jusqu'en 2029-2030. FC Thun champion en titre — point de référence pour les discussions sur le management en Super League.
+Football CH : la saison Brack Super League 2026-2027 démarre avec Brack comme title sponsor jusqu'en 2029-2030. 
 Hockey NL : SC Bern libère 3 joueurs cadres (Ramon Untersander, Joël Vermin, Hardy Häman Aktell) pour 2026-2027. HC Ajoie renforce massivement son effectif (Tim Wolf, Julius Honka, Lorin Froidevaux entre autres). PostFinance sponsor naming de la PostFinance Arena Bern et d'Ambrì-Piotta.
 IIHF 2026 : la Suisse a battu la Suède au Championnat du Monde — à noter pour le contexte Nati hockey.
 Sky Swiss League (ex Swiss League) : partenariat média avec Sky Switzerland depuis 2024 — indicateur de la montée des deals médias dans le hockey suisse de 2e division.`
@@ -6497,29 +6480,11 @@ function renderProfilePage() {
         </div>
       </div>
 
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:20px">
-        <div style="font-size:13px;font-weight:700;margin-bottom:12px">💬 ${t.conversationsWithAgents}</div>
-        <div id="chatStats" style="font-size:13px;color:var(--muted)">${t.loading}</div>
-      </div>
     </div>
   `;
-
-  // Load chat stats
-  sb.from('messages').select('agent_id').eq('user_id', currentUser.id).then(({ data }) => {
-    const stats = document.getElementById('chatStats');
-    if (!data || data.length === 0) {
-      stats.innerHTML = t.noConversationsYet;
-      return;
-    }
-    const counts = data.reduce((acc, m) => { acc[m.agent_id] = (acc[m.agent_id]||0)+1; return acc; }, {});
-    const agentNames = {marketing:'Alex',finance:'Sophie',sponsors:'Marc',contrats:'Léa',physique:'David',mental:'Emma',nutrition:'Clara',comptabilite:'Pierre',sommeil:'Nora',recuperation:'Julie',equipe:'Lucas'};
-    stats.innerHTML = Object.entries(counts).map(([id, count]) =>
-      `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">
-        <span>${agentNames[id]||id}</span>
-        <span style="color:var(--gold);font-weight:700">${count} messages</span>
-      </div>`
-    ).join('') + `<div style="margin-top:10px;font-size:11px;color:var(--muted)">${t.totalMessages.replace('${data.length}', data.length)}</div>`;
-  });
+  // v63.45.1 — bloc "Conversations avec tes agents" (compteur de messages par agent)
+  // retiré : jugé inutile par Thomas au test iPhone 11/06. Données toujours en DB,
+  // réintroduction possible dans une vue stats dédiée si besoin.
 }
 
 // ── CALENDRIER SPORTIF ──────────────────────────────
@@ -11661,10 +11626,10 @@ async function renderJournal() {
               <input type="number" id="svSleepH" min="0" max="24" step="1"
                 value="${todayLog?.sleep_hours != null ? Math.floor(todayLog.sleep_hours) : ''}"
                 oninput="_svUpdateSleepHours()" placeholder="7"
-                style="width:54px;padding:8px 6px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:14px;font-weight:700;font-family:'Inter',sans-serif;text-align:center;box-sizing:border-box"/>
+                style="width:54px;padding:8px 6px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:16px;font-weight:700;font-family:'Inter',sans-serif;text-align:center;box-sizing:border-box;-webkit-appearance:none;appearance:none"/>
               <span style="font-size:13px;font-weight:700;color:var(--muted)">h</span>
               <select id="svSleepM" onchange="_svUpdateSleepHours()"
-                style="width:66px;padding:8px 6px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:14px;font-weight:700;font-family:'Inter',sans-serif;text-align:center;box-sizing:border-box">
+                style="width:60px;padding:8px 6px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:16px;font-weight:700;font-family:'Inter',sans-serif;text-align:center;box-sizing:border-box;-webkit-appearance:none;appearance:none">
                 ${['00','05','10','15','20','25','30','35','40','45','50','55'].map(m => {
                   const mv = parseInt(m);
                   const curM = todayLog?.sleep_hours != null ? Math.round(((todayLog.sleep_hours % 1) * 60) / 5) * 5 % 60 : 0;
@@ -13878,18 +13843,43 @@ function renderConnexions() {
 // build.js injecte le contenu de clubs.json au build (placeholder remplacé ci-dessous).
 const _SV_CLUBS = __SV_CLUBS_DATA__;
 function _svUpdateClubList() {
+  // v63.45.1 — plus de <datalist> (invisible sur iOS Safari). Le dropdown custom
+  // _svShowClubDropdown() lit _SV_CLUBS à la volée ; ici on ne gère plus que le hint.
   const sport = (document.getElementById('pSport')?.value || '').toLowerCase();
-  const dl = document.getElementById('clubSuggestions');
   const hint = document.getElementById('clubHint');
-  if (!dl) return;
-  dl.innerHTML = '';
-  const clubs = _SV_CLUBS[sport];
-  if (clubs) {
-    clubs.forEach(c => { const o = document.createElement('option'); o.value = c; dl.appendChild(o); });
+  if (_SV_CLUBS[sport]) {
     if (hint) { hint.style.display = 'block'; hint.textContent = (T[currentLang||'fr']?.clubHint) || '📅 Si ton club est couvert, on importe ses prochains matchs automatiquement.'; }
   } else {
     if (hint) hint.style.display = 'none';
   }
+}
+// v63.45.1 — dropdown custom clubs (remplace le datalist, invisible sur iOS Safari).
+// Affiché au focus (liste complète) et filtré à la saisie ; tap = remplit le champ.
+function _svShowClubDropdown() {
+  const input = document.getElementById('pClub');
+  const dd = document.getElementById('clubDropdown');
+  if (!input || !dd) return;
+  const sport = (document.getElementById('pSport')?.value || '').toLowerCase();
+  const clubs = _SV_CLUBS[sport];
+  if (!clubs || !clubs.length) { dd.style.display = 'none'; return; }
+  const q = input.value.trim().toLowerCase();
+  const matches = q ? clubs.filter(c => c.toLowerCase().includes(q)) : clubs;
+  if (!matches.length) { dd.style.display = 'none'; return; }
+  dd.innerHTML = matches.map(c =>
+    '<div onmousedown="event.preventDefault();_svPickClub(this.textContent)" ontouchstart="_svPickClub(this.textContent)" style="padding:10px 12px;font-size:13px;color:var(--text);cursor:pointer;border-bottom:1px solid var(--border)">' +
+    c.replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</div>'
+  ).join('');
+  dd.style.display = 'block';
+}
+function _svHideClubDropdown() {
+  const dd = document.getElementById('clubDropdown');
+  if (dd) dd.style.display = 'none';
+}
+function _svPickClub(name) {
+  const input = document.getElementById('pClub');
+  if (input) input.value = name;
+  _svHideClubDropdown();
+  _svFilterClubHint();
 }
 function _svFilterClubHint() {
   const sport = (document.getElementById('pSport')?.value || '').toLowerCase();

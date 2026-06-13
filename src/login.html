@@ -226,6 +226,13 @@
       background: rgba(255,255,255,0.05); border: 1px solid var(--border);
       border-radius: 8px; padding: 3px; z-index: 10;
     }
+    /* v63.45.1 — mobile : le switcher fixed top-right chevauchait le logo SPORTVISE
+       (constaté test iPhone 11/06). En flux statique centré au-dessus du contenu. */
+    @media (max-width: 919px) {
+      .lang-group {
+        position: static; margin: 0 auto 18px; width: max-content;
+      }
+    }
     .lang-group button {
       border: none; background: transparent; cursor: pointer;
       font-size: 15px; padding: 2px 5px; border-radius: 5px;
