@@ -515,6 +515,7 @@ var T_IT = {
   recapDurationLabel:'Durata reale (min)',
   recapDurationHint:'Correggi se diverso da quanto previsto — migliora le tue statistiche di carico',
   recapDetailsToggle:'Più dettagli (opzionale)',
+  recapFillFullBtn:'📝 Recap completo (durata, dettagli…)',
   recapPhysLabel:'Stato fisico',
   recapPhysInjured:'🤕 Infortunato', recapPhysTired:'😓 Stanco', recapPhysNormal:'👍 Normale', recapPhysTop:'💪 Top',
   recapMoodLabel:"Umore dopo l'evento",

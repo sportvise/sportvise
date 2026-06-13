@@ -515,6 +515,7 @@ var T_DE = {
   recapDurationLabel:'Tatsächliche Dauer (Min.)',
   recapDurationHint:'Korrigiere, falls anders als geplant — verbessert deine Belastungsstatistik',
   recapDetailsToggle:'Mehr Details (optional)',
+  recapFillFullBtn:'📝 Vollständige Auswertung (Dauer, Details…)',
   recapPhysLabel:'Körperlicher Zustand',
   recapPhysInjured:'🤕 Verletzt', recapPhysTired:'😓 Müde', recapPhysNormal:'👍 Normal', recapPhysTop:'💪 Top',
   recapMoodLabel:'Stimmung nach der Aktivität',

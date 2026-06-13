@@ -515,6 +515,7 @@ var T_EN = {
   recapDurationLabel:'Actual duration (min)',
   recapDurationHint:'Adjust if different from what was planned — improves your load stats',
   recapDetailsToggle:'More details (optional)',
+  recapFillFullBtn:'📝 Full recap (duration, details…)',
   recapPhysLabel:'Physical state',
   recapPhysInjured:'🤕 Injured', recapPhysTired:'😓 Tired', recapPhysNormal:'👍 Normal', recapPhysTop:'💪 Top',
   recapMoodLabel:'Mood after the event',
