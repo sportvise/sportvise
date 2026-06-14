@@ -156,6 +156,9 @@ var T_DE = {
   fileTooLarge:'Datei zu groß. Maximum 20MB.',
   fileUnsupported:'Dateityp nicht unterstützt. Verwende JPG, PNG, GIF, PDF, DOC, DOCX oder TXT.',
   fileAttached:'📎 Datei angehängt',
+  filePdfExtracting:'PDF wird gelesen…',
+  filePdfReady:'{pages} Seiten gelesen',
+  filePdfError:'PDF konnte nicht gelesen werden.',
   // Errors
   error:'Fehler: ',
   // Chat saved

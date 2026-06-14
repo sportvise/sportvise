@@ -300,7 +300,7 @@ exports.handler = async (event) => {
   } catch (_) {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'invalid_body' }) };
   }
-  const { agentId, message, history, lang, profile, otherAgents, calendar, style, goals, dailyLog, smartContext, image, imageType, userEmail, calendarEmpty, agentExchangeCount, bypassSession1 } = parsed;
+  const { agentId, message, history, lang, profile, otherAgents, calendar, style, goals, dailyLog, smartContext, image, imageType, documentText, documentName, userEmail, calendarEmpty, agentExchangeCount, bypassSession1 } = parsed;
 
   if (!agentId || !message) {
     await logUsage({ userId: user.id, agentId, success: false, errorCode: 'invalid_payload' });
@@ -457,6 +457,15 @@ ${smartContext}`;
   }
   if (style) {
     systemWithLang += `\n\n[STYLE DE COMMUNICATION]\n${style}`;
+  }
+
+  // v63.47 — Document joint par l'athlète (PDF/TXT, texte extrait côté client)
+  if (documentText) {
+    systemWithLang += `\n\n[DOCUMENT JOINT PAR L'ATHLÈTE — "${documentName || 'document'}"]
+L'athlète a joint un document dont voici le texte extrait (peut être tronqué ou imparfait selon la mise en page d'origine). Utilise ces informations pour répondre à sa demande, en lien avec ton rôle d'agent spécialisé. Si le texte semble incomplet ou illisible, dis-le à l'athlète.
+---
+${documentText}
+---`;
   }
 
   // v63.7 — Session 1 protocol (Phase 0 anti-cold-projection)

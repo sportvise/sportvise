@@ -5636,6 +5636,12 @@ async function sendMsg(page) {
   // Allow sending if there's text OR an attached file (image alone is valid)
   if (!msg && !attachedFile) return;
 
+  // v63.47 — Empêche d'envoyer pendant qu'un PDF est encore en cours de lecture
+  // (sinon le document partirait sans son texte extrait, silencieusement).
+  if (attachedFile && attachedFile.processing) {
+    return;
+  }
+
   // Check if agent is locked for current plan
   if (isAgentLocked(page)) {
     renderLockedAgent(page, AGENTS[page]);
@@ -5664,11 +5670,18 @@ async function sendMsg(page) {
   let fullMsg = msg || '';
   let attachedImageData = null;
   let attachedImageType = null;
+  let attachedDocText = null;
+  let attachedDocName = null;
   if (attachedFile) {
     if (attachedFile.type.startsWith('image/')) {
       attachedImageData = attachedFile.data.split(',')[1];
       attachedImageType = attachedFile.type;
       if (!fullMsg) fullMsg = '📷 [Image envoyée]';
+    } else if (attachedFile.extractedText) {
+      // PDF/TXT — texte extrait côté client (v63.47), envoyé au backend
+      attachedDocText = attachedFile.extractedText;
+      attachedDocName = attachedFile.name;
+      if (!fullMsg) fullMsg = `📄 [Document envoyé : ${attachedFile.name}]`;
     }
     fullMsg += (fullMsg && !fullMsg.endsWith(']') ? '\n' : '') + `[📎 ${attachedFile.name}]`;
   }
@@ -6103,9 +6116,14 @@ Sky Swiss League (ex Swiss League) : partenariat média avec Sky Switzerland dep
     // Inter-agent recommendation instructions
     const referralInstruction = `\nSi ta réponse touche un domaine qui n'est pas le tien, recommande naturellement l'agent approprié. Par exemple: "Pour aller plus loin sur ce point, je te conseille d'en parler avec [Nom de l'agent] qui pourra t'accompagner." Les agents disponibles: David (physique), Emma (mental), Clara (nutrition), Nora (sommeil), Julie (récupération), Sophie (finance), Pierre (comptabilité), Alex (marketing), Marc (sponsors), Léa (contrats), Lucas (manager).`;
 
-    const requestBody = {
+   const requestBody = {
         agentId: page,
-        message: msg,
+        // v63.47 — utiliser fullMsg (pas msg) : le backend rejette tout
+        // `message` vide/falsy avec un 400 "Missing agentId or message".
+        // Quand seul un fichier est joint sans texte, `msg` est '' alors
+        // que `fullMsg` contient le placeholder ("📷 [Image envoyée]",
+        // "📄 [Document envoyé...]") + le tag [📎 nom du fichier].
+        message: fullMsg,
         history: chats[page].slice(-30),
         lang: currentLang,
         profile: profileContext,
@@ -6130,6 +6148,10 @@ Sky Swiss League (ex Swiss League) : partenariat média avec Sky Switzerland dep
     if (attachedImageData) {
       requestBody.image = attachedImageData;
       requestBody.imageType = attachedImageType;
+    }
+    if (attachedDocText) {
+      requestBody.documentText = attachedDocText;
+      requestBody.documentName = attachedDocName;
     }
 
     // v60 — récupérer le JWT Supabase pour l'Authorization header (rate-limit + auth serveur)
@@ -6227,6 +6249,85 @@ Sky Swiss League (ex Swiss League) : partenariat média avec Sky Switzerland dep
 }
 
 // ── FILE ATTACHMENT HANDLING ────────────────────────
+// v63.47 — Compresse une image côté client (canvas) avant envoi.
+// Raison : la limite payload synchrone des fonctions Netlify (~6MB) faisait
+// échouer SILENCIEUSEMENT (pas de log [CHAT]) l'envoi d'images > ~4MB encodées
+// en base64. On redimensionne au max recommandé Claude (1568px) et on réduit
+// la qualité JPEG jusqu'à tenir sous ~2.5MB de base64.
+function _svResizeImageFile(file, maxDim, maxBase64Len) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('read_failed'));
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('decode_failed'));
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) { height = Math.round(height * maxDim / width); width = maxDim; }
+          else { width = Math.round(width * maxDim / height); height = maxDim; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        let quality = 0.85;
+        let dataUrl = canvas.toDataURL('image/jpeg', quality);
+        while (dataUrl.length > maxBase64Len && quality > 0.3) {
+          quality -= 0.1;
+          dataUrl = canvas.toDataURL('image/jpeg', quality);
+        }
+        resolve({ dataUrl, width, height });
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// v63.47 — Lecture de PDF côté client via pdf.js (lazy-loadé depuis cdnjs,
+// même pattern que Chart.js). Évite d'envoyer le binaire PDF au backend
+// (dépasserait aussi la limite payload Netlify) : on extrait le TEXTE et on
+// l'injecte dans le contexte de l'agent.
+function _svLoadPdfJs() {
+  return new Promise((resolve, reject) => {
+    if (window.pdfjsLib) return resolve(window.pdfjsLib);
+    if (document.querySelector('script[data-svpdfjs]')) {
+      const wait = setInterval(() => { if (window.pdfjsLib) { clearInterval(wait); resolve(window.pdfjsLib); } }, 100);
+      setTimeout(() => { clearInterval(wait); if (!window.pdfjsLib) reject(new Error('pdfjs_timeout')); }, 10000);
+      return;
+    }
+    const s = document.createElement('script');
+    s.setAttribute('data-svpdfjs', '1');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    s.onload = () => {
+      // v63.47 — Volontairement PAS de GlobalWorkerOptions.workerSrc : la CSP
+      // (worker-src 'self' blob:, connect-src sans cdnjs) bloquerait un worker
+      // chargé depuis cdnjs. pdf.js bascule alors automatiquement sur son
+      // "fake worker" (exécution en thread principal) — plus lent mais
+      // suffisant pour des PDF de quelques pages, et sans modifier la CSP.
+      resolve(window.pdfjsLib);
+    };
+    s.onerror = () => reject(new Error('pdfjs_load_failed'));
+    document.head.appendChild(s);
+  });
+}
+
+async function _svExtractPdfText(file, maxChars) {
+  const pdfjsLib = await _svLoadPdfJs();
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  let text = '';
+  const maxPages = Math.min(pdf.numPages, 30);
+  for (let i = 1; i <= maxPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map(it => it.str).join(' ') + '\n\n';
+    if (text.length > maxChars) break;
+  }
+  return { text: text.slice(0, maxChars), pages: pdf.numPages };
+}
+
 async function handleFileSelect(page, event) {
   const t = T[currentLang];
   const file = event.target.files[0];
@@ -6249,25 +6350,70 @@ async function handleFileSelect(page, event) {
     return;
   }
 
-  // Convert file to base64
+  // ── Image : redimensionnée/compressée avant envoi (v63.47) ──
+  if (file.type.startsWith('image/')) {
+    try {
+      const { dataUrl } = await _svResizeImageFile(file, 1568, 2500000);
+      attachedFile = { name: file.name, type: 'image/jpeg', size: dataUrl.length, data: dataUrl };
+      updateFilePreview(page);
+    } catch (e) {
+      console.warn('[file] image resize failed:', e.message);
+      alert(t.fileTooLarge);
+    }
+    event.target.value = '';
+    return;
+  }
+
+  // ── PDF : texte extrait côté client (v63.47), pas de binaire envoyé ──
+  if (file.type === 'application/pdf') {
+    attachedFile = { name: file.name, type: file.type, size: file.size, data: null, extractedText: null, pageCount: null, processing: true };
+    updateFilePreview(page);
+    try {
+      const { text, pages } = await _svExtractPdfText(file, 12000);
+      if (attachedFile && attachedFile.name === file.name) {
+        attachedFile.extractedText = text;
+        attachedFile.pageCount = pages;
+        attachedFile.processing = false;
+        updateFilePreview(page);
+      }
+    } catch (e) {
+      console.warn('[file] pdf extraction failed:', e.message);
+      if (attachedFile && attachedFile.name === file.name) {
+        attachedFile.processing = false;
+        attachedFile.extractError = true;
+        updateFilePreview(page);
+      }
+    }
+    event.target.value = '';
+    return;
+  }
+
+  // ── TXT : texte lu directement ──
+  if (file.type === 'text/plain') {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      attachedFile = { name: file.name, type: file.type, size: file.size, data: null, extractedText: String(e.target.result).slice(0, 12000) };
+      updateFilePreview(page);
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+    return;
+  }
+
+  // ── DOC / DOCX : pas encore lus par l'agent (extraction non implémentée) ──
   const reader = new FileReader();
   reader.onload = (e) => {
-    attachedFile = {
-      name: file.name,
-      type: file.type,
-      size: file.size,
-      data: e.target.result // base64 data
-    };
-
-    // Show preview
+    attachedFile = { name: file.name, type: file.type, size: file.size, data: e.target.result };
     updateFilePreview(page);
   };
   reader.readAsDataURL(file);
+  event.target.value = '';
 }
 
 function updateFilePreview(page) {
   const previewArea = document.getElementById('filePreviewArea');
   if (!previewArea) return;
+  const t = T[currentLang] || T.fr;
 
   if (!attachedFile) {
     previewArea.innerHTML = '';
@@ -6285,12 +6431,20 @@ function updateFilePreview(page) {
 
   if (isImage) {
     previewHTML += `<img src="${attachedFile.data}" class="file-preview-img" />`;
+    previewHTML += `<div class="file-preview-item">🖼️ ${fileName} · ${fileSize}</div>`;
+  } else if (attachedFile.type === 'application/pdf') {
+    let status;
+    if (attachedFile.processing) status = t.filePdfExtracting || 'Lecture du PDF…';
+    else if (attachedFile.extractError) status = t.filePdfError || 'PDF illisible.';
+    else status = (t.filePdfReady || '{pages} pages lues').replace('{pages}', attachedFile.pageCount ?? '?');
+    previewHTML += `<div class="file-preview-item">📄 ${fileName} · ${status}</div>`;
+  } else if (attachedFile.extractedText) {
+    previewHTML += `<div class="file-preview-item">📄 ${fileName} · ${fileSize}</div>`;
+  } else {
+    previewHTML += `<div class="file-preview-item">📄 ${fileName} · ${fileSize} (non lu par l'agent)</div>`;
   }
 
-  previewHTML += `<div class="file-preview-item">
-    ${isImage ? '🖼️' : '📄'} ${fileName} · ${fileSize}
-  </div></div>`;
-
+  previewHTML += `</div>`;
   previewArea.innerHTML = previewHTML;
 }
 
