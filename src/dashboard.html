@@ -61,8 +61,46 @@
 
   // GLOBAL ERROR HANDLER — catches unhandled errors and shows diagnostic screen
   // (assigning window.onerror overrides Sentry's auto-instrument, so we forward manually)
+  //
+  // v63.46.4 — FILTRE ERREURS EXTERNES (extensions navigateur) ────────
+  // Bug remonté 14/06 (launch day) : au retour au premier plan sur iPhone
+  // Safari (sortie de Safari ou réveil du téléphone), un écran de crash
+  // plein écran s'affichait avec "Promise: undefined is not an object
+  // (evaluating 'response.cashbackReminder') (L0)". "cashbackReminder"
+  // n'existe NULLE PART dans le code SPORTVISE (grep confirmé) — c'est une
+  // extension Safari tierce (cashback/coupons) qui ré-exécute son propre
+  // script au retour au premier plan (visibilitychange/focus) et lève une
+  // promesse rejetée non gérée. Cette rejection bubble jusqu'au listener
+  // global `unhandledrejection` de la page et déclenchait à tort notre
+  // écran "Oups, quelque chose a bugué".
+  // Sentry filtre déjà ce type de bruit via denyUrls (ligne ~38), mais notre
+  // écran de diagnostic custom ne le faisait pas. On applique le même type
+  // de filtre ici : si l'erreur vient clairement d'un script hors-app
+  // (extension, "Script error." cross-origin, ligne 0 sans source) on
+  // logue dans la console pour debug mais on N'AFFICHE PAS l'écran de
+  // crash à l'utilisateur.
+  var EXTENSION_URL_RE = /(chrome|moz|safari-web|safari)-extension:\/\//i;
+  function _svIsExternalError(msg, src, error, line) {
+    var stack = (error && error.stack) || '';
+    if (EXTENSION_URL_RE.test(src) || EXTENSION_URL_RE.test(stack)) return true;
+    if (/\/extensions\//i.test(src) || /\/extensions\//i.test(stack)) return true;
+    // "Script error." = erreur cross-origin opaque (souvent injectée par un
+    // script tiers/extension qui ne partage pas son détail avec la page)
+    if (msg === 'Script error.' || msg === 'Script error') return true;
+    // Erreur "opaque" : ni source ni stack ni numéro de ligne exploitable
+    // (typique d'un script injecté par une extension, cross-origin).
+    // Notre code app a toujours un stack/fileName — si tout est vide/0,
+    // ce n'est pas une erreur que l'on peut corriger, et ce n'est très
+    // probablement pas la nôtre. On évite d'effrayer l'utilisateur pour ça.
+    if (!src && !stack && (!line || line === 0)) return true;
+    return false;
+  }
   window._svErrors = [];
   window.onerror = function(msg, src, line, col, error) {
+    if (_svIsExternalError(msg, src, error, line)) {
+      console.warn('SPORTVISE: erreur externe ignorée (extension navigateur ?):', msg, src, line);
+      return;
+    }
     console.error('SPORTVISE Error:', msg, src, line);
     window._svErrors.push(msg + ' (L' + line + ')');
     // Forward to Sentry (if loaded + on prod domain — see <head>)
@@ -95,13 +133,18 @@
     document.body.appendChild(el);
   };
   window.addEventListener('unhandledrejection', function(e) {
+    var rMsg = 'Promise: ' + (e.reason && e.reason.message ? e.reason.message : String(e.reason));
+    if (_svIsExternalError(rMsg, (e.reason && e.reason.fileName) || '', e.reason, (e.reason && e.reason.lineNumber) || 0)) {
+      console.warn('SPORTVISE: promesse rejetée externe ignorée (extension navigateur ?):', e.reason);
+      return;
+    }
     console.error('Unhandled promise:', e.reason);
     try {
       if (window.Sentry) {
         Sentry.captureException(e.reason instanceof Error ? e.reason : new Error('Unhandled promise: ' + String(e.reason)));
       }
     } catch (_) {}
-    window.onerror('Promise: ' + (e.reason && e.reason.message ? e.reason.message : String(e.reason)), '', 0);
+    window.onerror(rMsg, (e.reason && e.reason.fileName) || '', (e.reason && e.reason.lineNumber) || 0, 0, e.reason);
   });
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
