@@ -6117,7 +6117,11 @@ Sky Swiss League (ex Swiss League) : partenariat média avec Sky Switzerland dep
     const referralInstruction = `\nSi ta réponse touche un domaine qui n'est pas le tien, recommande naturellement l'agent approprié. Par exemple: "Pour aller plus loin sur ce point, je te conseille d'en parler avec [Nom de l'agent] qui pourra t'accompagner." Les agents disponibles: David (physique), Emma (mental), Clara (nutrition), Nora (sommeil), Julie (récupération), Sophie (finance), Pierre (comptabilité), Alex (marketing), Marc (sponsors), Léa (contrats), Lucas (manager).`;
 
     const requestBody = {
-        agentId: page,
+        agentId: page, // v63.47 — utiliser fullMsg (pas msg) : le backend rejette tout
+        // `message` vide/falsy avec un 400 "Missing agentId or message".
+        // Quand seul un fichier est joint sans texte, `msg` est '' alors
+        // que `fullMsg` contient le placeholder ("📷 [Image envoyée]",
+        // "📄 [Document envoyé...]") + le tag [📎 nom du fichier].
         message: msg,
         history: chats[page].slice(-30),
         lang: currentLang,
