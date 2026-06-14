@@ -11694,14 +11694,10 @@ async function renderJournal() {
                 oninput="_svUpdateSleepHours()" placeholder="7"
                 style="width:54px;padding:8px 6px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:16px;font-weight:700;font-family:'Inter',sans-serif;text-align:center;box-sizing:border-box;-webkit-appearance:none;appearance:none"/>
               <span style="font-size:13px;font-weight:700;color:var(--muted)">h</span>
-              <select id="svSleepM" onchange="_svUpdateSleepHours()"
-                style="width:60px;padding:8px 6px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:16px;font-weight:700;font-family:'Inter',sans-serif;text-align:center;box-sizing:border-box;-webkit-appearance:none;appearance:none">
-                ${['00','05','10','15','20','25','30','35','40','45','50','55'].map(m => {
-                  const mv = parseInt(m);
-                  const curM = todayLog?.sleep_hours != null ? Math.round(((todayLog.sleep_hours % 1) * 60) / 5) * 5 % 60 : 0;
-                  return '<option value="' + mv + '"' + (mv === curM ? ' selected' : '') + '>' + m + '</option>';
-                }).join('')}
-              </select>
+              <input type="number" id="svSleepM" min="0" max="55" step="5"
+                value="${todayLog?.sleep_hours != null ? Math.round(((todayLog.sleep_hours % 1) * 60) / 5) * 5 % 60 : 0}"
+                oninput="_svUpdateSleepHours()" placeholder="0"
+                style="width:60px;padding:8px 6px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:16px;font-weight:700;font-family:'Inter',sans-serif;text-align:center;box-sizing:border-box;-webkit-appearance:none;appearance:none"/>
               <span style="font-size:13px;font-weight:700;color:var(--muted)">min</span>
             </div>
           </div>
