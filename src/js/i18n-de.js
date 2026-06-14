@@ -78,8 +78,8 @@ var T_DE = {
   // v52 — Add/Edit event modals i18n
   eventModalAddTitle:'Neues Ereignis', eventModalAddSub:'Füge ein Spiel, einen Wettkampf oder ein Training hinzu.',
   eventModalEditTitle:'Ereignis bearbeiten', eventModalEditSub:'Bearbeite die Details deines Ereignisses.',
-  eventDuration:'Dauer (min)', eventDurationPlaceholder:'Z. B. 90', eventTitlePlaceholder:'Z. B. Spiel gegen FC Zürich',
-  eventLocationPlaceholder:'Z. B. Stadion Letzigrund, Zürich', eventNotesPlaceholder:'Z. B. 1 Std. vorher ankommen, spezielles Aufwärmen',
+  eventDuration:'Dauer (min)', eventDurationPlaceholder:'Z. B. 90', eventTitlePlaceholder:'Z. B. Kantonalmeisterschaft, Finale',
+  eventLocationPlaceholder:'Z. B. Sportzentrum, Zürich', eventNotesPlaceholder:'Z. B. 1 Std. vorher ankommen, spezielles Aufwärmen',
   calMoreOptions:'Weitere Optionen', calFewerOptions:'Weniger Optionen',
   calSeeCalendar:'Ansehen →', calSeeCalendarFull:'Kalender ansehen →',
   calEventsAdded:'Termine zum Kalender hinzugefügt', calEventsMore:'weitere',
