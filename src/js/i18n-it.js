@@ -156,6 +156,9 @@ var T_IT = {
   fileTooLarge:'File troppo grande. Massimo 20MB.',
   fileUnsupported:'Tipo di file non supportato. Usa JPG, PNG, GIF, PDF, DOC, DOCX o TXT.',
   fileAttached:'📎 File allegato',
+  filePdfExtracting:'Lettura del PDF…',
+  filePdfReady:'{pages} pagine lette',
+  filePdfError:'PDF illeggibile.',
   // Errors
   error:'Errore: ',
   // Chat saved
@@ -426,6 +429,7 @@ var T_IT = {
   obAutoMsg:'Ciao! Sono nuovo su SPORTVISE, faccio {sport} a livello {level}. Il mio obiettivo: {goal}. Da dove comincio?',
   // PROFILE MODAL
   profileSub:'Queste informazioni aiutano i tuoi agenti IA a personalizzare ogni consiglio.',
+  profileFullName:'Nome completo',
   profileMainSport:'Il tuo sport principale',
   profileWeight:'Peso (kg)',
   profileHeight:'Altezza (cm)',
