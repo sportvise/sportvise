@@ -4275,6 +4275,12 @@ function renderLockedFeature(featureName, emoji, description, requiredPlan) {
 async function renderChat(page) {
   const agent = AGENTS[page];
 
+  // v63.47.1 — Fix transition non-fluide : page async doit suivre le pattern
+  // showPageLoader()/_svFadeIn() comme renderDashboard/renderCalendar/renderProgression,
+  // sinon showPage() restaure l'opacité sur le contenu précédent avant que le
+  // chat (avec tout son historique chargé) ne s'affiche d'un coup (jump cut).
+  showPageLoader(T[currentLang]?.loading || 'Chargement…');
+
   // Clear notifications for this agent
   clearNotification(page);
 
@@ -4433,6 +4439,7 @@ async function renderChat(page) {
   scrollChat();
   // v63.15 — init auto-dismiss du tooltip "Me décrire" si présent
   _svInitDescribeTooltip();
+  _svFadeIn();
 }
 
 // ── v63.5.5 — MEMORY CARD ULTRA-LIGHT (Levier #1 Phase 0) ──────────
@@ -5000,6 +5007,7 @@ async function toggleFavorite(page, index, btn) {
 
 async function renderFavoris() {
   const t = T[currentLang];
+  showPageLoader(t.loading || 'Chargement…');
   const { data: favs, error } = await sb.from('favorites')
     .select('*')
     .eq('user_id', currentUser.id)
@@ -5018,6 +5026,7 @@ async function renderFavoris() {
         </div>
       </div>
     `;
+    _svFadeIn();
     return;
   }
 
@@ -5058,6 +5067,7 @@ async function renderFavoris() {
       ${cards}
     </div>
   `;
+  _svFadeIn();
 }
 
 // v62.14 — wrapper avec confirmation (UX retour Thomas self-test 04/05)
@@ -5802,7 +5812,10 @@ SPÉCIFICITÉS PAR SPORT :
 - Athlétisme : spécifique à la discipline (sprint: pliométrie/force-vitesse, endurance: seuils lactiques, lancers: force/puissance).
 
 RÈGLE NON-BLOCAGE (10/06/2026) :
-Tu ne refuses jamais de répondre à une demande légitime d'entraînement. Si le contexte sportif déclaré (chip "Mon contexte sportif") et l'historique de conversation semblent en tension, fournis quand même une réponse concrète basée sur le contexte déclaré actuel, et pose UNE seule question de clarification à la fin si nécessaire — sans jamais bloquer la réponse principale. Ne renvoie jamais vers "un entraîneur humain" sur une question d'entraînement standard — c'est exactement ton rôle.`,
+Tu ne refuses jamais de répondre à une demande légitime d'entraînement. Si le contexte sportif déclaré (chip "Mon contexte sportif") et l'historique de conversation semblent en tension, fournis quand même une réponse concrète basée sur le contexte déclaré actuel, et pose UNE seule question de clarification à la fin si nécessaire — sans jamais bloquer la réponse principale. Ne renvoie jamais vers "un entraîneur humain" sur une question d'entraînement standard — c'est exactement ton rôle.
+
+RÈGLE PLAN PAR DÉFAUT (15/06/2026) :
+Pour toute demande de plan/programme/bloc structuré ("prépare-moi un bloc de force de X semaines", "fais-moi un programme"), tu fournis TOUJOURS un squelette de plan concret dès ta première réponse — même si des informations te manquent. Affiche explicitement les hypothèses retenues (ex: "en supposant une course dans 3-4 semaines et un accès standard à une salle, voici un cadre sur 4 semaines : Semaine 1-2 volume modéré, Semaine 3 intensification, Semaine 4 affûtage"). Tu peux ensuite poser 1-2 questions de clarification pour affiner ce cadre, mais JAMAIS une réponse composée uniquement de questions sans aucun contenu structurel. Une réponse 100% questions sur une demande de plan est un échec.`,
       mental: `Tu es Emma, psychologue du sport diplômée et formée aux approches les plus récentes (2025-2026). Tu aides l'athlète à gérer stress, motivation et confiance. Tu es empathique et bienveillante. Si le moral est en baisse, tu explores les causes avec douceur. Tu fais le lien entre mental et performances sportives.
 
 APPROCHES THÉRAPEUTIQUES EVIDENCE-BASED :
@@ -6046,8 +6059,8 @@ Marques clés : Bullpadel, Head Padel, Nox, Adidas Padel, Wilson Padel, Babolat.
 SPÉCIFICITÉS CYCLISME (ÉCOSYSTÈME SWISS CYCLING) :
 Pour un cycliste, la fédération nationale est Swiss Cycling, structurée en environ 22 associations cantonales/régionales et plus de 400 clubs affiliés — c'est le premier réseau à activer pour un sponsoring local/régional avant de viser les marques nationales. Les licences se commandent via le portail membres (saison 2026 ouverte) ; pour les groupes sportifs/équipes, le délai d'inscription est le 1er novembre. Pour un athlète à revenus irréguliers, tu privilégies d'abord les partenariats équipementiers et les sponsors régionaux relayés par le club/l'association cantonale (coûts d'activation faibles, relation de proximité) avant les deals nationaux. Tu renvoies vers Léa pour les clauses de contrat d'équipe et vers Sophie pour le traitement fiscal des revenus de course. Tu ne cites pas de montants de prize money ou de noms d'équipes que tu n'as pas — tu demandes le club et la catégorie de licence de l'athlète si l'info manque.
 
-MISE À JOUR JUIN 2026 (01/06) — Sponsoring suisse 2026 : ESG critère d'éligibilité, sport féminin en hausse :
-Selon plusieurs sources sectorielles suisses, 70 % des sponsors utilisent désormais des indicateurs ESG pour sélectionner leurs partenariats sportifs — ce n'est plus un bonus, c'est un critère d'éligibilité en 2026.
+MISE À JOUR JUIN 2026 (01/06, révisé 15/06) — Sponsoring suisse 2026 : ESG critère d'éligibilité, sport féminin en hausse :
+De plus en plus de sponsors suisses intègrent des critères ESG (impact environnemental, engagement social) dans leur sélection de partenariats sportifs — ce n'est plus seulement un bonus d'image, mais un facteur de plus en plus regardant dans l'évaluation. Tu n'avances jamais de pourcentage précis non vérifiable sur cette tendance ; tu la présentes de façon qualitative et tu invites l'athlète à mettre en avant ses propres engagements (mobilité, équipement durable, actions communautaires) dans son media kit.
 Le sport féminin est identifié comme levier stratégique : coûts d'activation attractifs, audiences engagées, valeurs modernes — exemple Swissquote qui lie son sponsoring football féminin à l'autonomisation financière.
 Tendance contrats : retour aux partenariats longs (3-5 ans) — les sponsors valorisent la stabilité et la cohérence de l'athlète autant que ses résultats sportifs.
 Pour approcher un sponsor suisse en 2026 : préparer un dossier avec métriques mesurables (engagement rate, reach démographique CH) + positionnement sur au moins un axe ESG concret.
@@ -6108,6 +6121,9 @@ Quand un athlète aborde la fin de carrière ou la reconversion, tu ne restes ja
 - Athletes Network : plateforme suisse de réseautage, mentorat et partenariats pour combiner carrière sportive et professionnelle.
 - Aide Sportive Suisse (Fondation) : soutien financier (~1'200 athlètes, ~80 disciplines) ; les demandes de contributions ouvrent mi-décembre, décisions communiquées en avril.
 Tu adaptes la ressource au cas (encore en activité vs fin proche vs déjà retiré), tu renvoies vers Emma si la détresse psychologique domine, et vers Sophie/Pierre pour les aspects financiers de la transition. Tu ne cites pas de programme ou de chiffre dont tu n'es pas sûr.
+
+PERMIS DE SÉJOUR LIÉ AU CONTRAT (RÈGLE 15/06/2026) :
+Si le contexte de l'athlète mentionne un statut d'étranger dont le permis de séjour (permis B ou L) est lié à son contrat sportif, et qu'il est question de fin de contrat ou de reconversion, tu traites TOUJOURS ce point en priorité dans ton plan — c'est souvent le facteur le plus urgent (calendrier serré, dépend de l'employeur). Tu expliques que le renouvellement/changement de statut doit être anticipé suffisamment tôt avant la fin du contrat, et tu renvoies systématiquement vers Léa (aspects contractuels et juridiques du statut) en plus des autres agents pertinents.
 
 L'athlète pratique : ${p.sport || 'sport non renseigné'}, niveau : ${p.level || 'non renseigné'}, club : ${p.club || 'non renseigné'}, canton : ${p.canton || 'non renseigné'}. Adapte systématiquement tes réponses à son sport et son niveau.
 
@@ -6476,6 +6492,7 @@ function openImageViewer(src) {
 // ── PARRAINAGE ───────────────────────────────────────
 async function renderParrainage() {
   const t = T[currentLang];
+  showPageLoader(t.loading || 'Chargement…');
   const refLink = `https://sportvise.ch/login.html?ref=${currentUser.id}`;
 
   // Load referrals from Supabase
@@ -6585,6 +6602,7 @@ async function renderParrainage() {
       ` : ''}
     </div>
   `;
+  _svFadeIn();
 }
 
 function copyRefLink(link) {
@@ -11633,6 +11651,7 @@ async function saveJournal() {
 // ── OBJECTIFS (Goals) ───────────────────────────────
 async function renderGoals() {
   const t = T[currentLang];
+  showPageLoader(t.loading || 'Chargement…');
   const { data: goals } = await sb.from('goals')
     .select('*')
     .eq('user_id', currentUser.id)
@@ -11730,6 +11749,7 @@ async function renderGoals() {
       </div>
     </div>
   `;
+  _svFadeIn();
 }
 
 // ── JOURNAL (Daily Log) ──────────────────────────────
@@ -11757,6 +11777,7 @@ function _svUpdateSleepHours() {
 
 async function renderJournal() {
   const t = T[currentLang];
+  showPageLoader(t.loading || 'Chargement…');
   const today = dateToStr();
   // Capture and reset the edit-mode flag for this render cycle
   const useEditMode = _journalEditMode;
@@ -11974,6 +11995,7 @@ async function renderJournal() {
       </div>
     </div>
   `;
+  _svFadeIn();
 }
 
 // ── EXPORT CSV JOURNAL ──────────────────────────────
@@ -12634,6 +12656,7 @@ function _svInitPerfCharts(chartMetrics) {
 // ── DÉFIS HEBDOMADAIRES + PARTAGE STORIES ───────────
 async function renderDefis() {
   const t = T[currentLang] || T.fr;
+  showPageLoader(t.loading || 'Chargement…');
   const athleteName = userProfile?.full_name ? userProfile.full_name.split(' ')[0] : 'Athlète';
   const sport = userProfile?.sport ? sportLabel(userProfile.sport) : 'Sport';
 
@@ -12784,6 +12807,7 @@ async function renderDefis() {
       </div>
     </div>
   `;
+  _svFadeIn();
 }
 
 // ── SHARE CARD DOWNLOAD ─────────────────────────────
@@ -12929,6 +12953,7 @@ function shareToWhatsApp() {
 // ── PRÉPA MATCH (J-3 à Jour J) ──────────────────────
 async function renderPrepaMatch() {
   const t = T[currentLang] || T.fr;
+  showPageLoader(t.loading || 'Chargement…');
   const today = new Date();
   today.setHours(0,0,0,0);
   const in7days = new Date(today.getTime() + 7 * 86400000);
@@ -12977,6 +13002,7 @@ async function renderPrepaMatch() {
       // style navigateur brut). Styles inline alignés sur les autres CTA gold.
       '<button onclick="showPage(\'calendrier\',null)" style="font-family:Inter,sans-serif;background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#1a1a2e;border:none;border-radius:12px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(245,158,11,0.3)">' + t.pmEmptyBtn + '</button>' +
     '</div>';
+    _svFadeIn();
     return;
   }
 
@@ -13221,6 +13247,7 @@ async function renderPrepaMatch() {
 
   html += '</div>';
   document.getElementById('mainContent').innerHTML = html;
+  _svFadeIn();
 }
 
 // Brief match by Lucas
