@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SPORTVISE — Toujours savoir où tu vas</title>
+<meta name="description" content="Le bureau de l'athlète suisse. 11 agents IA experts, journal, RPE et calendrier connectés. Dès CHF 0."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════════════════════════
+   SPORTVISE — Redesign test « Le Battement »
+   Signature : ligne ECG ambre, fil conducteur de toute la page
+   ═══════════════════════════════════════════════════════════ */
+:root{
+  --bg:#08090c;            /* stade de nuit */
+  --bg2:#0d0f14;
+  --panel:#12151c;
+  --panel2:#161a22;
+  --border:#1f2430;
+  --border-hi:#2b3242;
+  --amber:#f59e0b;         /* signature */
+  --amber-dim:#f59e0b22;
+  --ice:#8ecae6;           /* accent froid glacier */
+  --text:#f2efe9;          /* blanc cassé */
+  --muted:#a7afbe;
+  --muted2:#828c9d;
+  --ok:#10b981;
+  --display:'Barlow Condensed',sans-serif;
+  --body:'Inter',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-weight:300;line-height:1.65;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+::selection{background:var(--amber);color:#08090c}
+a{color:inherit}
+button{font-family:var(--body)}
+.container{max-width:1120px;margin:0 auto;padding:0 24px}
+
+/* ── Focus clavier ── */
+a:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid var(--amber);outline-offset:3px;border-radius:4px}
+
+/* ═══ LE BATTEMENT — barre de pouls fixe (progression de lecture) ═══ */
+.pulsebar{position:fixed;top:0;left:0;right:0;height:3px;z-index:200;background:transparent;pointer-events:none}
+.pulsebar-fill{height:100%;width:0%;background:linear-gradient(90deg,#b45309,var(--amber));box-shadow:0 0 12px #f59e0b88;transition:width .08s linear}
+.pulsebar-blip{position:absolute;top:-3px;width:9px;height:9px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);transform:translateX(-50%)}
+
+/* ═══ LE BATTEMENT — séparateurs ECG entre sections ═══ */
+.ecg-sep{display:block;width:100%;height:70px;overflow:visible}
+.ecg-sep path{fill:none;stroke:var(--amber);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;opacity:.85}
+.ecg-sep.calm path{stroke:#f59e0b66;stroke-width:1.5}
+.ecg-draw path{stroke-dasharray:var(--len,2400);stroke-dashoffset:var(--len,2400)}
+.ecg-draw.on path{animation:ecgDraw var(--spd,2.2s) cubic-bezier(.5,0,.15,1) forwards}
+@keyframes ecgDraw{to{stroke-dashoffset:0}}
+.ecg-dot{fill:var(--amber);opacity:0}
+.ecg-draw.on .ecg-dot{animation:ecgDot .5s ease var(--spd,2.2s) forwards}
+@keyframes ecgDot{to{opacity:1}}
+
+/* ═══ NAV ═══ */
+nav{position:fixed;top:3px;left:0;right:0;z-index:150;background:#08090cdd;backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+.nav-inner{max-width:1120px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:22px}
+.nav-logo{font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:2.5px;text-decoration:none;color:var(--text)}
+.nav-logo b{color:var(--amber)}
+.nav-links{display:flex;gap:22px;margin-left:8px}
+.nav-links a{font-size:13.5px;font-weight:500;color:var(--muted);text-decoration:none;transition:color .2s}
+.nav-links a:hover{color:var(--text)}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:14px}
+.lang-sel{display:flex;gap:2px;border:1px solid var(--border);border-radius:8px;padding:2px;background:var(--bg2)}
+.lang-sel button{background:none;border:none;color:var(--muted2);font-size:11px;font-weight:600;padding:4px 7px;border-radius:6px;cursor:pointer;letter-spacing:.5px}
+.lang-sel button[aria-current="true"]{background:var(--panel2);color:var(--text)}
+.lang-sel button:hover{color:var(--text)}
+.btn{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;text-decoration:none;font-weight:600;border-radius:10px;cursor:pointer;transition:transform .22s cubic-bezier(.34,1.4,.5,1),box-shadow .22s,background .2s;border:none;font-family:var(--body)}
+.btn:active{transform:scale(.97)}
+.btn-amber{background:linear-gradient(135deg,#fbbf24,var(--amber));color:#08090c;padding:13px 26px;font-size:14.5px;box-shadow:0 4px 22px #f59e0b33}
+.btn-amber:hover{transform:translateY(-2px);box-shadow:0 8px 30px #f59e0b55}
+.btn-ghost{background:transparent;border:1px solid var(--border-hi);color:var(--text);padding:12px 24px;font-size:14.5px}
+.btn-ghost:hover{border-color:var(--amber);transform:translateY(-2px)}
+.nav-cta{padding:9px 18px!important;font-size:13px!important}
+@media(max-width:820px){.nav-links{display:none}}
+@media(max-width:560px){.nav-login{display:none}.nav-inner{padding:12px 16px;gap:12px}.nav-cta{padding:8px 14px!important;font-size:12.5px!important}}
+
+/* ═══ Révélations au scroll — façon chrono ═══ */
+.rv{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.2,.7,.3,1),transform .7s cubic-bezier(.2,.7,.3,1)}
+.rv.on{opacity:1;transform:none}
+.rv-clip{display:inline-block;clip-path:inset(0 100% 0 0);transition:clip-path .8s cubic-bezier(.6,0,.2,1)}
+.rv-clip.on{clip-path:inset(0 0 0 0)}
+
+/* ═══ HERO ═══ */
+.hero{position:relative;padding:158px 24px 60px;text-align:left;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:
+  radial-gradient(900px 420px at 75% -10%,#f59e0b0e,transparent 60%),
+  radial-gradient(700px 380px at 10% 110%,#8ecae60a,transparent 60%);pointer-events:none}
+.hero-tag{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border-hi);background:var(--bg2);border-radius:100px;padding:7px 16px;font-size:12.5px;font-weight:500;color:var(--muted);letter-spacing:.3px}
+.hero-tag .dot-ch{width:7px;height:7px;border-radius:50%;background:var(--amber);box-shadow:0 0 8px var(--amber)}
+.hero h1{font-family:var(--display);font-weight:800;font-size:clamp(58px,9.5vw,124px);line-height:.94;letter-spacing:.5px;text-transform:uppercase;margin:26px 0 8px}
+.hero h1 .l2{color:var(--amber)}
+.hero-ecg{position:relative;width:100%;height:56px;margin:2px 0 18px}
+.hero-ecg svg{width:100%;height:100%;overflow:visible}
+.hero-ecg path{fill:none;stroke:var(--amber);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 6px #f59e0b66)}
+.hero-desc{max-width:560px;font-size:16.5px;color:var(--muted);line-height:1.75}
+.hero-cta{display:flex;flex-wrap:wrap;gap:14px;margin:32px 0 22px}
+.hero-proof{display:flex;flex-wrap:wrap;gap:10px 22px;font-size:12.5px;color:var(--muted2)}
+.hero-proof span{display:inline-flex;align-items:center;gap:7px}
+.hero-proof .tick{color:var(--amber);font-weight:700}
+.hero-grid{display:grid;grid-template-columns:1fr;gap:0;position:relative}
+
+/* pouls discret sur les chiffres clés */
+@keyframes heartbeat{0%,100%{transform:scale(1)}14%{transform:scale(1.03)}28%{transform:scale(1)}42%{transform:scale(1.015)}56%{transform:scale(1)}}
+.beat{animation:heartbeat 2.4s ease-in-out infinite;transform-origin:center;display:inline-block}
+
+/* ═══ PREVIEW DASHBOARD ═══ */
+.preview-wrap{padding:30px 24px 10px}
+.pv-frame{max-width:960px;margin:0 auto;background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 30px 80px #00000080,0 0 0 1px #f59e0b0d}
+.pv-bar{display:flex;align-items:center;gap:6px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--panel)}
+.pv-bar .d{width:9px;height:9px;border-radius:50%}
+.pv-url{flex:1;text-align:center;font-size:11px;color:var(--muted2);letter-spacing:.4px}
+.pv-body{display:grid;grid-template-columns:190px 1fr;min-height:380px}
+.pv-side{border-right:1px solid var(--border);background:var(--panel);padding:14px 10px}
+.pv-side-logo{font-family:var(--display);font-weight:800;font-size:15px;letter-spacing:2px;padding:0 8px 12px;color:var(--text)}
+.pv-side-logo b{color:var(--amber)}
+.pv-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;font-size:12px;color:var(--muted);margin-bottom:2px}
+.pv-item.act{background:var(--amber-dim);color:var(--amber);font-weight:600}
+.pv-main{padding:18px 20px;background:var(--bg2)}
+.pv-h{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+.pv-h b{font-family:var(--display);font-size:19px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.pv-h span{font-size:11px;color:var(--muted2)}
+.pv-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:14px}
+.pv-day{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:7px 6px;min-height:72px;font-size:9.5px;color:var(--muted2)}
+.pv-day .dn{font-weight:600;color:var(--muted);margin-bottom:5px;font-size:9px;letter-spacing:.6px}
+.pv-day.today{border-color:var(--amber);box-shadow:inset 0 0 0 1px #f59e0b44}
+.pv-ev{border-radius:5px;padding:3px 5px;font-size:8.5px;font-weight:600;margin-bottom:3px;line-height:1.3}
+.pv-ev.t1{background:#f59e0b1c;color:var(--amber)}
+.pv-ev.t2{background:#8ecae61c;color:var(--ice)}
+.pv-ev.t3{background:#10b9811c;color:var(--ok)}
+.pv-journal{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pv-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+.pv-card .t{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted2);font-weight:600;margin-bottom:7px}
+.pv-rpe{font-family:var(--display);font-weight:800;font-size:34px;color:var(--amber);line-height:1}
+.pv-rpe small{font-size:14px;color:var(--muted2);font-weight:600}
+.pv-spark{margin-top:6px;width:100%;height:26px}
+.pv-spark path{fill:none;stroke:var(--ice);stroke-width:1.8;stroke-linecap:round}
+.pv-note{font-size:11px;color:var(--muted);line-height:1.55;font-style:italic}
+@media(max-width:700px){.pv-body{grid-template-columns:1fr}.pv-side{display:flex;gap:4px;overflow-x:auto;border-right:none;border-bottom:1px solid var(--border);padding:10px}.pv-side-logo{display:none}.pv-item{white-space:nowrap;margin:0}.pv-cal{grid-template-columns:repeat(4,1fr)}.pv-day:nth-child(n+5){display:none}}
+
+/* ═══ STATS — tableau d'affichage ═══ */
+.stats{padding:64px 24px 56px}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;max-width:960px;margin:0 auto}
+.stat{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:26px 18px;text-align:center;position:relative;overflow:hidden}
+.stat::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:linear-gradient(90deg,transparent,var(--amber),transparent);opacity:.5}
+.stat-num{font-family:var(--display);font-weight:800;font-size:clamp(40px,5vw,58px);line-height:1;color:var(--text);letter-spacing:1px}
+.stat-num em{font-style:normal;color:var(--amber)}
+.stat-lab{font-size:12.5px;color:var(--muted2);margin-top:8px;font-weight:500}
+@media(max-width:700px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
+
+/* ═══ SECTIONS communes ═══ */
+.sec{padding:80px 24px}
+.sec-head{max-width:680px;margin:0 auto 44px;text-align:center}
+.sec-tag{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--amber);margin-bottom:14px}
+.sec-head h2{font-family:var(--display);font-weight:800;font-size:clamp(34px,5vw,54px);line-height:1;letter-spacing:.5px;text-transform:uppercase}
+.sec-head p{margin-top:14px;font-size:15.5px;color:var(--muted)}
+
+/* ═══ AGENTS ═══ */
+.level-sel{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:36px}
+.level-sel-lab{font-size:13px;color:var(--muted2);font-weight:500}
+.level-pills{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.level-pill{background:var(--panel);border:1px solid var(--border-hi);color:var(--muted);font-size:13.5px;font-weight:600;padding:10px 22px;border-radius:100px;cursor:pointer;transition:all .2s}
+.level-pill:hover{border-color:var(--amber);color:var(--text)}
+.level-pill.act{background:var(--amber);border-color:var(--amber);color:#08090c}
+.level-banner{font-size:13px;color:var(--muted);min-height:20px;text-align:center;max-width:520px}
+.level-banner b{color:var(--amber);font-weight:600}
+.agents-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:14px;max-width:1120px;margin:0 auto}
+.agent{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:22px 20px;position:relative;transition:transform .25s cubic-bezier(.2,.8,.3,1.2),border-color .25s,box-shadow .25s}
+.agent:hover{transform:translateY(-4px);border-color:var(--border-hi);box-shadow:0 14px 34px #00000066}
+.agent.prio{border-color:#f59e0b66;box-shadow:0 0 0 1px #f59e0b33,0 8px 30px #f59e0b11}
+.agent-prio-chip{position:absolute;top:-9px;right:14px;background:var(--amber);color:#08090c;font-size:9.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:3px 9px;border-radius:100px;opacity:0;transform:translateY(4px);transition:all .3s}
+.agent.prio .agent-prio-chip{opacity:1;transform:none}
+.agent-top{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.agent-emoji{font-size:26px;width:46px;height:46px;display:flex;align-items:center;justify-content:center;background:var(--bg2);border:1px solid var(--border);border-radius:12px;transition:transform .25s}
+.agent:hover .agent-emoji{transform:scale(1.08)}
+.agent-name{font-family:var(--display);font-weight:700;font-size:20px;letter-spacing:.8px}
+.agent-role{font-size:11.5px;font-weight:600;letter-spacing:.2px}
+.agent-desc{font-size:12.5px;color:var(--muted);line-height:1.6;min-height:40px}
+.agent-status{display:flex;align-items:center;gap:7px;margin-top:12px;font-size:11px;color:var(--muted2)}
+.online-dot{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 6px var(--ok);animation:heartbeat 2.4s ease-in-out infinite}
+
+/* ═══ DÉMO — pièce maîtresse ═══ */
+.demo-sec{position:relative;padding:90px 24px;background:linear-gradient(180deg,var(--bg) 0%,#0b0d12 18%,#0b0d12 82%,var(--bg) 100%)}
+.demo-sec::before{content:"";position:absolute;inset:0;background:radial-gradient(800px 400px at 50% 30%,#f59e0b08,transparent 65%);pointer-events:none}
+.demo-stage{max-width:820px;margin:0 auto;position:relative}
+.demo-controls{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.demo-ctl label{display:block;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted2);font-weight:600;margin-bottom:7px}
+.demo-select{width:100%;background:var(--panel);border:1px solid var(--border-hi);color:var(--text);font-family:var(--body);font-size:14px;font-weight:500;padding:12px 14px;border-radius:10px;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23f59e0b' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+.demo-run{width:100%;margin-bottom:22px;justify-content:center;font-size:15px;padding:15px}
+.demo-chat{background:var(--panel);border:1px solid var(--border-hi);border-radius:16px;overflow:hidden;box-shadow:0 30px 70px #00000088}
+.demo-chat-head{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--border);background:var(--panel2)}
+.demo-av{width:38px;height:38px;border-radius:12px;background:#ef44441f;display:flex;align-items:center;justify-content:center;font-size:19px}
+.demo-chat-name{font-family:var(--display);font-weight:700;font-size:17px;letter-spacing:.6px}
+.demo-chat-sub{font-size:11px;color:var(--muted2)}
+.demo-ctx-badge{margin-left:auto;font-size:10.5px;font-weight:700;color:var(--ok);border:1px solid #10b98144;background:#10b98112;border-radius:100px;padding:4px 11px;letter-spacing:.4px}
+.demo-body{padding:20px 18px;min-height:300px;display:flex;flex-direction:column;gap:14px}
+.demo-pills{display:flex;flex-wrap:wrap;gap:7px}
+.demo-pill{font-size:11px;font-weight:600;color:var(--ice);background:#8ecae612;border:1px solid #8ecae62e;border-radius:100px;padding:4px 11px;opacity:0;transform:translateY(6px);animation:pillIn .4s cubic-bezier(.2,.8,.3,1.2) forwards;animation-delay:var(--pd,0s)}
+@keyframes pillIn{to{opacity:1;transform:none}}
+.demo-msg-user{align-self:flex-end;max-width:82%;background:var(--amber);color:#08090c;font-size:13.5px;font-weight:500;padding:11px 15px;border-radius:14px 14px 3px 14px;line-height:1.5}
+.demo-msg-agent{align-self:flex-start;max-width:92%;background:var(--bg2);border:1px solid var(--border);font-size:13.5px;color:var(--text);font-weight:300;padding:14px 16px;border-radius:14px 14px 14px 3px;line-height:1.7;white-space:pre-line}
+.demo-msg-agent strong{font-weight:600;color:var(--text)}
+.d-tag{color:var(--amber);font-weight:600;background:#f59e0b14;border-radius:5px;padding:1px 6px}
+.d-hl{color:var(--ice);font-weight:500}
+.d-team{display:inline-flex;align-items:center;gap:5px;background:#8ecae614;border:1px solid #8ecae63a;color:var(--ice);font-weight:600;border-radius:100px;padding:1px 9px 1px 4px;font-size:12.5px;white-space:nowrap}
+.d-team .d-team-av{width:17px;height:17px;border-radius:50%;background:var(--panel2);display:inline-flex;align-items:center;justify-content:center;font-size:10px}
+.demo-typing{display:inline-flex;gap:5px;padding:13px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:14px 14px 14px 3px;align-self:flex-start}
+.demo-typing i{width:6px;height:6px;border-radius:50%;background:var(--muted2);animation:tp 1s infinite}
+.demo-typing i:nth-child(2){animation-delay:.15s}.demo-typing i:nth-child(3){animation-delay:.3s}
+@keyframes tp{0%,60%,100%{transform:none;opacity:.4}30%{transform:translateY(-4px);opacity:1}}
+.demo-team-note{display:flex;align-items:center;gap:9px;font-size:11.5px;color:var(--muted2);background:var(--bg2);border:1px dashed var(--border-hi);border-radius:10px;padding:9px 13px;opacity:0;transform:translateY(6px);transition:all .5s}
+.demo-team-note.on{opacity:1;transform:none}
+.demo-note{text-align:center;font-size:11.5px;color:var(--muted2);margin-top:14px;font-style:italic}
+.demo-cta{text-align:center;margin-top:26px}
+.demo-cta-sub{display:block;margin-top:10px;font-size:12px;color:var(--muted2)}
+@media(max-width:640px){.demo-controls{grid-template-columns:1fr}}
+
+/* ═══ 3 ÉTAPES ═══ */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:960px;margin:0 auto;position:relative}
+.step{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:28px 24px;position:relative}
+.step-chrono{font-family:var(--display);font-weight:800;font-size:15px;color:var(--amber);letter-spacing:1.5px;border:1px solid #f59e0b44;border-radius:8px;display:inline-block;padding:3px 10px;margin-bottom:16px;background:var(--amber-dim)}
+.step h3{font-family:var(--display);font-weight:700;font-size:24px;letter-spacing:.6px;text-transform:uppercase;margin-bottom:8px}
+.step p{font-size:13.5px;color:var(--muted);line-height:1.7}
+.step-num{position:absolute;top:20px;right:22px;font-family:var(--display);font-weight:800;font-size:52px;line-height:1;color:#ffffff08}
+@media(max-width:760px){.steps{grid-template-columns:1fr}}
+
+/* ═══ PRICING ═══ */
+.bill-toggle{display:flex;justify-content:center;gap:0;margin:0 auto 36px;max-width:340px;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:4px}
+.bill-toggle button{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:10px 14px;border:none;border-radius:9px;font-size:13.5px;font-weight:600;cursor:pointer;background:transparent;color:var(--muted2);transition:all .2s;font-family:var(--body)}
+.bill-toggle button.act{background:var(--panel2);color:var(--text);box-shadow:inset 0 0 0 1px var(--border-hi)}
+.bill-save{font-size:10px;font-weight:800;background:var(--ok);color:#08090c;padding:2px 8px;border-radius:100px;letter-spacing:.4px}
+.price-day{font-size:12px;color:var(--ice);font-weight:600;margin-top:6px}
+.price-annual-note{font-size:11.5px;color:var(--ok);font-weight:600;margin-top:4px}
+.bill-a{display:none}
+.billing-annual .bill-a{display:block}
+.billing-annual .bill-m{display:none}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:960px;margin:0 auto}
+.price-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:30px 26px;display:flex;flex-direction:column;position:relative;transition:transform .25s,border-color .25s}
+.price-card:hover{transform:translateY(-4px)}
+.price-card.feat{border-color:#f59e0b55;background:linear-gradient(170deg,#f59e0b0a,var(--panel) 40%)}
+.price-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--amber);color:#08090c;font-size:10.5px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:5px 14px;border-radius:100px;white-space:nowrap}
+.price-name{font-size:12px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted2);margin-bottom:10px}
+.price-num{font-family:var(--display);font-weight:800;font-size:52px;line-height:1;letter-spacing:.5px}
+.price-num small{font-size:16px;font-weight:600;color:var(--muted2);letter-spacing:0}
+.price-card.feat .price-num{color:var(--amber)}
+.price-sub{font-size:12.5px;color:var(--muted2);margin:10px 0 18px;min-height:34px}
+.price-div{height:1px;background:var(--border);margin-bottom:16px}
+.pf{display:flex;gap:10px;font-size:13px;color:var(--muted);margin-bottom:10px;line-height:1.5}
+.pf .ck{color:var(--amber);font-weight:700;flex-shrink:0}
+.pf .cx{color:var(--muted2);flex-shrink:0}
+.pf strong{color:var(--text);font-weight:600}
+.price-btn{margin-top:auto;text-align:center;justify-content:center}
+@media(max-width:820px){.pricing-grid{grid-template-columns:1fr;max-width:420px}}
+
+/* ═══ FAQ ═══ */
+.faq-list{max-width:720px;margin:0 auto}
+.faq-item{border:1px solid var(--border);border-radius:12px;margin-bottom:10px;background:var(--panel);overflow:hidden}
+.faq-q{width:100%;display:flex;justify-content:space-between;align-items:center;gap:16px;background:none;border:none;color:var(--text);font-size:14.5px;font-weight:500;text-align:left;padding:18px 20px;cursor:pointer}
+.faq-icon{font-family:var(--display);font-size:22px;font-weight:600;color:var(--amber);transition:transform .3s;flex-shrink:0;line-height:1}
+.faq-item.open .faq-icon{transform:rotate(45deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1);font-size:13.5px;color:var(--muted);line-height:1.75}
+.faq-a>div{padding:0 20px 18px}
+.faq-item.open .faq-a{max-height:280px}
+
+/* ═══ B2B ═══ */
+.b2b{border-top:1px solid var(--border);background:linear-gradient(180deg,var(--bg),var(--bg2));text-align:center}
+.b2b .inner{max-width:720px;margin:0 auto}
+.b2b h2{font-family:var(--display);font-weight:800;font-size:clamp(28px,4vw,42px);letter-spacing:.5px;text-transform:uppercase;line-height:1.05;margin-bottom:14px}
+.b2b p{font-size:14.5px;color:var(--muted);max-width:620px;margin:0 auto 26px}
+.b2b-note{margin-top:14px;font-size:12px;color:var(--muted2)}
+
+/* ═══ CTA FINAL ═══ */
+.final{text-align:center;padding:100px 24px}
+.final h2{font-family:var(--display);font-weight:800;font-size:clamp(40px,7vw,84px);line-height:.96;letter-spacing:.5px;text-transform:uppercase}
+.final h2 em{font-style:normal;color:var(--amber)}
+.final p{margin:18px auto 30px;font-size:15.5px;color:var(--muted);max-width:480px}
+.final-note{margin-top:20px;font-size:12px;color:var(--muted2)}
+
+/* ═══ FOOTER ═══ */
+footer{border-top:1px solid var(--border);padding:50px 24px 34px;background:var(--bg2)}
+.foot-inner{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr;gap:34px}
+.foot-logo{font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:2.5px}
+.foot-logo b{color:var(--amber)}
+.foot-desc{font-size:13px;color:var(--muted2);margin-top:10px;max-width:300px;line-height:1.7}
+.foot-ch{margin-top:14px;font-size:12px;color:var(--muted2);display:flex;align-items:center;gap:8px}
+.foot-lpd{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border-hi);border-radius:100px;padding:4px 12px;font-size:11px;color:var(--muted);background:var(--panel)}
+.foot-col h4{font-size:11.5px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted2);margin-bottom:14px}
+.foot-col a{display:block;font-size:13px;color:var(--muted);text-decoration:none;margin-bottom:9px;transition:color .2s}
+.foot-col a:hover{color:var(--amber)}
+.foot-base{max-width:1120px;margin:36px auto 0;padding-top:22px;border-top:1px solid var(--border);display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--muted2)}
+@media(max-width:700px){.foot-inner{grid-template-columns:1fr}}
+
+/* ═══ prefers-reduced-motion — fallback statique élégant ═══ */
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.001s!important;animation-iteration-count:1!important;transition-duration:.001s!important}
+  .rv,.rv-clip{opacity:1;transform:none;clip-path:none}
+  .ecg-draw path{stroke-dasharray:none;stroke-dashoffset:0}
+  .ecg-dot{opacity:1}
+  .demo-pill{opacity:1;transform:none}
+  .beat,.online-dot{animation:none}
+  .pulsebar{display:none}
+}
+</style>
+</head>
+<body>
+<!-- ═══ LE BATTEMENT — barre de pouls (progression de lecture) ═══ -->
+<div class="pulsebar" aria-hidden="true"><div class="pulsebar-fill" id="pbFill"></div><div class="pulsebar-blip" id="pbBlip" style="left:0%"></div></div>
+
+<!-- ═══ NAV ═══ -->
+<nav aria-label="Navigation principale">
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">SPORT<b>VISE</b></a>
+    <div class="nav-links">
+      <a href="#agents" data-i18n="navAgents">Agents IA</a>
+      <a href="#demo" data-i18n="navDemo">Démo</a>
+      <a href="#tarifs" data-i18n="navPricing">Tarifs</a>
+      <a href="#faq" data-i18n="navFaq">FAQ</a>
+    </div>
+    <div class="nav-right">
+      <div class="lang-sel" role="group" aria-label="Langue">
+        <button aria-current="true">FR</button><button>DE</button><button>EN</button><button>IT</button>
+      </div>
+      <a href="/login.html" class="btn btn-ghost nav-cta nav-login" data-i18n="navLogin">Connexion</a>
+      <a href="/login.html" class="btn btn-amber nav-cta" data-i18n="navStart">Commencer →</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<header class="hero">
+  <div class="container hero-grid">
+    <div class="rv on">
+      <span class="hero-tag"><span class="dot-ch" aria-hidden="true"></span><span data-i18n="heroTag">Suisse · FR · DE · EN · IT · Données protégées LPD</span></span>
+    </div>
+    <h1>
+      <span class="rv-clip" data-i18n="heroTitle1">Toujours savoir</span><br/>
+      <span class="rv-clip l2" style="transition-delay:.15s" data-i18n="heroTitle2">où tu vas.</span>
+    </h1>
+    <div class="hero-ecg ecg-draw" aria-hidden="true">
+      <svg viewBox="0 0 560 56" preserveAspectRatio="none">
+        <path style="--len:700;--spd:1.8s" d="M0 34 H120 l14 -8 14 8 H210 l10 -26 12 44 10 -18 H360 l12 -6 12 6 H478 l10 -14 12 14 H560"/>
+      </svg>
+    </div>
+    <p class="hero-desc rv" data-i18n="heroDesc">Ton journal, ton RPE et ton calendrier connectés. Des agents spécialisés dans le sport suisse ajustent leurs conseils à ta saison et ton état du jour — pas un chatbot générique.</p>
+    <div class="hero-cta rv">
+      <a href="/login.html" class="btn btn-amber" data-i18n="heroCta1">Créer mon compte gratuit →</a>
+      <a href="#demo" class="btn btn-ghost" data-i18n="heroCta2">Voir la démo en direct</a>
+    </div>
+    <div class="hero-proof rv">
+      <span><span class="tick">✓</span><span data-i18n="heroProof1">Aucune carte de crédit</span></span>
+      <span><span class="tick">✓</span><span data-i18n="heroProof2">Réponse en &lt;2s</span></span>
+      <span><span class="tick">✓</span><span data-i18n="heroProof3">Données protégées LPD 🇨🇭</span></span>
+    </div>
+  </div>
+</header>
+
+<!-- ═══ APERÇU PRODUIT — le bureau de l'athlète ═══ -->
+<section class="preview-wrap">
+  <div class="pv-frame rv">
+    <div class="pv-bar"><span class="d" style="background:#ef4444"></span><span class="d" style="background:#f59e0b"></span><span class="d" style="background:#10b981"></span><span class="pv-url">app.sportvise.ch · Dashboard</span></div>
+    <div class="pv-body">
+      <div class="pv-side">
+        <div class="pv-side-logo">SPORT<b>VISE</b></div>
+        <div class="pv-item act"><span aria-hidden="true">📅</span><span data-i18n="pvCalendar">Calendrier</span></div>
+        <div class="pv-item"><span aria-hidden="true">🤝</span><span data-i18n="pvMeeting">Réunion d'équipe</span></div>
+        <div class="pv-item"><span aria-hidden="true">📓</span><span data-i18n="pvJournal">Journal</span></div>
+        <div class="pv-item"><span aria-hidden="true">💬</span><span data-i18n="pvAgents">Agents</span></div>
+      </div>
+      <div class="pv-main">
+        <div class="pv-h"><b data-i18n="pvWeekTitle">Ma semaine</b><span data-i18n="pvWeekSub">Calendrier · vue 7 jours</span></div>
+        <div class="pv-cal" aria-hidden="true">
+          <div class="pv-day"><div class="dn">LUN</div><div class="pv-ev t2">Collective 18h</div></div>
+          <div class="pv-day"><div class="dn">MAR</div><div class="pv-ev t1">Physique — David</div></div>
+          <div class="pv-day today"><div class="dn">MER</div><div class="pv-ev t3">Récup active</div><div class="pv-ev t1">Check-in ✓</div></div>
+          <div class="pv-day"><div class="dn">JEU</div><div class="pv-ev t2">Collective 18h</div></div>
+          <div class="pv-day"><div class="dn">VEN</div><div class="pv-ev t1">Activation légère</div></div>
+          <div class="pv-day"><div class="dn">SAM</div><div class="pv-ev t2">MATCH 17h</div></div>
+          <div class="pv-day"><div class="dn">DIM</div><div class="pv-ev t3">Repos</div></div>
+        </div>
+        <div class="pv-journal">
+          <div class="pv-card">
+            <div class="t" data-i18n="pvRpeTitle">RPE · 7 derniers jours</div>
+            <div class="pv-rpe beat">7.2<small> /10</small></div>
+            <svg class="pv-spark" viewBox="0 0 200 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0 18 L28 14 L56 20 L84 8 L112 12 L140 6 L168 10 L200 13"/></svg>
+          </div>
+          <div class="pv-card">
+            <div class="t" data-i18n="pvJournalTitle">Journal · aujourd'hui</div>
+            <p class="pv-note" data-i18n="pvJournalNote">« Jambes lourdes après la collective d'hier, sommeil 7h30. Objectif : arriver frais samedi. »</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ STATS — tableau d'affichage ═══ -->
+<section class="stats">
+  <div class="stats-grid">
+    <div class="stat rv"><div class="stat-num"><em class="beat">11</em></div><div class="stat-lab" data-i18n="stat1">Agents IA spécialisés</div></div>
+    <div class="stat rv" style="transition-delay:.08s"><div class="stat-num">24/7</div><div class="stat-lab" data-i18n="stat2">Disponibilité totale</div></div>
+    <div class="stat rv" style="transition-delay:.16s"><div class="stat-num">&lt;<em>2</em>s</div><div class="stat-lab" data-i18n="stat3">Temps de réponse</div></div>
+    <div class="stat rv" style="transition-delay:.24s"><div class="stat-num">CHF <em>0</em></div><div class="stat-lab" data-i18n="stat4">Pour commencer · sans carte</div></div>
+  </div>
+</section>
+
+<!-- ═══ ECG separator (rapide — on monte vers les agents) ═══ -->
+<svg class="ecg-sep ecg-draw" viewBox="0 0 1200 70" preserveAspectRatio="none" aria-hidden="true">
+  <path style="--len:1400;--spd:2s" d="M0 40 H320 l16 -10 16 10 H560 l12 -30 14 50 12 -20 H900 l14 -8 14 8 H1200"/>
+  <circle class="ecg-dot" cx="586" cy="10" r="3"/>
+</svg>
+
+<!-- ═══ AGENTS ═══ -->
+<section class="sec" id="agents">
+  <div class="container">
+    <div class="sec-head rv">
+      <span class="sec-tag" data-i18n="agentsTag">Ton équipe IA</span>
+      <h2 data-i18n="agentsTitle">11 agents experts.<br/>Un seul athlète : toi.</h2>
+      <p data-i18n="agentsDesc">Chaque agent connaît le marché sportif suisse — droit, fiscalité, culture et réseaux locaux. Et surtout : ils se parlent entre eux.</p>
+    </div>
+    <div class="level-sel rv">
+      <div class="level-sel-lab" data-i18n="levelLabel">Tu es à quel niveau ?</div>
+      <div class="level-pills" role="group" aria-label="Niveau">
+        <button type="button" class="level-pill" data-level="amateur" data-i18n="levelAmateur">Amateur compétitif</button>
+        <button type="button" class="level-pill" data-level="semipro" data-i18n="levelSemipro">Semi-pro</button>
+        <button type="button" class="level-pill" data-level="pro" data-i18n="levelPro">Pro</button>
+      </div>
+      <div class="level-banner" id="levelBanner" aria-live="polite"><span data-i18n="levelBannerEmpty">Choisis ton niveau pour voir tes 4 agents prioritaires.</span></div>
+    </div>
+    <div class="agents-grid" id="agentsGrid">
+      <div class="agent rv" data-agent="lucas"><span class="agent-prio-chip" data-i18n="agentPrio">Prioritaire</span><div class="agent-top"><div class="agent-emoji" aria-hidden="true">💼</div><div><div class="agent-name">Lucas</div><div class="agent-role" style="color:#fb923c" data-i18n="agentLucasRole">Manager Sportif</div></div></div><div class="agent-desc" data-i18n="agentLucasDesc">Gestion de carrière, clubs, transferts, essais.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+      <div class="agent rv" data-agent="alex" style="transition-delay:.04s"><span class="agent-prio-chip" data-i18n="agentPrio">Prioritaire</span><div class="agent-top"><div class="agent-emoji" aria-hidden="true">🎯</div><div><div class="agent-name">Alex</div><div class="agent-role" style="color:#818cf8" data-i18n="agentAlexRole">Marketing & Personal Branding</div></div></div><div class="agent-desc" data-i18n="agentAlexDesc">Stratégie réseaux sociaux, media kit, visibilité.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+      <div class="agent rv" data-agent="marc" style="transition-delay:.08s"><span class="agent-prio-chip" data-i18n="agentPrio">Prioritaire</span><div class="agent-top"><div class="agent-emoji" aria-hidden="true">🤝</div><div><div class="agent-name">Marc</div><div class="agent-role" style="color:#f59e0b" data-i18n="agentMarcRole">Gestion des Sponsors</div></div></div><div class="agent-desc" data-i18n="agentMarcDesc">Prospection, négociation, suivi partenariats.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+      <div class="agent rv" data-agent="lea" style="transition-delay:.12s"><span class="agent-prio-chip" data-i18n="agentPrio">Prioritaire</span><div class="agent-top"><div class="agent-emoji" aria-hidden="true">⚖️</div><div><div class="agent-name">Léa</div><div class="agent-role" style="color:#a78bfa" data-i18n="agentLeaRole">Négociation de Contrats</div></div></div><div class="agent-desc" data-i18n="agentLeaDesc">Droit sportif suisse, analyse contrats.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+      <div class="agent rv" data-agent="sophie" style="transition-delay:.16s"><span class="agent-prio-chip" data-i18n="agentPrio">Prioritaire</span><div class="agent-top"><div class="agent-emoji" aria-hidden="true">💶</div><div><div class="agent-name">Sophie</div><div class="agent-role" style="color:#34d399" data-i18n="agentSophieRole">Conseil Financier</div></div></div><div class="agent-desc" data-i18n="agentSophieDesc">Fiscalité suisse, pilier 3a, gestion patrimoniale.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+      <div class="agent rv" data-agent="pierre" style="transition-delay:.2s"><span class="agent-prio-chip" data-i18n="agentPrio">Prioritaire</span><div class="agent-top"><div class="agent-emoji" aria-hidden="true">📊</div><div><div class="agent-name">Pierre</div><div class="agent-role" style="color:#94a3b8" data-i18n="agentPierreRole">Comptabilité & Facturation</div></div></div><div class="agent-desc" data-i18n="agentPierreDesc">Comptabilité sportive, factures, déclarations.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+      <div class="agent rv" data-agent="david" style="transition-delay:.24s"><span class="agent-prio-chip" data-i18n="agentPrio">Prioritaire</span><div class="agent-top"><div class="agent-emoji" aria-hidden="true">🏋️</div><div><div class="agent-name">David</div><div class="agent-role" style="color:#f87171" data-i18n="agentDavidRole">Préparation Physique</div></div></div><div class="agent-desc" data-i18n="agentDavidDesc">Programme entraînement, prévention blessures.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+      <div class="agent rv" data-agent="emma" style="transition-delay:.28s"><span class="agent-prio-chip" data-i18n="agentPrio">Prioritaire</span><div class="agent-top"><div class="agent-emoji" aria-hidden="true">🧠</div><div><div class="agent-name">Emma</div><div class="agent-role" style="color:#22d3ee" data-i18n="agentEmmaRole">Préparation Mentale</div></div></div><div class="agent-desc" data-i18n="agentEmmaDesc">Psychologie sport, gestion stress, performance.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+      <div class="agent rv" data-agent="clara" style="transition-delay:.32s"><span class="agent-prio-chip" data-i18n="agentPrio">Prioritaire</span><div class="agent-top"><div class="agent-emoji" aria-hidden="true">🥗</div><div><div class="agent-name">Clara</div><div class="agent-role" style="color:#a3e635" data-i18n="agentClaraRole">Nutrition Sportive</div></div></div><div class="agent-desc" data-i18n="agentClaraDesc">Plans alimentaires, supplémentation, récupération.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+      <div class="agent rv" data-agent="nora" style="transition-delay:.36s"><span class="agent-prio-chip" data-i18n="agentPrio">Prioritaire</span><div class="agent-top"><div class="agent-emoji" aria-hidden="true">😴</div><div><div class="agent-name">Nora</div><div class="agent-role" style="color:#c4b5fd" data-i18n="agentNoraRole">Spécialiste du Sommeil</div></div></div><div class="agent-desc" data-i18n="agentNoraDesc">Optimisation du sommeil, récupération, performance.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+      <div class="agent rv" data-agent="julie" style="transition-delay:.4s"><span class="agent-prio-chip" data-i18n="agentPrio">Prioritaire</span><div class="agent-top"><div class="agent-emoji" aria-hidden="true">♻️</div><div><div class="agent-name">Julie</div><div class="agent-role" style="color:#2dd4bf" data-i18n="agentJulieRole">Récupération & Régénération</div></div></div><div class="agent-desc" data-i18n="agentJulieDesc">Protocoles post-effort, récupération active, prévention blessures.</div><div class="agent-status"><div class="online-dot"></div><span data-i18n="agentOnline">En ligne · Répond en &lt;2s</span></div></div>
+    </div>
+  </div>
+</section>
+<!-- ═══ ECG separator — rythme qui MONTE : on entre dans la démo ═══ -->
+<svg class="ecg-sep ecg-draw" viewBox="0 0 1200 70" preserveAspectRatio="none" aria-hidden="true">
+  <path style="--len:1500;--spd:1.4s" d="M0 40 H180 l12 -26 14 44 12 -18 H460 l12 -30 14 50 12 -20 H760 l12 -32 14 52 12 -20 H1040 l10 -12 12 12 H1200"/>
+  <circle class="ecg-dot" cx="786" cy="8" r="3"/>
+</svg>
+
+<!-- ═══ DÉMO INTERACTIVE — pièce maîtresse ═══ -->
+<section class="demo-sec" id="demo">
+  <div class="container">
+    <div class="sec-head rv">
+      <span class="sec-tag" data-i18n="demoTag">Démo en direct</span>
+      <h2 data-i18n="demoTitle">David connaît déjà<br/>ta semaine.</h2>
+      <p data-i18n="demoDesc">Choisis un sport et une situation. Regarde comment David répond avec ton contexte — et comment il mobilise le reste de l'équipe.</p>
+    </div>
+    <div class="demo-stage rv">
+      <div class="demo-controls">
+        <div class="demo-ctl">
+          <label for="dSport" data-i18n="demoLabelSport">Ton sport</label>
+          <select class="demo-select" id="dSport">
+            <option value="football">⚽ Football</option>
+            <option value="hockey">🏒 Hockey sur glace</option>
+          </select>
+        </div>
+        <div class="demo-ctl">
+          <label for="dSit" data-i18n="demoLabelSituation">Situation du moment</label>
+          <select class="demo-select" id="dSit">
+            <option value="prematch" data-i18n-opt="demoOptPrematch">Match dans 2 jours</option>
+            <option value="recovery" data-i18n-opt="demoOptRecovery">Lendemain de match</option>
+            <option value="preseason" data-i18n-opt="demoOptPreseason">Reprise pré-saison</option>
+            <option value="load" data-i18n-opt="demoOptLoad">Semaine chargée (RPE &gt; 8)</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-amber demo-run" id="dRun" data-i18n="demoBtn">Voir ce que David me dirait →</button>
+      <div class="demo-chat">
+        <div class="demo-chat-head">
+          <div class="demo-av" aria-hidden="true">🏋️</div>
+          <div>
+            <div class="demo-chat-name">David</div>
+            <div class="demo-chat-sub" data-i18n="demoChatSub">Préparation Physique · SPORTVISE</div>
+          </div>
+          <span class="demo-ctx-badge" data-i18n="demoChatBadge">Contexte chargé ✓</span>
+        </div>
+        <div class="demo-body" id="dBody" aria-live="polite">
+          <div style="margin:auto;text-align:center;color:var(--muted2);font-size:13px" data-i18n="demoEmpty">Lance la démo pour voir une réponse contextualisée ↑</div>
+        </div>
+        <div class="demo-team-note" id="dTeamNote" style="margin:0 18px 18px">
+          <span aria-hidden="true">🤝</span><span id="dTeamNoteTxt" data-i18n="demoTeamNote">L'équipe travaille en coulisse : les agents partagent le contexte entre eux.</span>
+        </div>
+      </div>
+      <p class="demo-note" data-i18n="demoNote">Cette démo utilise des données fictives représentatives d'un athlète de ce profil.</p>
+      <div class="demo-cta">
+        <a href="/login.html" class="btn btn-amber" data-i18n="demoCta">Essayer avec mon vrai profil →</a>
+        <span class="demo-cta-sub" data-i18n="demoCtaSub">14 jours gratuits · Sans carte bancaire</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ ECG separator — retour au calme ═══ -->
+<svg class="ecg-sep ecg-draw" viewBox="0 0 1200 70" preserveAspectRatio="none" aria-hidden="true">
+  <path style="--len:1350;--spd:2.4s" d="M0 40 H380 l14 -8 14 8 H820 l12 -24 14 40 12 -16 H1200"/>
+</svg>
+
+<!-- ═══ 3 ÉTAPES ═══ -->
+<section class="sec">
+  <div class="container">
+    <div class="sec-head rv">
+      <span class="sec-tag" data-i18n="howTag">Simple & rapide</span>
+      <h2 data-i18n="howTitle">Départ en 3 temps</h2>
+      <p data-i18n="howDesc">Pas de paperasse. Le chrono tourne pour toi, pas contre toi.</p>
+    </div>
+    <div class="steps">
+      <div class="step rv"><span class="step-num" aria-hidden="true">01</span><span class="step-chrono">00:30</span><h3 data-i18n="how1Title">Profil</h3><p data-i18n="how1Desc">Ton sport, ton niveau, ton club. 30 secondes, et ton bureau d'athlète est prêt.</p></div>
+      <div class="step rv" style="transition-delay:.1s"><span class="step-num" aria-hidden="true">02</span><span class="step-chrono">00:30</span><h3 data-i18n="how2Title">Check-in</h3><p data-i18n="how2Desc">Ton RPE et deux lignes de journal chaque jour. C'est tout ce que tes agents demandent.</p></div>
+      <div class="step rv" style="transition-delay:.2s"><span class="step-num" aria-hidden="true">03</span><span class="step-chrono">&lt;00:02</span><h3 data-i18n="how3Title">Conseil contextualisé</h3><p data-i18n="how3Desc">Chaque réponse s'appuie sur ta semaine réelle — calendrier, charge, état du jour.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ ECG separator ═══ -->
+<svg class="ecg-sep ecg-draw calm" viewBox="0 0 1200 70" preserveAspectRatio="none" aria-hidden="true">
+  <path style="--len:1300;--spd:2.4s" d="M0 40 H480 l14 -10 14 10 H960 l12 -18 14 30 10 -12 H1200"/>
+</svg>
+
+<!-- ═══ PRICING ═══ -->
+<section class="sec" id="tarifs">
+  <div class="container">
+    <div class="sec-head rv">
+      <span class="sec-tag" data-i18n="pricingTag">Tarifs transparents</span>
+      <h2 data-i18n="pricingTitle">Dès CHF 0.<br/>Sans surprise.</h2>
+      <p data-i18n="pricingDesc">Résilie à tout moment. Aucune carte de crédit pour commencer.</p>
+    </div>
+    <div class="bill-toggle rv" role="group" aria-label="Cycle de facturation">
+      <button type="button" class="act" id="billM"><span data-i18n="billingMonthly">Mensuel</span></button>
+      <button type="button" id="billA"><span data-i18n="billingAnnual">Annuel</span><span class="bill-save" data-i18n="billingSaveBadge">−2 MOIS</span></button>
+    </div>
+    <div class="pricing-grid" id="pricingGrid">
+      <div class="price-card rv">
+        <div class="price-name">Free</div>
+        <div class="price-num">CHF 0<small data-i18n="pricePerMonth">/mois</small></div>
+        <div class="price-day" data-i18n="priceFreeDay">CHF 0/jour, pour toujours</div>
+        <div class="price-sub" data-i18n="priceFreeDesc">Pour tester SPORTVISE sans rien sortir</div>
+        <div class="price-div"></div>
+        <div class="pf"><span class="ck">✓</span><span data-i18n="featFree1">Essai complet 14 jours — 11 agents</span></div>
+        <div class="pf"><span class="ck">✓</span><span data-i18n="featFree2">Puis 3 agents et 30 messages / mois</span></div>
+        <div class="pf"><span class="ck">✓</span><span data-i18n="featFree3">Journal de bord</span></div>
+        <div class="pf"><span class="cx">–</span><span data-i18n="featFree4">Rapports PDF</span></div>
+        <a href="/login.html" class="btn btn-ghost price-btn" data-i18n="priceFreeBtn">Créer mon compte gratuit</a>
+      </div>
+      <div class="price-card feat rv" style="transition-delay:.1s">
+        <span class="price-badge" data-i18n="popularBadge">Populaire</span>
+        <div class="price-name">Plus</div>
+        <div class="bill-m">
+          <div class="price-num">CHF 12<small data-i18n="pricePerMonth">/mois</small></div>
+          <div class="price-day" data-i18n="pricePlusDayM">≈ CHF 0.40/jour — moins qu'un café</div>
+        </div>
+        <div class="bill-a">
+          <div class="price-num">CHF 10<small data-i18n="pricePerMonth">/mois</small></div>
+          <div class="price-day" data-i18n="pricePlusDayA">≈ CHF 0.33/jour — moins qu'un café</div>
+          <div class="price-annual-note" data-i18n="pricePlusAnnualNote">CHF 120 facturés une fois par an · économise CHF 24</div>
+        </div>
+        <div class="price-sub" data-i18n="pricePlusDesc">Pour l'athlète qui rêve grand sans budget de pro</div>
+        <div class="price-div"></div>
+        <div class="pf"><span class="ck">✓</span><span data-i18n="featPlus1"><strong>11 agents IA</strong></span></div>
+        <div class="pf"><span class="ck">✓</span><span data-i18n="featPlus2">Messages illimités</span></div>
+        <div class="pf"><span class="ck">✓</span><span data-i18n="featPlus3">Journal + Objectifs</span></div>
+        <div class="pf"><span class="cx">–</span><span data-i18n="featPlus4">Rapports PDF mensuels</span></div>
+        <a href="/login.html" class="btn btn-amber price-btn bill-m" data-i18n="pricePlusBtnM">Choisir Plus → CHF 12/mois</a>
+        <a href="/login.html" class="btn btn-amber price-btn bill-a" data-i18n="pricePlusBtnA">Choisir Plus annuel → CHF 120/an</a>
+      </div>
+      <div class="price-card rv" style="transition-delay:.2s">
+        <div class="price-name">Pro</div>
+        <div class="bill-m">
+          <div class="price-num">CHF 19<small data-i18n="pricePerMonth">/mois</small></div>
+          <div class="price-day" data-i18n="priceProDayM">≈ CHF 0.63/jour</div>
+        </div>
+        <div class="bill-a">
+          <div class="price-num">CHF 16<small data-i18n="pricePerMonth">/mois</small></div>
+          <div class="price-day" data-i18n="priceProDayA">≈ CHF 0.52/jour</div>
+          <div class="price-annual-note" data-i18n="priceProAnnualNote">CHF 190 facturés une fois par an · économise CHF 38</div>
+        </div>
+        <div class="price-sub" data-i18n="priceProDesc">Pour le semi-pro qui veut tout, partout, tout de suite</div>
+        <div class="price-div"></div>
+        <div class="pf"><span class="ck">✓</span><span data-i18n="featPro1"><strong>Tout de Plus</strong></span></div>
+        <div class="pf"><span class="ck">✓</span><span data-i18n="featPro2">Rapports PDF · Export CSV</span></div>
+        <div class="pf"><span class="ck">✓</span><span data-i18n="featPro3">Intégrations</span></div>
+        <div class="pf"><span class="ck">✓</span><span data-i18n="featPro4">Support prioritaire</span></div>
+        <a href="/login.html" class="btn btn-ghost price-btn bill-m" data-i18n="priceProBtnM">Choisir Pro → CHF 19/mois</a>
+        <a href="/login.html" class="btn btn-ghost price-btn bill-a" data-i18n="priceProBtnA">Choisir Pro annuel → CHF 190/an</a>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- ═══ ECG separator — presque au repos ═══ -->
+<svg class="ecg-sep ecg-draw calm" viewBox="0 0 1200 70" preserveAspectRatio="none" aria-hidden="true">
+  <path style="--len:1250;--spd:2.8s" d="M0 40 H560 l14 -8 14 8 H1200"/>
+</svg>
+
+<!-- ═══ FAQ ═══ -->
+<section class="sec" id="faq" style="padding-top:60px">
+  <div class="container">
+    <div class="sec-head rv">
+      <span class="sec-tag" data-i18n="faqTag">FAQ</span>
+      <h2 data-i18n="faqTitle">Questions fréquentes</h2>
+    </div>
+    <div class="faq-list rv">
+      <div class="faq-item"><button class="faq-q" aria-expanded="false"><span data-i18n="faq1Q">SPORTVISE remplace-t-il un vrai agent sportif humain ?</span><span class="faq-icon" aria-hidden="true">+</span></button><div class="faq-a"><div data-i18n="faq1A">SPORTVISE ne remplace pas un agent humain, il le démocratise. Un agent pro coûte CHF 5'000–15'000/mois — inaccessible pour la majorité. SPORTVISE offre une équipe complète de 11 agents IA dès CHF 0/mois, avec des plans Plus à CHF 12 et Pro à CHF 19.</div></div></div>
+      <div class="faq-item"><button class="faq-q" aria-expanded="false"><span data-i18n="faq2Q">Les conseils sont-ils adaptés à la Suisse ?</span><span class="faq-icon" aria-hidden="true">+</span></button><div class="faq-a"><div data-i18n="faq2A">Oui — droit suisse des obligations, fiscalité par canton, Swiss Football League, sponsors locaux et particularités de la Suisse Romande, Alémanique et Italophone.</div></div></div>
+      <div class="faq-item"><button class="faq-q" aria-expanded="false"><span data-i18n="faq3Q">Mes données sont-elles protégées ?</span><span class="faq-icon" aria-hidden="true">+</span></button><div class="faq-a"><div data-i18n="faq3A">Vos données sont hébergées en Suisse, conformément à la LPD. Chiffrement bout en bout. Suppression de compte et données à tout moment.</div></div></div>
+      <div class="faq-item"><button class="faq-q" aria-expanded="false"><span data-i18n="faq4Q">Pour quels sports SPORTVISE fonctionne-t-il ?</span><span class="faq-icon" aria-hidden="true">+</span></button><div class="faq-a"><div data-i18n="faq4A">Tous les sports suisses — football, padel, hockey, ski, tennis, natation, cyclisme, athlétisme, basketball… avec des agents formés sur les spécificités de chaque sport.</div></div></div>
+      <div class="faq-item"><button class="faq-q" aria-expanded="false"><span data-i18n="faq5Q">Puis-je annuler à tout moment ?</span><span class="faq-icon" aria-hidden="true">+</span></button><div class="faq-a"><div data-i18n="faq5A">Oui, sans engagement ni pénalité. Résiliez en un clic.</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ B2B ═══ -->
+<section class="sec b2b">
+  <div class="inner rv">
+    <span class="sec-tag" data-i18n="b2bTag">Partenariats</span>
+    <h2 data-i18n="b2bTitle">Fédération, club<br/>ou sponsor ?</h2>
+    <p data-i18n="b2bDesc">SPORTVISE travaille avec les fédérations, clubs et sponsors suisses pour offrir une équipe d'agents IA à leurs athlètes membres ou partenaires. Tarifs dégressifs dès 5 athlètes, dashboard manager, white-label disponible.</p>
+    <a href="mailto:sportvise.pro@gmail.com?subject=Partenariat%20SPORTVISE" class="btn btn-ghost" data-i18n="b2bCta">Discuter d'un partenariat →</a>
+    <div class="b2b-note" data-i18n="b2bNote">Réponse sous 48h ouvrées</div>
+  </div>
+</section>
+
+<!-- ═══ ECG — dernier sursaut avant le CTA final ═══ -->
+<svg class="ecg-sep ecg-draw" viewBox="0 0 1200 70" preserveAspectRatio="none" aria-hidden="true">
+  <path style="--len:1400;--spd:1.6s" d="M0 40 H420 l14 -10 14 10 H700 l14 -34 16 54 12 -20 H1200"/>
+  <circle class="ecg-dot" cx="730" cy="6" r="3"/>
+</svg>
+
+<!-- ═══ CTA FINAL ═══ -->
+<section class="final">
+  <div class="container rv">
+    <h2><span data-i18n="ctaTitle1">Ton équipe</span> <em data-i18n="ctaTitle2">t'attend.</em></h2>
+    <p data-i18n="ctaDesc">11 agents en ligne, 24/7, dès CHF 0. Crée ton compte et fais ton premier check-in aujourd'hui.</p>
+    <a href="/login.html" class="btn btn-amber" style="font-size:16px;padding:17px 38px" data-i18n="ctaBtn">Créer mon compte gratuit →</a>
+    <div class="final-note" data-i18n="ctaNote">Aucune carte de crédit · Résiliation à tout moment · Données protégées LPD 🇨🇭</div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="foot-inner">
+    <div>
+      <div class="foot-logo">SPORT<b>VISE</b></div>
+      <div class="foot-desc" data-i18n="footerDesc">Le premier service de management sportif par IA pensé pour les athlètes suisses.</div>
+      <div class="foot-ch"><span class="foot-lpd">🇨🇭 <span data-i18n="footerLpd">LPD · Données en Suisse</span></span><span class="foot-lpd" data-i18n="footerLangs">FR · DE · EN · IT</span></div>
+    </div>
+    <div class="foot-col">
+      <h4 data-i18n="footerProduct">Produit</h4>
+      <a href="#agents" data-i18n="footerLinkAgents">Agents IA</a>
+      <a href="#tarifs" data-i18n="footerLinkPricing">Tarifs</a>
+      <a href="#faq" data-i18n="footerLinkFaq">FAQ</a>
+      <a href="/login.html" data-i18n="footerLinkLogin">Connexion</a>
+    </div>
+    <div class="foot-col">
+      <h4 data-i18n="footerLegal">Légal</h4>
+      <a href="/terms_fr.html" data-i18n="footerLinkTos">CGU</a>
+      <a href="/privacy_fr.html" data-i18n="footerLinkPrivacy">Confidentialité</a>
+      <a href="/legal_fr.html" data-i18n="footerLinkLegal">Mentions légales</a>
+    </div>
+  </div>
+  <div class="foot-base">
+    <span data-i18n="footerSwissBased">🇨🇭 Fondé en Suisse · 2026</span>
+    <span>© SPORTVISE</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+'use strict';
+/* Test local : ouvert en file://, les chemins absolus /login.html ne mènent nulle part.
+   On les rend relatifs pour que les CTA ouvrent le vrai login.html du même dossier.
+   En prod (https), ce bloc ne fait rien. */
+if(location.protocol==='file:'){
+  document.querySelectorAll('a[href^="/"]').forEach(function(a){
+    a.setAttribute('href', a.getAttribute('href').replace(/^\//,''));
+  });
+}
+var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ═══ Révélations au scroll + tracés ECG ═══ */
+var io = new IntersectionObserver(function(entries){
+  entries.forEach(function(e){
+    if(e.isIntersecting){
+      e.target.classList.add('on');
+      /* .rv-clip est masqué par son propre clip-path (ratio d'intersection = 0
+         dans Chrome) : on le révèle via son parent observé */
+      e.target.querySelectorAll('.rv-clip').forEach(function(c){ c.classList.add('on'); });
+      io.unobserve(e.target);
+    }
+  });
+},{threshold:.18,rootMargin:'0px 0px -8% 0px'});
+var toObserve=new Set();
+document.querySelectorAll('.rv,.ecg-draw').forEach(function(el){ toObserve.add(el); });
+document.querySelectorAll('.rv-clip').forEach(function(el){ toObserve.add(el.parentElement); });
+toObserve.forEach(function(el){
+  if(reduced){ el.classList.add('on'); el.querySelectorAll('.rv-clip').forEach(function(c){c.classList.add('on');}); }
+  else { io.observe(el); }
+});
+
+/* ═══ Barre de pouls — progression de lecture ═══ */
+var pbFill=document.getElementById('pbFill'), pbBlip=document.getElementById('pbBlip'), ticking=false;
+function pulse(){
+  var h=document.documentElement, max=h.scrollHeight-h.clientHeight;
+  var p=max>0?(h.scrollTop/max)*100:0;
+  pbFill.style.width=p+'%'; pbBlip.style.left=p+'%';
+  ticking=false;
+}
+if(!reduced){
+  window.addEventListener('scroll',function(){ if(!ticking){ requestAnimationFrame(pulse); ticking=true; } },{passive:true});
+  pulse();
+}
+
+/* ═══ Sélecteur de niveau — 4 agents prioritaires (mapping produit réel) ═══ */
+var LEVEL_PRIO={amateur:['david','emma','clara','sophie'],semipro:['lucas','david','emma','sophie'],pro:['lucas','david','emma','sophie']};
+var LEVEL_TXT={
+  amateur:'Ton quatuor de départ : <b>David</b>, <b>Emma</b>, <b>Clara</b> et <b>Sophie</b> — performance et bases financières.',
+  semipro:'Ton quatuor de départ : <b>Lucas</b>, <b>David</b>, <b>Emma</b> et <b>Sophie</b> — carrière et performance, ensemble.',
+  pro:'Ton quatuor de départ : <b>Lucas</b>, <b>David</b>, <b>Emma</b> et <b>Sophie</b> — les 7 autres restent à un message.'
+};
+var banner=document.getElementById('levelBanner');
+document.querySelectorAll('.level-pill').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.level-pill').forEach(function(b){b.classList.remove('act');});
+    btn.classList.add('act');
+    var lv=btn.dataset.level, prio=LEVEL_PRIO[lv]||[];
+    document.querySelectorAll('.agent').forEach(function(card){
+      card.classList.toggle('prio', prio.indexOf(card.dataset.agent)>-1);
+    });
+    banner.innerHTML=LEVEL_TXT[lv]||'';
+  });
+});
+
+/* ═══ DÉMO — contenus réels du produit (SV_DEMOS, David) ═══ */
+var DEMOS={
+football:{
+ prematch:{userMsg:"Qu'est-ce que je fais comme entraînement aujourd'hui ?",pills:['⚽ Football','Match dans 2 jours','RPE 8.1 cette semaine','3 collectives faites'],team:null,
+  response:'Ton RPE est à <span class="d-tag">8.1/10</span> cette semaine et tu as un <strong>match après-demain</strong> — on préserve la fraîcheur neuromusculaire.\n\n<strong>Séance courte — 35 min :</strong>\n• Activation : mobilité hanches + épaules (10 min)\n• Technique basse intensité : passes à 2 touches, aucun sprint\n• Gainage stabilisateur : 3 × 40s planche latérale\n• Étirements actifs : 10 min\n\nTu as déjà <span class="d-tag">3 collectives</span> dans les jambes. L\'objectif aujourd\'hui = maintenir sans accumuler. <span class="d-hl">Veux-tu que j\'ajoute cette séance à ton calendrier ?</span>'},
+ recovery:{userMsg:"J'ai joué hier soir, qu'est-ce que je fais aujourd'hui ?",pills:['⚽ Football','Lendemain de match','Semi-professionnel','Récupération prioritaire'],team:{emoji:'🥗',name:'Clara',txt:'Clara (Nutrition) a reçu le contexte et prépare le plan de réalimentation.'},
+  response:'Lendemain de match = <strong>récupération active uniquement</strong>. Pas de charge musculaire.\n\n<strong>Protocole J+1 :</strong>\n• 20 min vélo ou natation à 60% FC max\n• Bain froid si possible : 2 × 5 min à 12–15°C\n• Massage auto : quadriceps + mollets au rouleau, 10 min\n• Sommeil : <span class="d-tag">objectif +1h</span> cette nuit\n\n<span class="d-team"><span class="d-team-av">🥗</span>Clara</span> te prépare un plan de réalimentation. Glucides = priorité de resynthèse glycogène ce soir. <span class="d-hl">Des courbatures particulières ce matin ?</span>'},
+ preseason:{userMsg:"On reprend la prépa la semaine prochaine, comment je me prépare ?",pills:['⚽ Football','Pré-saison','4 semaines avant reprise'],team:null,
+  response:'La reprise collective approche — 4 semaines de prépa individuelle.\n\n<strong>Semaines 1–2 :</strong> 3 × 45 min course continue à 65–70% FC max + gainage 3×/semaine\n<strong>Semaines 3–4 :</strong> fractions 8 × 200m récup 90s + 2 séances proprioception\n\n<span class="d-tag">Objectif</span> : arriver à la reprise collective à 80% de ta VO2max, pas à 100% — le pic se fait avec l\'équipe. <span class="d-hl">Je crée le programme semaine par semaine dans ton calendrier ?</span>'},
+ load:{userMsg:"Je suis épuisé, j'ai eu une semaine très chargée.",pills:['⚽ Football','RPE > 8','Surcharge détectée'],team:{emoji:'🧠',name:'Emma',txt:'Emma (Mental) a été prévenue — routine de gestion du stress en préparation.'},
+  response:'RPE > 8 sur plusieurs jours = <strong>signal de surcharge</strong>. On coupe court aujourd\'hui.\n\n<strong>Aujourd\'hui : repos actif uniquement</strong>\n• Marche 20–30 min en nature\n• Bain chaud ou sauna si disponible\n• Sommeil : couche-toi 1h plus tôt ce soir\n\nJ\'ai signalé ta situation à <span class="d-team"><span class="d-team-av">🧠</span>Emma</span> — elle peut te proposer une routine de gestion du stress. <span class="d-hl">Tu as des douleurs localisées ou c\'est une fatigue générale ?</span>'}
+},
+hockey:{
+ prematch:{userMsg:"J'ai un match demain soir, qu'est-ce que je fais aujourd'hui ?",pills:['🏒 Hockey sur glace','Match J-1','RPE 7.8 cette semaine','NL / Swiss League'],team:{emoji:'🥗',name:'Clara',txt:'Clara (Nutrition) se tient prête pour caler le repas pré-match.'},
+  response:'Match demain soir en NL — aujourd\'hui c\'est la <strong>mise en route, pas la charge</strong>.\n\n<strong>Séance J-1 (40 min max) :</strong>\n• Patinage libre à faible intensité : 15 min\n• Tirs sur le gardien : 10 min, intensité basse\n• Activation hors glace : fentes, squats bodyweight — 3 × 10\n• Mental : 5 min de visualisation du match\n\nTon RPE à <span class="d-tag">7.8</span> cette semaine — bonne fraîcheur. <span class="d-hl">À quelle heure est le match demain — je cale le repas pré-match avec <span class="d-team"><span class="d-team-av">🥗</span>Clara</span> ?</span>'},
+ recovery:{userMsg:"J'ai joué hier, jambes lourdes ce matin.",pills:['🏒 Hockey sur glace','J+1 après match','Jambes lourdes'],team:{emoji:'🥗',name:'Clara',txt:'Clara (Nutrition) a reçu le contexte et prépare le plan de réalimentation.'},
+  response:'Jambes lourdes J+1 = lactate résiduel. Protocole court :\n\n• <strong>Vélo stationnaire</strong> 20 min à 50–55% FC max\n• Bain froid 10 min à 13°C si dispo\n• Compression toute la journée\n\n<span class="d-team"><span class="d-team-av">🥗</span>Clara</span> te prépare un plan de réalimentation. <span class="d-hl">Tu as le prochain match dans combien de jours ?</span>'},
+ preseason:{userMsg:"La pré-saison commence dans 3 semaines, je suis en vacances.",pills:['🏒 Hockey sur glace','Pré-saison J-21','Reprise progressive'],team:null,
+  response:'3 semaines avant la reprise — vacances actives, pas d\'arrêt total.\n\n• Foncier aérobie : 3 × 30 min vélo ou course/semaine à 65% FC max\n• Gainage et stabilité : 3 × semaine, 20 min\n• Éviter les sports à risque de blessure (football, ski, contact)\n\n<span class="d-hl">Je crée le programme complet dans ton calendrier jusqu\'à la reprise ?</span>'},
+ load:{userMsg:"Trop de matchs ce mois-ci, je n'en peux plus.",pills:['🏒 Hockey sur glace','Surcharge matchs','RPE chronique > 8'],team:null,
+  response:'En NL, la surcharge de matchs est le principal facteur de blessures en milieu de saison.\n\n<strong>Actions immédiates :</strong>\n• Communiquer ta fatigue au staff\n• Supprimer toute séance supplémentaire non obligatoire\n• Sommeil : objectif <span class="d-tag">9h</span> par nuit cette semaine\n\n<span class="d-hl">Tu en parles avec ton entraîneur ou on prépare un argumentaire ?</span>'}
+}};
+
+var dBody=document.getElementById('dBody'), dTeamNote=document.getElementById('dTeamNote'), dTeamTxt=document.getElementById('dTeamNoteTxt');
+var dRun=document.getElementById('dRun'), running=false;
+
+function runDemo(){
+  if(running) return;
+  var sport=document.getElementById('dSport').value, sit=document.getElementById('dSit').value;
+  var d=(DEMOS[sport]||{})[sit]; if(!d) return;
+  running=true;
+  dTeamNote.classList.remove('on');
+  dBody.innerHTML='';
+
+  // 1 — pills de contexte (l'IA par la preuve)
+  var pillsWrap=document.createElement('div'); pillsWrap.className='demo-pills';
+  d.pills.forEach(function(p,i){
+    var el=document.createElement('span'); el.className='demo-pill'; el.textContent=p;
+    el.style.setProperty('--pd',(reduced?0:i*0.12)+'s');
+    pillsWrap.appendChild(el);
+  });
+  dBody.appendChild(pillsWrap);
+
+  // 2 — message athlète
+  var delay=reduced?0:1;
+  setTimeout(function(){
+    var u=document.createElement('div'); u.className='demo-msg-user rv on'; u.textContent=d.userMsg;
+    dBody.appendChild(u); scrollDemo();
+  }, delay*500);
+
+  // 3 — typing indicator
+  var typing;
+  setTimeout(function(){
+    typing=document.createElement('div'); typing.className='demo-typing'; typing.setAttribute('aria-label','David écrit…');
+    typing.innerHTML='<i></i><i></i><i></i>';
+    dBody.appendChild(typing); scrollDemo();
+  }, delay*1000);
+
+  // 4 — réponse de David (<2s, comme promis)
+  setTimeout(function(){
+    if(typing) typing.remove();
+    var a=document.createElement('div'); a.className='demo-msg-agent';
+    a.innerHTML=d.response;
+    dBody.appendChild(a); scrollDemo();
+    if(d.team){ dTeamTxt.textContent=d.team.txt; dTeamNote.classList.add('on'); }
+    running=false;
+  }, delay*2200);
+}
+function scrollDemo(){ dBody.scrollTop=dBody.scrollHeight; }
+dRun.addEventListener('click',runDemo);
+
+/* ═══ Toggle facturation mensuel/annuel ═══ */
+var billM=document.getElementById('billM'), billA=document.getElementById('billA'), pGrid=document.getElementById('pricingGrid');
+function setBilling(annual){
+  pGrid.classList.toggle('billing-annual',annual);
+  billM.classList.toggle('act',!annual);
+  billA.classList.toggle('act',annual);
+}
+billM.addEventListener('click',function(){setBilling(false);});
+billA.addEventListener('click',function(){setBilling(true);});
+
+/* ═══ FAQ accordion ═══ */
+document.querySelectorAll('.faq-q').forEach(function(q){
+  q.addEventListener('click',function(){
+    var item=q.parentElement, open=item.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(function(i){ i.classList.remove('open'); i.querySelector('.faq-q').setAttribute('aria-expanded','false'); });
+    if(!open){ item.classList.add('open'); q.setAttribute('aria-expanded','true'); }
+  });
+});
+})();
+</script>
+</body>
+</html>

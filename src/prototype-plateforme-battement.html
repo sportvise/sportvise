@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SPORTVISE — Prototype plateforme · Battement</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════════════════════════
+   SPORTVISE — PROTOTYPE plateforme, direction « Le Battement »
+   Statique. Données fictives représentatives. Ne pas déployer
+   comme app — sert uniquement à juger la direction visuelle.
+   ═══════════════════════════════════════════════════════════ */
+:root{
+  --bg:#08090c;--bg2:#0d0f14;--panel:#12151c;--panel2:#161a22;
+  --border:#1f2430;--border-hi:#2b3242;
+  --amber:#f59e0b;--amber-dim:#f59e0b22;--ice:#8ecae6;
+  --text:#f2efe9;--muted:#a7afbe;--muted2:#828c9d;--ok:#10b981;
+  --display:'Barlow Condensed',sans-serif;--body:'Inter',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-weight:300;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+::selection{background:var(--amber);color:#08090c}
+button{font-family:var(--body);cursor:pointer}
+a:focus-visible,button:focus-visible{outline:2px solid var(--amber);outline-offset:2px;border-radius:4px}
+
+/* bandeau prototype */
+.proto-band{position:fixed;top:0;left:0;right:0;z-index:300;background:var(--amber);color:#08090c;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;text-align:center;padding:4px}
+
+.app{display:grid;grid-template-columns:232px 1fr;min-height:100vh;padding-top:22px}
+
+/* ═══ SIDEBAR ═══ */
+.side{background:var(--bg2);border-right:1px solid var(--border);padding:20px 12px;display:flex;flex-direction:column;gap:2px;position:sticky;top:22px;height:calc(100vh - 22px);overflow-y:auto}
+.side-logo{font-family:var(--display);font-weight:800;font-size:20px;letter-spacing:2.5px;padding:0 10px 4px}
+.side-logo b{color:var(--amber)}
+.side-sub{font-size:9.5px;color:var(--muted2);letter-spacing:1px;text-transform:uppercase;padding:0 10px 14px}
+.side-user{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 10px;margin-bottom:16px}
+.side-user .av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#fbbf24,var(--amber));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:#08090c;font-family:var(--display)}
+.side-user b{font-size:12.5px;font-weight:600;display:block;line-height:1.2}
+.side-user span{font-size:10.5px;color:var(--amber)}
+.side-cat{font-size:9.5px;letter-spacing:1.8px;text-transform:uppercase;color:var(--muted2);font-weight:700;padding:14px 10px 6px}
+.s-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;font-size:13px;color:var(--muted);border:none;background:none;width:100%;text-align:left;transition:all .15s;position:relative}
+.s-item:hover{background:var(--panel);color:var(--text)}
+.s-item.act{background:var(--amber-dim);color:var(--amber);font-weight:600}
+.s-item.act::before{content:"";position:absolute;left:-12px;top:20%;bottom:20%;width:3px;border-radius:0 3px 3px 0;background:var(--amber);box-shadow:0 0 8px var(--amber)}
+.side-foot{margin-top:auto;padding:12px 10px 0;font-size:11px;color:var(--muted2)}
+
+/* ═══ MAIN ═══ */
+.main{padding:26px 30px 60px;max-width:1080px}
+.topbar{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap}
+.topbar h1{font-family:var(--display);font-weight:800;font-size:34px;letter-spacing:.8px;text-transform:uppercase;line-height:1}
+.topbar .date{font-size:12.5px;color:var(--muted2)}
+
+/* ligne ECG sous le titre — la signature continue dans l'app, se redessine à chaque vue */
+.ecg-title{width:220px;height:22px;margin:6px 0 0}
+.ecg-title path{fill:none;stroke:var(--amber);stroke-width:2;stroke-linecap:round;filter:drop-shadow(0 0 4px #f59e0b55);stroke-dasharray:340;stroke-dashoffset:340}
+.view.act .ecg-title path{animation:ecgDraw 1.1s cubic-bezier(.5,0,.15,1) forwards}
+@keyframes ecgDraw{to{stroke-dashoffset:0}}
+/* cartes : reveal en cascade à l'arrivée sur une vue (rythme, pas décoration) */
+.view .card{opacity:0;transform:translateY(14px)}
+.view.act .card{animation:cardIn .5s cubic-bezier(.2,.7,.3,1) forwards;animation-delay:calc(var(--i,0)*.07s)}
+@keyframes cardIn{to{opacity:1;transform:none}}
+
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px 20px}
+.card .ct{font-size:10.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--muted2);font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.card .ct a{color:var(--amber);font-size:10.5px;text-decoration:none;letter-spacing:.5px}
+
+/* — carte "aujourd'hui" — */
+.today-card{grid-column:span 8;background:linear-gradient(160deg,#f59e0b10,var(--panel) 45%);border-color:#f59e0b33}
+.today-ev{display:flex;align-items:center;gap:16px}
+.today-time{font-family:var(--display);font-weight:800;font-size:44px;color:var(--amber);line-height:1;letter-spacing:1px}
+.today-ev b{font-size:16px;font-weight:600;display:block}
+.today-ev span{font-size:12.5px;color:var(--muted)}
+.today-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.chip-btn{background:var(--panel2);border:1px solid var(--border-hi);color:var(--text);font-size:12px;font-weight:600;padding:8px 14px;border-radius:100px;transition:all .15s}
+.chip-btn:hover{border-color:var(--amber);color:var(--amber)}
+.chip-btn.amber{background:var(--amber);border-color:var(--amber);color:#08090c}
+
+/* — RPE — */
+.rpe-card{grid-column:span 4}
+.rpe-num{font-family:var(--display);font-weight:800;font-size:56px;line-height:1;color:var(--amber)}
+.rpe-num small{font-size:18px;color:var(--muted2);font-weight:600}
+.rpe-trend{font-size:11.5px;color:var(--ice);font-weight:600;margin:4px 0 10px}
+.spark{width:100%;height:40px}
+.spark path.l{fill:none;stroke:var(--ice);stroke-width:2;stroke-linecap:round}
+.spark path.a{fill:url(#gradSpark);stroke:none;opacity:.25}
+
+/* — calendrier semaine — */
+.week-card{grid-column:span 8}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.wd{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:9px 8px;min-height:108px;font-size:10.5px}
+.wd .dn{font-family:var(--display);font-weight:700;font-size:12px;letter-spacing:1px;color:var(--muted);margin-bottom:7px}
+.wd .dn b{color:var(--text);font-size:15px;margin-right:4px}
+.wd.today{border-color:var(--amber);box-shadow:inset 0 0 0 1px #f59e0b44;background:#f59e0b08}
+.wd.today .dn b{color:var(--amber)}
+.ev{border-radius:6px;padding:4px 7px;font-size:10px;font-weight:600;margin-bottom:4px;line-height:1.35}
+.ev.t1{background:#f59e0b1c;color:var(--amber)}
+.ev.t2{background:#8ecae61c;color:var(--ice)}
+.ev.t3{background:#10b9811c;color:var(--ok)}
+.ev.t4{background:#f871711c;color:#f87171}
+
+/* — journal — */
+.journal-card{grid-column:span 4}
+.j-entry{border-left:2px solid var(--border-hi);padding:2px 0 2px 12px;margin-bottom:12px}
+.j-entry .jd{font-size:10px;color:var(--muted2);letter-spacing:.8px;text-transform:uppercase;font-weight:700}
+.j-entry p{font-size:12.5px;color:var(--muted);font-style:italic;line-height:1.55}
+.j-entry.hot{border-color:var(--amber)}
+.j-input{display:flex;gap:8px;margin-top:12px}
+.j-input input{flex:1;background:var(--bg2);border:1px solid var(--border-hi);border-radius:9px;color:var(--text);font-family:var(--body);font-size:12.5px;padding:9px 12px}
+.j-input input::placeholder{color:var(--muted2)}
+.j-send{background:var(--amber);border:none;border-radius:9px;width:36px;font-weight:800;color:#08090c}
+
+/* — agents en ligne — */
+.agents-card{grid-column:span 12}
+.ag-row{display:flex;gap:10px;flex-wrap:wrap}
+.ag{display:flex;align-items:center;gap:9px;background:var(--bg2);border:1px solid var(--border);border-radius:100px;padding:7px 14px 7px 8px;font-size:12.5px;font-weight:500;transition:all .15s;border:1px solid var(--border);background:var(--bg2);color:var(--text)}
+.ag:hover{border-color:var(--amber);transform:translateY(-2px)}
+.ag .em{width:26px;height:26px;border-radius:50%;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-size:14px}
+.ag .od{width:6px;height:6px;border-radius:50%;background:var(--ok);box-shadow:0 0 5px var(--ok)}
+@keyframes heartbeat{0%,100%{transform:scale(1)}14%{transform:scale(1.25)}28%{transform:scale(1)}}
+.ag .od{animation:heartbeat 2.4s infinite}
+
+/* — brief matinal / réunion d'équipe teaser — */
+.brief-card{grid-column:span 12;background:linear-gradient(150deg,#8ecae60a,var(--panel) 50%)}
+.brief-line{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px}
+.brief-line .em{width:30px;height:30px;border-radius:9px;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.brief-line p{font-size:13px;color:var(--muted);line-height:1.6}
+.brief-line b{color:var(--text);font-weight:600}
+.d-team{display:inline-flex;align-items:center;gap:4px;background:#8ecae614;border:1px solid #8ecae63a;color:var(--ice);font-weight:600;border-radius:100px;padding:0 8px 0 3px;font-size:11.5px;white-space:nowrap}
+.d-team .ta{width:15px;height:15px;border-radius:50%;background:var(--panel2);display:inline-flex;align-items:center;justify-content:center;font-size:9px}
+
+/* vues secondaires */
+.view{display:none}
+.view.act{display:block}
+.placeholder-note{font-size:12px;color:var(--muted2);font-style:italic;margin-top:16px}
+
+@media(max-width:900px){
+  .app{grid-template-columns:1fr}
+  .side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;gap:6px;border-right:none;border-bottom:1px solid var(--border);padding:12px}
+  .side-logo,.side-sub,.side-cat,.side-foot,.side-user{display:none}
+  .s-item{width:auto;padding:8px 12px;font-size:12px;white-space:nowrap}
+  .s-item.act::before{display:none}
+  .main{padding:18px 16px 50px}
+  .today-card,.rpe-card,.week-card,.journal-card{grid-column:span 12}
+  .week{grid-template-columns:repeat(4,1fr)}
+  .wd:nth-child(n+5){display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  .ecg-title path{stroke-dasharray:none;stroke-dashoffset:0}
+  .view .card{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+<div class="proto-band">Prototype visuel · données fictives · direction « Battement »</div>
+<div class="app">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="side">
+    <div class="side-logo">SPORT<b>VISE</b></div>
+    <div class="side-sub">Le bureau de l'athlète</div>
+    <div class="side-user"><div class="av">T</div><div><b>Thomas</b><span>⚡ Plan Pro</span></div></div>
+    <button class="s-item act" data-view="dash">🏠 Dashboard</button>
+    <button class="s-item" data-view="cal">📅 Calendrier</button>
+    <button class="s-item" data-view="dash">🤝 Réunion d'équipe</button>
+    <button class="s-item" data-view="journal">📓 Journal</button>
+    <div class="side-cat">Performance</div>
+    <button class="s-item" data-view="dash">🏋️ Physique</button>
+    <button class="s-item" data-view="dash">🧠 Mental</button>
+    <button class="s-item" data-view="dash">🥗 Nutrition</button>
+    <div class="side-cat">Business</div>
+    <button class="s-item" data-view="dash">💼 Management</button>
+    <button class="s-item" data-view="dash">💶 Finance</button>
+    <div class="side-foot">🇨🇭 LPD · FR DE EN IT</div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main">
+
+    <!-- VUE DASHBOARD -->
+    <section class="view act" id="v-dash">
+      <div class="topbar">
+        <div>
+          <h1>Mercredi</h1>
+          <svg class="ecg-title" viewBox="0 0 220 22" preserveAspectRatio="none" aria-hidden="true"><path d="M0 13 H70 l8 -5 8 5 H130 l6 -11 8 17 6 -8 H220"/></svg>
+        </div>
+        <span class="date">Semaine 27 · Charge : modérée</span>
+      </div>
+
+      <div class="grid">
+        <!-- Aujourd'hui -->
+        <div class="card today-card">
+          <div class="ct">Prochain rendez-vous <a href="#">Calendrier →</a></div>
+          <div class="today-ev">
+            <div class="today-time">18:00</div>
+            <div><b>Entraînement collectif</b><span>Terrain principal · veille de charge légère — match samedi 17h</span></div>
+          </div>
+          <div class="today-actions">
+            <button class="chip-btn amber">✓ Check-in du jour fait</button>
+            <button class="chip-btn">Demander à David quoi faire avant</button>
+            <button class="chip-btn">Voir la semaine</button>
+          </div>
+        </div>
+
+        <!-- RPE -->
+        <div class="card rpe-card">
+          <div class="ct">RPE · 7 jours</div>
+          <div class="rpe-num">7.2<small> /10</small></div>
+          <div class="rpe-trend">↘ en baisse — bonne fraîcheur avant samedi</div>
+          <svg class="spark" viewBox="0 0 200 40" preserveAspectRatio="none" aria-hidden="true">
+            <defs><linearGradient id="gradSpark" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8ecae6"/><stop offset="1" stop-color="transparent"/></linearGradient></defs>
+            <path class="a" d="M0 26 L33 20 L66 30 L100 12 L133 18 L166 9 L200 15 V40 H0 Z"/>
+            <path class="l" d="M0 26 L33 20 L66 30 L100 12 L133 18 L166 9 L200 15"/>
+          </svg>
+        </div>
+
+        <!-- Semaine -->
+        <div class="card week-card">
+          <div class="ct">Ma semaine <a href="#">Tout voir →</a></div>
+          <div class="week">
+            <div class="wd"><div class="dn"><b>29</b>LUN</div><div class="ev t2">Collective 18h</div><div class="ev t3">Journal ✓</div></div>
+            <div class="wd"><div class="dn"><b>30</b>MAR</div><div class="ev t1">Physique · David</div></div>
+            <div class="wd today"><div class="dn"><b>1</b>MER</div><div class="ev t3">Récup active</div><div class="ev t2">Collective 18h</div></div>
+            <div class="wd"><div class="dn"><b>2</b>JEU</div><div class="ev t2">Collective 18h</div></div>
+            <div class="wd"><div class="dn"><b>3</b>VEN</div><div class="ev t1">Activation légère</div></div>
+            <div class="wd"><div class="dn"><b>4</b>SAM</div><div class="ev t4">MATCH · 17h</div><div class="ev t1">Repas 13h30 · Clara</div></div>
+            <div class="wd"><div class="dn"><b>5</b>DIM</div><div class="ev t3">Repos</div></div>
+          </div>
+        </div>
+
+        <!-- Journal -->
+        <div class="card journal-card">
+          <div class="ct">Journal <a href="#">Historique →</a></div>
+          <div class="j-entry hot"><div class="jd">Aujourd'hui · 07:40</div><p>« Jambes lourdes après la collective d'hier, sommeil 7h30. »</p></div>
+          <div class="j-entry"><div class="jd">Hier · 21:15</div><p>« Bonne séance avec David, RPE 8. Focus récup demain. »</p></div>
+          <div class="j-input"><input type="text" placeholder="Écris deux lignes sur ta journée…" aria-label="Nouvelle entrée de journal"/><button class="j-send" aria-label="Envoyer">→</button></div>
+        </div>
+
+        <!-- Brief / inter-agents -->
+        <div class="card brief-card">
+          <div class="ct">Ton équipe travaille · brief du matin</div>
+          <div class="brief-line"><div class="em">🏋️</div><p><b>David</b> — « RPE en baisse et match samedi : aujourd'hui récup active 20 min max, rien de plus. J'ai bloqué la séance dans ton calendrier. »</p></div>
+          <div class="brief-line"><div class="em">🥗</div><p><b>Clara</b> — « Repas pré-match calé samedi 13h30 avec <span class="d-team"><span class="ta">🏋️</span>David</span> : glucides complexes, hydratation dès vendredi soir. »</p></div>
+          <div class="brief-line"><div class="em">🧠</div><p><b>Emma</b> — « Ton journal mentionne les jambes lourdes 2× cette semaine — si le sommeil reste sous 8h, on en parle. <span class="d-team"><span class="ta">😴</span>Nora</span> est au courant. »</p></div>
+        </div>
+
+        <!-- Agents en ligne -->
+        <div class="card agents-card">
+          <div class="ct">Tes 11 agents · en ligne, répondent en &lt;2s</div>
+          <div class="ag-row">
+            <button class="ag"><span class="em">💼</span>Lucas<span class="od"></span></button>
+            <button class="ag"><span class="em">🎯</span>Alex<span class="od"></span></button>
+            <button class="ag"><span class="em">🤝</span>Marc<span class="od"></span></button>
+            <button class="ag"><span class="em">⚖️</span>Léa<span class="od"></span></button>
+            <button class="ag"><span class="em">💶</span>Sophie<span class="od"></span></button>
+            <button class="ag"><span class="em">📊</span>Pierre<span class="od"></span></button>
+            <button class="ag"><span class="em">🏋️</span>David<span class="od"></span></button>
+            <button class="ag"><span class="em">🧠</span>Emma<span class="od"></span></button>
+            <button class="ag"><span class="em">🥗</span>Clara<span class="od"></span></button>
+            <button class="ag"><span class="em">😴</span>Nora<span class="od"></span></button>
+            <button class="ag"><span class="em">♻️</span>Julie<span class="od"></span></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VUE CALENDRIER -->
+    <section class="view" id="v-cal">
+      <div class="topbar">
+        <div>
+          <h1>Calendrier</h1>
+          <svg class="ecg-title" viewBox="0 0 220 22" preserveAspectRatio="none" aria-hidden="true"><path d="M0 13 H70 l8 -5 8 5 H130 l6 -11 8 17 6 -8 H220"/></svg>
+        </div>
+        <span class="date">Semaine 27 · 29 juin – 5 juillet</span>
+      </div>
+      <div class="grid">
+        <div class="card" style="grid-column:span 12">
+          <div class="ct">Vue semaine</div>
+          <div class="week">
+            <div class="wd"><div class="dn"><b>29</b>LUN</div><div class="ev t2">Collective 18h</div><div class="ev t3">Journal ✓</div></div>
+            <div class="wd"><div class="dn"><b>30</b>MAR</div><div class="ev t1">Physique · David</div><div class="ev t3">Journal ✓</div></div>
+            <div class="wd today"><div class="dn"><b>1</b>MER</div><div class="ev t3">Récup active 20'</div><div class="ev t2">Collective 18h</div></div>
+            <div class="wd"><div class="dn"><b>2</b>JEU</div><div class="ev t2">Collective 18h</div></div>
+            <div class="wd"><div class="dn"><b>3</b>VEN</div><div class="ev t1">Activation légère</div><div class="ev t2">Hydratation · Clara</div></div>
+            <div class="wd"><div class="dn"><b>4</b>SAM</div><div class="ev t4">MATCH · 17h</div><div class="ev t1">Repas 13h30 · Clara</div></div>
+            <div class="wd"><div class="dn"><b>5</b>DIM</div><div class="ev t3">Repos complet</div></div>
+          </div>
+          <p class="placeholder-note">Les séances ambrées sont proposées par tes agents — chaque conseil validé atterrit ici. « Toujours savoir où tu vas. »</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- VUE JOURNAL -->
+    <section class="view" id="v-journal">
+      <div class="topbar">
+        <div>
+          <h1>Journal</h1>
+          <svg class="ecg-title" viewBox="0 0 220 22" preserveAspectRatio="none" aria-hidden="true"><path d="M0 13 H70 l8 -5 8 5 H130 l6 -11 8 17 6 -8 H220"/></svg>
+        </div>
+        <span class="date">Ce que tes agents lisent avant de te répondre</span>
+      </div>
+      <div class="grid">
+        <div class="card" style="grid-column:span 7">
+          <div class="ct">Entrées récentes</div>
+          <div class="j-entry hot"><div class="jd">Mer 1 juil · 07:40 · RPE 6</div><p>« Jambes lourdes après la collective d'hier, sommeil 7h30. Objectif : arriver frais samedi. »</p></div>
+          <div class="j-entry"><div class="jd">Mar 30 juin · 21:15 · RPE 8</div><p>« Bonne séance avec David, intensité haute. Focus récup demain. »</p></div>
+          <div class="j-entry"><div class="jd">Lun 29 juin · 22:00 · RPE 7</div><p>« Collective correcte, un peu de fatigue en fin de séance. »</p></div>
+          <div class="j-input"><input type="text" placeholder="Écris deux lignes sur ta journée…" aria-label="Nouvelle entrée"/><button class="j-send" aria-label="Envoyer">→</button></div>
+        </div>
+        <div class="card" style="grid-column:span 5">
+          <div class="ct">RPE · tendance</div>
+          <div class="rpe-num">7.2<small> /10</small></div>
+          <div class="rpe-trend">↘ en baisse — bonne fraîcheur avant samedi</div>
+          <svg class="spark" viewBox="0 0 200 40" preserveAspectRatio="none" aria-hidden="true">
+            <path class="a" d="M0 26 L33 20 L66 30 L100 12 L133 18 L166 9 L200 15 V40 H0 Z" fill="url(#gradSpark)"/>
+            <path class="l" d="M0 26 L33 20 L66 30 L100 12 L133 18 L166 9 L200 15"/>
+          </svg>
+          <p class="placeholder-note">Chaque entrée nourrit le contexte de tes 11 agents.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+(function(){
+'use strict';
+/* Cascade des cartes : index pour le délai d'apparition */
+document.querySelectorAll('.view').forEach(function(view){
+  view.querySelectorAll('.card').forEach(function(c,i){ c.style.setProperty('--i',i); });
+});
+/* Navigation entre vues (prototype) — relance ECG + cascade à chaque changement */
+document.querySelectorAll('.s-item').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var v=btn.dataset.view, target=document.getElementById('v-'+v);
+    document.querySelectorAll('.s-item').forEach(function(b){b.classList.remove('act');});
+    btn.classList.add('act');
+    document.querySelectorAll('.view').forEach(function(s){s.classList.remove('act');});
+    void target.offsetWidth; /* reflow : relance les animations CSS */
+    target.classList.add('act');
+    window.scrollTo(0,0);
+  });
+});
+})();
+</script>
+</body>
+</html>
